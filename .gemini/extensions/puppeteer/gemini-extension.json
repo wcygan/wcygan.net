@@ -1,0 +1,9 @@
+{
+	"name": "puppeteer",
+	"version": "1.0.0",
+	"mcpServers": {
+		"puppeteer": {
+			"command": "npx -y @modelcontextprotocol/server-puppeteer"
+		}
+	}
+}

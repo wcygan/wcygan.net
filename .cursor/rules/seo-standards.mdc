@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SEO and Meta Tags Standards
+
+## SEO Component Usage
+- Use the `Seo.svelte` component for all pages
+- Required props: `title`, `description`
+- Optional props: `url`, `image`
+- Include Open Graph and Twitter Card meta tags
+- External links: add `target="_blank"` and `rel="noopener noreferrer"`
+
+## Default Values
+- Base title: "Will Cygan | Blog"
+- Base description: "Software Engineer interested in distributed systems, web applications, and system design."
+- Default image: "/wcygan.jpeg"
+- Base URL: "https://wcygan.github.io/"
+
+## Implementation Reference
+See the SEO component: [Seo.svelte](mdc:src/lib/components/Seo.svelte)
+
+## Usage Examples
+```svelte
+<Seo title="Blog Posts" description="My Articles" />
+```
+
+For blog posts, include dynamic meta from frontmatter:
+```svelte
+<Seo 
+  title={data.meta.title} 
+  description={data.meta.description}
+  url="https://wcygan.github.io/blog/{slug}"
+/>
+```
+
+## Content Guidelines
+- Titles: Keep under 60 characters
+- Descriptions: 150-160 characters optimal
+- Images: Use high-quality, relevant images
+- URLs: Use canonical URLs for better SEO

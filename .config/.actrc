@@ -1,0 +1,16 @@
+# Act configuration for GitHub Actions local testing
+# This file configures act to use smaller, faster Docker images
+
+# Use smaller Docker images for faster testing
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+-P ubuntu-22.04=catthehacker/ubuntu:act-22.04
+-P ubuntu-20.04=catthehacker/ubuntu:act-20.04
+
+# Set artifact server path
+--artifact-server-path /tmp/artifacts
+
+# Default to quiet mode (can be overridden with --verbose)
+--quiet
+
+# Use container architecture matching host
+--container-architecture linux/amd64 

@@ -1,0 +1,47 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SvelteKit Routing Standards
+
+## Route Structure
+- `+page.svelte` for page components
+- `+page.ts` for data loading functions
+- `+layout.svelte` for shared layouts
+- `+layout.ts` for layout-level data loading
+- Use `export const prerender = true` for static generation
+
+## Dynamic Routes
+- Use `[slug]` pattern for blog posts: `/blog/[slug]/`
+- Validate params in load functions
+- Handle 404s gracefully with proper error pages
+- Example: [+page.ts](mdc:src/routes/blog/[slug]/+page.ts)
+
+## Data Loading Patterns
+- Keep `load` functions simple and focused
+- Export consistent data shapes with TypeScript
+- Use `PageData` and `LayoutData` types
+- Example home page loader: [+page.ts](mdc:src/routes/+page.ts)
+
+## Page Layout Standards
+- Main layout wrapper: [+layout.svelte](mdc:src/routes/+layout.svelte)
+- Include Navbar component in layout
+- Use bordered main content area: `border-2 border-white rounded-lg p-8`
+- Responsive container: `max-w-3xl md:max-w-4xl mx-auto`
+
+## Route Examples
+- Home page: [+page.svelte](mdc:src/routes/+page.svelte)
+- Blog listing: [+page.svelte](mdc:src/routes/blog/+page.svelte)
+- Individual post: [+page.svelte](mdc:src/routes/blog/[slug]/+page.svelte)
+- About page: [+page.svelte](mdc:src/routes/about/+page.svelte)
+
+## Static Generation
+- All routes prerendered for GitHub Pages
+- Configuration in: [+layout.ts](mdc:src/routes/+layout.ts)
+- Build adapter: adapter-static in [svelte.config.js](mdc:svelte.config.js)
+
+## SEO Integration
+- Include `Seo` component on all pages
+- Dynamic meta tags for blog posts
+- Consistent title and description patterns

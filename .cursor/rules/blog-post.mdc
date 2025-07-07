@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Blog Post Creation Standards
+
+When creating new blog posts:
+
+## Workflow
+- Use the `npm run post` script for interactive creation
+- Frontmatter must include: title, date, description
+- Date format: "January 7, 2025" (Month Day, Year)
+- Slug auto-generated from title (lowercase, hyphens, no special chars)
+- Place markdown files in `src/posts/`
+
+## Content Standards
+- Support Shiki syntax highlighting with these languages: javascript, typescript, json, bash, markdown, svelte, html, css, rust, go, java, python, diff
+- Use proper frontmatter format as shown in example post
+- Include file attribution in code blocks when relevant: ```rust file="src/main.rs"
+
+## Example Structure
+Reference the existing blog post structure: [hello-world.md](mdc:src/posts/hello-world.md)
+
+Example frontmatter:
+```yaml
+---
+title: Your Post Title  
+date: January 7, 2025
+description: Brief description for SEO and post cards
+tags: [tag1, tag2, tag3] # optional but recommended
+---
+```
+
+## Technical Implementation
+The blog system uses Vite glob imports and MDSvex processing. See configuration: [mdsvex.config.js](mdc:mdsvex.config.js)
+
+Posts are automatically loaded and sorted by date in: [blog.ts](mdc:src/lib/services/blog.ts)

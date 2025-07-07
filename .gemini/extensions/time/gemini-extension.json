@@ -1,0 +1,9 @@
+{
+	"name": "time",
+	"version": "1.0.0",
+	"mcpServers": {
+		"time": {
+			"command": "npx -y @modelcontextprotocol/server-time"
+		}
+	}
+}

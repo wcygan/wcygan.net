@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Code Blocks with Syntax Highlighting Implementation
+
+## Overview
+This website uses a sophisticated code block system that automatically provides syntax highlighting, line numbering, and copy buttons for all markdown content. The implementation combines Shiki, MDSvex, and custom CSS for a seamless developer experience.
+
+## Core Configuration
+
+### MDSvex Setup
+The main configuration is in [mdsvex.config.js](mdc:mdsvex.config.js):
+- Uses Shiki highlighter with `catppuccin-frappe` theme
+- Supports 13 programming languages: JavaScript, TypeScript, JSON, Bash, Markdown, Svelte, HTML, CSS, Rust, Go, Java, Python, Diff
+- Integrates `shiki-transformer-copy-button` with 1000ms toggle delay
+- Automatically processes all markdown content through the highlighter
+- Escapes Svelte syntax and returns HTML for rendering
+
+### Dependencies
+Required packages in [package.json](mdc:package.json):
+```
+"shiki": "^1.26.1"
+"shiki-transformer-copy-button": "^0.0.3"
+```
+
+## Styling Implementation
+
+### CSS Architecture
+All styling is defined in [src/app.css](mdc:src/app.css):
+
+**Line Numbering System:**
+- Uses CSS counters (`counter-reset: step`, `counter-increment: step`)
+- Numbers appear via `.line::before` pseudo-elements
+- Styled with muted color `rgba(115,138,148,.3)` and right-aligned
+- Smart handling of empty last lines by hiding their numbers
+
+**Copy Button Styling:**
+- Positioned absolutely in top-right corner of code blocks
+- Uses SVG icons with filter invert for dark theme compatibility
+- Two visual states: ready (`copy.svg`) and success (`copy-success.svg`)
+- Smooth state transitions with display toggling
+
+**Theme Integration:**
+- Consistent with site's dark theme (zinc backgrounds, emerald accents)
+- Mobile-responsive design with `md:` breakpoints
+- Integrates with Tailwind's prose classes
+
+### Required Assets
+SVG icons stored in [static/icons/](mdc:static/icons):
+- [copy.svg](mdc:static/icons/copy.svg) - Default copy button state
+- [copy-success.svg](mdc:static/icons/copy-success.svg) - Success feedback state
+
+## Content Rendering
+
+### Usage Pattern
+All markdown content must use the `mdsvex-content` wrapper class as shown in [src/routes/blog/[slug]/+page.svelte](mdc:src/routes/blog/[slug]/+page.svelte):
+```svelte
+<article class="mdsvex-content prose prose-invert prose-emerald max-w-none">
+  <Content />
+</article>
+```
+
+### Markdown Syntax
+Standard fenced code blocks with optional file attribution:
+````markdown
+```rust file="src/main.rs"
+fn main() {
+    println!("Hello, World!");
+}
+```
+````
+
+## Features Provided
+
+**Automatic Features:**
+- ✅ Syntax highlighting for 13+ languages
+- ✅ Line numbering via CSS counters
+- ✅ Copy button with visual feedback
+- ✅ File attribution support
+- ✅ Mobile-responsive design
+- ✅ Dark theme integration
+- ✅ Build-time optimization
+- ✅ Zero runtime JavaScript dependencies
+
+## Extension Guidelines
+
+**To Apply to New Content:**
+1. Ensure content is processed through MDSvex
+2. Wrap rendered content with `mdsvex-content` class
+3. Language support is automatic based on fence identifier
+
+**To Add New Languages:**
+Update the `langs` array in [mdsvex.config.js](mdc:mdsvex.config.js)
+
+**To Modify Styling:**
+Edit the relevant sections in [src/app.css](mdc:src/app.css):
+- `.shiki` for code block containers
+- `code .line::before` for line numbering
+- `pre button.copy` for copy button appearance
+
+## Technical Benefits
+
+- **Performance**: Build-time processing, no runtime overhead
+- **Accessibility**: Semantic HTML structure with proper contrast
+- **Maintainability**: Centralized configuration and styling
+- **Consistency**: Automatic application across all markdown content
+- **Developer Experience**: Simple markdown syntax with powerful features
+
+This system provides a professional code reading experience that scales across the entire website automatically.

@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Markdown Content Styling Standards
+
+## Content Wrapper
+- Wrap all markdown content in: `class="mdsvex-content prose prose-invert prose-emerald max-w-none"`
+- This applies Tailwind Typography with dark theme styling
+
+## Color Scheme
+- Headings: emerald-400 color (`text-emerald-400`)
+- Body text: zinc-100 for primary, zinc-300 for secondary
+- Links: emerald-400 with hover state emerald-300
+- Code: zinc-700 background
+
+## Code Blocks
+- Theme: catppuccin-frappe (via Shiki)
+- Copy button with 1000ms toggle delay
+- Support for file attribution: ```rust file="src/main.rs"
+- Line numbers enabled
+- Overflow scroll for long lines
+
+## Tables
+- Full-width with border-collapse
+- Bordered cells with zinc-400 borders
+- Header background: zinc-700
+- Hover effects on rows: `hover:bg-zinc-700`
+- Responsive with horizontal scroll
+
+## External Links
+- Auto-open in new tabs with `target="_blank"`
+- Include security attributes: `rel="noopener noreferrer"`
+- Configured in MDSvex rehype plugins
+
+## Configuration Files
+- MDSvex config: [mdsvex.config.js](mdc:mdsvex.config.js)
+- Global styles: [app.css](mdc:src/app.css)
+- Tailwind config: [tailwind.config.ts](mdc:tailwind.config.ts)
+
+## Implementation Examples
+See blog post rendering: [+page.svelte](mdc:src/routes/blog/[slug]/+page.svelte)

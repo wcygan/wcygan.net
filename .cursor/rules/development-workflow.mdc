@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Development Workflow Standards
+
+## Local Development
+- Start dev server: `pnpm dev` or use [develop.sh](mdc:scripts/develop.sh)
+- Hot reload available for all Svelte components
+- Test with `pnpm test` (Vitest configured)
+- Linting: `pnpm lint` (ESLint + Prettier)
+- Formatting: `pnpm format`
+
+## Content Creation
+- New blog posts: `npm run post` - runs [new-post.js](mdc:scripts/new-post.js)
+- Interactive script prompts for title, description
+- Auto-generates slug and frontmatter
+- Creates markdown file in `src/posts/`
+
+## Build Process
+- Build command: `pnpm build` 
+- Outputs static files to `./build` directory
+- Uses SvelteKit adapter-static for GitHub Pages
+- Preview built site: `pnpm preview`
+
+## Deployment Pipeline
+- Auto-deploys on push to `main` branch
+- GitHub Actions workflow: [deploy.yml](mdc:.github/workflows/deploy.yml)
+- Process: Install deps → Build → Upload artifacts → Deploy to Pages
+- Static site generation with prerendering enabled
+
+## Package Management
+- Uses pnpm as package manager
+- Lock file: [pnpm-lock.yaml](mdc:pnpm-lock.yaml)
+- Dependencies defined in: [package.json](mdc:package.json)
+
+## Configuration Files
+- SvelteKit: [svelte.config.js](mdc:svelte.config.js)
+- Vite: [vite.config.ts](mdc:vite.config.ts)
+- TypeScript: [tsconfig.json](mdc:tsconfig.json)
+- ESLint: [eslint.config.js](mdc:eslint.config.js)

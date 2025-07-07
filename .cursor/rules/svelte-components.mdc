@@ -1,0 +1,39 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Svelte Component Standards
+
+## Component Structure
+- Import types first, then components, then utilities
+- Export props using `export let` or new `$props()` syntax for Svelte 5
+- Use TypeScript interfaces for prop types
+- Keep components focused and single-purpose
+
+## Styling Standards
+- Use Tailwind CSS classes exclusively
+- Follow dark theme: zinc backgrounds, emerald accents
+- Responsive design: mobile-first with `md:` breakpoints
+- Hover states: `hover:text-emerald-300`, `hover:bg-zinc-700`
+- Transitions: `transition-colors duration-200`
+
+## Common Layout Patterns
+- Main content: `max-w-3xl md:max-w-4xl mx-auto`
+- Cards: `bg-zinc-700 p-4 md:p-6 rounded-lg`
+- Links: `text-emerald-400 hover:text-emerald-300`
+- Navigation: `sticky top-0 bg-zinc-800/80 backdrop-blur-sm`
+
+## Component Examples
+Reference existing components for patterns:
+- Card layout: [PostCard.svelte](mdc:src/lib/components/PostCard.svelte)
+- Navigation structure: [Navbar.svelte](mdc:src/lib/components/Navbar.svelte)
+- SEO implementation: [Seo.svelte](mdc:src/lib/components/Seo.svelte)
+
+## Layout Structure
+Main layout wrapper: [+layout.svelte](mdc:src/routes/+layout.svelte)
+
+## Accessibility
+- Include proper ARIA labels
+- Use semantic HTML elements
+- External links: `target="_blank"` and `rel="noopener noreferrer"`

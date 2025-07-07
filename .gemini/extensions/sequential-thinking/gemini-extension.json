@@ -1,0 +1,9 @@
+{
+	"name": "sequential-thinking",
+	"version": "1.0.0",
+	"mcpServers": {
+		"sequential-thinking": {
+			"command": "npx -y @modelcontextprotocol/server-sequential-thinking"
+		}
+	}
+}

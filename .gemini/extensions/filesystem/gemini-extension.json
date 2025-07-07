@@ -1,0 +1,9 @@
+{
+	"name": "filesystem",
+	"version": "1.0.0",
+	"mcpServers": {
+		"filesystem": {
+			"command": "npx -y @modelcontextprotocol/server-filesystem /tmp"
+		}
+	}
+}

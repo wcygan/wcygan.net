@@ -1,0 +1,9 @@
+{
+	"name": "git",
+	"version": "1.0.0",
+	"mcpServers": {
+		"git": {
+			"command": "uvx mcp-server-git"
+		}
+	}
+}

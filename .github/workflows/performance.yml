@@ -1,0 +1,67 @@
+name: Performance & Bundle Analysis
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  bundle-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and analyze bundle
+        run: |
+          pnpm run build
+          echo "Build completed successfully"
+
+      - name: Check bundle size
+        run: |
+          echo "Checking bundle sizes..."
+          find build -name "*.js" -exec ls -lh {} \; | head -10
+          find build -name "*.css" -exec ls -lh {} \; | head -5
+
+      - name: Build summary
+        run: |
+          echo "📊 Build Summary"
+          echo "================"
+          echo "Total build size:"
+          du -sh build/
+          echo ""
+          echo "JavaScript files:"
+          js_count=$(find build -name "*.js" | wc -l)
+          echo "Count: $js_count"
+          if [ $js_count -gt 0 ]; then
+            find build -name "*.js" -exec du -ch {} + | tail -1
+          else
+            echo "No JavaScript files found"
+          fi
+          echo ""
+          echo "CSS files:"
+          css_count=$(find build -name "*.css" | wc -l)
+          echo "Count: $css_count"
+          if [ $css_count -gt 0 ]; then
+            find build -name "*.css" -exec du -ch {} + | tail -1
+          else
+            echo "No CSS files found"
+          fi
+          echo ""
+          echo "Largest files:"
+          find build -type f -exec ls -lh {} \; | sort -k5 -hr | head -5

@@ -1,0 +1,78 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Design Proportions & Visual Hierarchy Standards
+
+## Core Layout Principles
+
+### Container & Spacing Consistency
+- Main content containers should use `max-w-3xl md:max-w-4xl mx-auto` for consistent width across all pages
+- Navigation and content containers must match in max-width for visual alignment
+- Reference the balanced layout structure in [+layout.svelte](mdc:src/routes/+layout.svelte)
+
+### Navbar Design Standards
+- Navbar should use `py-6` for comfortable vertical padding without excessive spacing
+- Implement `sticky top-0` positioning with `backdrop-blur-sm` for modern feel
+- Include subtle border separation with `border-b border-zinc-700/50`
+- See implementation in [Navbar.svelte](mdc:src/lib/components/Navbar.svelte)
+
+### Content Spacing Hierarchy
+```
+Navbar (py-6) → Main Content (py-8) → Content Box (p-8)
+```
+- **Navbar**: 24px top/bottom padding for compact navigation
+- **Main**: 32px top/bottom for content breathing room  
+- **Content Box**: 32px all-around for comfortable reading
+
+### Visual Balance Rules
+- **No excessive margins**: Avoid `mb-16` or similar large gaps that create visual imbalance
+- **Consistent container structure**: Navbar width should match content width
+- **Proper hierarchy**: Use border-2 border-white on content containers for definition
+- **Responsive spacing**: Scale padding appropriately with `md:` breakpoints
+
+### Color & Backdrop Standards
+- Background: `bg-zinc-800/95` with transparency for navbar
+- Borders: `border-zinc-700/50` for subtle separation
+- Content borders: `border-white` for strong definition
+- Hover states: `hover:text-emerald-400` for interactive elements
+
+### Typography Proportions
+- Navigation links: `text-lg` for readable navigation
+- Icons: `w-7 h-7` for consistent icon sizing
+- Maintain proper text hierarchy with emerald accent colors
+
+## Implementation Guidelines
+
+### Layout Structure Pattern
+```svelte
+<div class="min-h-screen">
+    <Navbar />
+    <main class="max-w-3xl md:max-w-4xl mx-auto px-4 py-8">
+        <div class="border-2 border-white rounded-lg p-8">
+            <!-- Content -->
+        </div>
+    </main>
+</div>
+```
+
+### Navbar Structure Pattern  
+```svelte
+<nav class="sticky top-0 bg-zinc-800/95 backdrop-blur-sm z-10 border-b border-zinc-700/50">
+    <div class="max-w-3xl md:max-w-4xl mx-auto px-4 py-6">
+        <!-- Navigation items -->
+    </div>
+</nav>
+```
+
+## Design Validation Checklist
+- [ ] Navbar and content containers have matching max-widths
+- [ ] Spacing progression follows the hierarchy (6 → 8 → 8 pattern)
+- [ ] No excessive margins creating visual imbalance
+- [ ] Proper backdrop blur and transparency effects
+- [ ] Consistent responsive breakpoints using `md:` prefix
+- [ ] Hover states and transitions implemented
+- [ ] Icon sizes are uniform and properly proportioned
+
+**Key Principle**: Every element should feel balanced and intentionally positioned, with clear visual relationships between components.
