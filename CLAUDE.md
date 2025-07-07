@@ -39,6 +39,16 @@ pnpm run pre-commit   # Fix Mermaid + format + lint + typecheck
 
 ```bash
 pnpm run build        # Build static site to /build directory
+
+# Cloudflare Pages deployment with Wrangler CLI
+npx wrangler login                                    # Authenticate with Cloudflare
+npx wrangler pages project list                       # List all Pages projects
+npx wrangler pages deploy ./build --project-name=wcygan-net  # Deploy to production
+npx wrangler pages deploy ./build --project-name=wcygan-net --branch=preview  # Deploy to preview branch
+
+# Inspect deployment state
+npx wrangler deployments list --experimental-versions  # View recent deployments (shows 10 most recent)
+npx wrangler pages download config                     # Download existing Cloudflare config
 ```
 
 ### Content Management
@@ -64,6 +74,7 @@ pnpm ci:test:quick    # Quick CI workflow test
 - **Tailwind CSS** for styling with Typography plugin
 - **TypeScript** with strict mode enabled
 - **Vitest** for testing (minimal coverage currently)
+- **Wrangler CLI** for Cloudflare Pages deployment and management
 - **Dual Package Management**: `deno.json` for Deno scripts + `package.json` for pnpm workflow
 
 ### Key Architectural Decisions
@@ -82,6 +93,13 @@ pnpm ci:test:quick    # Quick CI workflow test
 - All routes pre-rendered at build time
 - Custom 404.html for GitHub Pages fallback
 - Build output in `/build` directory
+
+#### Cloudflare Pages Deployment
+
+- Configured via `wrangler.json` to deploy from `/build` directory
+- Supports production and preview branch deployments
+- Automatic deployment on git push (when configured in Cloudflare dashboard)
+- CLI commands available for manual deployment and inspection
 
 #### Component Architecture
 
