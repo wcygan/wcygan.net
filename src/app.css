@@ -664,6 +664,41 @@ tbody tr:nth-child(even),
 	font-weight: 600 !important;
 }
 
+/* Git commit labels - MUST come after other git text rules for specificity */
+/* Light text on dark backgrounds for readability */
+/* Using multiple selectors to ensure we override Mermaid's ID-based styles */
+.mermaid .commit-label,
+.mermaid-render-container .commit-label,
+.mermaid text.commit-label,
+.mermaid-render-container text.commit-label,
+.mermaid [id^="mermaid"] .commit-label,
+.mermaid-render-container [id^="mermaid"] .commit-label,
+[id^="mermaid"] .commit-label,
+.mermaid svg .commit-label,
+.mermaid-render-container svg .commit-label {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
+	font-weight: 500 !important;
+}
+
+/* Even more specific selectors to beat any ID-based rules */
+.mermaid-container .mermaid .commit-label,
+.mermaid-container .mermaid-render-container .commit-label,
+.mermaid-container svg .commit-label,
+.mermaid-container [id*="mermaid"] .commit-label {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
+	font-weight: 500 !important;
+}
+
+/* Ensure commit label backgrounds remain dark */
+.mermaid .commit-label-bkg,
+.mermaid-render-container .commit-label-bkg,
+.mermaid rect.commit-label-bkg,
+.mermaid-render-container rect.commit-label-bkg {
+	fill: rgb(39, 39, 42) !important; /* zinc-800 */
+	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
+	stroke-width: 1px !important;
+}
+
 /* Pie chart specific - Universal color support */
 .mermaid .pieCircle,
 .mermaid-render-container .pieCircle {
