@@ -1,7 +1,5 @@
 <script>
 	import MermaidDiagram from '$lib/components/MermaidDiagram.svelte';
-	import MermaidViewport from '$lib/components/MermaidViewport.svelte';
-	import MermaidFlexible from '$lib/components/MermaidFlexible.svelte';
 </script>
 
 <div class="mx-auto max-w-4xl p-8">
@@ -30,8 +28,9 @@
 		<h2 class="mb-4 text-2xl font-semibold">Sequence Diagram with Viewport Loading</h2>
 		<p class="mb-4">This diagram loads when you scroll it into view:</p>
 
-		<MermaidViewport
+		<MermaidDiagram
 			height={400}
+			useLazyLoading={true}
 			diagram={`sequenceDiagram
         participant Browser
         participant Server
@@ -97,10 +96,11 @@
 
 	<section class="mb-12">
 		<h2 class="mb-4 text-2xl font-semibold">Gantt Chart</h2>
-		<p class="mb-4">Project timeline:</p>
+		<p class="mb-4">Project timeline (with lazy loading):</p>
 
-		<MermaidViewport
+		<MermaidDiagram
 			height={300}
+			useLazyLoading={true}
 			diagram={`gantt
         title Mermaid Integration Project
         dateFormat  YYYY-MM-DD
@@ -152,24 +152,28 @@
 
 	<section class="mb-12">
 		<h2 class="mb-4 text-2xl font-semibold">Class Diagram</h2>
-		<p class="mb-4">Component architecture:</p>
+		<p class="mb-4">Component architecture (with lazy loading):</p>
 
-		<MermaidViewport
+		<MermaidDiagram
 			height={500}
+			useLazyLoading={true}
 			diagram={`classDiagram
         class MermaidDiagram {
           +height: number
           +diagram: string
+          +useLazyLoading: boolean
+          +rootMargin: string
           -container: HTMLElement
           -rendered: boolean
           +loadMermaid()
           +renderDiagram()
+          +extractSlotContent()
         }
         
-        class MermaidViewport {
-          +rootMargin: string
-          +shouldRender: boolean
-          -observer: IntersectionObserver
+        class MermaidFullscreen {
+          +svgContent: string
+          +isOpen: boolean
+          +onClose()
         }
         
         class MermaidCache {
@@ -179,26 +183,31 @@
           -clearOldEntries()
         }
         
-        MermaidViewport --|> MermaidDiagram : extends
-        MermaidDiagram ..> MermaidCache : uses`}
+        MermaidDiagram ..> MermaidCache : uses
+        MermaidDiagram ..> MermaidFullscreen : uses`}
 		/>
 	</section>
 
 	<section class="mb-12">
-		<h2 class="mb-4 text-2xl font-semibold">Using MermaidFlexible</h2>
-		<p class="mb-4">Flexible component with slot support:</p>
+		<h2 class="mb-4 text-2xl font-semibold">Flexible Usage Patterns</h2>
+		<p class="mb-4">MermaidDiagram supports both prop and slot-based content:</p>
 
 		<div class="space-y-6">
 			<div>
 				<p class="mb-2 text-sm text-zinc-400">With prop:</p>
-				<MermaidFlexible height={200} diagram="graph LR; A[Prop] --> B[Based]" />
+				<MermaidDiagram height={200} diagram="graph LR; A[Prop] --> B[Based]" />
 			</div>
 
 			<div>
-				<p class="mb-2 text-sm text-zinc-400">With slot and viewport loading:</p>
-				<MermaidFlexible viewport height={200}>
-					graph TD A[Slot] --> B[Based] B --> C[With Viewport]
-				</MermaidFlexible>
+				<p class="mb-2 text-sm text-zinc-400">With slot content:</p>
+				<MermaidDiagram height={200}>graph TD A[Slot] --> B[Based] B --> C[Content]</MermaidDiagram>
+			</div>
+
+			<div>
+				<p class="mb-2 text-sm text-zinc-400">With slot and lazy loading:</p>
+				<MermaidDiagram height={200} useLazyLoading={true}>
+					graph TD A[Lazy] --> B[Loading] B --> C[Slot Content]
+				</MermaidDiagram>
 			</div>
 		</div>
 	</section>
@@ -219,12 +228,28 @@
 		<h3 class="mb-4 text-xl font-semibold">Performance Tips</h3>
 		<ul class="list-inside list-disc space-y-2">
 			<li>
-				Use <code class="rounded bg-zinc-800 px-1 py-0.5">MermaidViewport</code> for diagrams below the
-				fold
+				Use <code class="rounded bg-zinc-800 px-1 py-0.5">useLazyLoading={true}</code> for diagrams below
+				the fold
 			</li>
 			<li>Diagrams are automatically cached in sessionStorage</li>
 			<li>The Mermaid library is dynamically imported on first use</li>
-			<li>Consider build-time rendering for SEO-critical diagrams</li>
+			<li>Mobile devices get a fullscreen button for better viewing</li>
+			<li>All diagrams use a consistent dark theme optimized for the site</li>
 		</ul>
+	</div>
+
+	<div class="mt-8 rounded-lg bg-zinc-900 p-6">
+		<h3 class="mb-4 text-xl font-semibold">Component Consolidation</h3>
+		<p class="mb-2">
+			The Mermaid components have been consolidated into a single, powerful component:
+		</p>
+		<ul class="list-inside list-disc space-y-2">
+			<li><strong>MermaidDiagram</strong> - The main component supporting all features</li>
+			<li><strong>MermaidFullscreen</strong> - Internal component for mobile fullscreen viewing</li>
+		</ul>
+		<p class="mt-4 text-sm text-zinc-400">
+			The previous components (Mermaid, MermaidViewport, MermaidFlexible, MermaidLazy) have been
+			deprecated and their functionality merged into MermaidDiagram.
+		</p>
 	</div>
 </div>

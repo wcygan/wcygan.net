@@ -72,21 +72,23 @@ diagram={`stateDiagram-v2
 
 ### Git Flow
 
-<MermaidDiagram height={250}
+<MermaidDiagram height={350}
 diagram={`gitGraph
-	  commit
+	  accTitle: Git Flow Branching Model
+	  accDescr: This diagram shows a typical Git Flow workflow. The main branch (green) represents production code. A develop branch (sky blue) is created for ongoing development. A feature branch called feature/mermaid (orange) is created from develop for implementing the Mermaid.js feature. After two commits on the feature branch, it merges back into develop. Finally, develop merges into main for release, followed by a hotfix commit on main.
+	  commit id: "Initial commit"
 	  branch develop
 	  checkout develop
-	  commit
+	  commit id: "Set up development"
 	  branch feature/mermaid
 	  checkout feature/mermaid
-	  commit
-	  commit
+	  commit id: "Add Mermaid component"
+	  commit id: "Style Mermaid diagrams"
 	  checkout develop
-	  merge feature/mermaid
+	  merge feature/mermaid tag: "feature complete"
 	  checkout main
-	  merge develop
-	  commit`}
+	  merge develop tag: "v1.0.0"
+	  commit id: "Hotfix: security patch"`}
 />
 
 ### Entity Relationship

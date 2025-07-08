@@ -88,6 +88,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@eslint/compat@^1.2.4",
+        "npm:@rollup/plugin-terser@~0.4.4",
         "npm:@sveltejs/adapter-cloudflare@^7.0.4",
         "npm:@sveltejs/kit@^2.15.2",
         "npm:@sveltejs/vite-plugin-svelte@^5.1.0",
@@ -105,6 +106,7 @@
         "npm:prettier-plugin-tailwindcss@~0.6.9",
         "npm:prettier@^3.4.2",
         "npm:puppeteer@^24.10.2",
+        "npm:rollup-plugin-visualizer@^6.0.3",
         "npm:shiki-transformer-copy-button@^0.0.3",
         "npm:shiki@^1.26.1",
         "npm:svelte-check@^4.1.1",

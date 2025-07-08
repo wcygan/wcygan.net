@@ -35,38 +35,6 @@ adapter.
 - 🔒 Secure deployment with proper permissions
 - 🚦 Concurrency control to prevent deployment conflicts
 
-### 🔒 Security & Dependencies (`security.yml`)
-
-**Triggers:**
-
-- 📅 Weekly schedule (Mondays at 9 AM UTC)
-- Pull Requests to `main`
-- Manual trigger
-
-**Purpose:** Security auditing and dependency monitoring.
-
-**Checks:**
-
-- 🛡️ Security vulnerability scanning
-- 📊 Dependency audit
-- 📈 Outdated package detection
-
-### ⚡ Performance & Lighthouse (`performance.yml`)
-
-**Triggers:**
-
-- Pull Requests to `main`
-- Manual trigger
-
-**Purpose:** Performance monitoring and optimization.
-
-**Features:**
-
-- 🏃 Lighthouse CI performance testing
-- 📊 Bundle size analysis
-- 🎯 Performance threshold enforcement
-- 📈 Accessibility and SEO scoring
-
 ## Dependabot Configuration
 
 **File:** `.github/dependabot.yml`
