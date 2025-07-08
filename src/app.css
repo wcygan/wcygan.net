@@ -497,17 +497,38 @@ tbody tr:nth-child(even),
 	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
 }
 
-/* Git graph specific */
-.mermaid .commit,
+/* Git graph specific - Universal color support */
 .mermaid .commit0,
+.mermaid-render-container .commit0 {
+	fill: rgb(52, 211, 153) !important; /* emerald-400 - primary branch */
+	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
+	stroke-width: 2px !important;
+}
+
 .mermaid .commit1,
+.mermaid-render-container .commit1 {
+	fill: rgb(96, 165, 250) !important; /* blue-400 - process branch */
+	stroke: rgb(59, 130, 246) !important; /* blue-500 */
+	stroke-width: 2px !important;
+}
+
 .mermaid .commit2,
+.mermaid-render-container .commit2 {
+	fill: rgb(192, 132, 252) !important; /* purple-400 - category A */
+	stroke: rgb(168, 85, 247) !important; /* purple-500 */
+	stroke-width: 2px !important;
+}
+
 .mermaid .commit3,
-.mermaid-render-container .commit,
-.mermaid-render-container .commit0,
-.mermaid-render-container .commit1,
-.mermaid-render-container .commit2,
 .mermaid-render-container .commit3 {
+	fill: rgb(251, 113, 133) !important; /* rose-400 - category B */
+	stroke: rgb(244, 63, 94) !important; /* rose-500 */
+	stroke-width: 2px !important;
+}
+
+/* Fallback for generic commit class */
+.mermaid .commit,
+.mermaid-render-container .commit {
 	fill: rgb(52, 211, 153) !important; /* emerald-400 */
 	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
 	stroke-width: 2px !important;
@@ -522,7 +543,59 @@ tbody tr:nth-child(even),
 	fill: rgb(228, 228, 231) !important; /* zinc-100 */
 }
 
-/* Pie chart specific */
+/* Git flow diagram - force all text to be dark for readability */
+/* Since git flow text elements have no classes, use broad selectors */
+
+/* Target all text elements in diagrams that contain git flow content */
+.mermaid-container svg text,
+.mermaid-render-container svg text,
+.mermaid svg text {
+	/* Force dark text color for better contrast on colored backgrounds */
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text */
+	font-weight: 600 !important;
+}
+
+/* Specifically override light gray text that appears in git flows */
+.mermaid svg text[fill*="211"],
+.mermaid-render-container svg text[fill*="211"],
+.mermaid-container svg text[fill*="211"] {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text */
+	font-weight: 600 !important;
+}
+
+/* Git commit node text - ensure dark text on colored backgrounds */
+.mermaid .commit0 text,
+.mermaid-render-container .commit0 text {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on emerald */
+	font-weight: 600 !important;
+}
+
+.mermaid .commit1 text,
+.mermaid-render-container .commit1 text {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on blue */
+	font-weight: 600 !important;
+}
+
+.mermaid .commit2 text,
+.mermaid-render-container .commit2 text {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on purple */
+	font-weight: 600 !important;
+}
+
+.mermaid .commit3 text,
+.mermaid-render-container .commit3 text {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on rose */
+	font-weight: 600 !important;
+}
+
+/* Generic commit text fallback */
+.mermaid .commit text,
+.mermaid-render-container .commit text {
+	fill: rgb(24, 24, 27) !important; /* zinc-900 */
+	font-weight: 600 !important;
+}
+
+/* Pie chart specific - Universal color support */
 .mermaid .pieCircle,
 .mermaid-render-container .pieCircle {
 	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
@@ -536,7 +609,76 @@ tbody tr:nth-child(even),
 	font-weight: bold !important;
 }
 
-/* Gantt chart specific */
+/* Individual pie segments with universal colors */
+.mermaid .pie-segment-0,
+.mermaid-render-container .pie-segment-0 {
+	fill: rgb(52, 211, 153) !important; /* emerald-400 */
+}
+
+.mermaid .pie-segment-1,
+.mermaid-render-container .pie-segment-1 {
+	fill: rgb(96, 165, 250) !important; /* blue-400 */
+}
+
+.mermaid .pie-segment-2,
+.mermaid-render-container .pie-segment-2 {
+	fill: rgb(192, 132, 252) !important; /* purple-400 */
+}
+
+.mermaid .pie-segment-3,
+.mermaid-render-container .pie-segment-3 {
+	fill: rgb(251, 113, 133) !important; /* rose-400 */
+}
+
+.mermaid .pie-segment-4,
+.mermaid-render-container .pie-segment-4 {
+	fill: rgb(250, 204, 21) !important; /* yellow-400 */
+}
+
+.mermaid .pie-segment-5,
+.mermaid-render-container .pie-segment-5 {
+	fill: rgb(74, 222, 128) !important; /* green-400 */
+}
+
+/* Sequence diagram actor variations with universal colors */
+.mermaid .actor0,
+.mermaid-render-container .actor0 {
+	fill: rgb(52, 211, 153) !important; /* emerald-400 - primary actor */
+	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
+}
+
+.mermaid .actor1,
+.mermaid-render-container .actor1 {
+	fill: rgb(96, 165, 250) !important; /* blue-400 - secondary actor */
+	stroke: rgb(59, 130, 246) !important; /* blue-500 */
+}
+
+.mermaid .actor2,
+.mermaid-render-container .actor2 {
+	fill: rgb(192, 132, 252) !important; /* purple-400 - tertiary actor */
+	stroke: rgb(168, 85, 247) !important; /* purple-500 */
+}
+
+/* State diagram states with semantic colors */
+.mermaid .state-start,
+.mermaid-render-container .state-start {
+	fill: rgb(74, 222, 128) !important; /* green-400 - start states */
+	stroke: rgb(34, 197, 94) !important; /* green-500 */
+}
+
+.mermaid .state-end,
+.mermaid-render-container .state-end {
+	fill: rgb(248, 113, 113) !important; /* red-400 - end states */
+	stroke: rgb(239, 68, 68) !important; /* red-500 */
+}
+
+.mermaid .state-process,
+.mermaid-render-container .state-process {
+	fill: rgb(96, 165, 250) !important; /* blue-400 - process states */
+	stroke: rgb(59, 130, 246) !important; /* blue-500 */
+}
+
+/* Gantt chart specific - Universal colors for task categories */
 .mermaid .grid .tick line,
 .mermaid-render-container .grid .tick line {
 	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
@@ -545,9 +687,15 @@ tbody tr:nth-child(even),
 
 .mermaid .gantt-task-row rect,
 .mermaid-render-container .gantt-task-row rect {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	fill: rgb(96, 165, 250) !important; /* blue-400 - primary tasks */
+	stroke: rgb(59, 130, 246) !important; /* blue-500 */
 	stroke-width: 1px !important;
+}
+
+.mermaid .gantt-task-row:nth-child(odd) rect,
+.mermaid-render-container .gantt-task-row:nth-child(odd) rect {
+	fill: rgb(192, 132, 252) !important; /* purple-400 - alternate tasks */
+	stroke: rgb(168, 85, 247) !important; /* purple-500 */
 }
 
 /* Class diagram specific */

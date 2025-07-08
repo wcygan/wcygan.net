@@ -85,35 +85,55 @@
 			// Class diagram specific
 			classText: '#e4e4e7', // zinc-100
 
-			// Git graph specific
-			git0: '#34d399', // emerald-400
-			git1: '#10b981', // emerald-500
-			git2: '#059669', // emerald-600
-			git3: '#047857', // emerald-700
-			git4: '#065f46', // emerald-800
-			git5: '#064e3b', // emerald-900
-			git6: '#022c22', // emerald-950
-			git7: '#34d399', // emerald-400
+			// Universal color palette for all diagram types
+			// Primary sequence: emerald (brand) → blue (process) → purple (category A) → rose (category B)
+			git0: '#34d399', // emerald-400 (primary brand)
+			git1: '#60a5fa', // blue-400 (process/secondary)
+			git2: '#c084fc', // purple-400 (category A)
+			git3: '#fb7185', // rose-400 (category B)
+			git4: '#facc15', // yellow-400 (warning/pending)
+			git5: '#4ade80', // green-400 (success/active)
+			git6: '#f87171', // red-400 (error/critical)
+			git7: '#22d3ee', // cyan-400 (data/flow)
 
-			// Pie chart specific
-			pie1: '#34d399', // emerald-400
-			pie2: '#10b981', // emerald-500
-			pie3: '#059669', // emerald-600
-			pie4: '#047857', // emerald-700
-			pie5: '#065f46', // emerald-800
-			pie6: '#064e3b', // emerald-900
-			pie7: '#022c22', // emerald-950
-			pie8: '#6b7280', // gray-500
-			pie9: '#4b5563', // gray-600
-			pie10: '#374151', // gray-700
-			pie11: '#1f2937', // gray-800
-			pie12: '#111827', // gray-900
+			// Extended palette for complex diagrams (pie charts, multi-element diagrams)
+			pie1: '#34d399', // emerald-400 (primary brand)
+			pie2: '#60a5fa', // blue-400 (process)
+			pie3: '#c084fc', // purple-400 (category A)
+			pie4: '#fb7185', // rose-400 (category B)
+			pie5: '#facc15', // yellow-400 (warning/pending)
+			pie6: '#4ade80', // green-400 (success)
+			pie7: '#f87171', // red-400 (error/critical)
+			pie8: '#22d3ee', // cyan-400 (data/flow)
+			pie9: '#fb923c', // orange-400 (in-progress)
+			pie10: '#f472b6', // pink-400 (category C)
+			pie11: '#818cf8', // indigo-400 (category D)
+			pie12: '#a1a1aa', // zinc-400 (neutral/infrastructure)
 
-			// Gantt chart specific
-			section0: '#3f3f46', // zinc-700
-			section1: '#27272a', // zinc-800
-			section2: '#18181b', // zinc-900
-			section3: '#09090b', // zinc-950
+			// Gantt chart specific - use universal palette
+			section0: '#60a5fa', // blue-400 (primary tasks)
+			section1: '#c084fc', // purple-400 (secondary tasks)
+			section2: '#fb7185', // rose-400 (tertiary tasks)
+			section3: '#22d3ee', // cyan-400 (data tasks)
+
+			// Additional semantic colors for various diagram types
+			// State diagram states
+			specialStateColor: '#4ade80', // green-400 (success states)
+			// Sequence diagram variations
+			actorBorder2: '#60a5fa', // blue-400 (secondary actors)
+			actorBorder3: '#c084fc', // purple-400 (tertiary actors)
+			// Flowchart node types  
+			processColor: '#60a5fa', // blue-400 (process nodes)
+			decisionColor: '#facc15', // yellow-400 (decision nodes)
+			dataColor: '#22d3ee', // cyan-400 (data nodes)
+
+			// Git flow specific text colors - force dark text
+			gitBranchLabel0: '#18181b', // zinc-900 (main branch text)
+			gitBranchLabel1: '#18181b', // zinc-900 (develop branch text)
+			gitBranchLabel2: '#18181b', // zinc-900 (feature branch text)
+			gitBranchLabel3: '#18181b', // zinc-900 (additional branch text)
+			commitLabelFontSize: '14px',
+			commitLabelColor: '#18181b', // zinc-900 (commit text)
 
 			// General styling
 			clusterBkg: '#27272a', // zinc-800
