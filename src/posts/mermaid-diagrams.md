@@ -91,28 +91,6 @@ diagram={`gitGraph
 	  commit id: "Hotfix: security patch"`}
 />
 
-<div class="rounded-lg bg-zinc-700/50 border border-zinc-600 p-4 my-4 text-sm">
-  <h4 class="text-zinc-300 font-semibold mb-2">Text Alternative: Git Flow Process</h4>
-  <div class="text-zinc-400 space-y-2">
-    <p><strong>Branch Structure:</strong></p>
-    <ul class="list-disc list-inside ml-4">
-      <li><span class="text-emerald-400">Main branch</span> (green) - Production-ready code</li>
-      <li><span class="text-sky-400">Develop branch</span> (sky blue) - Integration branch for features</li>
-      <li><span class="text-orange-400">Feature/mermaid branch</span> (orange) - Feature development branch</li>
-    </ul>
-    <p><strong>Workflow Steps:</strong></p>
-    <ol class="list-decimal list-inside ml-4">
-      <li>Start with initial commit on main</li>
-      <li>Create develop branch from main</li>
-      <li>Create feature/mermaid branch from develop</li>
-      <li>Make commits on feature branch: "Add Mermaid component" and "Style Mermaid diagrams"</li>
-      <li>Merge feature/mermaid back into develop (tagged "feature complete")</li>
-      <li>Merge develop into main for release (tagged "v1.0.0")</li>
-      <li>Apply hotfix directly to main: "Hotfix: security patch"</li>
-    </ol>
-  </div>
-</div>
-
 ### Entity Relationship
 
 Database schema for a blog:
