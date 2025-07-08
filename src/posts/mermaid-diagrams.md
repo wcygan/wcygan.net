@@ -72,22 +72,46 @@ diagram={`stateDiagram-v2
 
 ### Git Flow
 
-<MermaidDiagram height={250}
+<MermaidDiagram height={350}
 diagram={`gitGraph
-	  commit
+	  accTitle: Git Flow Branching Model
+	  accDescr: This diagram shows a typical Git Flow workflow. The main branch (green) represents production code. A develop branch (sky blue) is created for ongoing development. A feature branch called feature/mermaid (orange) is created from develop for implementing the Mermaid.js feature. After two commits on the feature branch, it merges back into develop. Finally, develop merges into main for release, followed by a hotfix commit on main.
+	  commit id: "Initial commit"
 	  branch develop
 	  checkout develop
-	  commit
+	  commit id: "Set up development"
 	  branch feature/mermaid
 	  checkout feature/mermaid
-	  commit
-	  commit
+	  commit id: "Add Mermaid component"
+	  commit id: "Style Mermaid diagrams"
 	  checkout develop
-	  merge feature/mermaid
+	  merge feature/mermaid tag: "feature complete"
 	  checkout main
-	  merge develop
-	  commit`}
+	  merge develop tag: "v1.0.0"
+	  commit id: "Hotfix: security patch"`}
 />
+
+<div class="rounded-lg bg-zinc-700/50 border border-zinc-600 p-4 my-4 text-sm">
+  <h4 class="text-zinc-300 font-semibold mb-2">Text Alternative: Git Flow Process</h4>
+  <div class="text-zinc-400 space-y-2">
+    <p><strong>Branch Structure:</strong></p>
+    <ul class="list-disc list-inside ml-4">
+      <li><span class="text-emerald-400">Main branch</span> (green) - Production-ready code</li>
+      <li><span class="text-sky-400">Develop branch</span> (sky blue) - Integration branch for features</li>
+      <li><span class="text-orange-400">Feature/mermaid branch</span> (orange) - Feature development branch</li>
+    </ul>
+    <p><strong>Workflow Steps:</strong></p>
+    <ol class="list-decimal list-inside ml-4">
+      <li>Start with initial commit on main</li>
+      <li>Create develop branch from main</li>
+      <li>Create feature/mermaid branch from develop</li>
+      <li>Make commits on feature branch: "Add Mermaid component" and "Style Mermaid diagrams"</li>
+      <li>Merge feature/mermaid back into develop (tagged "feature complete")</li>
+      <li>Merge develop into main for release (tagged "v1.0.0")</li>
+      <li>Apply hotfix directly to main: "Hotfix: security patch"</li>
+    </ol>
+  </div>
+</div>
 
 ### Entity Relationship
 

@@ -58,23 +58,23 @@
 			mainBkg: '#3f3f46', // zinc-700
 			secondBkg: '#27272a', // zinc-800
 
-			// Sequence diagram specific
+			// Sequence diagram specific - comprehensive text colors
 			actorBkg: '#3f3f46', // zinc-700
 			actorBorder: '#34d399', // emerald-400
-			actorTextColor: '#e4e4e7', // zinc-100
+			actorTextColor: '#e4e4e7', // zinc-100 - light text on dark actor boxes
 			actorLineColor: '#71717a', // zinc-500
 			signalColor: '#71717a', // zinc-500
-			signalTextColor: '#e4e4e7', // zinc-100
+			signalTextColor: '#e4e4e7', // zinc-100 - light text for messages
 			labelBoxBkgColor: '#27272a', // zinc-800
 			labelBoxBorderColor: '#34d399', // emerald-400
-			labelTextColor: '#e4e4e7', // zinc-100
-			loopTextColor: '#e4e4e7', // zinc-100
+			labelTextColor: '#e4e4e7', // zinc-100 - light text for labels
+			loopTextColor: '#e4e4e7', // zinc-100 - light text for loops
 			noteBorderColor: '#34d399', // emerald-400
 			noteBkgColor: '#27272a', // zinc-800
-			noteTextColor: '#e4e4e7', // zinc-100
+			noteTextColor: '#e4e4e7', // zinc-100 - light text for notes
 			activationBorderColor: '#34d399', // emerald-400
 			activationBkgColor: '#3f3f46', // zinc-700
-			sequenceNumberColor: '#e4e4e7', // zinc-100
+			sequenceNumberColor: '#e4e4e7', // zinc-100 - light text for sequence numbers
 
 			// State diagram specific
 			specialStateColor: '#34d399', // emerald-400
@@ -86,29 +86,30 @@
 			classText: '#e4e4e7', // zinc-100
 
 			// Universal color palette for all diagram types
-			// Primary sequence: emerald (brand) → blue (process) → purple (category A) → rose (category B)
-			git0: '#34d399', // emerald-400 (primary brand)
-			git1: '#60a5fa', // blue-400 (process/secondary)
-			git2: '#c084fc', // purple-400 (category A)
-			git3: '#fb7185', // rose-400 (category B)
-			git4: '#facc15', // yellow-400 (warning/pending)
-			git5: '#4ade80', // green-400 (success/active)
-			git6: '#f87171', // red-400 (error/critical)
-			git7: '#22d3ee', // cyan-400 (data/flow)
+			// Using Okabe-Ito colorblind-safe palette with high contrast
+			git0: '#34d399', // emerald-400 (primary brand - kept for consistency)
+			git1: '#56B4E9', // sky blue (high contrast, colorblind-safe)
+			git2: '#E69F00', // orange (high contrast, colorblind-safe)
+			git3: '#009E73', // bluish-green (high contrast, colorblind-safe)
+			git4: '#F0E442', // yellow (high contrast, colorblind-safe)
+			git5: '#CC79A7', // reddish-purple (colorblind-safe)
+			git6: '#0072B2', // blue (high contrast, colorblind-safe)
+			git7: '#D55E00', // vermillion (high contrast, colorblind-safe)
 
 			// Extended palette for complex diagrams (pie charts, multi-element diagrams)
+			// Using same colorblind-safe palette for consistency
 			pie1: '#34d399', // emerald-400 (primary brand)
-			pie2: '#60a5fa', // blue-400 (process)
-			pie3: '#c084fc', // purple-400 (category A)
-			pie4: '#fb7185', // rose-400 (category B)
-			pie5: '#facc15', // yellow-400 (warning/pending)
-			pie6: '#4ade80', // green-400 (success)
-			pie7: '#f87171', // red-400 (error/critical)
-			pie8: '#22d3ee', // cyan-400 (data/flow)
-			pie9: '#fb923c', // orange-400 (in-progress)
-			pie10: '#f472b6', // pink-400 (category C)
-			pie11: '#818cf8', // indigo-400 (category D)
-			pie12: '#a1a1aa', // zinc-400 (neutral/infrastructure)
+			pie2: '#56B4E9', // sky blue (colorblind-safe)
+			pie3: '#E69F00', // orange (colorblind-safe)
+			pie4: '#009E73', // bluish-green (colorblind-safe)
+			pie5: '#F0E442', // yellow (colorblind-safe)
+			pie6: '#CC79A7', // reddish-purple (colorblind-safe)
+			pie7: '#0072B2', // blue (colorblind-safe)
+			pie8: '#D55E00', // vermillion (colorblind-safe)
+			pie9: '#999999', // grey (neutral)
+			pie10: '#4B4B4B', // dark grey (neutral)
+			pie11: '#B3B3B3', // light grey (neutral)
+			pie12: '#666666', // medium grey (neutral)
 
 			// Gantt chart specific - use universal palette
 			section0: '#60a5fa', // blue-400 (primary tasks)
@@ -127,12 +128,19 @@
 			decisionColor: '#facc15', // yellow-400 (decision nodes)
 			dataColor: '#22d3ee', // cyan-400 (data nodes)
 
-			// Git flow specific text colors - force dark text
+			// Git flow specific text colors - force dark text on all branches
 			gitBranchLabel0: '#18181b', // zinc-900 (main branch text)
 			gitBranchLabel1: '#18181b', // zinc-900 (develop branch text)
 			gitBranchLabel2: '#18181b', // zinc-900 (feature branch text)
 			gitBranchLabel3: '#18181b', // zinc-900 (additional branch text)
-			commitLabelFontSize: '14px',
+			gitBranchLabel4: '#18181b', // zinc-900 (branch 4 text)
+			gitBranchLabel5: '#18181b', // zinc-900 (branch 5 text)
+			gitBranchLabel6: '#18181b', // zinc-900 (branch 6 text)
+			gitBranchLabel7: '#18181b', // zinc-900 (branch 7 text)
+			gitInnerCommitLabel: '#18181b', // zinc-900 (commit ID text)
+			gitBranchLabelColor: '#18181b', // zinc-900 (general branch label)
+			gitLabelColor: '#18181b', // zinc-900 (general git label)
+			commitLabelFontSize: '16px', // Increased for better readability
 			commitLabelColor: '#18181b', // zinc-900 (commit text)
 
 			// General styling
@@ -148,7 +156,7 @@
 
 			// Font settings
 			fontFamily: 'Inter, system-ui, sans-serif',
-			fontSize: '14px'
+			fontSize: '16px' // Increased base font size for better readability
 		}
 	};
 
@@ -191,6 +199,7 @@
 					sessionStorage.removeItem(key);
 				}
 			});
+			console.log('[MermaidDiagram] Cache cleared for style updates');
 		} catch (e) {
 			console.warn('[MermaidDiagram] Could not clear cache:', e);
 		}
@@ -266,7 +275,13 @@
 				// Git graph configuration
 				gitGraph: {
 					useMaxWidth: true,
-					mainBranchName: 'main'
+					mainBranchName: 'main',
+					showBranches: true,
+					showCommitLabel: true,
+					// Force dark text for all git elements
+					labelTextColor: '#18181b', // zinc-900
+					commitLabelColor: '#18181b', // zinc-900
+					branchLabelColor: '#18181b' // zinc-900
 				},
 				// Class diagram configuration
 				class: {
