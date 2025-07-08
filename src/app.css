@@ -59,6 +59,10 @@
 		@apply mx-auto max-w-2xl px-4 md:max-w-3xl md:px-8;
 	}
 
+	.section-spacing {
+		@apply mb-6 md:mb-8;
+	}
+
 	/* Card component */
 	.card-base {
 		@apply rounded-lg bg-zinc-700 p-4 transition-all duration-200 md:p-6;
@@ -69,9 +73,44 @@
 		@apply hover:-translate-y-1 hover:shadow-lg;
 	}
 
+	.card-interactive {
+		@apply card-base card-hover border border-zinc-700 hover:border-emerald-400;
+	}
+
 	/* Legacy class support */
 	.post-card {
 		@apply card-base card-hover;
+	}
+
+	/* Tag components */
+	.tag-base {
+		@apply rounded px-2 py-1 text-sm transition-colors;
+	}
+
+	.tag-emerald {
+		@apply tag-base bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30;
+	}
+
+	.tag-zinc {
+		@apply tag-base bg-zinc-600/20 text-zinc-300 hover:bg-zinc-600/30;
+	}
+
+	/* Text utilities */
+	.text-muted {
+		@apply text-zinc-400;
+	}
+
+	.text-primary {
+		@apply text-emerald-400;
+	}
+
+	/* Link styles */
+	.link-primary {
+		@apply text-emerald-400 transition-colors hover:text-emerald-300;
+	}
+
+	.link-underline {
+		@apply link-primary underline decoration-emerald-400/30 hover:decoration-emerald-300;
 	}
 
 	/* Form inputs */
@@ -80,12 +119,42 @@
 	}
 
 	/* Buttons */
+	.btn-base {
+		@apply rounded-md px-4 py-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800;
+	}
+
 	.btn-primary {
-		@apply rounded-md bg-emerald-500 px-4 py-2 font-medium text-white transition-colors hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-zinc-800;
+		@apply btn-base bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500;
 	}
 
 	.btn-secondary {
-		@apply rounded-md border border-zinc-600 bg-zinc-700 px-4 py-2 font-medium text-zinc-100 transition-colors hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-800;
+		@apply btn-base border border-zinc-600 bg-zinc-700 text-zinc-100 hover:bg-zinc-600 focus:ring-zinc-500;
+	}
+
+	.btn-ghost {
+		@apply btn-base bg-transparent text-zinc-100 hover:bg-zinc-700/50;
+	}
+
+	/* Info boxes for blog posts */
+	.info-box {
+		@apply my-6 rounded-lg border p-4;
+	}
+
+	.info-box-emerald {
+		@apply info-box border-emerald-400/30 bg-emerald-900/20;
+	}
+
+	.info-box-zinc {
+		@apply info-box border-zinc-600/30 bg-zinc-800/50;
+	}
+
+	/* Grid layouts */
+	.feature-grid {
+		@apply grid gap-4 md:grid-cols-2 lg:grid-cols-3;
+	}
+
+	.icon-grid {
+		@apply grid grid-cols-2 gap-4 md:grid-cols-4;
 	}
 }
 
@@ -248,8 +317,8 @@ tbody tr:nth-child(even),
 	@apply bg-zinc-800/50;
 }
 
-/* Mermaid Diagram Styles - Consistent Dark Theme */
-/* Mermaid diagram styles */
+/* Mermaid Diagram Styles - Comprehensive Dark Theme */
+/* Base container styling */
 .mermaid-container {
 	@apply my-6;
 }
@@ -261,25 +330,38 @@ tbody tr:nth-child(even),
 	font-family: 'Inter', system-ui, sans-serif !important;
 }
 
+/* Universal text elements */
 .mermaid text,
-.mermaid-render-container text {
+.mermaid-render-container text,
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .cluster text,
+.mermaid .actor text,
+.mermaid .messageText,
+.mermaid .loopText,
+.mermaid .noteText,
+.mermaid .labelText {
 	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-	font-family: inherit !important;
+	font-family: 'Inter', system-ui, sans-serif !important;
+	color: rgb(228, 228, 231) !important;
 }
 
-/* Node styling - Override inline styles */
-.mermaid .nodeLabel {
-	@apply text-zinc-100;
+/* Edge labels specific styling */
+.mermaid .edgeLabel,
+.mermaid-render-container .edgeLabel {
+	background-color: rgb(24, 24, 27) !important; /* zinc-900 */
+	fill: rgb(228, 228, 231) !important;
 }
 
-.mermaid .edgeLabel {
-	@apply bg-zinc-900 text-zinc-100;
+/* Cluster/subgraph styling */
+.mermaid .cluster rect,
+.mermaid-render-container .cluster rect {
+	fill: rgb(39, 39, 42) !important; /* zinc-800 */
+	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
+	stroke-width: 1px !important;
 }
 
-.mermaid .cluster rect {
-	@apply fill-zinc-800 stroke-zinc-600;
-}
-
+/* Node styling - All shapes and diagram types */
 .mermaid .node rect,
 .mermaid .node circle,
 .mermaid .node ellipse,
@@ -289,7 +371,19 @@ tbody tr:nth-child(even),
 .mermaid-render-container .node circle,
 .mermaid-render-container .node ellipse,
 .mermaid-render-container .node polygon,
-.mermaid-render-container .node path {
+.mermaid-render-container .node path,
+/* Flowchart specific nodes */
+.mermaid .flowchart-node rect,
+.mermaid .flowchart-node circle,
+.mermaid .flowchart-node polygon,
+/* State diagram nodes */
+.mermaid .statediagram-state rect,
+.mermaid .statediagram-state circle,
+/* Class diagram nodes */
+.mermaid .classBox rect,
+/* Additional node types */
+.mermaid .basic rect,
+.mermaid .composite rect {
 	fill: rgb(63, 63, 70) !important; /* zinc-700 */
 	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
 	stroke-width: 2px !important;
@@ -341,26 +435,59 @@ tbody tr:nth-child(even),
 
 /* Sequence diagram specific */
 .mermaid .actor,
-.mermaid-render-container .actor {
+.mermaid .actor-man,
+.mermaid .actor rect,
+.mermaid-render-container .actor,
+.mermaid-render-container .actor-man,
+.mermaid-render-container .actor rect {
 	fill: rgb(63, 63, 70) !important; /* zinc-700 */
 	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
 }
 
 .mermaid .actor-line,
 .mermaid-render-container .actor-line {
 	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
+	stroke-width: 1px !important;
 }
 
 .mermaid .messageLine0,
 .mermaid .messageLine1,
+.mermaid .sequenceDiagram-line,
 .mermaid-render-container .messageLine0,
-.mermaid-render-container .messageLine1 {
+.mermaid-render-container .messageLine1,
+.mermaid-render-container .sequenceDiagram-line {
 	stroke: rgb(113, 113, 122) !important; /* zinc-500 */
+	stroke-width: 2px !important;
 }
 
 .mermaid .messageText,
-.mermaid-render-container .messageText {
+.mermaid .loopText,
+.mermaid .noteText,
+.mermaid-render-container .messageText,
+.mermaid-render-container .loopText,
+.mermaid-render-container .noteText {
 	fill: rgb(228, 228, 231) !important; /* zinc-100 */
+}
+
+/* Note boxes in sequence diagrams */
+.mermaid .note rect,
+.mermaid-render-container .note rect {
+	fill: rgb(39, 39, 42) !important; /* zinc-800 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 1px !important;
+}
+
+/* Activation boxes */
+.mermaid .activation0,
+.mermaid .activation1,
+.mermaid .activation2,
+.mermaid-render-container .activation0,
+.mermaid-render-container .activation1,
+.mermaid-render-container .activation2 {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 1px !important;
 }
 
 /* State diagram specific */
@@ -372,9 +499,191 @@ tbody tr:nth-child(even),
 
 /* Git graph specific */
 .mermaid .commit,
-.mermaid-render-container .commit {
+.mermaid .commit0,
+.mermaid .commit1,
+.mermaid .commit2,
+.mermaid .commit3,
+.mermaid-render-container .commit,
+.mermaid-render-container .commit0,
+.mermaid-render-container .commit1,
+.mermaid-render-container .commit2,
+.mermaid-render-container .commit3 {
 	fill: rgb(52, 211, 153) !important; /* emerald-400 */
 	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
+	stroke-width: 2px !important;
+}
+
+/* Git branch lines */
+.mermaid .gitBranchLabel,
+.mermaid .gitBranchLabel0,
+.mermaid .gitBranchLabel1,
+.mermaid .gitBranchLabel2,
+.mermaid .gitBranchLabel3 {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 */
+}
+
+/* Pie chart specific */
+.mermaid .pieCircle,
+.mermaid-render-container .pieCircle {
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+.mermaid .pieTitleText,
+.mermaid-render-container .pieTitleText {
+	fill: rgb(52, 211, 153) !important; /* emerald-400 */
+	font-size: 16px !important;
+	font-weight: bold !important;
+}
+
+/* Gantt chart specific */
+.mermaid .grid .tick line,
+.mermaid-render-container .grid .tick line {
+	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
+	stroke-width: 1px !important;
+}
+
+.mermaid .gantt-task-row rect,
+.mermaid-render-container .gantt-task-row rect {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 1px !important;
+}
+
+/* Class diagram specific */
+.mermaid .classBox,
+.mermaid-render-container .classBox {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+.mermaid .classTitle,
+.mermaid .classMethod,
+.mermaid .classAttribute,
+.mermaid-render-container .classTitle,
+.mermaid-render-container .classMethod,
+.mermaid-render-container .classAttribute {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 */
+}
+
+/* ER diagram specific */
+.mermaid .er.entityBox,
+.mermaid .er.relationshipLabelBox,
+.mermaid-render-container .er.entityBox,
+.mermaid-render-container .er.relationshipLabelBox {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+.mermaid .er.entityLabel,
+.mermaid .er.relationshipLabel,
+.mermaid-render-container .er.entityLabel,
+.mermaid-render-container .er.relationshipLabel {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 */
+}
+
+/* Journey diagram specific */
+.mermaid .journey-section,
+.mermaid-render-container .journey-section {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+}
+
+.mermaid .journey-task,
+.mermaid-render-container .journey-task {
+	fill: rgb(39, 39, 42) !important; /* zinc-800 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+}
+
+/* User journey specific */
+.mermaid .user-journey .section,
+.mermaid-render-container .user-journey .section {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+}
+
+/* C4 Context diagram specific */
+.mermaid .c4-person,
+.mermaid .c4-container,
+.mermaid .c4-system,
+.mermaid-render-container .c4-person,
+.mermaid-render-container .c4-container,
+.mermaid-render-container .c4-system {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+/* Requirement diagram specific */
+.mermaid .requirement,
+.mermaid .functionalRequirement,
+.mermaid .performanceRequirement,
+.mermaid-render-container .requirement,
+.mermaid-render-container .functionalRequirement,
+.mermaid-render-container .performanceRequirement {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+/* Mindmap diagram specific */
+.mermaid .mindmap-node,
+.mermaid-render-container .mindmap-node {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+/* Timeline diagram specific */
+.mermaid .timeline-event,
+.mermaid-render-container .timeline-event {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+/* Quadrant chart specific */
+.mermaid .quadrant1,
+.mermaid .quadrant2,
+.mermaid .quadrant3,
+.mermaid .quadrant4,
+.mermaid-render-container .quadrant1,
+.mermaid-render-container .quadrant2,
+.mermaid-render-container .quadrant3,
+.mermaid-render-container .quadrant4 {
+	fill: rgb(39, 39, 42) !important; /* zinc-800 */
+	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
+	stroke-width: 1px !important;
+}
+
+/* Additional general overrides for consistency */
+.mermaid rect[class*="actor"],
+.mermaid circle[class*="actor"],
+.mermaid-render-container rect[class*="actor"],
+.mermaid-render-container circle[class*="actor"] {
+	fill: rgb(63, 63, 70) !important; /* zinc-700 */
+	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
+	stroke-width: 2px !important;
+}
+
+/* Force consistent background for all diagram containers */
+.mermaid,
+.mermaid-render-container,
+.mermaid svg {
+	background: rgb(24, 24, 27) !important; /* zinc-900 */
+}
+
+/* Force text color consistency across all text elements */
+.mermaid tspan,
+.mermaid textPath,
+.mermaid foreignObject,
+.mermaid-render-container tspan,
+.mermaid-render-container textPath,
+.mermaid-render-container foreignObject {
+	fill: rgb(228, 228, 231) !important; /* zinc-100 */
+	color: rgb(228, 228, 231) !important;
 }
 
 /* High Contrast Mode Support */

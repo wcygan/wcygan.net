@@ -27,10 +27,13 @@
 		"pre-commit": "deno task fix-mermaid && pnpm run format && pnpm run lint && pnpm run check",
 		"deploy": "wrangler deploy",
 		"deploy:preview": "wrangler deploy --branch preview",
-		"dev:wrangler": "wrangler dev"
+		"dev:wrangler": "wrangler dev",
+		"analyze": "pnpm run build && open build-stats.html",
+		"analyze:size": "pnpm run build && du -sh .svelte-kit/cloudflare"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.4",
+		"@rollup/plugin-terser": "^0.4.4",
 		"@sveltejs/adapter-cloudflare": "^7.0.4",
 		"@sveltejs/kit": "^2.15.2",
 		"@sveltejs/vite-plugin-svelte": "^5.1.0",
@@ -46,6 +49,7 @@
 		"prettier-plugin-svelte": "^3.3.2",
 		"prettier-plugin-tailwindcss": "^0.6.9",
 		"puppeteer": "^24.10.2",
+		"rollup-plugin-visualizer": "^6.0.3",
 		"shiki": "^1.26.1",
 		"shiki-transformer-copy-button": "^0.0.3",
 		"svelte": "^5.16.6",

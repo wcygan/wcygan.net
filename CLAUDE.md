@@ -564,6 +564,236 @@ await mcp__puppeteer__puppeteer_evaluate({
 - Test error states with invalid diagram syntax
 - Verify blog post navigation and filtering
 
+#### Comprehensive Puppeteer Testing Workflow
+
+**Frequent Testing Pattern:**
+
+Run Puppeteer tests regularly during development to catch UI regressions early:
+
+```bash
+# Start dev server in one terminal
+pnpm run dev
+
+# In another terminal, run browser automation tests
+# Use the /agent-browser-automation command in Claude Code
+```
+
+**Core Testing Scenarios:**
+
+##### 1. Blog Post Rendering Tests
+
+```typescript
+// Test full blog post lifecycle
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173/blog'
+});
+
+// Verify blog listing loads
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `document.querySelectorAll('article').length > 0`
+});
+
+// Click on first blog post
+await mcp__puppeteer__puppeteer_click({
+	selector: 'article:first-child a'
+});
+
+// Verify post content loaded
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `document.querySelector('.prose') !== null`
+});
+
+// Screenshot the blog post
+await mcp__puppeteer__puppeteer_screenshot({
+	name: 'blog-post-full',
+	width: 1280,
+	height: 800
+});
+```
+
+##### 2. Responsive Design Testing
+
+```typescript
+// Test mobile viewport
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173',
+	launchOptions: {
+		defaultViewport: { width: 375, height: 667 }
+	}
+});
+
+// Screenshot mobile view
+await mcp__puppeteer__puppeteer_screenshot({
+	name: 'mobile-homepage',
+	width: 375,
+	height: 667
+});
+
+// Test tablet viewport
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173',
+	launchOptions: {
+		defaultViewport: { width: 768, height: 1024 }
+	}
+});
+
+// Verify responsive navigation works
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `window.innerWidth === 768`
+});
+```
+
+##### 3. Navigation Flow Testing
+
+```typescript
+// Test all main navigation links
+const navLinks = ['/', '/blog', '/resume', '/mermaid-examples'];
+
+for (const link of navLinks) {
+	await mcp__puppeteer__puppeteer_navigate({
+		url: `http://localhost:5173${link}`
+	});
+	
+	// Verify page loaded without errors
+	await mcp__puppeteer__puppeteer_evaluate({
+		script: `document.querySelector('main') !== null && !document.querySelector('.error')`
+	});
+	
+	// Screenshot each page
+	await mcp__puppeteer__puppeteer_screenshot({
+		name: `page-${link.replace('/', '') || 'home'}`,
+		width: 1280,
+		height: 800
+	});
+}
+```
+
+##### 4. Performance Testing
+
+```typescript
+// Navigate with performance monitoring
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173'
+});
+
+// Measure page load metrics
+const metrics = await mcp__puppeteer__puppeteer_evaluate({
+	script: `
+		const perfData = performance.getEntriesByType('navigation')[0];
+		({
+			domContentLoaded: perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart,
+			loadComplete: perfData.loadEventEnd - perfData.loadEventStart,
+			totalTime: perfData.loadEventEnd - perfData.fetchStart
+		})
+	`
+});
+```
+
+##### 5. Interactive Component Testing
+
+```typescript
+// Test Mermaid diagram interactions
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173/mermaid-examples'
+});
+
+// Scroll to trigger lazy loading
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `
+		const viewports = document.querySelectorAll('.mermaid-viewport');
+		viewports.forEach(vp => {
+			vp.scrollIntoView();
+		});
+	`
+});
+
+// Wait for diagrams to render
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `
+		new Promise(resolve => setTimeout(resolve, 1000))
+	`
+});
+
+// Verify all diagrams rendered
+const diagramCount = await mcp__puppeteer__puppeteer_evaluate({
+	script: `document.querySelectorAll('.mermaid-render-container svg').length`
+});
+```
+
+##### 6. Error State Testing
+
+```typescript
+// Test 404 page
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173/non-existent-page'
+});
+
+await mcp__puppeteer__puppeteer_screenshot({
+	name: 'error-404',
+	width: 1280,
+	height: 800
+});
+
+// Test error handling in components
+await mcp__puppeteer__puppeteer_navigate({
+	url: 'http://localhost:5173/mermaid-examples'
+});
+
+// Inject invalid Mermaid syntax to test error state
+await mcp__puppeteer__puppeteer_evaluate({
+	script: `
+		const errorContainer = document.querySelector('.mermaid-error');
+		errorContainer !== null
+	`
+});
+```
+
+**Testing Best Practices:**
+
+1. **Session Organization**: Create unique session directories for each test run:
+   ```bash
+   SESSION_ID=$(date +%s%N)
+   SCREENSHOT_DIR="/tmp/browser-automation-$SESSION_ID"
+   ```
+
+2. **Visual Regression Testing**: Compare screenshots between runs to catch UI changes
+
+3. **Console Error Monitoring**: Always check for JavaScript errors:
+   ```typescript
+   const errors = await mcp__puppeteer__puppeteer_evaluate({
+   	script: `window.__errors__ || []`
+   });
+   ```
+
+4. **Network Request Validation**: Ensure all resources load successfully
+
+5. **Accessibility Testing**: Verify ARIA labels and keyboard navigation
+
+**Automated Test Suite Integration:**
+
+Create a comprehensive test script that runs all scenarios:
+
+```bash
+# In package.json, add:
+"test:e2e": "pnpm run dev & sleep 5 && node scripts/run-puppeteer-tests.js"
+```
+
+**Common Issues and Solutions:**
+
+- **Timing Issues**: Use explicit waits for dynamic content
+- **Selector Changes**: Use data-testid attributes for stable selectors
+- **Viewport Variations**: Test multiple viewport sizes
+- **Network Delays**: Test with throttled connections
+- **Memory Leaks**: Monitor console for warnings
+
+**Development Workflow Integration:**
+
+1. Run Puppeteer tests before committing major UI changes
+2. Include screenshot comparisons in pull requests
+3. Set up automated testing in CI/CD pipeline
+4. Create visual documentation with screenshots
+5. Use for debugging production issues locally
+
 ### Important Configuration Files
 
 - `svelte.config.js` - SvelteKit and MDsveX configuration
