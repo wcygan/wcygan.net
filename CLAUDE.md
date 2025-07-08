@@ -192,6 +192,47 @@ diagrams, and more.
 - Dark theme with zinc/emerald color palette
 - Consistent 2px borders and Inter font family
 
+**Accessibility Features:**
+
+- **Colorblind-Safe Palette**: Git flow diagrams use the Okabe-Ito colorblind-safe color palette:
+  - Main branch: Emerald (#34d399) - kept for brand consistency
+  - Develop branch: Sky blue (#56B4E9)
+  - Feature branches: Orange (#E69F00)
+  - Additional branches: Bluish-green (#009E73), Yellow (#F0E442)
+  
+- **ARIA Support**: All Mermaid diagrams should include:
+  - `accTitle`: Accessible title for screen readers
+  - `accDescr`: Detailed description of the diagram content
+  - Proper ARIA attributes are automatically added by Mermaid
+  - SVG elements have `role="img"` for assistive technology
+
+- **High Contrast Text**: 
+  - Commit labels use light text (zinc-100) on dark backgrounds
+  - Branch labels use dark text (zinc-900) on colored backgrounds
+  - All text meets WCAG AA contrast requirements
+
+**Accessibility Example:**
+
+```svelte
+<MermaidDiagram
+  height={350}
+  diagram={`gitGraph
+    accTitle: Git Flow Branching Model
+    accDescr: This diagram shows a typical Git Flow workflow. The main branch represents production code. A develop branch is created for ongoing development. Feature branches are created from develop for new features.
+    commit id: "Initial commit"
+    branch develop
+    checkout develop
+    commit id: "Set up development"
+    branch feature/new-feature
+    checkout feature/new-feature
+    commit id: "Add feature"
+    checkout develop
+    merge feature/new-feature tag: "feature complete"
+    checkout main
+    merge develop tag: "v1.0.0"`}
+/>
+```
+
 **Automated Mermaid Formatting Fix**
 
 The project includes an automated solution to prevent MDsveX parsing issues with Mermaid diagrams:
@@ -265,6 +306,9 @@ pnpm run pre-commit
    - **MDsveX paragraph wrapping**: Use the formatting pattern above
    - **Slot content not working**: Ensure proper `onMount` handling in components
    - **Direct URL access fails**: Verify module aliases and SSR configuration
+   - **Git commit labels dark on dark background**: Fixed with specific CSS selectors targeting `.commit-label` class
+   - **Poor contrast in diagrams**: Use the colorblind-safe palette and ensure all text meets WCAG AA standards
+   - **Missing accessibility descriptions**: Always include `accTitle` and `accDescr` in diagram definitions
 
 #### Mermaid Diagram Styling
 
@@ -278,6 +322,16 @@ The application uses a consistent dark theme for all Mermaid diagrams:
 - Text: `zinc-100` (#e4e4e7)
 - Edges/Lines: `zinc-500` (#71717a)
 - Emphasis: Use `stroke-width:3px` instead of fill color
+
+**Git Flow Specific Styling:**
+
+The project includes custom CSS to ensure proper contrast in git flow diagrams:
+- Commit labels use light text (zinc-100) on dark backgrounds
+- Branch labels maintain dark text on colored backgrounds
+- Increased stroke width (3px) for better visibility
+- Base font size increased to 16px for readability
+
+Note: High-specificity CSS selectors are used to override Mermaid's dynamically generated styles. See `src/app.css` for the implementation details.
 
 **Height Recommendations:**
 
