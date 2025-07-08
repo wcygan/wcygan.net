@@ -88,7 +88,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@eslint/compat@^1.2.4",
-        "npm:@sveltejs/adapter-static@^3.0.8",
+        "npm:@sveltejs/adapter-cloudflare@^7.0.4",
         "npm:@sveltejs/kit@^2.15.2",
         "npm:@sveltejs/vite-plugin-svelte@^5.1.0",
         "npm:@tailwindcss/typography@~0.5.16",
@@ -113,7 +113,8 @@
         "npm:typescript-eslint@^8.19.1",
         "npm:typescript@^5.7.2",
         "npm:vite@^6.0.7",
-        "npm:vitest@^2.1.8"
+        "npm:vitest@^2.1.8",
+        "npm:wrangler@^4.23.0"
       ]
     }
   }
