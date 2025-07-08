@@ -27,7 +27,7 @@
 	let isInViewport = !useLazyLoading; // If not lazy loading, render immediately
 
 	// Mermaid instance (cached at module level for performance)
-	let mermaidInstance: any = null;
+	let mermaidInstance: typeof import('mermaid').default | null = null;
 
 	// Check if we have slot content
 	$: hasSlotContent = $$slots.default;
@@ -118,8 +118,6 @@
 			section3: '#22d3ee', // cyan-400 (data tasks)
 
 			// Additional semantic colors for various diagram types
-			// State diagram states
-			specialStateColor: '#4ade80', // green-400 (success states)
 			// Sequence diagram variations
 			actorBorder2: '#60a5fa', // blue-400 (secondary actors)
 			actorBorder3: '#c084fc', // purple-400 (tertiary actors)
@@ -187,21 +185,6 @@
 			diagramContent = textContent;
 			// Hide the slot container since we've extracted the content
 			slotContainer.style.display = 'none';
-		}
-	}
-
-	function clearDiagramCache() {
-		// Clear sessionStorage cache for fresh styling
-		try {
-			const keys = Object.keys(sessionStorage);
-			keys.forEach((key) => {
-				if (key.startsWith('mermaid-cache-')) {
-					sessionStorage.removeItem(key);
-				}
-			});
-			console.log('[MermaidDiagram] Cache cleared for style updates');
-		} catch (e) {
-			console.warn('[MermaidDiagram] Could not clear cache:', e);
 		}
 	}
 

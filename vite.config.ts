@@ -38,9 +38,6 @@ export default defineConfig({
 				},
 				// Use dynamic imports for better chunk naming
 				chunkFileNames: (chunkInfo) => {
-					const facadeModuleId = chunkInfo.facadeModuleId
-						? chunkInfo.facadeModuleId.split('/').pop()
-						: 'chunk';
 					return `chunks/${chunkInfo.name}-[hash].js`;
 				}
 			}
