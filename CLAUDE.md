@@ -199,14 +199,14 @@ diagrams, and more.
   - Develop branch: Sky blue (#56B4E9)
   - Feature branches: Orange (#E69F00)
   - Additional branches: Bluish-green (#009E73), Yellow (#F0E442)
-  
 - **ARIA Support**: All Mermaid diagrams should include:
+
   - `accTitle`: Accessible title for screen readers
   - `accDescr`: Detailed description of the diagram content
   - Proper ARIA attributes are automatically added by Mermaid
   - SVG elements have `role="img"` for assistive technology
 
-- **High Contrast Text**: 
+- **High Contrast Text**:
   - Commit labels use light text (zinc-100) on dark backgrounds
   - Branch labels use dark text (zinc-900) on colored backgrounds
   - All text meets WCAG AA contrast requirements
@@ -326,6 +326,7 @@ The application uses a consistent dark theme for all Mermaid diagrams:
 **Git Flow Specific Styling:**
 
 The project includes custom CSS to ensure proper contrast in git flow diagrams:
+
 - Commit labels use light text (zinc-100) on dark backgrounds
 - Branch labels maintain dark text on colored backgrounds
 - Increased stroke width (3px) for better visibility
@@ -707,12 +708,12 @@ for (const link of navLinks) {
 	await mcp__puppeteer__puppeteer_navigate({
 		url: `http://localhost:5173${link}`
 	});
-	
+
 	// Verify page loaded without errors
 	await mcp__puppeteer__puppeteer_evaluate({
 		script: `document.querySelector('main') !== null && !document.querySelector('.error')`
 	});
-	
+
 	// Screenshot each page
 	await mcp__puppeteer__puppeteer_screenshot({
 		name: `page-${link.replace('/', '') || 'home'}`,
@@ -805,6 +806,7 @@ await mcp__puppeteer__puppeteer_evaluate({
 **Testing Best Practices:**
 
 1. **Session Organization**: Create unique session directories for each test run:
+
    ```bash
    SESSION_ID=$(date +%s%N)
    SCREENSHOT_DIR="/tmp/browser-automation-$SESSION_ID"
@@ -813,6 +815,7 @@ await mcp__puppeteer__puppeteer_evaluate({
 2. **Visual Regression Testing**: Compare screenshots between runs to catch UI changes
 
 3. **Console Error Monitoring**: Always check for JavaScript errors:
+
    ```typescript
    const errors = await mcp__puppeteer__puppeteer_evaluate({
    	script: `window.__errors__ || []`

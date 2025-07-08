@@ -123,7 +123,7 @@
 			// Sequence diagram variations
 			actorBorder2: '#60a5fa', // blue-400 (secondary actors)
 			actorBorder3: '#c084fc', // purple-400 (tertiary actors)
-			// Flowchart node types  
+			// Flowchart node types
 			processColor: '#60a5fa', // blue-400 (process nodes)
 			decisionColor: '#facc15', // yellow-400 (decision nodes)
 			dataColor: '#22d3ee', // cyan-400 (data nodes)
@@ -194,7 +194,7 @@
 		// Clear sessionStorage cache for fresh styling
 		try {
 			const keys = Object.keys(sessionStorage);
-			keys.forEach(key => {
+			keys.forEach((key) => {
 				if (key.startsWith('mermaid-cache-')) {
 					sessionStorage.removeItem(key);
 				}

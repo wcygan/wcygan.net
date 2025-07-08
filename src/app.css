@@ -570,10 +570,10 @@ tbody tr:nth-child(even),
 }
 
 /* Additional selector for git branch text within colored rectangles */
-.mermaid g[class*="branch"] text,
-.mermaid-render-container g[class*="branch"] text,
-.mermaid rect[class*="branch"] + text,
-.mermaid-render-container rect[class*="branch"] + text {
+.mermaid g[class*='branch'] text,
+.mermaid-render-container g[class*='branch'] text,
+.mermaid rect[class*='branch'] + text,
+.mermaid-render-container rect[class*='branch'] + text {
 	fill: rgb(24, 24, 27) !important; /* zinc-900 */
 	font-weight: 600 !important;
 }
@@ -597,7 +597,6 @@ tbody tr:nth-child(even),
 .mermaid-render-container .loopText {
 	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for messages */
 }
-
 
 /* Git commit node text - ensure dark text on colored backgrounds */
 .mermaid .commit0 text,
@@ -643,10 +642,10 @@ tbody tr:nth-child(even),
 /* Specific selectors for branch labels in git graphs */
 .mermaid g.branch-label text,
 .mermaid-render-container g.branch-label text,
-.mermaid g[id*="branch"] text,
-.mermaid-render-container g[id*="branch"] text,
-.mermaid g[class*="branch"] rect + text,
-.mermaid-render-container g[class*="branch"] rect + text {
+.mermaid g[id*='branch'] text,
+.mermaid-render-container g[id*='branch'] text,
+.mermaid g[class*='branch'] rect + text,
+.mermaid-render-container g[class*='branch'] rect + text {
 	fill: rgb(24, 24, 27) !important; /* zinc-900 */
 	font-weight: 600 !important;
 }
@@ -671,9 +670,9 @@ tbody tr:nth-child(even),
 .mermaid-render-container .commit-label,
 .mermaid text.commit-label,
 .mermaid-render-container text.commit-label,
-.mermaid [id^="mermaid"] .commit-label,
-.mermaid-render-container [id^="mermaid"] .commit-label,
-[id^="mermaid"] .commit-label,
+.mermaid [id^='mermaid'] .commit-label,
+.mermaid-render-container [id^='mermaid'] .commit-label,
+[id^='mermaid'] .commit-label,
 .mermaid svg .commit-label,
 .mermaid-render-container svg .commit-label {
 	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
@@ -684,7 +683,7 @@ tbody tr:nth-child(even),
 .mermaid-container .mermaid .commit-label,
 .mermaid-container .mermaid-render-container .commit-label,
 .mermaid-container svg .commit-label,
-.mermaid-container [id*="mermaid"] .commit-label {
+.mermaid-container [id*='mermaid'] .commit-label {
 	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
 	font-weight: 500 !important;
 }
@@ -911,10 +910,10 @@ tbody tr:nth-child(even),
 }
 
 /* Additional general overrides for consistency */
-.mermaid rect[class*="actor"],
-.mermaid circle[class*="actor"],
-.mermaid-render-container rect[class*="actor"],
-.mermaid-render-container circle[class*="actor"] {
+.mermaid rect[class*='actor'],
+.mermaid circle[class*='actor'],
+.mermaid-render-container rect[class*='actor'],
+.mermaid-render-container circle[class*='actor'] {
 	fill: rgb(63, 63, 70) !important; /* zinc-700 */
 	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
 	stroke-width: 2px !important;
