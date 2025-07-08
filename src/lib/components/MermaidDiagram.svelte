@@ -35,7 +35,7 @@
 
 	// Comprehensive theme configuration for all Mermaid diagram types
 	const MERMAID_THEME = {
-		theme: 'dark',
+		theme: 'dark' as const,
 		themeVariables: {
 			// Base colors
 			background: '#18181b', // zinc-900
@@ -260,11 +260,7 @@
 					useMaxWidth: true,
 					mainBranchName: 'main',
 					showBranches: true,
-					showCommitLabel: true,
-					// Force dark text for all git elements
-					labelTextColor: '#18181b', // zinc-900
-					commitLabelColor: '#18181b', // zinc-900
-					branchLabelColor: '#18181b' // zinc-900
+					showCommitLabel: true
 				},
 				// Class diagram configuration
 				class: {
