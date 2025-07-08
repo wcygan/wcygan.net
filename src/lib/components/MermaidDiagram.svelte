@@ -430,7 +430,7 @@
 
 <div
 	bind:this={container}
-	class="mermaid-container relative overflow-x-auto rounded-lg bg-zinc-900 p-4"
+	class="mermaid-container relative flex justify-center overflow-x-auto rounded-lg bg-zinc-900 p-4"
 	data-scrollable={isScrollable}
 	style="min-height: {height}px"
 >
@@ -517,6 +517,7 @@
 <style>
 	.mermaid-container {
 		margin: 1.5rem 0;
+		text-align: center;
 	}
 
 	.hidden {
