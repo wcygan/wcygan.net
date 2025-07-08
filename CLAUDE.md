@@ -14,6 +14,7 @@ pnpm install && pnpm build && vite dev --open
 # Start development server
 pnpm run dev          # Start development server on localhost:5173
 pnpm run preview      # Preview production build locally
+pnpm run dev:wrangler # Test with Cloudflare Workers locally on localhost:8787
 
 # Development with custom port (useful for git worktrees)
 vite dev --port 8989  # Use different port for testing multiple versions
@@ -38,17 +39,20 @@ pnpm run pre-commit   # Fix Mermaid + format + lint + typecheck
 ### Building & Deployment
 
 ```bash
-pnpm run build        # Build static site to /build directory
+pnpm run build        # Build site for Cloudflare Workers
 
-# Cloudflare Pages deployment with Wrangler CLI
-npx wrangler login                                    # Authenticate with Cloudflare
-npx wrangler pages project list                       # List all Pages projects
-npx wrangler pages deploy ./build --project-name=wcygan-net  # Deploy to production
-npx wrangler pages deploy ./build --project-name=wcygan-net --branch=preview  # Deploy to preview branch
+# Manual deployment (initial setup or emergency deployments)
+npx wrangler login    # Authenticate with Cloudflare
+pnpm run deploy       # Deploy to production manually
+pnpm run deploy:preview  # Deploy to preview branch manually
+
+# Automatic deployment (preferred)
+# Connected via Workers Builds in Cloudflare Dashboard
+git push origin main  # Automatically deploys to production
+git push origin feature-branch  # Creates preview deployment
 
 # Inspect deployment state
-npx wrangler deployments list --experimental-versions  # View recent deployments (shows 10 most recent)
-npx wrangler pages download config                     # Download existing Cloudflare config
+npx wrangler deployments list  # View recent deployments
 ```
 
 ### Content Management
@@ -68,13 +72,13 @@ pnpm ci:test:quick    # Quick CI workflow test
 
 ### Technology Stack
 
-- **SvelteKit 2.15+** with static adapter for GitHub Pages deployment
+- **SvelteKit 2.15+** with Cloudflare adapter for Workers deployment
 - **Svelte 5** - Latest major version with runes
 - **MDsveX** for Markdown blog posts with syntax highlighting (Shiki)
 - **Tailwind CSS** for styling with Typography plugin
 - **TypeScript** with strict mode enabled
 - **Vitest** for testing (minimal coverage currently)
-- **Wrangler CLI** for Cloudflare Pages deployment and management
+- **Wrangler CLI** for Cloudflare Workers deployment and management
 - **Dual Package Management**: `deno.json` for Deno scripts + `package.json` for pnpm workflow
 
 ### Key Architectural Decisions
@@ -87,19 +91,23 @@ pnpm ci:test:quick    # Quick CI workflow test
 - Automatic reading time calculation
 - RSS feed generation at `/rss.xml`
 
-#### Static Site Generation
+#### Cloudflare Workers Deployment
 
-- Uses `@sveltejs/adapter-static` for GitHub Pages
-- All routes pre-rendered at build time
-- Custom 404.html for GitHub Pages fallback
-- Build output in `/build` directory
+- Uses `@sveltejs/adapter-cloudflare` for Workers with Static Assets
+- Configured via `wrangler.toml` for deployment settings
+- Supports full SvelteKit features (vs static adapter limitations)
+- Build output in `.svelte-kit/cloudflare/` directory
+- **Automatic deployments via Workers Builds (Git integration)**
+- Preview deployments for all branches automatically
 
-#### Cloudflare Pages Deployment
+#### Cloudflare Workers Configuration
 
-- Configured via `wrangler.json` to deploy from `/build` directory
-- Supports production and preview branch deployments
-- Automatic deployment on git push (when configured in Cloudflare dashboard)
-- CLI commands available for manual deployment and inspection
+- Configured via `wrangler.toml` with Workers-specific settings
+- Main worker entry: `.svelte-kit/cloudflare/_worker.js`
+- Assets served with ASSETS binding
+- **Workers Builds Integration**: Connected to GitHub for automatic deployments
+- **Build commands**: `pnpm run build` → `npx wrangler deploy`
+- Deployed to `wcygan-net.workers.dev` and custom domain
 
 #### Component Architecture
 
@@ -107,6 +115,33 @@ pnpm ci:test:quick    # Quick CI workflow test
 - Business logic in `/src/lib/services/`
 - Type definitions in `/src/lib/types.ts`
 - Utility functions in `/src/lib/utils/`
+
+### Deployment Workflow
+
+#### Automatic Deployments (Workers Builds)
+
+The project is configured with Cloudflare Workers Builds for automatic Git-based deployments:
+
+- **Production**: Push to `main` branch → Automatic production deployment
+- **Preview**: Push to any other branch → Automatic preview deployment with unique URL
+- **Pull Requests**: Automatic preview deployments with PR comments showing build status
+
+#### Manual Deployment (Backup Method)
+
+For manual deployments or initial setup:
+
+```bash
+pnpm run deploy          # Deploy to production
+pnpm run deploy:preview  # Deploy to preview branch
+```
+
+#### Local Testing with Workers
+
+Test your site with the Workers runtime locally:
+
+```bash
+pnpm run dev:wrangler    # Runs on localhost:8787
+```
 
 ### Development Patterns
 
@@ -535,6 +570,7 @@ await mcp__puppeteer__puppeteer_evaluate({
 - `vite.config.ts` - Build configuration
 - `tailwind.config.ts` - Tailwind customization
 - `mdsvex.config.js` - Markdown processing and syntax highlighting
+- `wrangler.toml` - Cloudflare Workers deployment configuration
 - `deno.json` - Deno task definitions and JSR imports
 - `package.json` - pnpm scripts and dependencies
 
