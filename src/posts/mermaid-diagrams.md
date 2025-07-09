@@ -21,6 +21,8 @@ Here's a simple deployment flow:
 
 <MermaidDiagram height={300}
 diagram={`flowchart TD
+	  accTitle: CI/CD Deployment Pipeline
+	  accDescr: This flowchart shows a typical CI/CD deployment pipeline. It starts with a developer push, goes through a CI pipeline that either passes or fails tests. If tests pass, the system builds a Docker image, pushes it to a registry, deploys to Kubernetes, and updates the service. If tests fail, it notifies the developer.
 	  A[Developer Push] --> B{CI Pipeline}
 	  B -->|Tests Pass| C[Build Docker Image]
 	  B -->|Tests Fail| D[Notify Developer]
@@ -35,6 +37,8 @@ API authentication flow:
 
 <MermaidDiagram height={500}
 diagram={`sequenceDiagram
+	  accTitle: OAuth2 Authentication Flow
+	  accDescr: This sequence diagram shows the OAuth2 authentication flow between a user, client app, authorization server, and resource server. The user initiates a login request, the client redirects to the auth server, the user provides credentials, the auth server validates and returns an authorization code, the client exchanges the code for an access token, and finally uses the token to access protected resources.
 	  participant User
 	  participant Client as Client App
 	  participant Auth as Auth Server
@@ -59,6 +63,8 @@ Order processing states:
 
 <MermaidDiagram height={350}
 diagram={`stateDiagram-v2
+	  accTitle: Order Processing State Machine
+	  accDescr: This state diagram shows the possible states and transitions in an order processing system. Orders start in a Pending state, can move to Processing when payment is confirmed or to Cancelled if they timeout. From Processing, orders can be Shipped when items are packed or Refunded upon customer request. Shipped orders become Delivered when the package is received. All final states (Delivered, Cancelled, Refunded) end the process.
 	  [*] --> Pending
 	  Pending --> Processing: Payment Confirmed
 	  Pending --> Cancelled: Timeout
@@ -97,6 +103,8 @@ Database schema for a blog:
 
 <MermaidDiagram height={300}
 diagram={`erDiagram
+	  accTitle: Blog Database Schema
+	  accDescr: This entity relationship diagram shows the database schema for a blog system. Users can write many posts, posts can have many comments, and posts belong to one category. The diagram shows the relationships between USER, POST, COMMENT, and CATEGORY entities with their respective fields and data types.
 	  USER ||--o{ POST : writes
 	  USER {
 	      int id PK
@@ -133,6 +141,8 @@ Technology stack distribution:
 
 <MermaidDiagram height={300}
 diagram={`pie title Technology Stack
+	  accTitle: Technology Stack Distribution
+	  accDescr: This pie chart shows the distribution of technologies used in the project. SvelteKit makes up 35%, TypeScript 25%, Tailwind CSS 20%, MDsveX 15%, and Tooling 5% of the technology stack.
 	  "SvelteKit" : 35
 	  "TypeScript" : 25
 	  "Tailwind CSS" : 20

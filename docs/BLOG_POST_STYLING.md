@@ -33,6 +33,13 @@ This guide documents reusable styling patterns for creating engaging and readabl
     <p>Your technical insight or note goes here.</p>
   {/snippet}
 </InfoBox>
+
+<!-- Default behavior (concept type) -->
+<InfoBox title="Important Point">
+  {#snippet children()}
+    <p>Defaults to concept styling if no type is specified.</p>
+  {/snippet}
+</InfoBox>
 ```
 
 #### Manual HTML (Legacy)

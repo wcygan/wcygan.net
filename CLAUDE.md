@@ -81,6 +81,125 @@ pnpm ci:test:quick    # Quick CI workflow test
 - **Wrangler CLI** for Cloudflare Workers deployment and management
 - **Dual Package Management**: `deno.json` for Deno scripts + `package.json` for pnpm workflow
 
+### Design System Tokens
+
+#### Color System
+
+**Primary Colors:**
+- Primary: `#34d399` (emerald-400) - Main accent color
+- Primary Hover: `#10b981` (emerald-500) - Hover state
+- Primary Dark: `#059669` (emerald-600) - Dark variant
+
+**Background Colors:**
+- Base: `#18181b` (zinc-900) - Page background
+- Surface: `#3f3f46` (zinc-700) - Card and component backgrounds
+- Surface Dark: `#27272a` (zinc-800) - Darker surface (navbar, etc.)
+
+**Text Colors:**
+- Primary: `#f4f4f5` (zinc-100) - Primary text
+- Secondary: `#d4d4d8` (zinc-300) - Secondary text
+- Muted: `#a1a1aa` (zinc-400) - Muted text
+- Inverse: `#18181b` (zinc-900) - Dark text on light backgrounds
+
+**Border Colors:**
+- Default: `#52525b` (zinc-600) - Default borders
+- Subtle: `#3f3f46` (zinc-700) - Subtle borders
+
+**State Colors:**
+- Success: `#22c55e` (green-500)
+- Warning: `#eab308` (yellow-500)
+- Error: `#ef4444` (red-500)
+- Info: `#3b82f6` (blue-500)
+
+#### Typography Scale
+
+**Font Families:**
+- Primary: `'Inter', 'system-ui', 'sans-serif'`
+- Monospace: `'Fira Code', 'Monaco', 'Consolas', 'monospace'`
+
+**Font Sizes:**
+- Small: `0.875rem` (14px)
+- Base: `1rem` (16px)
+- Large: `1.125rem` (18px)
+- XL: `1.25rem` (20px)
+- 2XL: `1.5rem` (24px)
+- 3XL: `1.875rem` (30px)
+- 4XL: `2.25rem` (36px)
+
+**Line Heights:**
+- Tight: `1.25` - For headings
+- Normal: `1.5` - For body text
+- Relaxed: `1.625` - For long-form content
+
+**Font Weights:**
+- Normal: `400`
+- Medium: `500`
+- Semibold: `600`
+- Bold: `700`
+
+#### Spacing System
+
+Based on 4px grid:
+- 0: `0`
+- 1: `0.25rem` (4px)
+- 2: `0.5rem` (8px)
+- 3: `0.75rem` (12px)
+- 4: `1rem` (16px)
+- 5: `1.25rem` (20px)
+- 6: `1.5rem` (24px)
+- 8: `2rem` (32px)
+- 12: `3rem` (48px)
+- 16: `4rem` (64px)
+
+**Semantic Spacing:**
+- Section: `1.5rem` (24px) - Between sections
+- Component: `1rem` (16px) - Between components
+- Element: `0.5rem` (8px) - Between elements
+
+#### Layout System
+
+**Container Widths:**
+- Small: `640px`
+- Medium: `768px`
+- Large: `1024px`
+- XL: `1280px`
+
+**Breakpoints:**
+- SM: `640px`
+- MD: `768px`
+- LG: `1024px`
+- XL: `1280px`
+- 2XL: `1536px`
+
+**Z-Index Scale:**
+- Base: `0`
+- Dropdown: `10`
+- Sticky: `20`
+- Modal: `30`
+- Popover: `40`
+- Tooltip: `50`
+
+#### Visual Properties
+
+**Border Radius:**
+- Small: `0.25rem` (4px)
+- Default: `0.5rem` (8px)
+- Large: `0.75rem` (12px)
+- XL: `1rem` (16px)
+- Full: `9999px`
+
+**Shadows:**
+- Small: `0 1px 2px 0 rgb(0 0 0 / 0.05)`
+- Default: `0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)`
+- Medium: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`
+- Large: `0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`
+
+**Animations:**
+- Duration: `200ms` - Default transition duration
+- Easing: `cubic-bezier(0.4, 0, 0.2, 1)` - Default easing
+- Hover Scale: `1.05` - Subtle scale on hover
+- Hover Translate: `-0.25rem` - Lift effect on hover
+
 ### Key Architectural Decisions
 
 #### Blog System
@@ -356,74 +475,202 @@ See `/docs/MERMAID_STYLE_GUIDE.md` for complete styling specifications and `/doc
 
 #### Blog Post Styling Patterns
 
-The project includes reusable styling components for creating engaging blog posts with consistent visual design:
+The project includes reusable styling components for creating engaging blog posts with consistent visual design. All patterns follow the established design system tokens and accessibility guidelines.
+
+**Design System Foundation:**
+
+- **Color Palette**: Dark theme with zinc backgrounds and emerald accents
+  - Primary: `#34d399` (emerald-400) - Main accent color
+  - Background: `#3f3f46` (zinc-700) - Card and component backgrounds
+  - Text: `#f4f4f5` (zinc-100) primary, `#d4d4d8` (zinc-300) secondary
+- **Spacing**: Based on 4px grid (0.25rem increments)
+- **Typography**: Inter font family with consistent scale
+- **Animations**: 200ms transitions with cubic-bezier easing
 
 **Available Patterns:**
 
-- **Info Boxes**: Two types for content hierarchy
-  - **Key Concept** (Emerald): Primary takeaways and most important information
-  - **Key Insight** (Zinc): Secondary information and technical notes
-- **Collapsible Sections**: Progressive disclosure using `<details>` tags
-- **Feature Grids**: Icon-based grids for listing features or concepts
-- **Component Cards**: Descriptive cards for explaining multiple related items
-- **Example Boxes**: Structured conversation/process flows
-- **Visual Separators**: Using `---` for clear section breaks
+##### 1. Info Boxes (Key Concept & Key Insight)
 
-**Quick Examples:**
+Using the InfoBox Component (Recommended):
 
-````html
-<!-- Key Concept Box -->
+```svelte
+<script>
+  import InfoBox from '$lib/components/InfoBox.svelte';
+</script>
+
+<!-- Key Concept (Emerald) - for primary takeaways -->
+<InfoBox type="concept" title="Key Concept">
+  {#snippet children()}
+    <p>Your important concept or insight goes here.</p>
+  {/snippet}
+</InfoBox>
+
+<!-- Key Insight (Zinc) - for secondary information -->
+<InfoBox type="insight" title="Key Insight">
+  {#snippet children()}
+    <p>Your technical insight or note goes here.</p>
+  {/snippet}
+</InfoBox>
+```
+
+Manual HTML (Legacy):
+
+```html
+<!-- Key Concept Box (Emerald Accent) -->
 <div class="rounded-lg bg-emerald-900/20 border border-emerald-400/30 p-4 my-6">
   <h4 class="text-emerald-400 font-semibold mb-2">✨ Key Concept</h4>
-  <p class="text-zinc-100">Important insight or concept here.</p>
+  <p class="text-zinc-100">Your important concept or insight goes here.</p>
 </div>
 
-<!-- Collapsible Code -->
+<!-- Key Insight Box (Zinc Accent) -->
+<div class="rounded-lg bg-zinc-700/50 border border-zinc-600 p-4 my-6">
+  <h4 class="text-zinc-100 font-semibold mb-2">💡 Key Insight</h4>
+  <p class="text-zinc-300">Your technical insight or note goes here.</p>
+</div>
+```
+
+##### 2. Collapsible Sections
+
+Use for progressive disclosure of detailed content:
+
+````html
 <details>
-<summary><strong>📋 View Code</strong></summary>
+<summary><strong>📋 See the Implementation</strong></summary>
 
 ```typescript
-// Hidden by default
-const code = "example";
-````
+// Your code here - hidden by default
+const example = "This reduces visual clutter";
+```
 
 </details>
+````
 
-<!-- Feature Icons -->
+##### 3. Feature Grids
 
+For listing features, benefits, or concepts with icons:
+
+```html
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
   <div class="text-center">
     <div class="text-2xl mb-1">🚀</div>
     <div class="text-sm text-zinc-300">Fast</div>
   </div>
+  <div class="text-center">
+    <div class="text-2xl mb-1">⚡</div>
+    <div class="text-sm text-zinc-300">Efficient</div>
+  </div>
+  <div class="text-center">
+    <div class="text-2xl mb-1">🔄</div>
+    <div class="text-sm text-zinc-300">Reactive</div>
+  </div>
+  <div class="text-center">
+    <div class="text-2xl mb-1">🛡️</div>
+    <div class="text-sm text-zinc-300">Secure</div>
+  </div>
 </div>
 ```
 
-**MDsveX Considerations:**
+##### 4. Component Description Cards
 
-- Escape curly braces in HTML: `&#123;` and `&#125;`
-- Avoid empty lines in component props
-- Use semantic HTML for better accessibility
+For explaining multiple related components:
 
-**HTML/Markdown Mixing Rules:**
+```html
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+  <div class="card-base border border-zinc-700">
+    <h4 class="text-emerald-400 font-semibold mb-2">📄 Component Name</h4>
+    <p class="text-zinc-300 text-sm">Brief description of what this component does</p>
+  </div>
+</div>
+```
 
-- **NEVER mix HTML `<li>` with manual bullet points (`•`)** - HTML handles bullets automatically
-- **Use HTML `<strong>` instead of Markdown `**bold**` inside HTML contexts** - Markdown doesn't process inside HTML tags
-- **Examples:**
+##### 5. Example Conversation/Process Box
 
-  ```html
-  <!-- ✅ CORRECT: HTML list with HTML bold -->
-  <ul>
-    <li><strong>Key Point</strong>: Description here</li>
-  </ul>
+For showing step-by-step flows:
 
-  <!-- ❌ WRONG: Double bullets and broken bold -->
-  <ul>
-    <li>• **Key Point**: Description here</li>
-  </ul>
-  ```
+```html
+<div class="card-base border border-zinc-700 my-6">
+  <div class="space-y-3">
+    <div><strong class="text-emerald-400">👤 User:</strong> "Question or input"</div>
+    <div><strong class="text-zinc-400">🤔 System:</strong> <em>(internal)</em> "Thinking process"</div>
+    <div><strong class="text-emerald-400">⚡ Action:</strong> <code>action_taken()</code></div>
+    <div><strong class="text-zinc-400">👁️ Result:</strong> <code>&#123;result: "data"&#125;</code></div>
+    <div><strong class="text-emerald-400">💬 Response:</strong> "Final answer"</div>
+  </div>
+</div>
+```
 
-See `/docs/BLOG_POST_STYLING.md` for complete patterns, templates, and best practices.
+##### 6. Two-Column Comparison
+
+For comparing approaches or listing pros/cons:
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div class="rounded-lg bg-emerald-900/20 border border-emerald-400/30 p-4">
+    <h4 class="text-emerald-400 font-semibold mb-2">✅ Approach A</h4>
+    <ul class="text-zinc-300 space-y-1 text-sm">
+      <li>Benefit 1</li>
+      <li>Benefit 2</li>
+      <li>Benefit 3</li>
+    </ul>
+  </div>
+  <div class="rounded-lg bg-emerald-900/20 border border-emerald-400/30 p-4">
+    <h4 class="text-emerald-400 font-semibold mb-2">🚀 Approach B</h4>
+    <ul class="text-zinc-300 space-y-1 text-sm">
+      <li>Benefit 1</li>
+      <li>Benefit 2</li>
+      <li>Benefit 3</li>
+    </ul>
+  </div>
+</div>
+```
+
+**MDsveX Special Considerations:**
+
+- **Escaping Curly Braces**: Use `&#123;` and `&#125;` in HTML to prevent MDsveX parsing errors
+- **Avoid Empty Lines**: Keep component props compact to prevent `</p>` tag injection
+- **HTML/Markdown Mixing Rules**:
+  - NEVER mix HTML `<li>` with manual bullet points (`•`)
+  - Use HTML `<strong>` instead of Markdown `**bold**` inside HTML contexts
+  - Example:
+    ```html
+    <!-- ✅ CORRECT: HTML list with HTML bold -->
+    <ul>
+      <li><strong>Key Point</strong>: Description here</li>
+    </ul>
+    
+    <!-- ❌ WRONG: Double bullets and broken bold -->
+    <ul>
+      <li>• **Key Point**: Description here</li>
+    </ul>
+    ```
+
+**Accessibility Requirements:**
+
+- All interactive elements must have visible focus indicators
+- Maintain WCAG AA color contrast (4.5:1 minimum)
+- Use semantic HTML for proper screen reader support
+- Include proper ARIA labels where needed
+- Minimum 44x44px touch targets
+
+**Quick Copy CSS Classes:**
+
+- `.card-base` - Standard card styling with zinc-700 background
+- `.card-hover` - Adds lift effect on hover
+- `.tag-emerald` - Emerald accent tags
+- `.tag-zinc` - Zinc secondary tags
+- `.section` - Content container with max-width
+- `.section-spacing` - Consistent vertical spacing
+
+**Best Practices:**
+
+1. Use semantic HTML elements for better accessibility
+2. Apply consistent spacing with `my-6` between major elements
+3. Include responsive breakpoints (md:, lg:) for all layouts
+4. Use emojis sparingly but consistently as visual markers
+5. Follow the established color hierarchy for text and backgrounds
+6. Test all patterns with screen readers and keyboard navigation
+
+See `/docs/BLOG_POST_STYLING.md` and `/docs/DESIGN_SYSTEM.md` for complete patterns, templates, and design token reference.
 
 #### Component Styling Guidelines
 
