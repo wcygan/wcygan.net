@@ -41,6 +41,8 @@ The core pattern is the **Thought-Action-Observation (TAO) loop**:
 <MermaidDiagram
     height={500}
     diagram={`graph TD
+    accTitle: AI Agent TAO Loop Process
+    accDescr: This diagram shows the Thought-Action-Observation loop that AI agents use to process user queries. The cycle starts with Think, moves to Act, then Observe, and repeats. A user query enters the Think phase, Act interacts with the real world, and the process culminates in a Final Answer.
     subgraph "TAO Loop"
         A[🤔 Think] --> B[⚡ Act]
         B --> C[👁️ Observe]
@@ -71,6 +73,8 @@ The entire "agent" is just orchestration code:
 <MermaidDiagram
     height={200}
     diagram={`graph LR
+    accTitle: Agent Architecture Data Flow
+    accDescr: This diagram shows how AI agents are just programs that orchestrate external API calls. The Terminal communicates with Gemini CLI, which sends HTTPS requests to Google LLM servers. The LLM responds with JSON data, and the CLI can also interact with local tools. No AI model runs locally - it's all external API calls.
     A[💻 Terminal] --> B[📦 Gemini CLI]
     B --> C[🔒 HTTPS]
     C --> D[☁️ Google LLM]
@@ -95,6 +99,8 @@ When you ask "How many files are in the src directory?", the agent doesn't guess
 <MermaidDiagram
     height={600}
     diagram={`sequenceDiagram
+    accTitle: Agent Question-Answer Sequence
+    accDescr: This sequence diagram shows how an AI agent processes a user question through multiple steps. The user asks "How many files in src?", the CLI sends this to the API, the LLM requests a tool to list directories, the tool executes locally and returns results, then the API processes the results and sends back a final answer to the user.
     participant U as 👤 User
     participant C as 📦 CLI
     participant A as ☁️ API
@@ -148,6 +154,8 @@ Google built Gemini CLI around a **streaming-first design** that processes event
 <MermaidDiagram
     height={600}
     diagram={`graph TD
+    accTitle: Gemini CLI Architecture Flow
+    accDescr: This flowchart shows the complete architecture of Gemini CLI's streaming system. User input flows through the Conversation Manager to Google AI API, which returns different response types: thinking, text, or tool requests. Tool requests go through a Tool Scheduler that checks if they're safe to run. If safe, they execute and feed results back to the AI. If not safe, the system asks the user for approval. All outputs are displayed in the terminal.
     subgraph "Gemini CLI Architecture"
         A[User Input] --> B[<a href="https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/core/geminiChat.ts#L133">Conversation Manager</a>]
         B --> C[Google AI API]
@@ -217,6 +225,8 @@ databases, GitHub APIs, or development environments through MCP protocol.
 <MermaidDiagram
     height={350}
     diagram={`graph LR
+    accTitle: Tool Registry System
+    accDescr: This diagram shows how the Tool Registry system works in Gemini CLI. Built-in tools include file operations, web search, shell commands, and memory/notes. Extensions include MCP servers and project-specific tools. All tools feed into the central Tool Registry, which makes any registered tool available to the AI.
     subgraph "Built-in Tools"
         A[📁 File Operations]
         B[🌐 Web Search]

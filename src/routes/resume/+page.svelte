@@ -25,7 +25,7 @@
 		<section class="mb-8">
 			<h2>Experience</h2>
 
-			<div class="mb-6 rounded-lg border border-zinc-700 bg-zinc-800 p-6">
+			<div class="mb-6 card-base border border-zinc-700">
 				<div class="mb-3 flex items-start justify-between">
 					<div>
 						<h3 class="mb-1 text-xl font-bold">Software Engineer</h3>
@@ -46,7 +46,7 @@
 			<h2>Technical Skills</h2>
 
 			<div class="grid gap-6 md:grid-cols-2">
-				<div class="rounded-lg border border-zinc-700 bg-zinc-800 p-6">
+				<div class="card-base border border-zinc-700">
 					<h3 class="mb-3 text-lg font-bold text-emerald-400">Languages & Frameworks</h3>
 					<div class="flex flex-wrap gap-2">
 						<span class="rounded bg-zinc-700 px-3 py-1 text-sm">Java</span>
@@ -58,7 +58,7 @@
 					</div>
 				</div>
 
-				<div class="rounded-lg border border-zinc-700 bg-zinc-800 p-6">
+				<div class="card-base border border-zinc-700">
 					<h3 class="mb-3 text-lg font-bold text-emerald-400">Systems & Tools</h3>
 					<div class="flex flex-wrap gap-2">
 						<span class="rounded bg-zinc-700 px-3 py-1 text-sm">Distributed Systems</span>
