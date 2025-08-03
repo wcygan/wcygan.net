@@ -1,5 +1,5 @@
 ---
-title: Mermaid
+title: Rendering Mermaid Diagrams on Blog Posts
 date: June 25, 2025
 description: Using Mermaid.js to create diagrams in markdown blog posts
 tags: [Mermaid, Visualization, Diagrams]
@@ -162,6 +162,32 @@ In a blog post, I can use Mermaid like this:
 <MermaidDiagram height={300}
 diagram={`flowchart LR
 	  Start --> Process --> End`} />
+```
+
+## Bonus: Code Blocks with Shiki and MDsveX
+
+I've added code blocks with:
+
+1. Syntax Highlighting
+2. Line Numbers
+3. Copy Button
+
+Bash:
+
+```bash
+k get nodes
+NAME    STATUS   ROLES           AGE   VERSION
+k8s-1   Ready    control-plane   51d   v1.33.1
+k8s-2   Ready    control-plane   51d   v1.33.1
+k8s-3   Ready    control-plane   51d   v1.33.1
+```
+
+Rust:
+
+```rust
+fn main() {
+    println!("Hello, world!");
+}
 ```
 
 ---

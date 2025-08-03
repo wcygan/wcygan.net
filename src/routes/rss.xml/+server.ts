@@ -18,8 +18,8 @@ export async function GET() {
     <item>
       <title><![CDATA[${post.title}]]></title>
       <description><![CDATA[${post.description}]]></description>
-      <link>https://wcygan.github.io/blog/${post.slug}</link>
-      <guid>https://wcygan.github.io/blog/${post.slug}</guid>
+      <link>https://wcygan.github.io/${post.slug}</link>
+      <guid>https://wcygan.github.io/${post.slug}</guid>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       ${post.tags ? post.tags.map((tag) => `<category>${tag}</category>`).join('\n      ') : ''}
     </item>

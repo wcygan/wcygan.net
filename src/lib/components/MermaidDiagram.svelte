@@ -33,128 +33,127 @@
 	$: hasSlotContent = $$slots.default;
 	$: effectiveDiagram = diagramContent || diagram;
 
-	// Comprehensive theme configuration for all Mermaid diagram types
+	// Light theme configuration following design.md specifications
 	const MERMAID_THEME = {
-		theme: 'dark' as const,
+		theme: 'base' as const,
 		themeVariables: {
-			// Base colors
-			background: '#18181b', // zinc-900
-			primaryColor: '#3f3f46', // zinc-700
-			primaryBorderColor: '#34d399', // emerald-400
-			primaryTextColor: '#e4e4e7', // zinc-100
-			secondaryColor: '#27272a', // zinc-800
-			tertiaryColor: '#18181b', // zinc-900
+			// Base colors - matching design.md exactly
+			background: '#ffffff', // White background
+			primaryColor: '#f9f9f9', // Light gray for nodes (code block background)
+			primaryBorderColor: '#5c8b3f', // Primary green for borders
+			primaryTextColor: '#000000', // Black text
+			secondaryColor: '#f9f9f9', // Light gray for secondary elements
+			tertiaryColor: '#ffffff', // White for tertiary
 
-			// Node styling (flowcharts, general)
-			nodeBkg: '#3f3f46', // zinc-700
-			nodeBorder: '#34d399', // emerald-400
-			nodeTextColor: '#e4e4e7', // zinc-100
+			// Node styling (flowcharts, general) - light theme
+			nodeBkg: '#f9f9f9', // Light gray background for nodes
+			nodeBorder: '#5c8b3f', // Primary green borders
+			nodeTextColor: '#000000', // Black text on light nodes
 
-			// Line colors
-			lineColor: '#71717a', // zinc-500
-			textColor: '#e4e4e7', // zinc-100
+			// Line colors - using design.md grays
+			lineColor: '#666666', // Secondary gray for lines
+			textColor: '#000000', // Black text
 
-			// Special elements
-			mainBkg: '#3f3f46', // zinc-700
-			secondBkg: '#27272a', // zinc-800
+			// Special elements - light theme
+			mainBkg: '#f9f9f9', // Light gray for main elements
+			secondBkg: '#ffffff', // White for secondary background
 
-			// Sequence diagram specific - comprehensive text colors
-			actorBkg: '#3f3f46', // zinc-700
-			actorBorder: '#34d399', // emerald-400
-			actorTextColor: '#e4e4e7', // zinc-100 - light text on dark actor boxes
-			actorLineColor: '#71717a', // zinc-500
-			signalColor: '#71717a', // zinc-500
-			signalTextColor: '#e4e4e7', // zinc-100 - light text for messages
-			labelBoxBkgColor: '#27272a', // zinc-800
-			labelBoxBorderColor: '#34d399', // emerald-400
-			labelTextColor: '#e4e4e7', // zinc-100 - light text for labels
-			loopTextColor: '#e4e4e7', // zinc-100 - light text for loops
-			noteBorderColor: '#34d399', // emerald-400
-			noteBkgColor: '#27272a', // zinc-800
-			noteTextColor: '#e4e4e7', // zinc-100 - light text for notes
-			activationBorderColor: '#34d399', // emerald-400
-			activationBkgColor: '#3f3f46', // zinc-700
-			sequenceNumberColor: '#e4e4e7', // zinc-100 - light text for sequence numbers
+			// Sequence diagram specific - light theme colors
+			actorBkg: '#f9f9f9', // Light gray for actor boxes
+			actorBorder: '#5c8b3f', // Primary green for actor borders
+			actorTextColor: '#000000', // Black text on light actor boxes
+			actorLineColor: '#666666', // Secondary gray for actor lines
+			signalColor: '#666666', // Secondary gray for signals
+			signalTextColor: '#000000', // Black text for messages
+			labelBoxBkgColor: '#f9f9f9', // Light gray for label boxes
+			labelBoxBorderColor: '#5c8b3f', // Primary green for label borders
+			labelTextColor: '#000000', // Black text for labels
+			loopTextColor: '#000000', // Black text for loops
+			noteBorderColor: '#5c8b3f', // Primary green for note borders
+			noteBkgColor: '#f9f9f9', // Light gray for notes
+			noteTextColor: '#000000', // Black text for notes
+			activationBorderColor: '#5c8b3f', // Primary green for activation borders
+			activationBkgColor: '#f9f9f9', // Light gray for activation background
+			sequenceNumberColor: '#000000', // Black text for sequence numbers
 
-			// State diagram specific
-			specialStateColor: '#34d399', // emerald-400
-			innerEndBackground: '#3f3f46', // zinc-700
-			compositeBackground: '#27272a', // zinc-800
-			compositeTitleBackground: '#18181b', // zinc-900
+			// State diagram specific - light theme
+			specialStateColor: '#5c8b3f', // Primary green for special states
+			innerEndBackground: '#f9f9f9', // Light gray for inner backgrounds
+			compositeBackground: '#f9f9f9', // Light gray for composite backgrounds
+			compositeTitleBackground: '#ffffff', // White for title backgrounds
 
-			// Class diagram specific
-			classText: '#e4e4e7', // zinc-100
+			// Class diagram specific - light theme
+			classText: '#000000', // Black text for classes
 
-			// Universal color palette for all diagram types
-			// Using Okabe-Ito colorblind-safe palette with high contrast
-			git0: '#34d399', // emerald-400 (primary brand - kept for consistency)
-			git1: '#56B4E9', // sky blue (high contrast, colorblind-safe)
-			git2: '#E69F00', // orange (high contrast, colorblind-safe)
-			git3: '#009E73', // bluish-green (high contrast, colorblind-safe)
-			git4: '#F0E442', // yellow (high contrast, colorblind-safe)
-			git5: '#CC79A7', // reddish-purple (colorblind-safe)
-			git6: '#0072B2', // blue (high contrast, colorblind-safe)
-			git7: '#D55E00', // vermillion (high contrast, colorblind-safe)
+			// Design.md-compatible color palette with accessibility
+			// Primary green as the main accent, with supporting colors
+			git0: '#5c8b3f', // Primary green (design.md)
+			git1: '#2e6810', // Link green (design.md)
+			git2: '#E69F00', // Orange (colorblind-safe, high contrast)
+			git3: '#0072B2', // Blue (colorblind-safe, high contrast)
+			git4: '#CC79A7', // Purple (colorblind-safe)
+			git5: '#009E73', // Teal (colorblind-safe)
+			git6: '#D55E00', // Red-orange (colorblind-safe)
+			git7: '#F0E442', // Yellow (colorblind-safe)
 
-			// Extended palette for complex diagrams (pie charts, multi-element diagrams)
-			// Using same colorblind-safe palette for consistency
-			pie1: '#34d399', // emerald-400 (primary brand)
-			pie2: '#56B4E9', // sky blue (colorblind-safe)
-			pie3: '#E69F00', // orange (colorblind-safe)
-			pie4: '#009E73', // bluish-green (colorblind-safe)
-			pie5: '#F0E442', // yellow (colorblind-safe)
-			pie6: '#CC79A7', // reddish-purple (colorblind-safe)
-			pie7: '#0072B2', // blue (colorblind-safe)
-			pie8: '#D55E00', // vermillion (colorblind-safe)
-			pie9: '#999999', // grey (neutral)
-			pie10: '#4B4B4B', // dark grey (neutral)
-			pie11: '#B3B3B3', // light grey (neutral)
-			pie12: '#666666', // medium grey (neutral)
+			// Extended palette for complex diagrams - design.md compatible
+			pie1: '#5c8b3f', // Primary green (design.md)
+			pie2: '#2e6810', // Link green (design.md)
+			pie3: '#E69F00', // Orange (colorblind-safe)
+			pie4: '#0072B2', // Blue (colorblind-safe)
+			pie5: '#CC79A7', // Purple (colorblind-safe)
+			pie6: '#009E73', // Teal (colorblind-safe)
+			pie7: '#D55E00', // Red-orange (colorblind-safe)
+			pie8: '#F0E442', // Yellow (colorblind-safe)
+			pie9: '#666666', // Secondary gray (design.md)
+			pie10: '#aaaaaa', // Light gray (design.md)
+			pie11: '#dedede', // Border gray (design.md)
+			pie12: '#000000', // Black (design.md)
 
-			// Gantt chart specific - use universal palette
-			section0: '#60a5fa', // blue-400 (primary tasks)
-			section1: '#c084fc', // purple-400 (secondary tasks)
-			section2: '#fb7185', // rose-400 (tertiary tasks)
-			section3: '#22d3ee', // cyan-400 (data tasks)
+			// Gantt chart specific - design.md compatible colors
+			section0: '#5c8b3f', // Primary green (main tasks)
+			section1: '#2e6810', // Link green (secondary tasks)
+			section2: '#E69F00', // Orange (tertiary tasks)
+			section3: '#0072B2', // Blue (data tasks)
 
 			// Additional semantic colors for various diagram types
-			// Sequence diagram variations
-			actorBorder2: '#60a5fa', // blue-400 (secondary actors)
-			actorBorder3: '#c084fc', // purple-400 (tertiary actors)
-			// Flowchart node types
-			processColor: '#60a5fa', // blue-400 (process nodes)
-			decisionColor: '#facc15', // yellow-400 (decision nodes)
-			dataColor: '#22d3ee', // cyan-400 (data nodes)
+			// Sequence diagram variations - design.md colors
+			actorBorder2: '#2e6810', // Link green (secondary actors)
+			actorBorder3: '#E69F00', // Orange (tertiary actors)
+			// Flowchart node types - design.md compatible
+			processColor: '#5c8b3f', // Primary green (process nodes)
+			decisionColor: '#E69F00', // Orange (decision nodes)
+			dataColor: '#0072B2', // Blue (data nodes)
 
-			// Git flow specific text colors - force dark text on all branches
-			gitBranchLabel0: '#18181b', // zinc-900 (main branch text)
-			gitBranchLabel1: '#18181b', // zinc-900 (develop branch text)
-			gitBranchLabel2: '#18181b', // zinc-900 (feature branch text)
-			gitBranchLabel3: '#18181b', // zinc-900 (additional branch text)
-			gitBranchLabel4: '#18181b', // zinc-900 (branch 4 text)
-			gitBranchLabel5: '#18181b', // zinc-900 (branch 5 text)
-			gitBranchLabel6: '#18181b', // zinc-900 (branch 6 text)
-			gitBranchLabel7: '#18181b', // zinc-900 (branch 7 text)
-			gitInnerCommitLabel: '#18181b', // zinc-900 (commit ID text)
-			gitBranchLabelColor: '#18181b', // zinc-900 (general branch label)
-			gitLabelColor: '#18181b', // zinc-900 (general git label)
+			// Git flow specific text colors - black on light background
+			gitBranchLabel0: '#000000', // Black text (main branch)
+			gitBranchLabel1: '#000000', // Black text (develop branch)
+			gitBranchLabel2: '#000000', // Black text (feature branch)
+			gitBranchLabel3: '#000000', // Black text (additional branch)
+			gitBranchLabel4: '#000000', // Black text (branch 4)
+			gitBranchLabel5: '#000000', // Black text (branch 5)
+			gitBranchLabel6: '#000000', // Black text (branch 6)
+			gitBranchLabel7: '#000000', // Black text (branch 7)
+			gitInnerCommitLabel: '#000000', // Black text (commit ID)
+			gitBranchLabelColor: '#000000', // Black text (general branch label)
+			gitLabelColor: '#000000', // Black text (general git label)
 			commitLabelFontSize: '16px', // Increased for better readability
-			commitLabelColor: '#18181b', // zinc-900 (commit text)
+			commitLabelColor: '#000000', // Black text (commit text)
 
-			// General styling
-			clusterBkg: '#27272a', // zinc-800
-			clusterBorder: '#52525b', // zinc-600
-			defaultLinkColor: '#71717a', // zinc-500
-			titleColor: '#34d399', // emerald-400
-			edgeLabelBackground: '#18181b', // zinc-900
+			// General styling - light theme
+			clusterBkg: '#f9f9f9', // Light gray clusters
+			clusterBorder: '#dedede', // Light border for clusters
+			defaultLinkColor: '#666666', // Secondary gray for links
+			titleColor: '#5c8b3f', // Primary green for titles
+			edgeLabelBackground: '#ffffff', // White for edge labels
 
-			// Error colors
-			errorBkgColor: '#7f1d1d', // red-900
-			errorTextColor: '#fecaca', // red-200
+			// Error colors - light theme compatible
+			errorBkgColor: '#f9f9f9', // Light gray background for errors
+			errorTextColor: '#D55E00', // Red-orange for error text (colorblind-safe)
 
-			// Font settings
-			fontFamily: 'Inter, system-ui, sans-serif',
-			fontSize: '16px' // Increased base font size for better readability
+			// Font settings - matching design.md
+			fontFamily: 'system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif',
+			fontSize: '16px' // Clear, readable font size
 		}
 	};
 
@@ -444,7 +443,7 @@
 
 <div
 	bind:this={container}
-	class="mermaid-container relative flex justify-center overflow-x-auto rounded-lg bg-zinc-900 p-4"
+	class="mermaid-container relative flex justify-center overflow-x-auto rounded-lg p-4"
 	data-scrollable={isScrollable}
 	style="min-height: {height}px"
 >
@@ -532,6 +531,8 @@
 	.mermaid-container {
 		margin: 1.5rem 0;
 		text-align: center;
+		background: rgb(249, 249, 249);  /* Light gray background from design.md */
+		border: 1px solid rgb(222, 222, 222);  /* Light border from design.md */
 	}
 
 	.hidden {

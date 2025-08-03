@@ -28,3 +28,6 @@ vite.config.ts.timestamp-*
 
 # Bundle analysis
 build-stats.html
+
+# Logs
+dev.log

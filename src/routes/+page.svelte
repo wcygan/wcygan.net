@@ -5,21 +5,16 @@
 	export let data: PageData;
 </script>
 
-<article class="mdsvex-content prose prose-emerald prose-invert max-w-none">
-	<h1>Will Cygan</h1>
-	<p class="mb-6 text-xl">
-		Software Engineer at LinkedIn building scalable e-commerce infrastructure
+<div class="bio-highlight">
+	<p>
+		Software Engineer at <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a> building e-commerce infrastructure.
 	</p>
-</article>
+</div>
 
-<article class="mdsvex-content prose prose-emerald prose-invert max-w-none">
-	<h2>Posts</h2>
-	<div class="space-y-6">
+<section>
+	<ul class="post-list">
 		{#each data.posts as post}
 			<PostCard {post} />
 		{/each}
-	</div>
-	<div class="mt-8">
-		<a href="/blog" class="text-emerald-400 hover:text-emerald-300">View all posts →</a>
-	</div>
-</article>
+	</ul>
+</section>

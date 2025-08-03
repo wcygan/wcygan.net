@@ -1,7 +1,7 @@
-import { getRecentPosts } from '$lib/posts';
+import { posts } from '$lib/posts';
 
 export function load() {
 	return {
-		posts: getRecentPosts(5)
+		posts: posts
 	};
 }

@@ -2,1099 +2,572 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
-/* Design System - CSS Custom Properties */
+/* Design System - Light Theme inspired by modern minimal design */
 @layer base {
 	:root {
-		/* Colors */
-		--color-primary: theme('colors.emerald.400');
-		--color-primary-hover: theme('colors.emerald.300');
-		--color-bg-base: theme('colors.zinc.800');
-		--color-bg-surface: theme('colors.zinc.700');
-		--color-bg-surface-dark: theme('colors.zinc.900');
-		--color-text-base: theme('colors.zinc.100');
-		--color-text-muted: theme('colors.zinc.400');
-		--color-border: theme('colors.zinc.600');
+		/* Light theme colors */
+		--color-primary: #4a7c4a; /* muted green similar to modern minimal design */
+		--color-primary-hover: #3a6b3a;
+		--color-bg-base: #ffffff;
+		--color-bg-surface: #f9f9f9;
+		--color-bg-highlight: #4a7c4a; /* green highlight for bio sections */
+		--color-text-base: #333333;
+		--color-text-muted: #666666;
+		--color-text-light: #999999;
+		--color-border: #e0e0e0;
+		--color-link: #4a7c4a;
+		--color-link-hover: #3a6b3a;
 
-		/* Spacing */
-		--spacing-section: theme('spacing.6');
+		/* Spacing - simplified */
+		--spacing-section: 2rem;
 
-		/* Transitions */
-		--transition-default: 200ms;
-
-		/* Borders */
-		--radius-default: theme('borderRadius.lg');
+		/* Typography - Match modern minimal design system fonts */
+		--font-base: system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif;
+		--font-mono: 'Courier New', monospace;
 	}
 
-	/* Base elements */
+	/* Base elements - clean and minimal */
 	html {
 		scroll-behavior: smooth;
 	}
 
 	body {
-		@apply bg-zinc-800 text-zinc-100;
+		@apply bg-white text-black;
+		font-family: var(--font-base);
+		font-size: 18px;
+		line-height: 1.6;
+		-webkit-font-smoothing: antialiased;
 	}
 
+	/* Typography hierarchy - match modern minimal design exactly */
 	h1 {
-		@apply mb-3 mt-0 text-2xl font-bold text-emerald-400 sm:mb-4 sm:text-3xl md:text-4xl;
+		font-size: 18px;
+		font-weight: 700;
+		color: black;
+		margin-bottom: 0;
+		line-height: 1;
 	}
 
 	h2 {
-		@apply mb-2 text-lg font-bold text-emerald-400 sm:mb-3 sm:text-xl md:mb-4 md:text-2xl;
+		@apply mb-3 text-2xl font-normal text-gray-900;
 	}
 
+	h3 {
+		@apply mb-2 text-xl font-normal text-gray-900;
+	}
+
+	/* Paragraphs - match modern minimal design line height */
+	p {
+		overflow-wrap: break-word;
+		line-height: 28px;
+		margin-bottom: 30px;
+	}
+
+	/* Links - match modern minimal design exactly */
 	a {
-		@apply text-emerald-400 transition-colors duration-200 hover:text-emerald-300;
+		color: rgb(46, 104, 16);  /* Exact modern minimal design green */
+		text-decoration: none;
+		font-weight: 700;
+	}
+
+	a:hover {
+		text-decoration: underline;
 	}
 
 	/* Focus styles for accessibility */
 	:focus-visible {
-		@apply outline-2 outline-offset-2 outline-emerald-400;
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
 	}
 }
 
-/* Component Classes */
+/* Layout Components - Minimal and Clean */
 @layer components {
-	/* Layout components */
-	.section {
-		@apply mx-auto max-w-2xl px-4 md:max-w-3xl md:px-8;
+	/* Main container - match modern minimal design exactly */
+	.container {
+		margin-left: auto;
+		margin-right: auto;
+		max-width: 800px;
+		width: 100%;
 	}
 
-	.section-spacing {
-		@apply mb-6 md:mb-8;
+	/* Header styling - match modern minimal design exactly */
+	.site-header {
+		margin: 8px 12px 12px;
+		padding-bottom: 8px;
+		border-bottom: 1px solid rgb(92, 139, 63);
 	}
 
-	/* Card component */
-	.card-base {
-		@apply rounded-lg bg-zinc-700 p-4 transition-all duration-200 md:p-6;
-		will-change: transform;
+	.site-title {
+		text-transform: uppercase;
+		font-weight: bold;
+		font-size: 18px;
+		margin: 0;
+		color: black;
 	}
 
-	.card-hover {
-		@apply hover:-translate-y-1 hover:shadow-lg;
+	.site-title a {
+		color: black;
+		text-decoration: none;
+		font-weight: bold;
 	}
 
-	.card-interactive {
-		@apply card-base card-hover border border-zinc-700 hover:border-emerald-400;
+	.site-nav {
+		margin: 0;
+		padding: 0;
 	}
 
-	/* Legacy class support */
-	.post-card {
-		@apply card-base card-hover;
+	.site-nav a {
+		font-size: 14px;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: rgb(170, 170, 170);
+		padding: 0 5px 0 0;
+		display: inline-block;
 	}
 
-	/* Tag components */
-	.tag-base {
-		@apply rounded px-2 py-1 text-sm transition-colors;
+	.site-nav a:hover {
+		text-decoration: underline;
 	}
 
-	.tag-emerald {
-		@apply tag-base bg-emerald-600/20 text-emerald-300 hover:bg-emerald-600/30;
+	/* Section styling - match modern minimal design */
+	.main-section {
+		padding: 12px;
 	}
 
-	.tag-zinc {
-		@apply tag-base bg-zinc-600/20 text-zinc-300 hover:bg-zinc-600/30;
+	/* Bio highlight section - match modern minimal design exactly */
+	.bio-highlight {
+		background-color: rgb(92, 139, 63);  /* Exact modern minimal design green */
+		color: rgb(255, 255, 255);
+		padding: 12px 20px;
+		margin-bottom: 20px;
+		line-height: 1.4;
 	}
 
-	/* Text utilities */
-	.text-muted {
-		@apply text-zinc-400;
+	.bio-highlight p {
+		margin: 0;
+		font-size: 18px;
 	}
 
-	.text-primary {
-		@apply text-emerald-400;
+	.bio-highlight a {
+		color: rgb(255, 255, 255);
+		text-decoration: underline;
+		font-weight: 400;
 	}
 
-	/* Link styles */
-	.link-primary {
-		@apply text-emerald-400 transition-colors hover:text-emerald-300;
+	.bio-highlight a:hover {
+		color: rgb(255, 255, 255);
+		text-decoration: underline;
 	}
 
-	.link-underline {
-		@apply link-primary underline decoration-emerald-400/30 hover:decoration-emerald-300;
+	/* Post list - match modern minimal design exactly */
+	.post-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
 	}
 
-	/* Form inputs */
-	.input-base {
-		@apply w-full rounded-lg border border-zinc-600 bg-zinc-700 px-4 py-2 text-zinc-100 transition-colors focus:border-emerald-400 focus:outline-none;
+	.post-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		padding: 5px 0;
+		margin-bottom: 16px;
 	}
 
-	/* Buttons */
-	.btn-base {
-		@apply rounded-md px-4 py-2 font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-800;
+	.post-title {
+		margin: 0;
+		flex: 1;
 	}
 
-	.btn-primary {
-		@apply btn-base bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500;
+	.post-title a {
+		color: rgb(92, 139, 63);  /* Match the title green from modern minimal design */
+		text-decoration: underline;
+		font-weight: normal;
+		font-size: 18px;  /* Match body text size like modern minimal design */
 	}
 
-	.btn-secondary {
-		@apply btn-base border border-zinc-600 bg-zinc-700 text-zinc-100 hover:bg-zinc-600 focus:ring-zinc-500;
+	.post-title a:hover {
+		text-decoration: underline;
 	}
 
-	.btn-ghost {
-		@apply btn-base bg-transparent text-zinc-100 hover:bg-zinc-700/50;
+	.post-date {
+		color: rgb(102, 102, 102);
+		font-size: 18px;
+		margin-left: 16px;
+		white-space: nowrap;
 	}
 
-	/* Info boxes for blog posts */
-	.info-box {
-		@apply my-6 rounded-lg border p-4;
+	/* Blog post styling - match modern minimal design exactly */
+	.blog-post {
+		padding: 12px;
 	}
 
-	.info-box-emerald {
-		@apply info-box border-emerald-400/30 bg-emerald-900/20;
+	.post-header {
+		margin-bottom: 30px;
 	}
 
-	.info-box-zinc {
-		@apply info-box border-zinc-600/30 bg-zinc-800/50;
+	.blog-post .post-title {
+		color: rgb(92, 139, 63);  /* Green title like modern minimal design */
+		font-size: 36px;
+		font-weight: bold;
+		line-height: 1;
+		margin-bottom: 30px;
 	}
 
-	/* Grid layouts */
-	.feature-grid {
-		@apply grid gap-4 md:grid-cols-2 lg:grid-cols-3;
+	.post-meta {
+		color: rgb(102, 102, 102);
+		font-style: italic;
+		font-size: 18px;
+		margin-bottom: 30px;
 	}
 
-	.icon-grid {
-		@apply grid grid-cols-2 gap-4 md:grid-cols-4;
+	.post-content {
+		/* Match modern minimal design content styling */
+	}
+
+	.post-content h1 {
+		color: rgb(0, 0, 0);
+		font-size: 36px;
+		font-weight: bold;
+		margin-bottom: 30px;
+		line-height: 1;
+	}
+
+	.post-content h2 {
+		color: rgb(102, 102, 102);
+		font-size: 28px;
+		font-weight: bold;
+		margin-bottom: 30px;
+		line-height: 1;
+	}
+
+	.post-content h3 {
+		color: rgb(92, 139, 63);
+		font-size: 24px;
+		font-weight: bold;
+		margin-bottom: 30px;
+		line-height: 1;
+	}
+
+	.post-content p {
+		overflow-wrap: break-word;
+		line-height: 28px;
+		margin-bottom: 30px;
+	}
+
+	.post-content a {
+		color: rgb(46, 104, 16);  /* Link green from design.md */
+		text-decoration: underline;
+		font-weight: 700;
+	}
+
+	.post-content a:hover {
+		color: rgb(46, 104, 16);
+		text-decoration: underline;
+	}
+
+	.post-content ul,
+	.post-content ol {
+		margin-bottom: 30px;
+		padding-left: 20px;
+	}
+
+	.post-content ul {
+		list-style-type: disc;
+		list-style-position: outside;
+	}
+
+	.post-content ol {
+		list-style-type: decimal;
+		list-style-position: outside;
+	}
+
+	.post-content li {
+		padding: 5px 0;
+	}
+
+	.post-content img {
+		max-width: 100%;
+		height: auto;
+		margin-bottom: 30px;
+	}
+
+	.post-content table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 30px;
+	}
+
+	.post-content th,
+	.post-content td {
+		border: 1px solid rgb(222, 222, 222);
+		padding: 8px 12px;
+		text-align: left;
+	}
+
+	.post-content th {
+		background: rgb(249, 249, 249);
+		font-weight: bold;
+	}
+
+	.post-content pre {
+		padding: 18px 30px;
+		background: rgb(249, 249, 249);
+		border: 1px solid rgb(222, 222, 222);
+		overflow-x: auto;
+		margin-bottom: 30px;
+	}
+
+	.post-content code {
+		font-family: 'Courier New', monospace;
+		font-size: 16px;
+	}
+
+	/* Override dark theme content - match design.md specifications */
+	.post-content .grid {
+		/* Grid layouts should inherit light theme styles */
+	}
+
+	/* Design.md compatible utility classes */
+	.text-primary-green {
+		color: rgb(92, 139, 63) !important;  /* Primary green from design.md */
+	}
+
+	.hover\\:text-primary-green:hover {
+		color: rgb(92, 139, 63) !important;
+	}
+
+	.bg-light-background {
+		background: rgb(249, 249, 249) !important;  /* Light background from design.md */
+	}
+
+	.border-primary-green {
+		border-color: rgb(92, 139, 63) !important;  /* Primary green border */
+	}
+
+	.post-content .bg-zinc-700\/50,
+	.post-content .bg-zinc-700,
+	.post-content [class*="bg-zinc"] {
+		background: rgb(249, 249, 249) !important;  /* Light gray background */
+		border: 1px solid rgb(222, 222, 222) !important;  /* Light border */
+	}
+
+	.post-content .text-emerald-400,
+	.post-content .text-emerald-300,
+	.post-content [class*="text-emerald"] {
+		color: rgb(92, 139, 63) !important;  /* Primary green for titles */
+	}
+
+	.post-content .text-zinc-300,
+	.post-content .text-zinc-400,
+	.post-content [class*="text-zinc"] {
+		color: rgb(0, 0, 0) !important;  /* Black text */
+	}
+
+	.post-content .border-zinc-600,
+	.post-content [class*="border-zinc"] {
+		border-color: rgb(222, 222, 222) !important;  /* Light border */
+	}
+
+	.post-content .bg-emerald-900\/20 {
+		background: rgb(249, 249, 249) !important;  /* Light background for info boxes */
+	}
+
+	.post-content .border-emerald-400\/30 {
+		border-color: rgb(92, 139, 63) !important;  /* Green border */
+	}
+
+	/* Mermaid diagram container override - match light theme */
+	.post-content .mermaid-container {
+		background: rgb(249, 249, 249) !important;  /* Light background instead of dark */
+		border: 1px solid rgb(222, 222, 222) !important;  /* Light border */
+	}
+
+	.post-content .bg-zinc-900 {
+		background: rgb(249, 249, 249) !important;  /* Light background */
+	}
+
+	/* Simple button styling when needed */
+	.btn {
+		@apply inline-block px-4 py-2 text-sm;
+		background: var(--color-primary);
+		color: white;
+		text-decoration: none;
+		border-radius: 3px;
+		transition: background-color 0.2s ease;
+	}
+
+	.btn:hover {
+		background: var(--color-primary-hover);
+		color: white;
+		text-decoration: none;
 	}
 }
 
-/* Utilities */
-@layer utilities {
-	/* Dynamic height utility */
-	.min-h-dynamic {
-		min-height: var(--dynamic-height, 300px);
-	}
-}
-
-/* Markdown & MDsveX Content Styles */
-:global(.markdown) h1,
-:global(.markdown) h2,
-:global(.markdown) h3,
-:global(.markdown) h4,
-:global(.markdown) h5,
-:global(.markdown) h6,
-:global(.mdsvex-content) h1,
-:global(.mdsvex-content) h2,
-:global(.mdsvex-content) h3,
-:global(.mdsvex-content) h4,
-:global(.mdsvex-content) h5,
-:global(.mdsvex-content) h6 {
-	@apply text-emerald-400;
-}
-
-/* Code Block Styles */
-:not(pre) > code {
-	@apply rounded bg-zinc-700 px-1.5 py-0.5 text-sm;
-}
-
-pre {
-	@apply my-3 rounded-lg bg-zinc-700 md:my-4;
-	position: relative;
-}
-
-pre > code {
-	@apply block py-3 pl-1 pr-3 md:py-4 md:pl-1 md:pr-4;
-	overflow-x: auto;
-}
-
-code {
-	@apply rounded bg-zinc-700 px-0.5 py-0.5 text-xs md:text-sm;
-	counter-reset: step;
-	counter-increment: step 0;
-}
-
-/* Shiki specific styles */
+/* Code blocks - Shiki integration */
 .shiki {
-	@apply my-4 rounded-lg;
+	margin: 30px 0;
+	padding: 12px 16px;
+	background: #f5f5f5 !important;
+	border: 1px solid #dedede;
+	border-radius: 3px;
+	overflow-x: auto;
 	position: relative;
+	font-family: Consolas, Menlo, 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, monospace;
+	font-size: 14px;
+	line-height: 14px;
 }
 
-.shiki > code {
-	@apply block py-4 pl-1 pr-4;
-	overflow-x: auto;
+.shiki code {
+	font-family: inherit;
+	font-size: inherit;
+	line-height: inherit;
+	background: transparent !important;
+	padding: 0;
+	display: block;
 }
 
 .shiki .line {
-	@apply leading-relaxed;
-}
-
-/* Line numbers */
-code .line::before {
-	content: counter(step);
-	counter-increment: step;
-	width: 1rem;
-	margin-right: 1rem;
-	display: inline-block;
-	text-align: right;
-	color: rgba(115, 138, 148, 0.3);
-}
-
-code .line:last-child:empty::before {
-	content: none;
-	counter-increment: none;
-}
-
-/* Copy button styles */
-.shiki button.copy,
-pre button.copy {
-	position: absolute;
-	right: 16px;
-	top: 16px;
-	height: 25px;
-	width: 25px;
-	padding: 0;
-	display: flex;
-	z-index: 10;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-
-	span {
-		width: 100%;
-		aspect-ratio: 1 / 1;
-		background-repeat: no-repeat;
-		background-position: center;
-		background-size: cover;
-		filter: invert(100%);
-	}
-
-	.ready {
-		background-image: url(/icons/copy.svg);
-	}
-
-	.success {
-		display: none;
-		background-image: url(/icons/copy-success.svg);
-	}
-
-	&.copied {
-		.success {
-			display: block;
-		}
-
-		.ready {
-			display: none;
-		}
-	}
-}
-
-/* Table Styles - Consolidated */
-table,
-.mdsvex-content table {
-	@apply my-4 block min-w-full border-collapse overflow-x-auto sm:my-6;
-	border-spacing: 0;
-}
-
-th,
-td,
-.mdsvex-content th,
-.mdsvex-content td {
-	@apply border border-zinc-400 px-2 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm md:px-6 md:py-3 md:text-base;
-	text-align: left;
-}
-
-th,
-.mdsvex-content th {
-	@apply bg-zinc-700 font-semibold text-emerald-400;
-}
-
-td {
-	@apply whitespace-nowrap;
-}
-
-tr,
-.mdsvex-content tr {
-	@apply transition-colors duration-200;
-}
-
-tr:hover,
-.mdsvex-content tr:hover {
-	@apply bg-zinc-700/50;
-}
-
-tbody tr:nth-child(even),
-.mdsvex-content tbody tr:nth-child(even) {
-	@apply bg-zinc-800/50;
-}
-
-/* Mermaid Diagram Styles - Comprehensive Dark Theme */
-/* Base container styling */
-.mermaid-container {
-	@apply my-6;
-}
-
-/* Base text styling */
-.mermaid,
-.mermaid-render-container {
-	@apply text-zinc-100;
-	font-family: 'Inter', system-ui, sans-serif !important;
-}
-
-/* Universal text elements */
-.mermaid text,
-.mermaid-render-container text,
-.mermaid .nodeLabel,
-.mermaid .edgeLabel,
-.mermaid .cluster text,
-.mermaid .actor text,
-.mermaid .messageText,
-.mermaid .loopText,
-.mermaid .noteText,
-.mermaid .labelText {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-	font-family: 'Inter', system-ui, sans-serif !important;
-	color: rgb(228, 228, 231) !important;
-}
-
-/* Edge labels specific styling */
-.mermaid .edgeLabel,
-.mermaid-render-container .edgeLabel {
-	background-color: rgb(24, 24, 27) !important; /* zinc-900 */
-	fill: rgb(228, 228, 231) !important;
-}
-
-/* Cluster/subgraph styling */
-.mermaid .cluster rect,
-.mermaid-render-container .cluster rect {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-/* Node styling - All shapes and diagram types */
-.mermaid .node rect,
-.mermaid .node circle,
-.mermaid .node ellipse,
-.mermaid .node polygon,
-.mermaid .node path,
-.mermaid-render-container .node rect,
-.mermaid-render-container .node circle,
-.mermaid-render-container .node ellipse,
-.mermaid-render-container .node polygon,
-.mermaid-render-container .node path,
-/* Flowchart specific nodes */
-.mermaid .flowchart-node rect,
-.mermaid .flowchart-node circle,
-.mermaid .flowchart-node polygon,
-/* State diagram nodes */
-.mermaid .statediagram-state rect,
-.mermaid .statediagram-state circle,
-/* Class diagram nodes */
-.mermaid .classBox rect,
-/* Additional node types */
-.mermaid .basic rect,
-.mermaid .composite rect {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Labels */
-.mermaid .nodeLabel,
-.mermaid .label,
-.mermaid-render-container .nodeLabel,
-.mermaid-render-container .label {
-	color: rgb(228, 228, 231) !important; /* zinc-100 */
-	fill: rgb(228, 228, 231) !important;
-}
-
-.mermaid .edgeLabel,
-.mermaid-render-container .edgeLabel {
-	background-color: rgb(24, 24, 27) !important; /* zinc-900 */
-	fill: rgb(228, 228, 231) !important;
-}
-
-/* Edges and paths */
-.mermaid .edgePath .path,
-.mermaid .flowchart-link,
-.mermaid-render-container .edgePath .path,
-.mermaid-render-container .flowchart-link {
-	stroke: rgb(113, 113, 122) !important; /* zinc-500 */
-	stroke-width: 2px !important;
-	fill: none !important;
-}
-
-/* Clusters/Subgraphs */
-.mermaid .cluster rect,
-.mermaid-render-container .cluster rect {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-.mermaid .cluster text,
-.mermaid-render-container .cluster text {
-	fill: rgb(161, 161, 170) !important; /* zinc-400 */
-}
-
-/* Markers (arrowheads) */
-.mermaid .marker,
-.mermaid-render-container .marker {
-	fill: rgb(113, 113, 122) !important; /* zinc-500 */
-}
-
-/* Sequence diagram specific */
-.mermaid .actor,
-.mermaid .actor-man,
-.mermaid .actor rect,
-.mermaid-render-container .actor,
-.mermaid-render-container .actor-man,
-.mermaid-render-container .actor rect {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-.mermaid .actor-line,
-.mermaid-render-container .actor-line {
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-.mermaid .messageLine0,
-.mermaid .messageLine1,
-.mermaid .sequenceDiagram-line,
-.mermaid-render-container .messageLine0,
-.mermaid-render-container .messageLine1,
-.mermaid-render-container .sequenceDiagram-line {
-	stroke: rgb(113, 113, 122) !important; /* zinc-500 */
-	stroke-width: 2px !important;
-}
-
-.mermaid .messageText,
-.mermaid .loopText,
-.mermaid .noteText,
-.mermaid-render-container .messageText,
-.mermaid-render-container .loopText,
-.mermaid-render-container .noteText {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-}
-
-/* Note boxes in sequence diagrams */
-.mermaid .note rect,
-.mermaid-render-container .note rect {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 1px !important;
-}
-
-/* Activation boxes */
-.mermaid .activation0,
-.mermaid .activation1,
-.mermaid .activation2,
-.mermaid-render-container .activation0,
-.mermaid-render-container .activation1,
-.mermaid-render-container .activation2 {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 1px !important;
-}
-
-/* State diagram specific */
-.mermaid .statediagram-state rect,
-.mermaid-render-container .statediagram-state rect {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-}
-
-/* Accessibility enhancements for Mermaid diagrams */
-.mermaid-container:focus-within {
-	outline: 2px solid rgb(52, 211, 153);
-	outline-offset: 2px;
-}
-
-/* Visual indicator for diagram container with better contrast */
-.mermaid-container {
+	display: block;
+	min-height: 14px;
 	position: relative;
-	isolation: isolate;
+	padding-left: 2em;
 }
 
-/* Git graph specific - Universal color support with colorblind-safe palette */
-.mermaid .commit0,
-.mermaid-render-container .commit0 {
-	fill: rgb(52, 211, 153) !important; /* emerald-400 - primary branch */
-	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
-	stroke-width: 3px !important; /* Increased for better visibility */
-}
-
-.mermaid .commit1,
-.mermaid-render-container .commit1 {
-	fill: rgb(86, 180, 233) !important; /* sky blue - colorblind-safe */
-	stroke: rgb(0, 114, 178) !important; /* darker sky blue */
-	stroke-width: 3px !important;
-}
-
-.mermaid .commit2,
-.mermaid-render-container .commit2 {
-	fill: rgb(230, 159, 0) !important; /* orange - colorblind-safe */
-	stroke: rgb(213, 94, 0) !important; /* darker orange */
-	stroke-width: 3px !important;
-}
-
-.mermaid .commit3,
-.mermaid-render-container .commit3 {
-	fill: rgb(0, 158, 115) !important; /* bluish-green - colorblind-safe */
-	stroke: rgb(0, 114, 83) !important; /* darker bluish-green */
-	stroke-width: 3px !important;
-}
-
-/* Fallback for generic commit class */
-.mermaid .commit,
-.mermaid-render-container .commit {
-	fill: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
-	stroke-width: 2px !important;
-}
-
-/* Git branch label text - force dark text on colored backgrounds */
-.mermaid .gitBranchLabel,
-.mermaid .gitBranchLabel0,
-.mermaid .gitBranchLabel1,
-.mermaid .gitBranchLabel2,
-.mermaid .gitBranchLabel3,
-.mermaid .gitBranchLabel4,
-.mermaid .gitBranchLabel5,
-.mermaid .gitBranchLabel6,
-.mermaid .gitBranchLabel7,
-.mermaid-render-container .gitBranchLabel,
-.mermaid-render-container .gitBranchLabel0,
-.mermaid-render-container .gitBranchLabel1,
-.mermaid-render-container .gitBranchLabel2,
-.mermaid-render-container .gitBranchLabel3,
-.mermaid-render-container .gitBranchLabel4,
-.mermaid-render-container .gitBranchLabel5,
-.mermaid-render-container .gitBranchLabel6,
-.mermaid-render-container .gitBranchLabel7 {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text for all branches */
-	font-weight: 600 !important;
-}
-
-/* Additional selector for git branch text within colored rectangles */
-.mermaid g[class*='branch'] text,
-.mermaid-render-container g[class*='branch'] text,
-.mermaid rect[class*='branch'] + text,
-.mermaid-render-container rect[class*='branch'] + text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 */
-	font-weight: 600 !important;
-}
-
-/* Diagram-specific text contrast rules for optimal readability */
-
-/* Sequence diagram - ensure proper text contrast */
-/* Actor box text should be light on dark backgrounds */
-.mermaid .actor rect + text,
-.mermaid-render-container .actor rect + text,
-.mermaid .actor text,
-.mermaid-render-container .actor text {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text on dark actor boxes */
-	font-weight: 500 !important;
-}
-
-/* Message text should be light on dark background */
-.mermaid .messageText,
-.mermaid-render-container .messageText,
-.mermaid .loopText,
-.mermaid-render-container .loopText {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for messages */
-}
-
-/* Git commit node text - ensure dark text on colored backgrounds */
-.mermaid .commit0 text,
-.mermaid-render-container .commit0 text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on emerald */
-	font-weight: 600 !important;
-}
-
-.mermaid .commit1 text,
-.mermaid-render-container .commit1 text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on blue */
-	font-weight: 600 !important;
-}
-
-.mermaid .commit2 text,
-.mermaid-render-container .commit2 text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on purple */
-	font-weight: 600 !important;
-}
-
-.mermaid .commit3 text,
-.mermaid-render-container .commit3 text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text on rose */
-	font-weight: 600 !important;
-}
-
-/* Generic commit text fallback */
-.mermaid .commit text,
-.mermaid-render-container .commit text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 */
-	font-weight: 600 !important;
-}
-
-/* Git graph text - comprehensive selectors for all text in git diagrams */
-.mermaid g.gitGraph text,
-.mermaid-render-container g.gitGraph text,
-.mermaid .gitGraph text,
-.mermaid-render-container .gitGraph text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 - dark text by default */
-	font-weight: 600 !important;
-}
-
-/* Specific selectors for branch labels in git graphs */
-.mermaid g.branch-label text,
-.mermaid-render-container g.branch-label text,
-.mermaid g[id*='branch'] text,
-.mermaid-render-container g[id*='branch'] text,
-.mermaid g[class*='branch'] rect + text,
-.mermaid-render-container g[class*='branch'] rect + text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 */
-	font-weight: 600 !important;
-}
-
-/* Target text elements that are siblings of colored rectangles */
-.mermaid rect[fill*="rgb(52, 211, 153)"] ~ text,  /* emerald */
-.mermaid rect[fill*="rgb(96, 165, 250)"] ~ text,  /* blue */
-.mermaid rect[fill*="rgb(192, 132, 252)"] ~ text, /* purple */
-.mermaid rect[fill*="rgb(251, 113, 133)"] ~ text, /* rose */
-.mermaid-render-container rect[fill*="rgb(52, 211, 153)"] ~ text,
-.mermaid-render-container rect[fill*="rgb(96, 165, 250)"] ~ text,
-.mermaid-render-container rect[fill*="rgb(192, 132, 252)"] ~ text,
-.mermaid-render-container rect[fill*="rgb(251, 113, 133)"] ~ text {
-	fill: rgb(24, 24, 27) !important; /* zinc-900 */
-	font-weight: 600 !important;
-}
-
-/* Git commit labels - MUST come after other git text rules for specificity */
-/* Light text on dark backgrounds for readability */
-/* Using multiple selectors to ensure we override Mermaid's ID-based styles */
-.mermaid .commit-label,
-.mermaid-render-container .commit-label,
-.mermaid text.commit-label,
-.mermaid-render-container text.commit-label,
-.mermaid [id^='mermaid'] .commit-label,
-.mermaid-render-container [id^='mermaid'] .commit-label,
-[id^='mermaid'] .commit-label,
-.mermaid svg .commit-label,
-.mermaid-render-container svg .commit-label {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
-	font-weight: 500 !important;
-}
-
-/* Even more specific selectors to beat any ID-based rules */
-.mermaid-container .mermaid .commit-label,
-.mermaid-container .mermaid-render-container .commit-label,
-.mermaid-container svg .commit-label,
-.mermaid-container [id*='mermaid'] .commit-label {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 - light text for contrast */
-	font-weight: 500 !important;
-}
-
-/* Ensure commit label backgrounds remain dark */
-.mermaid .commit-label-bkg,
-.mermaid-render-container .commit-label-bkg,
-.mermaid rect.commit-label-bkg,
-.mermaid-render-container rect.commit-label-bkg {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-/* Pie chart specific - Universal color support */
-.mermaid .pieCircle,
-.mermaid-render-container .pieCircle {
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-.mermaid .pieTitleText,
-.mermaid-render-container .pieTitleText {
-	fill: rgb(52, 211, 153) !important; /* emerald-400 */
-	font-size: 16px !important;
-	font-weight: bold !important;
-}
-
-/* Individual pie segments with universal colors */
-.mermaid .pie-segment-0,
-.mermaid-render-container .pie-segment-0 {
-	fill: rgb(52, 211, 153) !important; /* emerald-400 */
-}
-
-.mermaid .pie-segment-1,
-.mermaid-render-container .pie-segment-1 {
-	fill: rgb(96, 165, 250) !important; /* blue-400 */
-}
-
-.mermaid .pie-segment-2,
-.mermaid-render-container .pie-segment-2 {
-	fill: rgb(192, 132, 252) !important; /* purple-400 */
-}
-
-.mermaid .pie-segment-3,
-.mermaid-render-container .pie-segment-3 {
-	fill: rgb(251, 113, 133) !important; /* rose-400 */
-}
-
-.mermaid .pie-segment-4,
-.mermaid-render-container .pie-segment-4 {
-	fill: rgb(250, 204, 21) !important; /* yellow-400 */
-}
-
-.mermaid .pie-segment-5,
-.mermaid-render-container .pie-segment-5 {
-	fill: rgb(74, 222, 128) !important; /* green-400 */
-}
-
-/* Sequence diagram actor variations with universal colors */
-.mermaid .actor0,
-.mermaid-render-container .actor0 {
-	fill: rgb(52, 211, 153) !important; /* emerald-400 - primary actor */
-	stroke: rgb(16, 185, 129) !important; /* emerald-500 */
-}
-
-.mermaid .actor1,
-.mermaid-render-container .actor1 {
-	fill: rgb(96, 165, 250) !important; /* blue-400 - secondary actor */
-	stroke: rgb(59, 130, 246) !important; /* blue-500 */
-}
-
-.mermaid .actor2,
-.mermaid-render-container .actor2 {
-	fill: rgb(192, 132, 252) !important; /* purple-400 - tertiary actor */
-	stroke: rgb(168, 85, 247) !important; /* purple-500 */
-}
-
-/* State diagram states with semantic colors */
-.mermaid .state-start,
-.mermaid-render-container .state-start {
-	fill: rgb(74, 222, 128) !important; /* green-400 - start states */
-	stroke: rgb(34, 197, 94) !important; /* green-500 */
-}
-
-.mermaid .state-end,
-.mermaid-render-container .state-end {
-	fill: rgb(248, 113, 113) !important; /* red-400 - end states */
-	stroke: rgb(239, 68, 68) !important; /* red-500 */
-}
-
-.mermaid .state-process,
-.mermaid-render-container .state-process {
-	fill: rgb(96, 165, 250) !important; /* blue-400 - process states */
-	stroke: rgb(59, 130, 246) !important; /* blue-500 */
-}
-
-/* Gantt chart specific - Universal colors for task categories */
-.mermaid .grid .tick line,
-.mermaid-render-container .grid .tick line {
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-.mermaid .gantt-task-row rect,
-.mermaid-render-container .gantt-task-row rect {
-	fill: rgb(96, 165, 250) !important; /* blue-400 - primary tasks */
-	stroke: rgb(59, 130, 246) !important; /* blue-500 */
-	stroke-width: 1px !important;
-}
-
-.mermaid .gantt-task-row:nth-child(odd) rect,
-.mermaid-render-container .gantt-task-row:nth-child(odd) rect {
-	fill: rgb(192, 132, 252) !important; /* purple-400 - alternate tasks */
-	stroke: rgb(168, 85, 247) !important; /* purple-500 */
-}
-
-/* Class diagram specific */
-.mermaid .classBox,
-.mermaid-render-container .classBox {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-.mermaid .classTitle,
-.mermaid .classMethod,
-.mermaid .classAttribute,
-.mermaid-render-container .classTitle,
-.mermaid-render-container .classMethod,
-.mermaid-render-container .classAttribute {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-}
-
-/* ER diagram specific */
-.mermaid .er.entityBox,
-.mermaid .er.relationshipLabelBox,
-.mermaid-render-container .er.entityBox,
-.mermaid-render-container .er.relationshipLabelBox {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-.mermaid .er.entityLabel,
-.mermaid .er.relationshipLabel,
-.mermaid-render-container .er.entityLabel,
-.mermaid-render-container .er.relationshipLabel {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-}
-
-/* Journey diagram specific */
-.mermaid .journey-section,
-.mermaid-render-container .journey-section {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-}
-
-.mermaid .journey-task,
-.mermaid-render-container .journey-task {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-}
-
-/* User journey specific */
-.mermaid .user-journey .section,
-.mermaid-render-container .user-journey .section {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-}
-
-/* C4 Context diagram specific */
-.mermaid .c4-person,
-.mermaid .c4-container,
-.mermaid .c4-system,
-.mermaid-render-container .c4-person,
-.mermaid-render-container .c4-container,
-.mermaid-render-container .c4-system {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Requirement diagram specific */
-.mermaid .requirement,
-.mermaid .functionalRequirement,
-.mermaid .performanceRequirement,
-.mermaid-render-container .requirement,
-.mermaid-render-container .functionalRequirement,
-.mermaid-render-container .performanceRequirement {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Mindmap diagram specific */
-.mermaid .mindmap-node,
-.mermaid-render-container .mindmap-node {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Timeline diagram specific */
-.mermaid .timeline-event,
-.mermaid-render-container .timeline-event {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Quadrant chart specific */
-.mermaid .quadrant1,
-.mermaid .quadrant2,
-.mermaid .quadrant3,
-.mermaid .quadrant4,
-.mermaid-render-container .quadrant1,
-.mermaid-render-container .quadrant2,
-.mermaid-render-container .quadrant3,
-.mermaid-render-container .quadrant4 {
-	fill: rgb(39, 39, 42) !important; /* zinc-800 */
-	stroke: rgb(82, 82, 91) !important; /* zinc-600 */
-	stroke-width: 1px !important;
-}
-
-/* Additional general overrides for consistency */
-.mermaid rect[class*='actor'],
-.mermaid circle[class*='actor'],
-.mermaid-render-container rect[class*='actor'],
-.mermaid-render-container circle[class*='actor'] {
-	fill: rgb(63, 63, 70) !important; /* zinc-700 */
-	stroke: rgb(52, 211, 153) !important; /* emerald-400 */
-	stroke-width: 2px !important;
-}
-
-/* Force consistent background for all diagram containers */
-.mermaid,
-.mermaid-render-container,
-.mermaid svg {
-	background: rgb(24, 24, 27) !important; /* zinc-900 */
-}
-
-/* Force text color consistency across all text elements */
-.mermaid tspan,
-.mermaid textPath,
-.mermaid foreignObject,
-.mermaid-render-container tspan,
-.mermaid-render-container textPath,
-.mermaid-render-container foreignObject {
-	fill: rgb(228, 228, 231) !important; /* zinc-100 */
-	color: rgb(228, 228, 231) !important;
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-	:root {
-		--color-primary: theme('colors.emerald.300');
-		--color-bg-surface: theme('colors.zinc.900');
-		--color-border: theme('colors.zinc.400');
-	}
-}
-
-/* Mermaid Mobile Responsive Styles */
-@media (max-width: 768px) {
-	/* Adjust container for mobile */
-	.mermaid-container {
-		margin: 1rem -1rem;
-		padding: 1rem 0.5rem;
-		border-radius: 0;
-		position: relative;
-	}
-
-	/* Optimize SVG scaling for mobile */
-	.mermaid-render-container svg {
-		max-width: none !important;
-		width: 100% !important;
-		min-width: 100%;
-		height: auto !important;
-		display: block;
-		margin: 0 auto;
-	}
-
-	/* Adjust font sizes for better mobile readability */
-	.mermaid-render-container text,
-	.mermaid-render-container .nodeLabel {
-		font-size: 12px !important;
-	}
-
-	/* Ensure diagrams are scrollable with visual indicator */
-	.mermaid-container[data-scrollable='true'] {
-		overflow-x: auto;
-		-webkit-overflow-scrolling: touch;
-		scroll-behavior: smooth;
-	}
-
-	/* Scroll indicator for horizontally scrollable diagrams */
-	.mermaid-container[data-scrollable='true']::after {
-		content: '← Scroll →';
-		position: absolute;
-		bottom: 0.5rem;
-		right: 0.5rem;
-		background: rgba(63, 63, 70, 0.9); /* zinc-700 with opacity */
-		color: rgb(161, 161, 170); /* zinc-400 */
-		padding: 0.25rem 0.5rem;
-		border-radius: 0.25rem;
-		font-size: 0.75rem;
-		pointer-events: none;
-		opacity: 1;
-		transition: opacity 0.3s ease;
-	}
-
-	/* Hide scroll indicator when not needed */
-	.mermaid-container[data-scrollable='false']::after {
-		display: none;
-	}
-
-	/* Adjust node spacing for mobile */
-	.mermaid-render-container .node rect,
-	.mermaid-render-container .node circle,
-	.mermaid-render-container .node ellipse,
-	.mermaid-render-container .node polygon,
-	.mermaid-render-container .node path {
-		stroke-width: 1.5px !important; /* Slightly thinner borders on mobile */
-	}
-}
-
-/* Extra small mobile devices */
-@media (max-width: 480px) {
-	/* Further optimize for very small screens */
-	.mermaid-container {
-		padding: 0.75rem 0.25rem;
-	}
-
-	/* Even smaller font sizes for tiny screens */
-	.mermaid-render-container text,
-	.mermaid-render-container .nodeLabel {
-		font-size: 11px !important;
-	}
-
-	/* Adjust minimum height for mobile - let content determine height */
-	.mermaid-container {
-		min-height: auto !important;
-		padding-bottom: 1rem; /* Ensure consistent bottom spacing */
-	}
-
-	/* Make scroll indicator more prominent on small screens */
-	.mermaid-container[data-scrollable='true']::after {
-		font-size: 0.7rem;
-		padding: 0.2rem 0.4rem;
-	}
-}
-
-/* Touch-friendly enhancements */
-@media (pointer: coarse) {
-	/* Add padding to clickable elements for better touch targets */
-	.mermaid-render-container .node {
-		cursor: pointer;
-	}
-
-	/* Improve touch scrolling */
-	.mermaid-container {
-		-webkit-overflow-scrolling: touch;
-		overflow-scrolling: touch;
-	}
-}
-
-/* Landscape mobile optimization */
-@media (max-width: 768px) and (orientation: landscape) {
-	.mermaid-container {
-		max-height: 70vh;
-		overflow-y: auto;
-	}
-}
-
-/* Full-width diagram option for mobile */
-.mermaid-container.full-width {
-	margin-left: calc(-50vw + 50%);
-	margin-right: calc(-50vw + 50%);
-	width: 100vw;
-	max-width: 100vw;
-	border-radius: 0;
-}
-
-/* Fade out edges for scrollable content */
-.mermaid-container[data-scrollable='true'] {
-	position: relative;
-}
-
-.mermaid-container[data-scrollable='true']::before {
-	content: '';
+.shiki .line::before {
+	content: attr(data-line);
 	position: absolute;
+	left: 0;
 	top: 0;
-	right: 0;
-	bottom: 0;
-	width: 2rem;
-	background: linear-gradient(to right, transparent, rgb(24, 24, 27)); /* zinc-900 */
-	pointer-events: none;
-	z-index: 1;
+	width: 1em;
+	text-align: right;
+	color: #999;
+	user-select: none;
+	padding-right: 0.5em;
 }
 
-/* Animation for scroll indicator */
-@keyframes pulse-scroll {
-	0%,
-	100% {
-		opacity: 0.7;
+/* Copy button styling with icon */
+.shiki button {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	padding: 6px 8px;
+	font-size: 11px;
+	color: #666;
+	cursor: pointer;
+	opacity: 0;
+	transition: all 0.2s ease;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	backdrop-filter: blur(4px);
+}
+
+.shiki button::before {
+	content: "📋";
+	font-size: 12px;
+}
+
+.shiki button::after {
+	content: "Copy";
+}
+
+.shiki:hover button {
+	opacity: 1;
+}
+
+.shiki button:hover {
+	background: rgba(245, 245, 245, 0.95);
+	color: #333;
+	border-color: #999;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shiki button:active {
+	transform: translateY(0);
+}
+
+.shiki button.copied::before {
+	content: "✅";
+}
+
+.shiki button.copied::after {
+	content: "Copied!";
+}
+
+.shiki button.copied {
+	color: rgb(92, 139, 63);
+	border-color: rgb(92, 139, 63);
+	background: rgba(92, 139, 63, 0.1);
+}
+
+/* Inline code styling */
+code:not(.shiki code) {
+	@apply rounded bg-gray-100 px-1 py-0.5;
+	font-family: 'Courier New', monospace;
+	font-size: 0.9em;
+}
+
+/* Fallback for non-Shiki pre blocks */
+pre:not(.shiki) {
+	@apply my-4 overflow-x-auto rounded bg-gray-100 p-4;
+	font-family: 'Courier New', monospace;
+}
+
+pre:not(.shiki) code {
+	@apply bg-transparent p-0;
+}
+
+/* Tables - simple styling */
+table {
+	@apply my-4 w-full border-collapse;
+}
+
+th,
+td {
+	@apply border border-gray-300 px-3 py-2 text-left;
+}
+
+th {
+	@apply bg-gray-100 font-semibold;
+}
+
+/* Remove all previous dark theme and complex styling */
+/* Keep only minimal, clean styles that match modern minimal design aesthetic */
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+	.container {
+		@apply px-4 py-6;
 	}
-	50% {
-		opacity: 1;
+
+	.site-title {
+		@apply text-3xl;
+	}
+
+	.post-item {
+		@apply flex-col items-start;
+	}
+
+	.post-date {
+		@apply ml-0 mt-1;
 	}
 }
 
-.mermaid-container[data-scrollable='true']::after {
-	animation: pulse-scroll 2s ease-in-out infinite;
+/* Print styles */
+@media print {
+	body {
+		@apply text-black;
+	}
+
+	.site-nav,
+	.bio-highlight {
+		display: none;
+	}
 }

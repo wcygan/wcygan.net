@@ -2,8 +2,12 @@
 	import MermaidDiagram from '$lib/components/MermaidDiagram.svelte';
 </script>
 
-<div class="mx-auto max-w-4xl p-8">
-	<h1 class="mb-4 text-4xl font-bold">Mermaid Diagram Examples</h1>
+<article class="blog-post">
+	<header class="post-header">
+		<h1 class="post-title">Mermaid Diagram Examples</h1>
+	</header>
+	
+	<div class="post-content">
 
 	<p class="mb-8 text-lg">
 		This page demonstrates all the different ways to use Mermaid diagrams in your SvelteKit
@@ -194,19 +198,25 @@
 
 		<div class="space-y-6">
 			<div>
-				<p class="mb-2 text-sm text-zinc-400">With prop:</p>
+				<p class="mb-2 text-sm">With prop:</p>
 				<MermaidDiagram height={200} diagram="graph LR; A[Prop] --> B[Based]" />
 			</div>
 
 			<div>
-				<p class="mb-2 text-sm text-zinc-400">With slot content:</p>
-				<MermaidDiagram height={200}>graph TD A[Slot] --> B[Based] B --> C[Content]</MermaidDiagram>
+				<p class="mb-2 text-sm">With slot content:</p>
+				<MermaidDiagram height={200}>
+					graph TD
+					A[Slot] --> B[Based]
+					B --> C[Content]
+				</MermaidDiagram>
 			</div>
 
 			<div>
-				<p class="mb-2 text-sm text-zinc-400">With slot and lazy loading:</p>
+				<p class="mb-2 text-sm">With slot and lazy loading:</p>
 				<MermaidDiagram height={200} useLazyLoading={true}>
-					graph TD A[Lazy] --> B[Loading] B --> C[Slot Content]
+					graph TD
+					A[Lazy] --> B[Loading]
+					B --> C[Slot Content]
 				</MermaidDiagram>
 			</div>
 		</div>
@@ -224,32 +234,22 @@
 		/>
 	</section>
 
-	<div class="mt-16 rounded-lg bg-zinc-900 p-6">
-		<h3 class="mb-4 text-xl font-semibold">Performance Tips</h3>
-		<ul class="list-inside list-disc space-y-2">
-			<li>
-				Use <code class="rounded bg-zinc-800 px-1 py-0.5">useLazyLoading={true}</code> for diagrams below
-				the fold
-			</li>
-			<li>Diagrams are automatically cached in sessionStorage</li>
-			<li>The Mermaid library is dynamically imported on first use</li>
-			<li>Mobile devices get a fullscreen button for better viewing</li>
-			<li>All diagrams use a consistent dark theme optimized for the site</li>
-		</ul>
-	</div>
+	## Performance Tips
 
-	<div class="mt-8 rounded-lg bg-zinc-900 p-6">
-		<h3 class="mb-4 text-xl font-semibold">Component Consolidation</h3>
-		<p class="mb-2">
-			The Mermaid components have been consolidated into a single, powerful component:
-		</p>
-		<ul class="list-inside list-disc space-y-2">
-			<li><strong>MermaidDiagram</strong> - The main component supporting all features</li>
-			<li><strong>MermaidFullscreen</strong> - Internal component for mobile fullscreen viewing</li>
-		</ul>
-		<p class="mt-4 text-sm text-zinc-400">
-			The previous components (Mermaid, MermaidViewport, MermaidFlexible, MermaidLazy) have been
-			deprecated and their functionality merged into MermaidDiagram.
-		</p>
+	- Use `useLazyLoading={true}` for diagrams below the fold
+	- Diagrams are automatically cached in sessionStorage
+	- The Mermaid library is dynamically imported on first use
+	- Mobile devices get a fullscreen button for better viewing
+	- All diagrams use a consistent light theme matching the design system
+
+	## Component Consolidation
+
+	The Mermaid components have been consolidated into a single, powerful component:
+
+	- **MermaidDiagram** - The main component supporting all features
+	- **MermaidFullscreen** - Internal component for mobile fullscreen viewing
+
+	The previous components (Mermaid, MermaidViewport, MermaidFlexible, MermaidLazy) have been deprecated and their functionality merged into MermaidDiagram.
+	
 	</div>
-</div>
+</article>

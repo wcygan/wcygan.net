@@ -10,7 +10,7 @@
 		{#each data.posts as post}
 			<article class="post-card">
 				<h2 class="mb-2 text-2xl font-bold text-emerald-400">
-					<a href="/blog/{post.slug}" class="text-emerald-400 hover:text-emerald-300">
+					<a href="/{post.slug}" class="text-emerald-400 hover:text-emerald-300">
 						{post.title}
 					</a>
 				</h2>

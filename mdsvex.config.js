@@ -7,7 +7,7 @@ const options = {
 	toggle: 1000
 };
 
-const theme = 'catppuccin-frappe';
+const theme = 'github-light';
 const highlighter = await createHighlighter({
 	themes: [theme],
 	langs: [
@@ -36,7 +36,15 @@ const config = defineConfig({
 				highlighter.codeToHtml(code, {
 					lang,
 					theme,
-					transformers: [addCopyButton(options)]
+					transformers: [
+						{
+							name: 'add-line-numbers',
+							line(node, line) {
+								node.properties['data-line'] = line;
+							}
+						},
+						addCopyButton(options)
+					]
 				})
 			);
 			return `{@html \`${html}\`}`;

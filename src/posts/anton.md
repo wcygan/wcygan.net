@@ -1,11 +1,9 @@
 ---
-title: Anton
+title: Kubernetes in the Basement
 date: May 23, 2025
 description: Building a Kubernetes cluster in my basement
 tags: [Kubernetes, Talos, Homelab]
 ---
-
-# Anton: My Basement Kubernetes Cluster
 
 Meet Anton - a Kubernetes cluster that runs in my basement. Built on the
 foundation of

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import Navbar from '$lib/components/Navbar.svelte';
 	let { children } = $props();
 </script>
 
@@ -13,11 +12,22 @@
 	/>
 </svelte:head>
 
-<div class="min-h-screen">
-	<Navbar />
-	<main class="mx-auto max-w-3xl px-4 py-4 md:max-w-4xl md:py-8">
-		<div class="rounded-lg border-2 border-white p-4 sm:p-6 md:p-8">
+<div class="min-h-screen bg-white">
+	<div class="container">
+		<header class="site-header">
+			<h1 class="site-title">
+				<a href="/">Will Cygan</a>
+			</h1>
+			<nav class="site-nav">
+				<a href="/will_cygan_resume.pdf">Resume</a>
+				<a href="mailto:wcygan.io@gmail.com">Email</a>
+				<a href="https://github.com/wcygan">GitHub</a>
+				<a href="https://www.linkedin.com/in/wcygan">LinkedIn</a>
+			</nav>
+		</header>
+
+		<main class="main-section">
 			{@render children()}
-		</div>
-	</main>
+		</main>
+	</div>
 </div>

@@ -25,7 +25,7 @@ export default {
 				},
 				invert: {
 					css: {
-						'--tw-prose-headings': 'rgb(52 211 153)', // emerald-400
+						'--tw-prose-headings': 'rgb(92, 139, 63)', // Primary green from design.md
 						// Also remove backticks for the invert theme
 						'code::before': { content: '""' },
 						'code::after': { content: '""' },
