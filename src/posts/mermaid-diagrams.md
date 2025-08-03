@@ -1,5 +1,5 @@
 ---
-title: Rendering Mermaid Diagrams on Blog Posts
+title: Mermaid Diagrams
 date: June 25, 2025
 description: Using Mermaid.js to create diagrams in markdown blog posts
 tags: [Mermaid, Visualization, Diagrams]
