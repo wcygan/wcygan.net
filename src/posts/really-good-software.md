@@ -17,7 +17,7 @@ https://github.com/ghostty-org/ghostty
 
 I used [iterm2](https://iterm2.com/) and [warp](https://www.warp.dev/) before, and I haven't looked back since
 
-Anything other than the MacOS default terminal is fine, but [Ghostty](https://ghostty.org/) is *mega fine*
+Anything other than the MacOS default terminal is fine, but [Ghostty](https://ghostty.org/) is *mega fine*!
 
 # Zed
 
@@ -33,7 +33,7 @@ https://github.com/fish-shell/fish-shell
 
 I really like the [tab completion](https://fishshell.com/docs/current/interactive.html#tab-completion) and [syntax highlighting](https://fishshell.com/docs/current/tutorial.html#syntax-highlighting)
 
-Not much else to say, it just feels good
+Not much else to say, it just feels good.
 
 # LazyGit
 
@@ -82,7 +82,7 @@ I use this to fuzzy-search my `history`. It's similar to doing this:
 history | nl | fzf
 ```
 
-This makes it really easy to find commands you did in the past
+This makes it really easy to find commands you did in the past.
 
 # fd
 
@@ -101,7 +101,7 @@ tsconfig.json
 
 https://github.com/jqlang/jq
 
-Make your json pretty and run commands on it
+Make your json pretty and run commands on it.
 
 ```bash
 → cat deno.json | jq 'keys'
@@ -115,3 +115,16 @@ Make your json pretty and run commands on it
   "fix-mermaid": "deno run --allow-read --allow-write scripts/fix-mermaid-formatting.ts"
 }
 ```
+
+# Starship
+
+https://github.com/starship/starship
+
+My prompt:
+
+```bash
+wcygan@foobar wcygan.net on main
+→
+```
+
+You can customize it in very dynamic ways too, if that's what you want.
