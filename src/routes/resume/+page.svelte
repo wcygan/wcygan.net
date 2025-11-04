@@ -10,21 +10,28 @@
 <div class="mx-auto max-w-3xl">
 	<div class="mb-8 flex items-center justify-between">
 		<h1 class="text-4xl font-bold">Resume</h1>
-		<a href="/will_cygan_resume.pdf" 
-           class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2 text-white"
-           target="_blank">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Download PDF
-        </a>
+		<a
+			href="/will_cygan_resume.pdf"
+			class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700"
+			target="_blank"
+		>
+			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+				/>
+			</svg>
+			Download PDF
+		</a>
 	</div>
 
 	<div class="prose prose-emerald prose-invert max-w-none">
 		<section class="mb-8">
 			<h2>Experience</h2>
 
-			<div class="mb-6 card-base border border-zinc-700">
+			<div class="card-base mb-6 border border-zinc-700">
 				<div class="mb-3 flex items-start justify-between">
 					<div>
 						<h3 class="mb-1 text-xl font-bold">Software Engineer</h3>

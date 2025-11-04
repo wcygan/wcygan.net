@@ -22,7 +22,7 @@
 		--spacing-section: 2rem;
 
 		/* Typography - Match modern minimal design system fonts */
-		--font-base: system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif;
+		--font-base: system, -apple-system, 'system-ui', 'Helvetica Neue', 'Lucida Grande', sans-serif;
 		--font-mono: 'Courier New', monospace;
 	}
 
@@ -65,7 +65,7 @@
 
 	/* Links - match modern minimal design exactly */
 	a {
-		color: rgb(46, 104, 16);  /* Exact modern minimal design green */
+		color: rgb(46, 104, 16); /* Exact modern minimal design green */
 		text-decoration: none;
 		font-weight: 700;
 	}
@@ -137,7 +137,7 @@
 
 	/* Bio highlight section - match modern minimal design exactly */
 	.bio-highlight {
-		background-color: rgb(92, 139, 63);  /* Exact modern minimal design green */
+		background-color: rgb(92, 139, 63); /* Exact modern minimal design green */
 		color: rgb(255, 255, 255);
 		padding: 12px 20px;
 		margin-bottom: 20px;
@@ -181,10 +181,10 @@
 	}
 
 	.post-title a {
-		color: rgb(92, 139, 63);  /* Match the title green from modern minimal design */
+		color: rgb(92, 139, 63); /* Match the title green from modern minimal design */
 		text-decoration: underline;
 		font-weight: normal;
-		font-size: 18px;  /* Match body text size like modern minimal design */
+		font-size: 18px; /* Match body text size like modern minimal design */
 	}
 
 	.post-title a:hover {
@@ -208,7 +208,7 @@
 	}
 
 	.blog-post .post-title {
-		color: rgb(92, 139, 63);  /* Green title like modern minimal design */
+		color: rgb(92, 139, 63); /* Green title like modern minimal design */
 		font-size: 36px;
 		font-weight: bold;
 		line-height: 1;
@@ -257,7 +257,7 @@
 	}
 
 	.post-content a {
-		color: rgb(46, 104, 16);  /* Link green from design.md */
+		color: rgb(46, 104, 16); /* Link green from design.md */
 		text-decoration: underline;
 		font-weight: 700;
 	}
@@ -331,7 +331,7 @@
 
 	/* Design.md compatible utility classes */
 	.text-primary-green {
-		color: rgb(92, 139, 63) !important;  /* Primary green from design.md */
+		color: rgb(92, 139, 63) !important; /* Primary green from design.md */
 	}
 
 	.hover\\:text-primary-green:hover {
@@ -339,53 +339,53 @@
 	}
 
 	.bg-light-background {
-		background: rgb(249, 249, 249) !important;  /* Light background from design.md */
+		background: rgb(249, 249, 249) !important; /* Light background from design.md */
 	}
 
 	.border-primary-green {
-		border-color: rgb(92, 139, 63) !important;  /* Primary green border */
+		border-color: rgb(92, 139, 63) !important; /* Primary green border */
 	}
 
 	.post-content .bg-zinc-700\/50,
 	.post-content .bg-zinc-700,
-	.post-content [class*="bg-zinc"] {
-		background: rgb(249, 249, 249) !important;  /* Light gray background */
-		border: 1px solid rgb(222, 222, 222) !important;  /* Light border */
+	.post-content [class*='bg-zinc'] {
+		background: rgb(249, 249, 249) !important; /* Light gray background */
+		border: 1px solid rgb(222, 222, 222) !important; /* Light border */
 	}
 
 	.post-content .text-emerald-400,
 	.post-content .text-emerald-300,
-	.post-content [class*="text-emerald"] {
-		color: rgb(92, 139, 63) !important;  /* Primary green for titles */
+	.post-content [class*='text-emerald'] {
+		color: rgb(92, 139, 63) !important; /* Primary green for titles */
 	}
 
 	.post-content .text-zinc-300,
 	.post-content .text-zinc-400,
-	.post-content [class*="text-zinc"] {
-		color: rgb(0, 0, 0) !important;  /* Black text */
+	.post-content [class*='text-zinc'] {
+		color: rgb(0, 0, 0) !important; /* Black text */
 	}
 
 	.post-content .border-zinc-600,
-	.post-content [class*="border-zinc"] {
-		border-color: rgb(222, 222, 222) !important;  /* Light border */
+	.post-content [class*='border-zinc'] {
+		border-color: rgb(222, 222, 222) !important; /* Light border */
 	}
 
 	.post-content .bg-emerald-900\/20 {
-		background: rgb(249, 249, 249) !important;  /* Light background for info boxes */
+		background: rgb(249, 249, 249) !important; /* Light background for info boxes */
 	}
 
 	.post-content .border-emerald-400\/30 {
-		border-color: rgb(92, 139, 63) !important;  /* Green border */
+		border-color: rgb(92, 139, 63) !important; /* Green border */
 	}
 
 	/* Mermaid diagram container override - match light theme */
 	.post-content .mermaid-container {
-		background: rgb(249, 249, 249) !important;  /* Light background instead of dark */
-		border: 1px solid rgb(222, 222, 222) !important;  /* Light border */
+		background: rgb(249, 249, 249) !important; /* Light background instead of dark */
+		border: 1px solid rgb(222, 222, 222) !important; /* Light border */
 	}
 
 	.post-content .bg-zinc-900 {
-		background: rgb(249, 249, 249) !important;  /* Light background */
+		background: rgb(249, 249, 249) !important; /* Light background */
 	}
 
 	/* Simple button styling when needed */
@@ -414,7 +414,9 @@
 	border-radius: 3px;
 	overflow-x: auto;
 	position: relative;
-	font-family: Consolas, Menlo, 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier, monospace;
+	font-family:
+		Consolas, Menlo, 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier,
+		monospace;
 	font-size: 14px;
 	line-height: 14px;
 }
@@ -469,12 +471,12 @@
 }
 
 .shiki button::before {
-	content: "📋";
+	content: '📋';
 	font-size: 12px;
 }
 
 .shiki button::after {
-	content: "Copy";
+	content: 'Copy';
 }
 
 .shiki:hover button {
@@ -494,11 +496,11 @@
 }
 
 .shiki button.copied::before {
-	content: "✅";
+	content: '✅';
 }
 
 .shiki button.copied::after {
-	content: "Copied!";
+	content: 'Copied!';
 }
 
 .shiki button.copied {

@@ -40,26 +40,31 @@ All colors follow a consistent design system for perfect visual consistency:
 
 ### Color Usage Guidelines
 
-**Green (`#5c8b3f`)**: 
+**Green (`#5c8b3f`)**:
+
 - Page titles (blog posts, main headings)
 - Bio banner background
 - Header border line
 - H3 subheadings in content
 
 **Dark Green (`#2e6810`)**:
+
 - All links (underlined)
 - Interactive elements
 
 **Black (`#000000`)**:
+
 - Body text
 - H1 and H2 headings in content
 - Site title
 
 **Gray (`#666666`)**:
+
 - Dates and timestamps
 - H2 headings in content (secondary)
 
 **Light Gray (`#aaaaaa`)**:
+
 - Navigation links
 - Secondary UI elements
 
@@ -78,6 +83,7 @@ font-family: 'Courier New', monospace;
 ### Typography Hierarchy
 
 **Site Title (Header)**:
+
 ```css
 font-size: 18px;
 font-weight: bold;
@@ -86,6 +92,7 @@ color: rgb(0, 0, 0);
 ```
 
 **Blog Post Titles**:
+
 ```css
 font-size: 36px;
 font-weight: bold;
@@ -95,6 +102,7 @@ margin-bottom: 30px;
 ```
 
 **Navigation**:
+
 ```css
 font-size: 14px;
 text-transform: uppercase;
@@ -103,6 +111,7 @@ font-weight: normal;
 ```
 
 **Body Text**:
+
 ```css
 font-size: 18px;
 line-height: 28px;  /* 1.56 ratio for readability */
@@ -110,6 +119,7 @@ color: rgb(0, 0, 0);
 ```
 
 **Dates/Meta**:
+
 ```css
 font-size: 18px;
 font-style: italic;
@@ -119,6 +129,7 @@ color: rgb(102, 102, 102);
 ### Content Hierarchy
 
 **H1 (Content)**:
+
 ```css
 font-size: 36px;
 font-weight: bold;
@@ -127,6 +138,7 @@ margin-bottom: 30px;
 ```
 
 **H2 (Content)**:
+
 ```css
 font-size: 28px;
 font-weight: bold;
@@ -135,6 +147,7 @@ margin-bottom: 30px;
 ```
 
 **H3 (Content)**:
+
 ```css
 font-size: 24px;
 font-weight: bold;
@@ -176,12 +189,14 @@ margin-bottom: 30px;
 ### Spacing System
 
 **Consistent Spacing**:
+
 - Paragraph margins: `30px` bottom
 - Section spacing: `40px` between major sections
 - Element spacing: `12px` for padding
 - Header margin: `8px 12px 12px`
 
 **Component Spacing**:
+
 ```css
 /* Post List Items */
 .post-item {
@@ -213,6 +228,7 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 ```
 
 **Styling Requirements**:
+
 - Green bottom border
 - Uppercase site title
 - Inline navigation links
@@ -227,6 +243,7 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 ```
 
 **Styling Requirements**:
+
 - Green background (`rgb(92, 139, 63)`)
 - White text
 - 20px padding
@@ -246,6 +263,7 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 ```
 
 **Styling Requirements**:
+
 - Flex layout with space-between
 - Green underlined links
 - Gray dates aligned right
@@ -268,6 +286,7 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 ```
 
 **Styling Requirements**:
+
 - Green post title
 - Italic gray date
 - Proper content spacing
@@ -278,6 +297,7 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 ### Links
 
 **Default State**:
+
 ```css
 color: rgb(92, 139, 63);  /* Content links */
 color: rgb(46, 104, 16);  /* Navigation links */
@@ -286,12 +306,14 @@ font-weight: normal;
 ```
 
 **Hover State**:
+
 ```css
 text-decoration: underline;  /* Maintain underline */
 color: inherit;              /* Keep same color */
 ```
 
 **Banner Links (Special)**:
+
 ```css
 color: rgb(255, 255, 255);   /* White on green background */
 text-decoration: underline;
@@ -301,6 +323,7 @@ font-weight: bold;
 ### Navigation
 
 **Nav Link Styling**:
+
 ```css
 font-size: 14px;
 text-transform: uppercase;
@@ -311,6 +334,7 @@ display: inline-block;
 ```
 
 **Nav Link Hover**:
+
 ```css
 text-decoration: underline;
 ```
@@ -383,7 +407,7 @@ img {
 ### Breakpoints
 
 - **Mobile**: < 768px
-- **Tablet**: 768px - 1024px  
+- **Tablet**: 768px - 1024px
 - **Desktop**: > 1024px
 
 ### Mobile Adjustments
@@ -393,12 +417,12 @@ img {
   .container {
     padding: 8px 12px;
   }
-  
+
   .post-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .post-date {
     margin-left: 0;
     margin-top: 4px;
@@ -411,6 +435,7 @@ img {
 ### Color Contrast
 
 All color combinations meet WCAG AA standards:
+
 - Black text on white: 21:1 ratio
 - Green links on white: 4.5:1+ ratio
 - White text on green: 4.5:1+ ratio
@@ -418,6 +443,7 @@ All color combinations meet WCAG AA standards:
 ### Semantic HTML
 
 **Required Elements**:
+
 - `<header>` for site header
 - `<main>` for main content
 - `<article>` for blog posts
@@ -439,11 +465,13 @@ All color combinations meet WCAG AA standards:
 ### CSS Architecture
 
 **File Structure**:
+
 - All styles in `src/app.css`
 - Component-specific CSS via CSS classes
 - No inline styles except for dynamic content
 
 **CSS Organization**:
+
 1. CSS resets and base styles
 2. Typography definitions
 3. Layout components
@@ -454,6 +482,7 @@ All color combinations meet WCAG AA standards:
 ### Route Structure
 
 **Blog Posts**: `/{slug}` (not `/blog/{slug}`)
+
 - Clean URLs matching modern minimal design
 - Direct access to posts
 - Simplified navigation
@@ -461,6 +490,7 @@ All color combinations meet WCAG AA standards:
 ### Performance
 
 **Optimization Strategies**:
+
 - System fonts (no web font loading)
 - Minimal CSS (< 10KB)
 - No JavaScript for styling
@@ -489,7 +519,7 @@ All color combinations meet WCAG AA standards:
 ### Functional Verification
 
 - [ ] All links work correctly
-- [ ] Navigation functions properly  
+- [ ] Navigation functions properly
 - [ ] Blog posts load and display correctly
 - [ ] RSS feed generates proper URLs
 - [ ] Mobile responsive design works

@@ -7,7 +7,8 @@
 
 <div class="bio-highlight">
 	<p>
-		Software Engineer at <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a> building e-commerce infrastructure.
+		Software Engineer at <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a> building e-commerce
+		infrastructure.
 	</p>
 </div>
 

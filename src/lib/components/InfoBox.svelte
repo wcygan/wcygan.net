@@ -30,9 +30,10 @@
 
 <div class="my-6 rounded-lg p-4 {currentStyle.container}">
 	<h4 class="mb-2 font-semibold {currentStyle.title}">
-		{currentStyle.icon} {title}
+		{currentStyle.icon}
+		{title}
 	</h4>
-	<div class="{currentStyle.content}">
+	<div class={currentStyle.content}>
 		{@render children()}
 	</div>
 </div>

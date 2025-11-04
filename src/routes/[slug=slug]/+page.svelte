@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	
+
 	export let data: PageData;
 </script>
 
@@ -16,7 +16,7 @@
 			<time datetime={data.meta.date}>{data.meta.date}</time>
 		</div>
 	</header>
-	
+
 	<div class="post-content">
 		<svelte:component this={data.content} />
 	</div>

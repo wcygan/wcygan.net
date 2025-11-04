@@ -152,7 +152,8 @@
 			errorTextColor: '#D55E00', // Red-orange for error text (colorblind-safe)
 
 			// Font settings - matching design.md
-			fontFamily: 'system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif',
+			fontFamily:
+				'system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif',
 			fontSize: '16px' // Clear, readable font size
 		}
 	};
@@ -531,8 +532,8 @@
 	.mermaid-container {
 		margin: 1.5rem 0;
 		text-align: center;
-		background: rgb(249, 249, 249);  /* Light gray background from design.md */
-		border: 1px solid rgb(222, 222, 222);  /* Light border from design.md */
+		background: rgb(249, 249, 249); /* Light gray background from design.md */
+		border: 1px solid rgb(222, 222, 222); /* Light border from design.md */
 	}
 
 	.hidden {
