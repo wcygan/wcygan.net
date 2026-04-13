@@ -1,543 +1,584 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* Design System - Light Theme inspired by modern minimal design */
 @layer base {
-	:root {
-		/* Light theme colors */
-		--color-primary: #4a7c4a; /* muted green similar to modern minimal design */
-		--color-primary-hover: #3a6b3a;
-		--color-bg-base: #ffffff;
-		--color-bg-surface: #f9f9f9;
-		--color-bg-highlight: #4a7c4a; /* green highlight for bio sections */
-		--color-text-base: #333333;
-		--color-text-muted: #666666;
-		--color-text-light: #999999;
-		--color-border: #e0e0e0;
-		--color-link: #4a7c4a;
-		--color-link-hover: #3a6b3a;
+  :root {
+    /* Light theme colors */
+    --color-primary: #4a7c4a; /* muted green similar to modern minimal design */
+    --color-primary-hover: #3a6b3a;
+    --color-bg-base: #ffffff;
+    --color-bg-surface: #f9f9f9;
+    --color-bg-highlight: #4a7c4a; /* green highlight for bio sections */
+    --color-text-base: #333333;
+    --color-text-muted: #666666;
+    --color-text-light: #999999;
+    --color-border: #e0e0e0;
+    --color-link: #4a7c4a;
+    --color-link-hover: #3a6b3a;
 
-		/* Spacing - simplified */
-		--spacing-section: 2rem;
+    /* Spacing - simplified */
+    --spacing-section: 2rem;
 
-		/* Typography - Match modern minimal design system fonts */
-		--font-base: system, -apple-system, 'system-ui', 'Helvetica Neue', 'Lucida Grande', sans-serif;
-		--font-mono: 'Courier New', monospace;
-	}
+    /* Typography - Match modern minimal design system fonts */
+    --font-base:
+      system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande",
+      sans-serif;
+    --font-mono: "Courier New", monospace;
+  }
 
-	/* Base elements - clean and minimal */
-	html {
-		scroll-behavior: smooth;
-	}
+  /* Base elements - clean and minimal */
+  html {
+    scroll-behavior: smooth;
+  }
 
-	body {
-		@apply bg-white text-black;
-		font-family: var(--font-base);
-		font-size: 18px;
-		line-height: 1.6;
-		-webkit-font-smoothing: antialiased;
-	}
+  body {
+    @apply bg-white text-black;
+    font-family: var(--font-base);
+    font-size: 19px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
 
-	/* Typography hierarchy - match modern minimal design exactly */
-	h1 {
-		font-size: 18px;
-		font-weight: 700;
-		color: black;
-		margin-bottom: 0;
-		line-height: 1;
-	}
+  /* Typography hierarchy - match modern minimal design exactly */
+  h1 {
+    font-size: 18px;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 0;
+    line-height: 1;
+  }
 
-	h2 {
-		@apply mb-3 text-2xl font-normal text-gray-900;
-	}
+  h2 {
+    @apply mb-3 text-2xl font-normal text-gray-900;
+  }
 
-	h3 {
-		@apply mb-2 text-xl font-normal text-gray-900;
-	}
+  h3 {
+    @apply mb-2 text-xl font-normal text-gray-900;
+  }
 
-	/* Paragraphs - match modern minimal design line height */
-	p {
-		overflow-wrap: break-word;
-		line-height: 28px;
-		margin-bottom: 30px;
-	}
+  /* Paragraphs - improved typographic rhythm */
+  p {
+    overflow-wrap: break-word;
+    line-height: 32px;
+    margin-bottom: 1.5em;
+  }
 
-	/* Links - match modern minimal design exactly */
-	a {
-		color: rgb(46, 104, 16); /* Exact modern minimal design green */
-		text-decoration: none;
-		font-weight: 700;
-	}
+  /* Links - match modern minimal design exactly */
+  a {
+    color: rgb(46, 104, 16); /* Exact modern minimal design green */
+    text-decoration: none;
+    font-weight: 700;
+  }
 
-	a:hover {
-		text-decoration: underline;
-	}
+  a:hover {
+    text-decoration: underline;
+  }
 
-	/* Focus styles for accessibility */
-	:focus-visible {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 2px;
-	}
+  /* Focus styles for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 /* Layout Components - Minimal and Clean */
 @layer components {
-	/* Main container - match modern minimal design exactly */
-	.container {
-		margin-left: auto;
-		margin-right: auto;
-		max-width: 800px;
-		width: 100%;
-	}
+  /* Main container - match modern minimal design exactly */
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+    width: 100%;
+  }
 
-	/* Header styling - match modern minimal design exactly */
-	.site-header {
-		margin: 8px 12px 12px;
-		padding-bottom: 8px;
-		border-bottom: 1px solid rgb(92, 139, 63);
-	}
+  /* Header styling - match modern minimal design exactly */
+  .site-header {
+    margin: 8px 12px 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgb(92, 139, 63);
+  }
 
-	.site-title {
-		text-transform: uppercase;
-		font-weight: bold;
-		font-size: 18px;
-		margin: 0;
-		color: black;
-	}
+  .site-title {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 18px;
+    margin: 0;
+    color: black;
+  }
 
-	.site-title a {
-		color: black;
-		text-decoration: none;
-		font-weight: bold;
-	}
+  .site-title a {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+  }
 
-	.site-nav {
-		margin: 0;
-		padding: 0;
-	}
+  .site-nav {
+    margin: 0;
+    padding: 0;
+  }
 
-	.site-nav a {
-		font-size: 14px;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: rgb(170, 170, 170);
-		padding: 0 5px 0 0;
-		display: inline-block;
-	}
+  .site-nav a {
+    font-size: 14px;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgb(170, 170, 170);
+    padding: 0 5px 0 0;
+    display: inline-block;
+  }
 
-	.site-nav a:hover {
-		text-decoration: underline;
-	}
+  .site-nav a:hover {
+    text-decoration: underline;
+  }
 
-	/* Section styling - match modern minimal design */
-	.main-section {
-		padding: 12px;
-	}
+  /* Section styling - match modern minimal design */
+  .main-section {
+    padding: 12px;
+  }
 
-	/* Bio highlight section - match modern minimal design exactly */
-	.bio-highlight {
-		background-color: rgb(92, 139, 63); /* Exact modern minimal design green */
-		color: rgb(255, 255, 255);
-		padding: 12px 20px;
-		margin-bottom: 20px;
-		line-height: 1.4;
-	}
+  /* Bio highlight section - match modern minimal design exactly */
+  .bio-highlight {
+    background-color: rgb(92, 139, 63); /* Exact modern minimal design green */
+    color: rgb(255, 255, 255);
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
 
-	.bio-highlight p {
-		margin: 0;
-		font-size: 18px;
-	}
+  .bio-highlight p {
+    margin: 0;
+    font-size: 18px;
+  }
 
-	.bio-highlight a {
-		color: rgb(255, 255, 255);
-		text-decoration: underline;
-		font-weight: 400;
-	}
+  .bio-highlight a {
+    color: rgb(255, 255, 255);
+    text-decoration: underline;
+    font-weight: 400;
+  }
 
-	.bio-highlight a:hover {
-		color: rgb(255, 255, 255);
-		text-decoration: underline;
-	}
+  .bio-highlight a:hover {
+    color: rgb(255, 255, 255);
+    text-decoration: underline;
+  }
 
-	/* Post list - match modern minimal design exactly */
-	.post-list {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
+  /* Post list - match modern minimal design exactly */
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
 
-	.post-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		padding: 5px 0;
-		margin-bottom: 16px;
-	}
+  .post-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 5px 0;
+    margin-bottom: 16px;
+  }
 
-	.post-title {
-		margin: 0;
-		flex: 1;
-	}
+  .post-title {
+    margin: 0;
+    flex: 1;
+  }
 
-	.post-title a {
-		color: rgb(92, 139, 63); /* Match the title green from modern minimal design */
-		text-decoration: underline;
-		font-weight: normal;
-		font-size: 18px; /* Match body text size like modern minimal design */
-	}
+  .post-title a {
+    color: rgb(
+      92,
+      139,
+      63
+    ); /* Match the title green from modern minimal design */
+    text-decoration: underline;
+    font-weight: normal;
+    font-size: 18px; /* Match body text size like modern minimal design */
+  }
 
-	.post-title a:hover {
-		text-decoration: underline;
-	}
+  .post-title a:hover {
+    text-decoration: underline;
+  }
 
-	.post-date {
-		color: rgb(102, 102, 102);
-		font-size: 18px;
-		margin-left: 16px;
-		white-space: nowrap;
-	}
+  .post-date {
+    color: rgb(102, 102, 102);
+    font-size: 18px;
+    margin-left: 16px;
+    white-space: nowrap;
+  }
 
-	/* Blog post styling - match modern minimal design exactly */
-	.blog-post {
-		padding: 12px;
-	}
+  /* Blog post styling - match modern minimal design exactly */
+  .blog-post {
+    padding: 12px;
+  }
 
-	.post-header {
-		margin-bottom: 30px;
-	}
+  .post-header {
+    margin-bottom: 30px;
+  }
 
-	.blog-post .post-title {
-		color: rgb(92, 139, 63); /* Green title like modern minimal design */
-		font-size: 36px;
-		font-weight: bold;
-		line-height: 1;
-		margin-bottom: 30px;
-	}
+  .blog-post .post-title {
+    color: rgb(92, 139, 63); /* Green title like modern minimal design */
+    font-size: 36px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 30px;
+  }
 
-	.post-meta {
-		color: rgb(102, 102, 102);
-		font-style: italic;
-		font-size: 18px;
-		margin-bottom: 30px;
-	}
+  .post-meta {
+    color: rgb(102, 102, 102);
+    font-style: normal;
+    font-size: 13px;
+    font-variant: small-caps;
+    letter-spacing: 0.06em;
+    text-transform: lowercase;
+    margin-bottom: 36px;
+  }
 
-	.post-content {
-		/* Match modern minimal design content styling */
-	}
+  .post-content {
+    /* Match modern minimal design content styling */
+  }
 
-	.post-content h1 {
-		color: rgb(0, 0, 0);
-		font-size: 36px;
-		font-weight: bold;
-		margin-bottom: 30px;
-		line-height: 1;
-	}
+  .post-content h1 {
+    color: rgb(0, 0, 0);
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 2.4em;
+    margin-bottom: 0.5em;
+    line-height: 1.1;
+  }
 
-	.post-content h2 {
-		color: rgb(102, 102, 102);
-		font-size: 28px;
-		font-weight: bold;
-		margin-bottom: 30px;
-		line-height: 1;
-	}
+  .post-content h2 {
+    color: rgb(102, 102, 102);
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 2.2em;
+    margin-bottom: 0.4em;
+    line-height: 1.2;
+  }
 
-	.post-content h3 {
-		color: rgb(92, 139, 63);
-		font-size: 24px;
-		font-weight: bold;
-		margin-bottom: 30px;
-		line-height: 1;
-	}
+  .post-content h3 {
+    color: rgb(92, 139, 63);
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 2em;
+    margin-bottom: 0.4em;
+    line-height: 1.25;
+  }
 
-	.post-content p {
-		overflow-wrap: break-word;
-		line-height: 28px;
-		margin-bottom: 30px;
-	}
+  /* Headings that immediately follow another heading need less top space */
+  .post-content h1 + h2,
+  .post-content h2 + h3 {
+    margin-top: 0.8em;
+  }
 
-	.post-content a {
-		color: rgb(46, 104, 16); /* Link green from design.md */
-		text-decoration: underline;
-		font-weight: 700;
-	}
+  .post-content p {
+    overflow-wrap: break-word;
+    font-size: 19px;
+    line-height: 32px;
+    margin-bottom: 1.5em;
+  }
 
-	.post-content a:hover {
-		color: rgb(46, 104, 16);
-		text-decoration: underline;
-	}
+  /* First-paragraph lede: slightly larger, confident weight, no indent */
+  .post-content > p:first-of-type {
+    font-size: 20px;
+    line-height: 34px;
+    font-weight: 450;
+    margin-bottom: 1.6em;
+  }
 
-	.post-content ul,
-	.post-content ol {
-		margin-bottom: 30px;
-		padding-left: 20px;
-	}
+  .post-content a {
+    color: rgb(46, 104, 16); /* Link green from design.md */
+    text-decoration: underline;
+    font-weight: 700;
+  }
 
-	.post-content ul {
-		list-style-type: disc;
-		list-style-position: outside;
-	}
+  .post-content a:hover {
+    color: rgb(46, 104, 16);
+    text-decoration: underline;
+  }
 
-	.post-content ol {
-		list-style-type: decimal;
-		list-style-position: outside;
-	}
+  .post-content ul,
+  .post-content ol {
+    margin-bottom: 1.5em;
+    padding-left: 1.4em;
+    line-height: 32px;
+  }
 
-	.post-content li {
-		padding: 5px 0;
-	}
+  .post-content ul {
+    list-style-type: disc;
+    list-style-position: outside;
+  }
 
-	.post-content img {
-		max-width: 100%;
-		height: auto;
-		margin-bottom: 30px;
-	}
+  .post-content ol {
+    list-style-type: decimal;
+    list-style-position: outside;
+  }
 
-	.post-content table {
-		width: 100%;
-		border-collapse: collapse;
-		margin-bottom: 30px;
-	}
+  .post-content li {
+    padding: 3px 0;
+    font-size: 19px;
+  }
 
-	.post-content th,
-	.post-content td {
-		border: 1px solid rgb(222, 222, 222);
-		padding: 8px 12px;
-		text-align: left;
-	}
+  .post-content img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 30px;
+  }
 
-	.post-content th {
-		background: rgb(249, 249, 249);
-		font-weight: bold;
-	}
+  .post-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+  }
 
-	.post-content pre {
-		padding: 18px 30px;
-		background: rgb(249, 249, 249);
-		border: 1px solid rgb(222, 222, 222);
-		overflow-x: auto;
-		margin-bottom: 30px;
-	}
+  .post-content th,
+  .post-content td {
+    border: 1px solid rgb(222, 222, 222);
+    padding: 8px 12px;
+    text-align: left;
+  }
 
-	.post-content code {
-		font-family: 'Courier New', monospace;
-		font-size: 16px;
-	}
+  .post-content th {
+    background: rgb(249, 249, 249);
+    font-weight: bold;
+  }
 
-	/* Override dark theme content - match design.md specifications */
-	.post-content .grid {
-		/* Grid layouts should inherit light theme styles */
-	}
+  .post-content pre {
+    padding: 18px 30px;
+    background: rgb(249, 249, 249);
+    border: 1px solid rgb(222, 222, 222);
+    overflow-x: auto;
+    margin-bottom: 30px;
+  }
 
-	/* Design.md compatible utility classes */
-	.text-primary-green {
-		color: rgb(92, 139, 63) !important; /* Primary green from design.md */
-	}
+  .post-content code {
+    font-family: "Courier New", monospace;
+    font-size: 16px;
+  }
 
-	.hover\\:text-primary-green:hover {
-		color: rgb(92, 139, 63) !important;
-	}
+  /* Override dark theme content - match design.md specifications */
+  .post-content .grid {
+    /* Grid layouts should inherit light theme styles */
+  }
 
-	.bg-light-background {
-		background: rgb(249, 249, 249) !important; /* Light background from design.md */
-	}
+  /* Design.md compatible utility classes */
+  .text-primary-green {
+    color: rgb(92, 139, 63) !important; /* Primary green from design.md */
+  }
 
-	.border-primary-green {
-		border-color: rgb(92, 139, 63) !important; /* Primary green border */
-	}
+  .hover\\:text-primary-green:hover {
+    color: rgb(92, 139, 63) !important;
+  }
 
-	.post-content .bg-zinc-700\/50,
-	.post-content .bg-zinc-700,
-	.post-content [class*='bg-zinc'] {
-		background: rgb(249, 249, 249) !important; /* Light gray background */
-		border: 1px solid rgb(222, 222, 222) !important; /* Light border */
-	}
+  .bg-light-background {
+    background: rgb(
+      249,
+      249,
+      249
+    ) !important; /* Light background from design.md */
+  }
 
-	.post-content .text-emerald-400,
-	.post-content .text-emerald-300,
-	.post-content [class*='text-emerald'] {
-		color: rgb(92, 139, 63) !important; /* Primary green for titles */
-	}
+  .border-primary-green {
+    border-color: rgb(92, 139, 63) !important; /* Primary green border */
+  }
 
-	.post-content .text-zinc-300,
-	.post-content .text-zinc-400,
-	.post-content [class*='text-zinc'] {
-		color: rgb(0, 0, 0) !important; /* Black text */
-	}
+  .post-content .bg-zinc-700\/50,
+  .post-content .bg-zinc-700,
+  .post-content [class*="bg-zinc"] {
+    background: rgb(249, 249, 249) !important; /* Light gray background */
+    border: 1px solid rgb(222, 222, 222) !important; /* Light border */
+  }
 
-	.post-content .border-zinc-600,
-	.post-content [class*='border-zinc'] {
-		border-color: rgb(222, 222, 222) !important; /* Light border */
-	}
+  .post-content .text-emerald-400,
+  .post-content .text-emerald-300,
+  .post-content [class*="text-emerald"] {
+    color: rgb(92, 139, 63) !important; /* Primary green for titles */
+  }
 
-	.post-content .bg-emerald-900\/20 {
-		background: rgb(249, 249, 249) !important; /* Light background for info boxes */
-	}
+  .post-content .text-zinc-300,
+  .post-content .text-zinc-400,
+  .post-content [class*="text-zinc"] {
+    color: rgb(0, 0, 0) !important; /* Black text */
+  }
 
-	.post-content .border-emerald-400\/30 {
-		border-color: rgb(92, 139, 63) !important; /* Green border */
-	}
+  .post-content .border-zinc-600,
+  .post-content [class*="border-zinc"] {
+    border-color: rgb(222, 222, 222) !important; /* Light border */
+  }
 
-	/* Mermaid diagram container override - match light theme */
-	.post-content .mermaid-container {
-		background: rgb(249, 249, 249) !important; /* Light background instead of dark */
-		border: 1px solid rgb(222, 222, 222) !important; /* Light border */
-	}
+  .post-content .bg-emerald-900\/20 {
+    background: rgb(
+      249,
+      249,
+      249
+    ) !important; /* Light background for info boxes */
+  }
 
-	.post-content .bg-zinc-900 {
-		background: rgb(249, 249, 249) !important; /* Light background */
-	}
+  .post-content .border-emerald-400\/30 {
+    border-color: rgb(92, 139, 63) !important; /* Green border */
+  }
 
-	/* Simple button styling when needed */
-	.btn {
-		@apply inline-block px-4 py-2 text-sm;
-		background: var(--color-primary);
-		color: white;
-		text-decoration: none;
-		border-radius: 3px;
-		transition: background-color 0.2s ease;
-	}
+  /* Mermaid diagram container override - match light theme */
+  .post-content .mermaid-container {
+    background: rgb(
+      249,
+      249,
+      249
+    ) !important; /* Light background instead of dark */
+    border: 1px solid rgb(222, 222, 222) !important; /* Light border */
+  }
 
-	.btn:hover {
-		background: var(--color-primary-hover);
-		color: white;
-		text-decoration: none;
-	}
+  .post-content .bg-zinc-900 {
+    background: rgb(249, 249, 249) !important; /* Light background */
+  }
+
+  /* Simple button styling when needed */
+  .btn {
+    @apply inline-block px-4 py-2 text-sm;
+    background: var(--color-primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn:hover {
+    background: var(--color-primary-hover);
+    color: white;
+    text-decoration: none;
+  }
 }
 
 /* Code blocks - Shiki integration */
 .shiki {
-	margin: 30px 0;
-	padding: 12px 16px;
-	background: #f5f5f5 !important;
-	border: 1px solid #dedede;
-	border-radius: 3px;
-	overflow-x: auto;
-	position: relative;
-	font-family:
-		Consolas, Menlo, 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', 'Courier New', Courier,
-		monospace;
-	font-size: 14px;
-	line-height: 14px;
+  margin: 30px 0;
+  padding: 12px 16px;
+  background: #f5f5f5 !important;
+  border: 1px solid #dedede;
+  border-radius: 3px;
+  overflow-x: auto;
+  position: relative;
+  font-family:
+    Consolas, Menlo, "Deja Vu Sans Mono", "Bitstream Vera Sans Mono",
+    "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 14px;
 }
 
 .shiki code {
-	font-family: inherit;
-	font-size: inherit;
-	line-height: inherit;
-	background: transparent !important;
-	padding: 0;
-	display: block;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  background: transparent !important;
+  padding: 0;
+  display: block;
 }
 
 .shiki .line {
-	display: block;
-	min-height: 14px;
-	position: relative;
-	padding-left: 2em;
+  display: block;
+  min-height: 14px;
+  position: relative;
+  padding-left: 2em;
 }
 
 .shiki .line::before {
-	content: attr(data-line);
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 1em;
-	text-align: right;
-	color: #999;
-	user-select: none;
-	padding-right: 0.5em;
+  content: attr(data-line);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1em;
+  text-align: right;
+  color: #999;
+  user-select: none;
+  padding-right: 0.5em;
 }
 
 /* Copy button styling with icon */
 .shiki button {
-	position: absolute;
-	top: 8px;
-	right: 8px;
-	background: rgba(255, 255, 255, 0.9);
-	border: 1px solid #ccc;
-	border-radius: 4px;
-	padding: 6px 8px;
-	font-size: 11px;
-	color: #666;
-	cursor: pointer;
-	opacity: 0;
-	transition: all 0.2s ease;
-	z-index: 10;
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	backdrop-filter: blur(4px);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  color: #666;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(4px);
 }
 
 .shiki button::before {
-	content: '📋';
-	font-size: 12px;
+  content: "📋";
+  font-size: 12px;
 }
 
 .shiki button::after {
-	content: 'Copy';
+  content: "Copy";
 }
 
 .shiki:hover button {
-	opacity: 1;
+  opacity: 1;
 }
 
 .shiki button:hover {
-	background: rgba(245, 245, 245, 0.95);
-	color: #333;
-	border-color: #999;
-	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(245, 245, 245, 0.95);
+  color: #333;
+  border-color: #999;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shiki button:active {
-	transform: translateY(0);
+  transform: translateY(0);
 }
 
 .shiki button.copied::before {
-	content: '✅';
+  content: "✅";
 }
 
 .shiki button.copied::after {
-	content: 'Copied!';
+  content: "Copied!";
 }
 
 .shiki button.copied {
-	color: rgb(92, 139, 63);
-	border-color: rgb(92, 139, 63);
-	background: rgba(92, 139, 63, 0.1);
+  color: rgb(92, 139, 63);
+  border-color: rgb(92, 139, 63);
+  background: rgba(92, 139, 63, 0.1);
 }
 
 /* Inline code styling */
 code:not(.shiki code) {
-	@apply rounded bg-gray-100 px-1 py-0.5;
-	font-family: 'Courier New', monospace;
-	font-size: 0.9em;
+  @apply rounded bg-gray-100 px-1 py-0.5;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
 }
 
 /* Fallback for non-Shiki pre blocks */
 pre:not(.shiki) {
-	@apply my-4 overflow-x-auto rounded bg-gray-100 p-4;
-	font-family: 'Courier New', monospace;
+  @apply my-4 overflow-x-auto rounded bg-gray-100 p-4;
+  font-family: "Courier New", monospace;
 }
 
 pre:not(.shiki) code {
-	@apply bg-transparent p-0;
+  @apply bg-transparent p-0;
 }
 
 /* Tables - simple styling */
 table {
-	@apply my-4 w-full border-collapse;
+  @apply my-4 w-full border-collapse;
 }
 
 th,
 td {
-	@apply border border-gray-300 px-3 py-2 text-left;
+  @apply border border-gray-300 px-3 py-2 text-left;
 }
 
 th {
-	@apply bg-gray-100 font-semibold;
+  @apply bg-gray-100 font-semibold;
 }
 
 /* Remove all previous dark theme and complex styling */
@@ -545,31 +586,31 @@ th {
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
-	.container {
-		@apply px-4 py-6;
-	}
+  .container {
+    @apply px-4 py-6;
+  }
 
-	.site-title {
-		@apply text-3xl;
-	}
+  .site-title {
+    @apply text-3xl;
+  }
 
-	.post-item {
-		@apply flex-col items-start;
-	}
+  .post-item {
+    @apply flex-col items-start;
+  }
 
-	.post-date {
-		@apply ml-0 mt-1;
-	}
+  .post-date {
+    @apply ml-0 mt-1;
+  }
 }
 
 /* Print styles */
 @media print {
-	body {
-		@apply text-black;
-	}
+  body {
+    @apply text-black;
+  }
 
-	.site-nav,
-	.bio-highlight {
-		display: none;
-	}
+  .site-nav,
+  .bio-highlight {
+    display: none;
+  }
 }
