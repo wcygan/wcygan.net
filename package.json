@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "bun --bun vite dev",
     "build": "bun --bun vite build",
-    "start": "bun .output/server/index.mjs",
     "preview": "bun --bun vite preview",
+    "preview-static": "bunx serve .output/public",
+    "deploy": "bun run build && npx wrangler deploy",
     "test": "vitest run",
     "format": "prettier --write .",
     "pre-commit": "prettier --write . && tsc --noEmit"

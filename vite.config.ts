@@ -66,15 +66,27 @@ export default defineConfig({
         },
       ],
     }),
-    tanstackStart({ srcDirectory: 'src' }),
+    tanstackStart({
+      srcDirectory: 'src',
+      prerender: {
+        enabled: true,
+        crawlLinks: true,
+        autoSubfolderIndex: true,
+        failOnError: true,
+      },
+    }),
     react(),
     nitro({ preset: 'bun' }),
   ],
   resolve: {
-    alias: {
-      '~': new URL('./src', import.meta.url).pathname,
-      mermaid: 'mermaid/dist/mermaid.esm.min.mjs',
-    },
+    alias: [
+      { find: '~', replacement: new URL('./src', import.meta.url).pathname },
+      { find: /^mermaid$/, replacement: 'mermaid/dist/mermaid.esm.min.mjs' },
+    ],
+  },
+  ssr: {
+    noExternal: [],
+    external: ['mermaid'],
   },
   build: {
     chunkSizeWarningLimit: 600,
