@@ -509,6 +509,118 @@
     }
   }
 
+  /* ─── Post Footer / Wayfinding ─────────────────────────────────── */
+
+  .post-footer {
+    margin-top: 60px;
+    padding-top: 0;
+  }
+
+  /* Thin centered green rule signaling end-of-content */
+  .post-footer__rule {
+    width: 60px;
+    height: 2px;
+    background-color: rgb(92, 139, 63);
+    margin: 0 auto 32px;
+  }
+
+  /* Muted meta recap line */
+  .post-footer__meta {
+    text-align: center;
+    color: rgb(102, 102, 102);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 40px;
+    line-height: 1.4;
+  }
+
+  /* Prev/Next navigation grid */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .post-nav-card {
+    border: 1px solid rgb(222, 222, 222);
+    background: rgb(249, 249, 249);
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .post-nav-card--next {
+    text-align: right;
+    /* If only "next" is present with no "prev", push to right column */
+    grid-column-start: 2;
+  }
+
+  /* When only one card is present the grid still reserves both slots;
+	   prev always occupies column 1, next always column 2 */
+  .post-nav-card--prev {
+    grid-column-start: 1;
+  }
+
+  .post-nav-card__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgb(170, 170, 170);
+  }
+
+  .post-nav-card__title {
+    color: rgb(46, 104, 16);
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    line-height: 1.3;
+  }
+
+  .post-nav-card__title:hover {
+    text-decoration: underline;
+  }
+
+  .post-nav-card__date {
+    font-size: 13px;
+    color: rgb(102, 102, 102);
+    font-style: italic;
+  }
+
+  /* Back to all posts link */
+  .post-footer__back {
+    text-align: center;
+    padding-bottom: 40px;
+  }
+
+  .post-footer__back a {
+    font-size: 14px;
+    color: rgb(102, 102, 102);
+    font-weight: normal;
+    text-decoration: none;
+  }
+
+  .post-footer__back a:hover {
+    color: rgb(46, 104, 16);
+    text-decoration: underline;
+  }
+
+  /* Stack nav cards on mobile */
+  @media (max-width: 600px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .post-nav-card--next {
+      text-align: left;
+      grid-column-start: 1;
+    }
+  }
+
+  /* ─── End Post Footer ───────────────────────────────────────────── */
+
   /* Simple button styling when needed */
   .btn {
     @apply inline-block px-4 py-2 text-sm;
