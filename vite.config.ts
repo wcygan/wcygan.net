@@ -73,6 +73,10 @@ export default defineConfig({
         crawlLinks: true,
         autoSubfolderIndex: true,
         failOnError: true,
+        // Don't re-render static assets (e.g. PDFs) the crawler discovers —
+        // Nitro copies them from public/ verbatim, and running them through
+        // the HTML prerenderer corrupts binary bytes via UTF-8 decoding.
+        filter: ({ path }) => !/\.[a-z0-9]+$/i.test(path),
       },
     }),
     react(),
