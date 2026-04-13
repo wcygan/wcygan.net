@@ -429,6 +429,86 @@
     background: rgb(249, 249, 249) !important; /* Light background */
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Editorial structural tools — pull-quotes, section dividers, etc.   */
+  /* ------------------------------------------------------------------ */
+
+  /* Pull-quote: large, left-bordered callout for a key sentence */
+  .pull-quote {
+    border-left: 4px solid rgb(92, 139, 63);
+    margin: 40px 0 40px -16px;
+    padding: 12px 24px;
+    background: rgb(249, 249, 249);
+  }
+
+  .pull-quote p {
+    font-size: 22px;
+    line-height: 1.5;
+    font-style: italic;
+    color: rgb(0, 0, 0);
+    margin: 0;
+  }
+
+  /* Section rule: editorial horizontal divider — short, green, centered */
+  .section-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 48px 0;
+    border: none;
+  }
+
+  .section-rule::before {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 2px;
+    background: rgb(92, 139, 63);
+  }
+
+  /* Refined blockquote inside post-content */
+  .post-content blockquote {
+    border-left: 3px solid rgb(222, 222, 222);
+    margin: 30px 0 30px 0;
+    padding: 4px 20px;
+    color: rgb(102, 102, 102);
+    font-style: italic;
+  }
+
+  .post-content blockquote p {
+    margin: 0;
+  }
+
+  /* Refined figure + figcaption */
+  .post-content figure {
+    margin: 30px 0;
+  }
+
+  .post-content figcaption {
+    font-size: 14px;
+    color: rgb(102, 102, 102);
+    letter-spacing: 0.03em;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Refined <hr> — short, centered, green */
+  .post-content hr {
+    border: none;
+    display: flex;
+    height: 2px;
+    width: 80px;
+    background: rgb(92, 139, 63);
+    margin: 48px auto;
+  }
+
+  /* Responsive: on small screens pull-quote doesn't bleed into margin */
+  @media (max-width: 640px) {
+    .pull-quote {
+      margin-left: 0;
+    }
+  }
+
   /* Simple button styling when needed */
   .btn {
     @apply inline-block px-4 py-2 text-sm;
