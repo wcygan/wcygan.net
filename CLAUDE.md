@@ -1,155 +1,107 @@
 # CLAUDE.md
 
-Modern UI/UX Engineering guide for wcygan.net - a SvelteKit blog with clean, accessible design.
+Modern UI/UX Engineering guide for wcygan.net — a TanStack Start blog with clean, accessible design.
 
 ## Essential Commands
 
 ```bash
 # Development
-pnpm run dev          # Start development server
-pnpm run preview      # Preview production build
-pnpm run dev:wrangler # Test with Cloudflare Workers
+bun run dev           # Start development server (port 3000)
+bun run build         # Build for production (Nitro + Bun)
+bun run start         # Start production server
+bun run preview       # Preview production build
 
 # Quality & Testing
-pnpm run pre-commit   # Format + lint + typecheck (recommended before commits)
-pnpm run test         # Run Vitest unit tests
-deno task fix-mermaid # Fix Mermaid diagram formatting
-
-# Deployment
-git push origin main  # Auto-deploy to production via Cloudflare Workers
-pnpm run build        # Manual build for Cloudflare Workers
-
-# Content
-pnpm run post         # Create new blog post interactively
+bun run pre-commit    # Format + typecheck (recommended before commits)
+bun run test          # Run Vitest unit tests
 ```
 
-## 5-Step UI/UX Design Framework
+## Technology Stack
 
-### Technology Stack
-
-- **SvelteKit 2.15+** with Cloudflare Workers deployment
-- **Svelte 5** with runes for reactive state management
-- **Tailwind CSS** with Typography plugin for consistent styling
-- **MDsveX** for Markdown blog posts with syntax highlighting
+- **TanStack Start** with TanStack Router for full-stack React SSR
+- **Bun** runtime and package manager
+- **React 19** with hooks for state management
+- **Tailwind CSS 3** with Typography plugin for consistent styling
+- **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component imports
+- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (github-light theme)
+- **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage cached)
 - **TypeScript** with strict mode for type safety
+- **Nitro** with `bun` preset for deployment
 
-### Step 1: Structure & Spacing (The Skeleton)
+A project-local skill (`wcygan-net-stack`) documents Bun, TanStack Start, MDX, and Mermaid patterns in detail under `.claude/skills/wcygan-net-stack/references/`.
 
-**8pt Grid System**: All spacing uses multiples of 8px (`p-4`, `gap-6`, `mb-8`)
+## Project Structure
 
-```css
-/* Layout Container */
-max-width: 800px;        /* Main content width */
-margin-bottom: 30px;     /* Standard element spacing */
+```
+src/
+  routes/              # TanStack Router file-based routes
+    __root.tsx         # Root layout (HTML shell, header, nav, CSS)
+    index.tsx          # Homepage (bio + post list)
+    posts.tsx          # /posts listing
+    $slug.tsx          # /{slug} dynamic blog post route
+    about.tsx          # /about page with experience cards
+    resume.tsx         # /resume page
+    mermaid-examples.tsx  # Mermaid diagram showcase
+    feed.tsx           # /feed RSS page
+  components/          # React components
+    MermaidDiagram.tsx # Mermaid renderer (lazy load, cache, fullscreen)
+    MermaidFullscreen.tsx
+    ExperienceCard.tsx
+    PostCard.tsx
+  lib/
+    types.ts           # TypeScript interfaces (Post, PostMetadata, Experience)
+    services/blog.ts   # Blog post loading via import.meta.glob
+    utils/readingTime.ts
+    utils/mermaid-cache.ts  # SessionStorage diagram caching
+    data/experiences.ts
+  posts/               # MDX blog content (.mdx with YAML frontmatter)
+  styles/app.css       # Global design system CSS (576 lines)
+  router.tsx           # Router factory (must export getRouter)
+public/                # Static assets (images, resume PDF, rss.xml)
 ```
 
-**Responsive Design**: Mobile-first with Tailwind breakpoints
+## Critical Gotchas
 
-- Base: Mobile (< 640px)
-- `sm:`: Small tablets (≥ 640px)
-- `md:`: Tablets (≥ 768px)
-- `lg:`: Desktop (≥ 1024px)
+1. **Loaders must return serializable data only.** Never return React components from TanStack Router loaders — they get JSON-serialized for SSR hydration. Load MDX components client-side via `useEffect`.
 
-### Step 2: Typography & Color (The Visual Style)
+2. **Never use `ref.current.innerHTML` in React components.** Use `dangerouslySetInnerHTML` via state. Direct DOM mutation breaks React's reconciler during hydration.
+
+3. **The `$slug` route is a catch-all.** It rejects slugs with dots in `beforeLoad` so static files (like `rss.xml`) can be served from `public/`.
+
+4. **Mermaid must be dynamically imported** — it's browser-only and ~2MB. Use `import('mermaid')` at runtime.
+
+5. **MDX frontmatter uses `frontmatter`** (not `metadata`). The `remark-mdx-frontmatter` plugin exports under that key.
+
+## Design System
 
 **Color Palette** (Light theme):
+- Primary green: `rgb(92, 139, 63)` — titles, banners, accents
+- Link green: `rgb(46, 104, 16)` — interactive links
+- Text primary: `rgb(0, 0, 0)` — body text
+- Text secondary: `rgb(102, 102, 102)` — dates, metadata
 
-```css
---color-primary-green: rgb(92, 139, 63);    /* Titles, banners, accents */
---color-link-green: rgb(46, 104, 16);       /* Interactive links */
---color-text-primary: rgb(0, 0, 0);         /* Body text */
---color-text-secondary: rgb(102, 102, 102); /* Dates, metadata */
-```
+**Layout**: 800px max-width container, 8pt grid system, system font stack
 
-**Typography Hierarchy**:
+**Accessibility**: WCAG AA contrast, semantic HTML, visible focus rings, ARIA labels
 
-```css
-/* System font stack for performance */
-font-family: system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif;
+## Blog System
 
-/* Sizes */
-font-size: 18px;         /* Base body text */
-line-height: 28px;       /* Optimal readability */
-```
-
-### Step 3: Design Components (The Building Blocks)
-
-**Component Architecture**:
-
-- `/src/lib/components/` - Reusable UI components
-- `/src/routes/` - Page routes and layouts
-- `/src/posts/` - Markdown blog content
-
-**Blog System**:
-
+- Posts are `.mdx` files in `src/posts/` with YAML frontmatter (`title`, `date`, `description`, `tags`)
+- MDX supports importing React components (e.g., MermaidDiagram)
+- Blog service uses `import.meta.glob('/src/posts/*.mdx', { eager: true })`
 - Clean URLs: `/{slug}` (no `/blog` prefix)
-- Frontmatter metadata: title, date, tags, description
-- Automatic reading time calculation
+- RSS available at `/feed` route and `/rss.xml` static file
 
-### Step 4: Implement User States (The Interactivity)
+## Adding Blog Posts
 
-**Required States for Interactive Elements**:
+1. Create `src/posts/my-post.mdx` with frontmatter
+2. Posts automatically appear on homepage and `/posts`
+3. Update `public/rss.xml` manually for RSS subscribers
 
-- `hover:` - Subtle feedback (`hover:shadow-md`, color changes)
-- `focus-visible:` - **Mandatory** keyboard accessibility rings
-- `active:` - Visual feedback for pressed states
-- `disabled:` - Clear indication (`opacity-50`, `cursor-not-allowed`)
-- Loading states with skeleton loaders
-- Empty states with helpful messages
-- Error states with clear messaging
+## Mermaid Diagrams in MDX
 
-### Step 5: Accessibility by Default (The Foundation)
-
-**Non-negotiable Requirements**:
-
-- Semantic HTML5 tags (`<main>`, `<nav>`, `<article>`, `<button>`)
-- WCAG AA contrast ratios (4.5:1 minimum)
-- Keyboard navigation for all functionality
-- Screen reader support with proper ARIA labels
-- Image alt text and meaningful link text
-
-## Development Best Practices
-
-### Do's and Don'ts
-
-| ✅ **Do**                                                | ❌ **Don't**                              |
-| -------------------------------------------------------- | ----------------------------------------- |
-| Use Tailwind design tokens (`text-primary-green`)        | Hard-code hex values (`#34D399`)          |
-| Space everything in 8px multiples (`p-4`, `gap-6`)       | Use arbitrary values (`margin-top: 13px`) |
-| Implement all interaction states (hover, focus, loading) | Style only the default "happy path"       |
-| Ensure visible focus rings (`focus-visible:ring-2`)      | Disable browser focus styles              |
-| Use semantic HTML (`<button>`, `<nav>`, `<main>`)        | Build interactive elements from `<div>`s  |
-| Follow the light theme design system                     | Mix inconsistent color schemes            |
-
-### Component Patterns
-
-**Standard Card Structure**:
-
-```svelte
-<article class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-  <header class="mb-4">
-    <h2 class="text-xl font-medium text-black">Card Title</h2>
-    <time class="text-sm text-gray-600">Publication Date</time>
-  </header>
-
-  <p class="text-gray-800 leading-relaxed mb-4">
-    Card description content with proper line height.
-  </p>
-
-  <div class="flex flex-wrap gap-2">
-    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
-      Technology Tag
-    </span>
-  </div>
-</article>
-```
-
-**Mermaid Diagram Usage**:
-
-```svelte
-<script>
-  import MermaidDiagram from '$lib/components/MermaidDiagram.svelte';
-</script>
+```mdx
+import { MermaidDiagram } from '~/components/MermaidDiagram'
 
 <MermaidDiagram
   height={400}
@@ -160,35 +112,10 @@ line-height: 28px;       /* Optimal readability */
 />
 ```
 
-### Content Creation
+## Key Configuration
 
-**Blog Posts**:
-
-1. Run `pnpm run post` for interactive creation
-2. Posts automatically appear in RSS feed at `/rss.xml`
-3. Use frontmatter: `title`, `date`, `tags`, `description`, `published`
-
-**Adding Diagrams**:
-
-- Use `deno task fix-mermaid` to prevent MDsveX parsing issues
-- Include `accTitle` and `accDescr` for accessibility
-- Prefer `MermaidViewport` for below-the-fold diagrams
-
-### Testing & Quality
-
-**Essential Testing**:
-
-```bash
-pnpm run pre-commit    # Run before every commit
-pnpm run test         # Unit tests with Vitest
-```
-
-**Browser Testing**: Use Puppeteer MCP for end-to-end testing of UI interactions and responsive design.
-
-### Key Configuration
-
-- `design.md` - Complete design system specification
-- `src/app.css` - Global styles and design tokens
-- `svelte.config.js` - SvelteKit + MDsveX configuration
-- `tailwind.config.ts` - Custom design system integration
-- `wrangler.toml` - Cloudflare Workers deployment
+- `vite.config.ts` — Vite + TanStack Start + MDX + Shiki + Nitro plugins
+- `tailwind.config.ts` — Tailwind design system with Typography plugin
+- `tsconfig.json` — TypeScript with `~/*` path alias to `src/*`
+- `src/styles/app.css` — Global styles and design tokens
+- `design.md` — Complete design system specification

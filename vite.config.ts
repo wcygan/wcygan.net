@@ -1,54 +1,82 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { nitro } from 'nitro/vite'
+import mdx from '@mdx-js/rollup'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import rehypeShiki from '@shikijs/rehype'
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		// Bundle analysis - generates stats.html after build
-		visualizer({
-			filename: './build-stats.html',
-			open: false, // Don't auto-open in browser
-			gzipSize: true,
-			brotliSize: true,
-			template: 'treemap' // Options: sunburst, treemap, network
-		})
-	],
-	optimizeDeps: {
-		include: ['mermaid'],
-		exclude: []
-	},
-	build: {
-		target: 'esnext',
-		// Enable better code splitting
-		rollupOptions: {
-			output: {
-				// Create a separate chunk for Mermaid
-				manualChunks: (id) => {
-					if (id.includes('mermaid')) {
-						return 'mermaid';
-					}
-					// Keep vendor chunks separate
-					if (id.includes('node_modules')) {
-						// Further split vendor chunks by package
-						if (id.includes('svelte')) return 'svelte';
-						if (id.includes('shiki')) return 'shiki';
-						return 'vendor';
-					}
-				},
-				// Use dynamic imports for better chunk naming
-				chunkFileNames: (chunkInfo) => {
-					return `chunks/${chunkInfo.name}-[hash].js`;
-				}
-			}
-		},
-		// Increase chunk size warning limit for Mermaid
-		chunkSizeWarningLimit: 600
-	},
-	resolve: {
-		alias: {
-			// Point to the ESM version of mermaid
-			mermaid: 'mermaid/dist/mermaid.esm.min.mjs'
-		}
-	}
-});
+  server: {
+    port: 3000,
+  },
+  css: {
+    postcss: './postcss.config.js',
+  },
+  plugins: [
+    mdx({
+      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+      rehypePlugins: [
+        [
+          rehypeShiki,
+          {
+            theme: 'github-light',
+            langs: [
+              'javascript',
+              'typescript',
+              'json',
+              'bash',
+              'markdown',
+              'html',
+              'css',
+              'rust',
+              'go',
+              'java',
+              'python',
+              'diff',
+              'yaml',
+            ],
+            transformers: [
+              {
+                name: 'add-line-numbers',
+                line(node: any, line: number) {
+                  node.properties = node.properties || {}
+                  node.properties['data-line'] = line
+                },
+              },
+            ],
+          },
+        ],
+        // Add target="_blank" to external links
+        () => (tree: any) => {
+          (function traverse(node: any) {
+            if (
+              node.type === 'element' &&
+              node.tagName === 'a' &&
+              node.properties?.href?.startsWith('http')
+            ) {
+              node.properties.target = '_blank'
+              node.properties.rel = 'noopener noreferrer'
+            }
+            if (node.children) {
+              node.children.forEach(traverse)
+            }
+          })(tree)
+        },
+      ],
+    }),
+    tanstackStart({ srcDirectory: 'src' }),
+    react(),
+    nitro({ preset: 'bun' }),
+  ],
+  resolve: {
+    alias: {
+      '~': new URL('./src', import.meta.url).pathname,
+      mermaid: 'mermaid/dist/mermaid.esm.min.mjs',
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+  },
+})

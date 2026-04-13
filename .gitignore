@@ -10,6 +10,7 @@ repomix-output.txt
 .wrangler
 /.svelte-kit
 /build
+/dist
 
 # OS
 .DS_Store
@@ -24,6 +25,9 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# TanStack Router generated
+src/routeTree.gen.ts
 .aider*
 
 # Bundle analysis
