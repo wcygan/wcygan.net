@@ -1,0 +1,1 @@
+../skills/wcygan-net-design/hooks/inject-design-guide.py
