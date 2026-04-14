@@ -5,6 +5,7 @@ import { nitro } from 'nitro/vite'
 import mdx from '@mdx-js/rollup'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkGfm from 'remark-gfm'
 import rehypeShiki from '@shikijs/rehype'
 
 export default defineConfig({
@@ -16,7 +17,7 @@ export default defineConfig({
   },
   plugins: [
     mdx({
-      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter],
+      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm],
       rehypePlugins: [
         [
           rehypeShiki,
