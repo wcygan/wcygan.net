@@ -425,6 +425,35 @@
     border: 1px solid rgb(222, 222, 222) !important; /* Light border */
   }
 
+  /* Reset site typography inside Mermaid's foreignObject labels so they
+     don't inherit body's 19px / 32px line-height and overflow the boxes
+     Mermaid sized using its own font measurements. Covers both the inline
+     container and the mobile fullscreen dialog, which lives outside it. */
+  .mermaid-container foreignObject p,
+  .mermaid-container foreignObject div,
+  .mermaid-container foreignObject span,
+  .mermaid-fullscreen-dialog foreignObject p,
+  .mermaid-fullscreen-dialog foreignObject div,
+  .mermaid-fullscreen-dialog foreignObject span {
+    font-size: 16px;
+    line-height: normal;
+    margin: 0;
+  }
+
+  /* ER diagrams measure *relationship* labels at 14px per Mermaid's
+     injected `.edgeLabel .label{font-size:14px}` rule, which doesn't reach
+     the `<p>` because its selector targets a `.label` child we don't have.
+     Scope tightly: only ER edge labels. Flowchart/state edge labels stay
+     at 16px; ER entity attributes live under `.nodeLabel` and also stay 16px. */
+  .mermaid-container svg.erDiagram .edgeLabel,
+  .mermaid-container svg.erDiagram .edgeLabel p,
+  .mermaid-container svg.erDiagram .edgeLabel span,
+  .mermaid-fullscreen-dialog svg.erDiagram .edgeLabel,
+  .mermaid-fullscreen-dialog svg.erDiagram .edgeLabel p,
+  .mermaid-fullscreen-dialog svg.erDiagram .edgeLabel span {
+    font-size: 14px;
+  }
+
   .post-content .bg-zinc-900 {
     background: rgb(249, 249, 249) !important; /* Light background */
   }

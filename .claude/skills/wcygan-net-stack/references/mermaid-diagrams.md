@@ -16,20 +16,21 @@ MermaidDiagram.tsx       — Main component (renders diagram, handles states)
 
 ```tsx
 interface Props {
-  height?: number          // Container min-height (default: 400)
-  diagram?: string         // Mermaid diagram definition
-  useLazyLoading?: boolean // Load when scrolled into view (default: false)
-  rootMargin?: string      // IntersectionObserver margin (default: '100px')
+  height?: number; // Container min-height (default: 400)
+  diagram?: string; // Mermaid diagram definition
+  useLazyLoading?: boolean; // Load when scrolled into view (default: false)
+  rootMargin?: string; // IntersectionObserver margin (default: '100px')
 }
 ```
 
 ## Usage in MDX Posts
 
 ```mdx
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-<MermaidDiagram height={300}
-diagram={`flowchart TD
+<MermaidDiagram
+  height={300}
+  diagram={`flowchart TD
   A[Start] --> B{Decision}
   B -->|Yes| C[Success]
   B -->|No| D[Retry]`}
@@ -39,7 +40,7 @@ diagram={`flowchart TD
 ## Usage in Route Components
 
 ```tsx
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 function MyPage() {
   return (
@@ -50,7 +51,7 @@ function MyPage() {
         A->>B: Hello
         B-->>A: Hi`}
     />
-  )
+  );
 }
 ```
 
@@ -72,14 +73,16 @@ function MyPage() {
 
 ```tsx
 // CORRECT
-const [svgHtml, setSvgHtml] = useState<string | null>(null)
+const [svgHtml, setSvgHtml] = useState<string | null>(null);
 // ...
-setSvgHtml(renderResult.svg)
+setSvgHtml(renderResult.svg);
 // In JSX:
-{svgHtml && <div dangerouslySetInnerHTML={{ __html: svgHtml }} />}
+{
+  svgHtml && <div dangerouslySetInnerHTML={{ __html: svgHtml }} />;
+}
 
 // WRONG — causes hydration crashes
-containerRef.current.innerHTML = renderResult.svg
+containerRef.current.innerHTML = renderResult.svg;
 ```
 
 ### Dynamic Import Required
@@ -88,16 +91,21 @@ Mermaid is ~2MB and browser-only. Never import at the top level:
 
 ```tsx
 // CORRECT — dynamic import at runtime
-const mod = await import('mermaid')
-mermaidInstance = mod.default || mod
+const mod = await import("mermaid");
+mermaidInstance = mod.default || mod;
 
 // WRONG — breaks SSR, bloats server bundle
-import mermaid from 'mermaid'
+import mermaid from "mermaid";
 ```
 
 The Vite alias in `vite.config.ts` points to the ESM build:
+
 ```ts
-resolve: { alias: { mermaid: 'mermaid/dist/mermaid.esm.min.mjs' } }
+resolve: {
+  alias: {
+    mermaid: "mermaid/dist/mermaid.esm.min.mjs";
+  }
+}
 ```
 
 ### Module-Level Instance Cache
@@ -105,7 +113,7 @@ resolve: { alias: { mermaid: 'mermaid/dist/mermaid.esm.min.mjs' } }
 The mermaid module is cached at module scope (not component scope) so it's only loaded once across all diagram instances on a page:
 
 ```tsx
-let mermaidInstance: typeof import('mermaid').default | null = null
+let mermaidInstance: typeof import("mermaid").default | null = null;
 ```
 
 ## Theme Configuration
@@ -161,6 +169,55 @@ The inner `.mermaid-render-container` wrapper (which holds `dangerouslySetInnerH
   dangerouslySetInnerHTML={{ __html: svgHtml }}
 />
 ```
+
+## Gotcha: Global `body`/`p` Styles Leak Into Label Boxes
+
+Mermaid renders node labels as real HTML (`<p>`) inside SVG `<foreignObject>`, and sizes the foreignObject's `width`/`height` attributes from measurements taken at its own 16px font (`MERMAID_THEME.fontSize`). Any site-wide typography in `src/styles/app.css` — specifically `body { font-size: 19px; line-height: 1.7 }` and `p { line-height: 32px; margin-bottom }` — cascades into those `<p>` tags. The rendered text then paints at 19px/32px and overflows the foreignObject's pre-computed bounds, clipping labels to things like "Developer Pu" for "Developer Push".
+
+A reset must live in `app.css` and stay there:
+
+```css
+.mermaid-container foreignObject p,
+.mermaid-container foreignObject div,
+.mermaid-container foreignObject span,
+.mermaid-fullscreen-dialog foreignObject p,
+.mermaid-fullscreen-dialog foreignObject div,
+.mermaid-fullscreen-dialog foreignObject span {
+  font-size: 16px;
+  line-height: normal;
+  margin: 0;
+}
+
+/* ER relationship labels are sized at 14px by Mermaid. */
+.mermaid-container svg.erDiagram .edgeLabel,
+.mermaid-container svg.erDiagram .edgeLabel p,
+.mermaid-container svg.erDiagram .edgeLabel span,
+.mermaid-fullscreen-dialog svg.erDiagram .edgeLabel,
+.mermaid-fullscreen-dialog svg.erDiagram .edgeLabel p,
+.mermaid-fullscreen-dialog svg.erDiagram .edgeLabel span {
+  font-size: 14px;
+}
+```
+
+The `.mermaid-fullscreen-dialog` selector is required because the mobile fullscreen modal (triggered by the expand button at `window.innerWidth <= 768`) renders the SVG into a `<dialog>` that is **not** a descendant of `.mermaid-container`. Any new Mermaid surface (e.g. a future lightbox or print view) must either inherit `.mermaid-container` or be added to this selector list.
+
+**Per-diagram font-size quirks**: Mermaid injects its own CSS per diagram instance, and different diagram kinds measure labels at different font sizes. ER diagrams emit `#mermaid-XXX .edgeLabel .label { font-size: 14px }` which doesn't reach the `<p>` child in the actual output (Mermaid's selector targets a `.label` element that the HTML label pipeline doesn't render). Entity attributes in the same diagram use `.nodeLabel` and stay at 16px. When adding new diagram types or upgrading `mermaid`, run this check to catch any new clipped/loose labels:
+
+```js
+document.querySelectorAll(".mermaid-container svg").forEach(svg => {
+  const kind = svg.getAttribute("aria-roledescription")
+  svg.querySelectorAll("foreignObject").forEach(fo => {
+    const inner = fo.querySelector("p,span,div")
+    if (!inner) return
+    const boxW = fo.getBoundingClientRect().width
+    const innerW = inner.getBoundingClientRect().width
+    if (innerW > boxW + 0.5) console.warn("CLIPPED", kind, fo.textContent, boxW, innerW)
+    else if (innerW < boxW - 6) console.warn("LOOSE", kind, fo.textContent, boxW, innerW)
+  })
+})
+```
+
+If you ever restyle `body`, `p`, or prose-level typography — or upgrade the `mermaid` package — re-check the `/mermaid-diagrams` route (inline and fullscreen) with the snippet above. The same trap applies to any other library that renders HTML inside SVG or an inline container without shadow-DOM isolation (KaTeX, some chart libraries).
 
 ## Gotcha: Diagrams Need Vertical Margin
 
