@@ -48,7 +48,7 @@ Don't introduce new magic numbers. If you need spacing, reach for `30px` (betwee
 
 ## The header
 
-- Bottom border: `1px solid rgb(92, 139, 63)` — the only border the site shows on chrome.
+- Bottom border: `1px solid rgb(70, 110, 170)` — the only border the site shows on chrome.
 - Site title left, nav right (inline, `display: inline-block`, 5px right padding on links).
 - No logo image. Text-only brand.
 
@@ -101,4 +101,4 @@ Nav and bio banner hide when printing a post. Keep it that way.
 - **NEVER** use a multi-column grid for post content. `.post-list` is flex (title/date on a line), everything else is single column.
 - **NEVER** add drop shadows (`shadow-*`), card borders (`.card`, `border rounded-xl`), or glassmorphism.
 - **INSTEAD** of a card grid, use `.post-list` + `.post-item`.
-- **INSTEAD** of a hero section with big imagery, use `.bio-highlight` (green banner, white text).
+- **INSTEAD** of a hero section with big imagery, use `.bio-highlight` (cornflower-blue banner, white text).

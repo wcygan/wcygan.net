@@ -22,11 +22,11 @@ import sys
 GUIDE = """\
 ## wcygan.net design guardrails (auto-injected)
 
-**Aesthetic is locked**: editorial minimalism, one green accent, system fonts only, 800px column. Do not introduce new directions without being asked.
+**Aesthetic is locked**: editorial minimalism, one cornflower-blue accent, system fonts only, 800px column. Do not introduce new directions without being asked.
 
 **Palette** (no others in new code):
-- `rgb(92, 139, 63)` primary green — titles, bio banner, H3
-- `rgb(46, 104, 16)` link green — body links
+- `rgb(70, 110, 170)` primary blue — titles, bio banner, H3
+- `rgb(30, 70, 140)` link blue — body links
 - `rgb(0, 0, 0)` body text  ·  `rgb(102, 102, 102)` muted/dates
 - `rgb(170, 170, 170)` nav  ·  `rgb(222, 222, 222)` border  ·  `rgb(249, 249, 249)` surface  ·  `#fff` bg
 

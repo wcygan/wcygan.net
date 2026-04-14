@@ -41,14 +41,14 @@ All values are the actual ones in `app.css` — match them exactly.
 
 | Element                           | Size | Weight | Style     | Color     |
 | --------------------------------- | ---- | ------ | --------- | --------- |
-| Post title link (`.post-title a`) | 18px | 400    | underline | `#5c8b3f` |
+| Post title link (`.post-title a`) | 18px | 400    | underline | `#466eaa` |
 | Post date (`.post-date`)          | 18px | 400    | —         | `#666`    |
 
 ### Blog post page
 
 | Element                               | Size | Weight | Style                  | Color     |
 | ------------------------------------- | ---- | ------ | ---------------------- | --------- |
-| Post title (`.blog-post .post-title`) | 36px | 700    | line-height 1, mb 30px | `#5c8b3f` |
+| Post title (`.blog-post .post-title`) | 36px | 700    | line-height 1, mb 30px | `#466eaa` |
 | Post meta date (`.post-meta`)         | 18px | 400    | italic                 | `#666`    |
 
 ### In-content headings (`.post-content`)
@@ -57,7 +57,7 @@ All values are the actual ones in `app.css` — match them exactly.
 | --- | ---- | ------ | --------- |
 | h1  | 36px | 700    | black     |
 | h2  | 28px | 700    | `#666`    |
-| h3  | 24px | 700    | `#5c8b3f` |
+| h3  | 24px | 700    | `#466eaa` |
 
 Heading line-height is `1`. Margin-bottom is `30px` (the universal vertical rhythm).
 

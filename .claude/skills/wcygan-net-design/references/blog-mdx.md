@@ -25,7 +25,7 @@ tags: ["distributed-systems", "rust"]
 ---
 ```
 
-- `title` — string, appears as the green H1 on the post page.
+- `title` — string, appears as the cornflower-blue H1 on the post page.
 - `date` — ISO `YYYY-MM-DD`, rendered as the italic gray meta line.
 - `description` — 1–2 sentences. Used for `<meta name="description">` and RSS.
 - `tags` — array of lowercase-hyphen strings. Currently not rendered in UI, but kept for RSS and future filtering.
@@ -34,7 +34,7 @@ tags: ["distributed-systems", "rust"]
 
 - Start with a lede paragraph. No duplicate H1 — the frontmatter `title` renders it.
 - First in-content heading should be H2 (gray, 28px).
-- H3 (green, 24px) for subsections.
+- H3 (cornflower blue, 24px) for subsections.
 - Code fences with language tag always — Shiki is build-time and uses the `github-light` theme.
 - Mermaid diagrams: import at top of MDX, use `<MermaidDiagram height={N} diagram={\`...\`} />`.
 

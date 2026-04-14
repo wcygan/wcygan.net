@@ -8,7 +8,7 @@ Global rule in `app.css`:
 
 ```css
 :focus-visible {
-  outline: 2px solid var(--color-primary); /* rgb(92, 139, 63) */
+  outline: 2px solid var(--color-primary); /* rgb(70, 110, 170) */
   outline-offset: 2px;
 }
 ```
@@ -18,13 +18,13 @@ Global rule in `app.css`:
 
 ## Contrast (verified pairings)
 
-| Fg on Bg                           | Ratio  | Pass                                            |
-| ---------------------------------- | ------ | ----------------------------------------------- |
-| Black on white                     | 21:1   | AAA                                             |
-| `#2e6810` (link green) on white    | ~6.1:1 | AA                                              |
-| White on `#5c8b3f` (primary green) | ~4.7:1 | AA                                              |
-| `#666` (muted) on white            | ~5.7:1 | AA                                              |
-| `#aaa` (nav gray) on white         | ~2.3:1 | **Fails AA for body**, OK for supplementary nav |
+| Fg on Bg                          | Ratio  | Pass                                            |
+| --------------------------------- | ------ | ----------------------------------------------- |
+| Black on white                    | 21:1   | AAA                                             |
+| `#1e468c` (link blue) on white    | ~10:1  | AAA                                             |
+| White on `#466eaa` (primary blue) | ~4.9:1 | AA                                              |
+| `#666` (muted) on white           | ~5.7:1 | AA                                              |
+| `#aaa` (nav gray) on white        | ~2.3:1 | **Fails AA for body**, OK for supplementary nav |
 
 The nav-gray is intentionally quiet. It does not convey primary information (site title + main content do). Do not use `#aaa` for body text.
 

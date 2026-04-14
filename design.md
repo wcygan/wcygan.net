@@ -20,16 +20,8 @@ All colors follow a consistent design system for perfect visual consistency:
 
 ```css
 /* Primary Colors */
---color-primary-green: rgb(
-  92,
-  139,
-  63
-); /* #5c8b3f - Titles, banners, accents */
---color-link-green: rgb(
-  46,
-  104,
-  16
-); /* #2e6810 - Links, interactive elements */
+--color-primary: rgb(70, 110, 170); /* #466eaa - Titles, banners, accents */
+--color-link: rgb(30, 70, 140); /* #1e468c - Links, interactive elements */
 
 /* Text Colors */
 --color-text-primary: rgb(0, 0, 0); /* #000000 - Primary text, headings */
@@ -38,7 +30,7 @@ All colors follow a consistent design system for perfect visual consistency:
 
 /* Background Colors */
 --color-bg-primary: rgb(255, 255, 255); /* #ffffff - Page background */
---color-bg-banner: rgb(92, 139, 63); /* #5c8b3f - Bio highlight banner */
+--color-bg-banner: rgb(70, 110, 170); /* #466eaa - Bio highlight banner */
 --color-bg-code: rgb(249, 249, 249); /* #f9f9f9 - Code blocks */
 
 /* Border Colors */
@@ -47,21 +39,21 @@ All colors follow a consistent design system for perfect visual consistency:
   222,
   222
 ); /* #dedede - Table borders, code blocks */
---color-border-accent: rgb(92, 139, 63); /* #5c8b3f - Header border */
+--color-border-accent: rgb(70, 110, 170); /* #466eaa - Header border */
 ```
 
 ### Color Usage Guidelines
 
-**Green (`#5c8b3f`)**:
+**Primary Blue (`#466eaa`)**:
 
 - Page titles (blog posts, main headings)
 - Bio banner background
 - Header border line
 - H3 subheadings in content
 
-**Dark Green (`#2e6810`)**:
+**Link Blue (`#1e468c`)**:
 
-- All links (underlined)
+- All links (bold, underline on hover)
 - Interactive elements
 
 **Black (`#000000`)**:
@@ -114,7 +106,7 @@ color: rgb(0, 0, 0);
 ```css
 font-size: 36px;
 font-weight: bold;
-color: rgb(92, 139, 63);
+color: rgb(70, 110, 170);
 line-height: 1;
 margin-bottom: 30px;
 ```
@@ -169,7 +161,7 @@ margin-bottom: 30px;
 ```css
 font-size: 24px;
 font-weight: bold;
-color: rgb(92, 139, 63);
+color: rgb(70, 110, 170);
 margin-bottom: 30px;
 ```
 
@@ -182,7 +174,7 @@ margin-bottom: 30px;
 .container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 800px; /* Exact match to modern minimal design */
+  max-width: 800px;
   width: 100%;
 }
 
@@ -190,7 +182,7 @@ margin-bottom: 30px;
 .site-header {
   margin: 8px 12px 12px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgb(92, 139, 63);
+  border-bottom: 1px solid rgb(70, 110, 170);
 }
 
 /* Main Content */
@@ -255,7 +247,7 @@ table {
 
 **Styling Requirements**:
 
-- Green bottom border
+- Cornflower-blue bottom border
 - Uppercase site title
 - Inline navigation links
 - 5px right padding on nav links
@@ -270,7 +262,7 @@ table {
 
 **Styling Requirements**:
 
-- Green background (`rgb(92, 139, 63)`)
+- Cornflower-blue background (`rgb(70, 110, 170)`)
 - White text
 - 20px padding
 - White underlined links
@@ -291,7 +283,7 @@ table {
 **Styling Requirements**:
 
 - Flex layout with space-between
-- Green underlined links
+- Cornflower-blue underlined links
 - Gray dates aligned right
 - No list bullets
 
@@ -313,10 +305,10 @@ table {
 
 **Styling Requirements**:
 
-- Green post title
+- Cornflower-blue post title
 - Italic gray date
 - Proper content spacing
-- Green underlined links throughout
+- Blue underlined links throughout
 
 ## Interactive Elements
 
@@ -325,8 +317,8 @@ table {
 **Default State**:
 
 ```css
-color: rgb(92, 139, 63); /* Content links */
-color: rgb(46, 104, 16); /* Navigation links */
+color: rgb(70, 110, 170); /* Content title links */
+color: rgb(30, 70, 140); /* Body links */
 text-decoration: underline;
 font-weight: normal;
 ```
@@ -341,7 +333,7 @@ color: inherit; /* Keep same color */
 **Banner Links (Special)**:
 
 ```css
-color: rgb(255, 255, 255); /* White on green background */
+color: rgb(255, 255, 255); /* White on cornflower-blue background */
 text-decoration: underline;
 font-weight: bold;
 ```
@@ -464,9 +456,9 @@ img {
 
 All color combinations meet WCAG AA standards:
 
-- Black text on white: 21:1 ratio
-- Green links on white: 4.5:1+ ratio
-- White text on green: 4.5:1+ ratio
+- Black text on white: 21:1 ratio (AAA)
+- Link blue `#1e468c` on white: ~10:1 ratio (AAA)
+- White text on primary blue `#466eaa`: ~4.9:1 ratio (AA)
 
 ### Semantic HTML
 
@@ -483,7 +475,7 @@ All color combinations meet WCAG AA standards:
 
 ```css
 :focus-visible {
-  outline: 2px solid rgb(92, 139, 63);
+  outline: 2px solid rgb(70, 110, 170);
   outline-offset: 2px;
 }
 ```
@@ -494,7 +486,7 @@ All color combinations meet WCAG AA standards:
 
 **File Structure**:
 
-- All styles in `src/app.css`
+- All styles in `src/styles/app.css`
 - Component-specific CSS via CSS classes
 - No inline styles except for dynamic content
 
@@ -511,7 +503,7 @@ All color combinations meet WCAG AA standards:
 
 **Blog Posts**: `/{slug}` (not `/blog/{slug}`)
 
-- Clean URLs matching modern minimal design
+- Clean URLs
 - Direct access to posts
 - Simplified navigation
 
@@ -528,8 +520,8 @@ All color combinations meet WCAG AA standards:
 
 ### Visual Verification
 
-- [ ] Header matches modern minimal design exactly
-- [ ] Green banner styling identical
+- [ ] Header matches design exactly
+- [ ] Cornflower-blue banner styling identical
 - [ ] Post list layout and spacing correct
 - [ ] Blog post typography matches
 - [ ] Link colors and hover states correct
@@ -537,7 +529,7 @@ All color combinations meet WCAG AA standards:
 
 ### Technical Verification
 
-- [ ] All colors use exact RGB values
+- [ ] All colors use exact RGB values from palette
 - [ ] Font families match system stack
 - [ ] Spacing uses consistent 30px margins
 - [ ] Container width is exactly 800px
@@ -567,9 +559,6 @@ All color combinations meet WCAG AA standards:
 ### Updating Styles
 
 1. Always reference this design system
-2. Test against modern minimal design for consistency
-3. Maintain backwards compatibility
-4. Update documentation if needed
-5. Test across all breakpoints
-
-This design system ensures perfect consistency with modern minimal design while maintaining flexibility for future enhancements.
+2. Maintain backwards compatibility
+3. Update documentation if needed
+4. Test across all breakpoints

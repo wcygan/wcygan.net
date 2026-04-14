@@ -35,7 +35,7 @@ Rules:
 </div>
 ```
 
-- Green background, white text, white underlined links.
+- Cornflower-blue background, white text, white underlined links.
 - One sentence only. This is the entire "hero."
 - Edit in `src/routes/index.tsx`.
 
@@ -56,7 +56,7 @@ Rules:
 </ul>
 ```
 
-- Flex row: title left (green, underlined), date right (gray).
+- Flex row: title left (cornflower blue, underlined), date right (gray).
 - No excerpts, no tags, no thumbnails.
 - `src/components/PostCard.tsx` wraps a single `.post-item` — use it for consistency, but the plain markup above also works.
 
@@ -100,7 +100,7 @@ Rules:
 Currently uses emerald/zinc Tailwind classes — **legacy drift**. When editing:
 
 - Keep the component API (`{ experience: Experience }`).
-- Migrate colors: `text-emerald-400` → primary green inline, `bg-zinc-700` → surface gray, `text-zinc-300` → black.
+- Migrate colors: `text-emerald-400` → primary blue inline, `bg-zinc-700` → surface gray, `text-zinc-300` → black.
 - Remove `hover:scale-105` and `transition-all` — motion is not part of this design.
 - Remove ring/border styling on hover.
 

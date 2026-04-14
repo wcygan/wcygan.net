@@ -4,16 +4,16 @@ Eight colors. That's the whole palette. Do not add a ninth without updating `des
 
 ## Full table
 
-| Token         | RGB                  | Hex       | Usage                                                                                               |
-| ------------- | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| Primary green | `rgb(92, 139, 63)`   | `#5c8b3f` | Post titles, bio-highlight background, header bottom border, H3 in post content, focus ring outline |
-| Link green    | `rgb(46, 104, 16)`   | `#2e6810` | Body `<a>` tag color, `.post-content a`                                                             |
-| Text primary  | `rgb(0, 0, 0)`       | `#000000` | Body text, H1, H2, site title                                                                       |
-| Text muted    | `rgb(102, 102, 102)` | `#666666` | Post dates, `.post-meta` (italic), H2 in post content                                               |
-| Nav gray      | `rgb(170, 170, 170)` | `#aaaaaa` | Header nav links                                                                                    |
-| Border light  | `rgb(222, 222, 222)` | `#dedede` | Tables, `<pre>`, code blocks, Mermaid containers                                                    |
-| Surface       | `rgb(249, 249, 249)` | `#f9f9f9` | `<pre>` background, table `<th>` background, Mermaid bg                                             |
-| Background    | `rgb(255, 255, 255)` | `#ffffff` | Page background, banner text                                                                        |
+| Token        | RGB                  | Hex       | Usage                                                                                               |
+| ------------ | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
+| Primary blue | `rgb(70, 110, 170)`  | `#466eaa` | Post titles, bio-highlight background, header bottom border, H3 in post content, focus ring outline |
+| Link blue    | `rgb(30, 70, 140)`   | `#1e468c` | Body `<a>` tag color, `.post-content a`                                                             |
+| Text primary | `rgb(0, 0, 0)`       | `#000000` | Body text, H1, H2, site title                                                                       |
+| Text muted   | `rgb(102, 102, 102)` | `#666666` | Post dates, `.post-meta` (italic), H2 in post content                                               |
+| Nav gray     | `rgb(170, 170, 170)` | `#aaaaaa` | Header nav links                                                                                    |
+| Border light | `rgb(222, 222, 222)` | `#dedede` | Tables, `<pre>`, code blocks, Mermaid containers                                                    |
+| Surface      | `rgb(249, 249, 249)` | `#f9f9f9` | `<pre>` background, table `<th>` background, Mermaid bg                                             |
+| Background   | `rgb(255, 255, 255)` | `#ffffff` | Page background, banner text                                                                        |
 
 ## Where they live in code
 
@@ -32,7 +32,7 @@ Eight colors. That's the whole palette. Do not add a ninth without updating `des
 
 These are places where emerald/zinc Tailwind classes still exist and will eventually be migrated back to the palette. Do not expand them.
 
-- `src/components/ExperienceCard.tsx` — uses `text-emerald-400`, `bg-zinc-700`, `text-zinc-300`. When touched, migrate to `rgb(92, 139, 63)` for green accents and `rgb(0,0,0)` / `rgb(102,102,102)` for text.
+- `src/components/ExperienceCard.tsx` — uses `text-emerald-400`, `bg-zinc-700`, `text-zinc-300`. When touched, migrate to `rgb(70, 110, 170)` for accent and `rgb(0,0,0)` / `rgb(102,102,102)` for text.
 - `src/routes/about.tsx` — uses `text-emerald-400 hover:text-emerald-300` on inline `<a>` and `prose prose-emerald prose-invert`. The `prose-invert` is especially wrong for a light theme.
 - Legacy `.post-content` overrides in `app.css` (lines ~332–389) forcibly override `bg-zinc-*`, `text-emerald-*`, `border-zinc-*` back to the palette — these are defensive overrides for MDX posts that inherited Tailwind scale classes from earlier iterations.
 
@@ -43,7 +43,7 @@ When migrating drift, update `design.md` only if the palette itself is changing 
 All documented pairings in `design.md`:
 
 - Black on white: 21:1 (AAA)
-- Link green `#2e6810` on white: 4.5:1+ (AA)
-- White on primary green `#5c8b3f`: 4.5:1+ (AA)
+- Link blue `#1e468c` on white: 10:1+ (AAA)
+- White on primary blue `#466eaa`: 4.9:1 (AA)
 
 Do not introduce a color pairing without verifying ≥4.5:1 for body text.

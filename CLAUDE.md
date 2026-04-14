@@ -76,8 +76,8 @@ public/                # Static assets (images, resume PDF, rss.xml)
 
 **Color Palette** (Light theme):
 
-- Primary green: `rgb(92, 139, 63)` — titles, banners, accents
-- Link green: `rgb(46, 104, 16)` — interactive links
+- Primary blue: `rgb(70, 110, 170)` — titles, banners, accents
+- Link blue: `rgb(30, 70, 140)` — interactive links
 - Text primary: `rgb(0, 0, 0)` — body text
 - Text secondary: `rgb(102, 102, 102)` — dates, metadata
 
