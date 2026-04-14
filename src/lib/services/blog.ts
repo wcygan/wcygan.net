@@ -1,5 +1,4 @@
 import type { Post, PostMetadata } from "~/lib/types";
-import { calculateReadingTime } from "~/lib/utils/readingTime";
 
 interface MdxModule {
   frontmatter: PostMetadata;
@@ -10,57 +9,41 @@ const postFiles = import.meta.glob<MdxModule>("/src/posts/*.mdx", {
   eager: true,
 });
 
-let _posts: Post[] | null = null;
+const WORDS_PER_MINUTE = 200;
 
-function initPosts(): Post[] {
-  if (!_posts) {
-    _posts = Object.entries(postFiles)
-      .map(([filepath, post]) => {
-        const slug = filepath.replace("/src/posts/", "").replace(".mdx", "");
-
-        let readingTime = 0;
-        try {
-          const contentMatch = post.default?.toString() || "";
-          readingTime = calculateReadingTime(contentMatch);
-        } catch {
-          readingTime = 1;
-        }
-
-        return {
-          slug,
-          title: post.frontmatter.title,
-          date: post.frontmatter.date,
-          description: post.frontmatter.description,
-          tags: post.frontmatter.tags || [],
-          readingTime,
-        };
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }
-  return _posts;
+function wordsInSource(source: string): number {
+  return source.split(/\s+/).filter((word) => word.length > 0).length;
 }
+
+const posts: Post[] = Object.entries(postFiles)
+  .map(([filepath, post]) => {
+    const slug = filepath.replace("/src/posts/", "").replace(".mdx", "");
+
+    let readingTime = 1;
+    try {
+      const words = wordsInSource(post.default?.toString() || "");
+      readingTime = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
+    } catch {
+      readingTime = 1;
+    }
+
+    return {
+      slug,
+      title: post.frontmatter.title,
+      date: post.frontmatter.date,
+      description: post.frontmatter.description,
+      tags: post.frontmatter.tags || [],
+      readingTime,
+    };
+  })
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
 export function getAllPosts(): Post[] {
-  return initPosts();
-}
-
-export function getRecentPosts(count: number): Post[] {
-  return initPosts().slice(0, count);
+  return posts;
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
-  return initPosts().find((post) => post.slug === slug);
-}
-
-export function getPostsByTag(tag: string): Post[] {
-  return initPosts().filter((post) => post.tags && post.tags.includes(tag));
-}
-
-export function getAllTags(): string[] {
-  const allTags = initPosts()
-    .flatMap((post) => post.tags || [])
-    .filter((tag, index, array) => array.indexOf(tag) === index);
-  return allTags.sort();
+  return posts.find((post) => post.slug === slug);
 }
 
 export interface AdjacentPost {
@@ -74,13 +57,9 @@ export interface AdjacentPosts {
   next: AdjacentPost | null;
 }
 
-/**
- * Returns the previous and next posts relative to the given slug.
- * Posts are sorted newest-first, so "prev" is the newer neighbor
- * (lower index) and "next" is the older neighbor (higher index).
- */
+// Posts are sorted newest-first, so prev is the newer neighbor (lower index)
+// and next is the older neighbor (higher index).
 export function getAdjacentPosts(slug: string): AdjacentPosts {
-  const posts = initPosts();
   const index = posts.findIndex((p) => p.slug === slug);
   if (index === -1) return { prev: null, next: null };
 

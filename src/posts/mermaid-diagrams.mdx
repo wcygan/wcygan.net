@@ -5,7 +5,7 @@ description: Using Mermaid.js to create diagrams in markdown blog posts
 tags: [Mermaid, Visualization, Diagrams]
 ---
 
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 I've integrated [Mermaid.js](https://mermaid.js.org/) into this blog to create
 interactive diagrams directly in markdown. This enables clear visualization of
@@ -17,8 +17,9 @@ architectures, workflows, and processes.
 
 Here's a simple deployment flow:
 
-<MermaidDiagram height={300}
-diagram={`flowchart TD
+<MermaidDiagram
+  height={300}
+  diagram={`flowchart TD
 	  accTitle: CI/CD Deployment Pipeline
 	  accDescr: This flowchart shows a typical CI/CD deployment pipeline. It starts with a developer push, goes through a CI pipeline that either passes or fails tests. If tests pass, the system builds a Docker image, pushes it to a registry, deploys to Kubernetes, and updates the service. If tests fail, it notifies the developer.
 	  A[Developer Push] --> B{CI Pipeline}
@@ -33,8 +34,9 @@ diagram={`flowchart TD
 
 API authentication flow:
 
-<MermaidDiagram height={500}
-diagram={`sequenceDiagram
+<MermaidDiagram
+  height={500}
+  diagram={`sequenceDiagram
 	  accTitle: OAuth2 Authentication Flow
 	  accDescr: This sequence diagram shows the OAuth2 authentication flow between a user, client app, authorization server, and resource server. The user initiates a login request, the client redirects to the auth server, the user provides credentials, the auth server validates and returns an authorization code, the client exchanges the code for an access token, and finally uses the token to access protected resources.
 	  participant User
@@ -59,8 +61,9 @@ diagram={`sequenceDiagram
 
 Order processing states:
 
-<MermaidDiagram height={350}
-diagram={`stateDiagram-v2
+<MermaidDiagram
+  height={350}
+  diagram={`stateDiagram-v2
 	  accTitle: Order Processing State Machine
 	  accDescr: This state diagram shows the possible states and transitions in an order processing system. Orders start in a Pending state, can move to Processing when payment is confirmed or to Cancelled if they timeout. From Processing, orders can be Shipped when items are packed or Refunded upon customer request. Shipped orders become Delivered when the package is received. All final states (Delivered, Cancelled, Refunded) end the process.
 	  [*] --> Pending
@@ -76,8 +79,9 @@ diagram={`stateDiagram-v2
 
 ### Git Flow
 
-<MermaidDiagram height={350}
-diagram={`gitGraph
+<MermaidDiagram
+  height={350}
+  diagram={`gitGraph
 	  accTitle: Git Flow Branching Model
 	  accDescr: This diagram shows a typical Git Flow workflow. The main branch (green) represents production code. A develop branch (sky blue) is created for ongoing development. A feature branch called feature/mermaid (orange) is created from develop for implementing the Mermaid.js feature. After two commits on the feature branch, it merges back into develop. Finally, develop merges into main for release, followed by a hotfix commit on main.
 	  commit id: "Initial commit"
@@ -99,8 +103,9 @@ diagram={`gitGraph
 
 Database schema for a blog:
 
-<MermaidDiagram height={300}
-diagram={`erDiagram
+<MermaidDiagram
+  height={300}
+  diagram={`erDiagram
 	  accTitle: Blog Database Schema
 	  accDescr: This entity relationship diagram shows the database schema for a blog system. Users can write many posts, posts can have many comments, and posts belong to one category. The diagram shows the relationships between USER, POST, COMMENT, and CATEGORY entities with their respective fields and data types.
 	  USER ||--o{ POST : writes
@@ -137,8 +142,9 @@ diagram={`erDiagram
 
 Technology stack distribution:
 
-<MermaidDiagram height={300}
-diagram={`pie title Technology Stack
+<MermaidDiagram
+  height={300}
+  diagram={`pie title Technology Stack
 	  accTitle: Technology Stack Distribution
 	  accDescr: This pie chart shows the distribution of technologies used in the project. SvelteKit makes up 35%, TypeScript 25%, Tailwind CSS 20%, MDsveX 15%, and Tooling 5% of the technology stack.
 	  "SvelteKit" : 35

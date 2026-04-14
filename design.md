@@ -20,22 +20,34 @@ All colors follow a consistent design system for perfect visual consistency:
 
 ```css
 /* Primary Colors */
---color-primary-green: rgb(92, 139, 63);    /* #5c8b3f - Titles, banners, accents */
---color-link-green: rgb(46, 104, 16);       /* #2e6810 - Links, interactive elements */
+--color-primary-green: rgb(
+  92,
+  139,
+  63
+); /* #5c8b3f - Titles, banners, accents */
+--color-link-green: rgb(
+  46,
+  104,
+  16
+); /* #2e6810 - Links, interactive elements */
 
 /* Text Colors */
---color-text-primary: rgb(0, 0, 0);         /* #000000 - Primary text, headings */
+--color-text-primary: rgb(0, 0, 0); /* #000000 - Primary text, headings */
 --color-text-secondary: rgb(102, 102, 102); /* #666666 - Dates, meta info */
---color-text-nav: rgb(170, 170, 170);       /* #aaaaaa - Navigation links */
+--color-text-nav: rgb(170, 170, 170); /* #aaaaaa - Navigation links */
 
 /* Background Colors */
---color-bg-primary: rgb(255, 255, 255);     /* #ffffff - Page background */
---color-bg-banner: rgb(92, 139, 63);        /* #5c8b3f - Bio highlight banner */
---color-bg-code: rgb(249, 249, 249);        /* #f9f9f9 - Code blocks */
+--color-bg-primary: rgb(255, 255, 255); /* #ffffff - Page background */
+--color-bg-banner: rgb(92, 139, 63); /* #5c8b3f - Bio highlight banner */
+--color-bg-code: rgb(249, 249, 249); /* #f9f9f9 - Code blocks */
 
 /* Border Colors */
---color-border-light: rgb(222, 222, 222);   /* #dedede - Table borders, code blocks */
---color-border-accent: rgb(92, 139, 63);    /* #5c8b3f - Header border */
+--color-border-light: rgb(
+  222,
+  222,
+  222
+); /* #dedede - Table borders, code blocks */
+--color-border-accent: rgb(92, 139, 63); /* #5c8b3f - Header border */
 ```
 
 ### Color Usage Guidelines
@@ -74,10 +86,16 @@ All colors follow a consistent design system for perfect visual consistency:
 
 ```css
 /* Primary Font Stack (System Fonts) */
-font-family: system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif;
+font-family:
+  system,
+  -apple-system,
+  "system-ui",
+  "Helvetica Neue",
+  "Lucida Grande",
+  sans-serif;
 
 /* Monospace Font Stack */
-font-family: 'Courier New', monospace;
+font-family: "Courier New", monospace;
 ```
 
 ### Typography Hierarchy
@@ -114,7 +132,7 @@ font-weight: normal;
 
 ```css
 font-size: 18px;
-line-height: 28px;  /* 1.56 ratio for readability */
+line-height: 28px; /* 1.56 ratio for readability */
 color: rgb(0, 0, 0);
 ```
 
@@ -164,7 +182,7 @@ margin-bottom: 30px;
 .container {
   margin-left: auto;
   margin-right: auto;
-  max-width: 800px;  /* Exact match to modern minimal design */
+  max-width: 800px; /* Exact match to modern minimal design */
   width: 100%;
 }
 
@@ -205,7 +223,15 @@ margin-bottom: 30px;
 }
 
 /* Content Elements */
-p, h1, h2, h3, ul, ol, pre, img, table {
+p,
+h1,
+h2,
+h3,
+ul,
+ol,
+pre,
+img,
+table {
   margin-bottom: 30px;
 }
 ```
@@ -299,8 +325,8 @@ p, h1, h2, h3, ul, ol, pre, img, table {
 **Default State**:
 
 ```css
-color: rgb(92, 139, 63);  /* Content links */
-color: rgb(46, 104, 16);  /* Navigation links */
+color: rgb(92, 139, 63); /* Content links */
+color: rgb(46, 104, 16); /* Navigation links */
 text-decoration: underline;
 font-weight: normal;
 ```
@@ -308,14 +334,14 @@ font-weight: normal;
 **Hover State**:
 
 ```css
-text-decoration: underline;  /* Maintain underline */
-color: inherit;              /* Keep same color */
+text-decoration: underline; /* Maintain underline */
+color: inherit; /* Keep same color */
 ```
 
 **Banner Links (Special)**:
 
 ```css
-color: rgb(255, 255, 255);   /* White on green background */
+color: rgb(255, 255, 255); /* White on green background */
 text-decoration: underline;
 font-weight: bold;
 ```
@@ -353,7 +379,7 @@ pre {
 }
 
 code {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 16px;
 }
 ```
@@ -367,7 +393,8 @@ table {
   margin-bottom: 30px;
 }
 
-th, td {
+th,
+td {
   border: 1px solid rgb(222, 222, 222);
   padding: 8px 12px;
   text-align: left;
@@ -382,7 +409,8 @@ th {
 ### Lists
 
 ```css
-ul, ol {
+ul,
+ol {
   margin-bottom: 30px;
   padding-left: 20px;
 }

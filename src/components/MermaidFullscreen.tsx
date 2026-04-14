@@ -1,49 +1,52 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from "react";
 
 interface Props {
-  svgContent: string
-  isOpen: boolean
-  onClose: () => void
+  svgContent: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// Size SVG to fit the dialog viewport. Injected as inline style on the SVG
+// string so React owns the rendered HTML via dangerouslySetInnerHTML — never
+// mutate innerHTML via a ref (breaks hydration).
+function sizeSvg(svg: string): string {
+  return svg.replace(/<svg\b([^>]*)>/, (match, attrs) => {
+    const stripped = String(attrs)
+      .replace(/\swidth="[^"]*"/g, "")
+      .replace(/\sheight="[^"]*"/g, "")
+      .replace(/\sstyle="[^"]*"/g, "");
+    return `<svg${stripped} width="100%" height="100%" style="max-width:90vw;max-height:90vh">`;
+  });
 }
 
 export function MermaidFullscreen({ svgContent, isOpen, onClose }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [renderedSvg, setRenderedSvg] = useState("");
 
   useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
+    setRenderedSvg(svgContent ? sizeSvg(svgContent) : "");
+  }, [svgContent]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
 
     if (isOpen) {
-      dialog.showModal()
-      if (containerRef.current && svgContent) {
-        containerRef.current.innerHTML = svgContent
-        const svg = containerRef.current.querySelector('svg')
-        if (svg) {
-          svg.setAttribute('width', '100%')
-          svg.setAttribute('height', '100%')
-          svg.style.maxWidth = '90vw'
-          svg.style.maxHeight = '90vh'
-        }
-      }
+      dialog.showModal();
     } else {
-      dialog.close()
+      dialog.close();
     }
 
     return () => {
-      if (dialog.open) {
-        dialog.close()
-      }
-    }
-  }, [isOpen, svgContent])
+      if (dialog.open) dialog.close();
+    };
+  }, [isOpen]);
 
   function handleKeydown(event: React.KeyboardEvent) {
-    if (event.key === 'Escape') {
-      onClose()
-    }
+    if (event.key === "Escape") onClose();
   }
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <dialog
@@ -70,8 +73,11 @@ export function MermaidFullscreen({ svgContent, isOpen, onClose }: Props) {
           </svg>
         </button>
 
-        <div ref={containerRef} className="diagram-container" />
+        <div
+          className="diagram-container"
+          dangerouslySetInnerHTML={{ __html: renderedSvg }}
+        />
       </div>
     </dialog>
-  )
+  );
 }

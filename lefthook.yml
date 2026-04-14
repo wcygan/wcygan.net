@@ -1,0 +1,12 @@
+# Run `bunx lefthook install` once after `bun install` to wire up git hooks.
+pre-commit:
+  parallel: false
+  commands:
+    format:
+      glob: "*.{ts,tsx,js,jsx,css,md,mdx,json,yml,yaml}"
+      run: bunx prettier --write {staged_files}
+      stage_fixed: true
+    typecheck:
+      run: bun run typecheck
+    test:
+      run: bun run test

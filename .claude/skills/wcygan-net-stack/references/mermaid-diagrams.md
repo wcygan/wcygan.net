@@ -204,17 +204,19 @@ The `.mermaid-fullscreen-dialog` selector is required because the mobile fullscr
 **Per-diagram font-size quirks**: Mermaid injects its own CSS per diagram instance, and different diagram kinds measure labels at different font sizes. ER diagrams emit `#mermaid-XXX .edgeLabel .label { font-size: 14px }` which doesn't reach the `<p>` child in the actual output (Mermaid's selector targets a `.label` element that the HTML label pipeline doesn't render). Entity attributes in the same diagram use `.nodeLabel` and stay at 16px. When adding new diagram types or upgrading `mermaid`, run this check to catch any new clipped/loose labels:
 
 ```js
-document.querySelectorAll(".mermaid-container svg").forEach(svg => {
-  const kind = svg.getAttribute("aria-roledescription")
-  svg.querySelectorAll("foreignObject").forEach(fo => {
-    const inner = fo.querySelector("p,span,div")
-    if (!inner) return
-    const boxW = fo.getBoundingClientRect().width
-    const innerW = inner.getBoundingClientRect().width
-    if (innerW > boxW + 0.5) console.warn("CLIPPED", kind, fo.textContent, boxW, innerW)
-    else if (innerW < boxW - 6) console.warn("LOOSE", kind, fo.textContent, boxW, innerW)
-  })
-})
+document.querySelectorAll(".mermaid-container svg").forEach((svg) => {
+  const kind = svg.getAttribute("aria-roledescription");
+  svg.querySelectorAll("foreignObject").forEach((fo) => {
+    const inner = fo.querySelector("p,span,div");
+    if (!inner) return;
+    const boxW = fo.getBoundingClientRect().width;
+    const innerW = inner.getBoundingClientRect().width;
+    if (innerW > boxW + 0.5)
+      console.warn("CLIPPED", kind, fo.textContent, boxW, innerW);
+    else if (innerW < boxW - 6)
+      console.warn("LOOSE", kind, fo.textContent, boxW, innerW);
+  });
+});
 ```
 
 If you ever restyle `body`, `p`, or prose-level typography — or upgrade the `mermaid` package — re-check the `/mermaid-diagrams` route (inline and fullscreen) with the snippet above. The same trap applies to any other library that renders HTML inside SVG or an inline container without shadow-DOM isolation (KaTeX, some chart libraries).

@@ -1,18 +1,18 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { getAllPosts } from '~/lib/services/blog'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { getAllPosts } from "~/lib/services/blog";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   loader: () => ({ posts: getAllPosts() }),
   component: HomePage,
-})
+});
 
 function HomePage() {
-  const { posts } = Route.useLoaderData()
+  const { posts } = Route.useLoaderData();
   return (
     <>
       <div className="bio-highlight">
         <p>
-          Software Engineer at{' '}
+          Software Engineer at{" "}
           <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a> building
           e-commerce infrastructure.
         </p>
@@ -33,5 +33,5 @@ function HomePage() {
         </ul>
       </section>
     </>
-  )
+  );
 }

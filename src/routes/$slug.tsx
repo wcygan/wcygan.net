@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import type { PostMetadata } from "~/lib/types";
 import { getPostBySlug, getAdjacentPosts } from "~/lib/services/blog";
 import type { AdjacentPost } from "~/lib/services/blog";
-import { formatReadingTime } from "~/lib/utils/readingTime";
+import { isStaticAssetSlug } from "~/lib/routing/static-asset-guard";
 
 interface MdxModule {
   frontmatter: PostMetadata;
@@ -12,9 +12,13 @@ interface MdxModule {
 
 const mdxModules = import.meta.glob<MdxModule>("/src/posts/*.mdx");
 
+function formatReadingTime(minutes: number): string {
+  return minutes === 1 ? "1 min read" : `${minutes} min read`;
+}
+
 export const Route = createFileRoute("/$slug")({
   beforeLoad: ({ params }) => {
-    if (params.slug.includes(".")) {
+    if (isStaticAssetSlug(params.slug)) {
       throw notFound();
     }
   },

@@ -75,6 +75,7 @@ public/                # Static assets (images, resume PDF, rss.xml)
 ## Design System
 
 **Color Palette** (Light theme):
+
 - Primary green: `rgb(92, 139, 63)` — titles, banners, accents
 - Link green: `rgb(46, 104, 16)` — interactive links
 - Text primary: `rgb(0, 0, 0)` — body text
@@ -101,7 +102,7 @@ public/                # Static assets (images, resume PDF, rss.xml)
 ## Mermaid Diagrams in MDX
 
 ```mdx
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 <MermaidDiagram
   height={400}

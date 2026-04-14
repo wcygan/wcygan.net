@@ -4,32 +4,32 @@ import {
   Scripts,
   createRootRoute,
   Link,
-} from '@tanstack/react-router'
-import '~/styles/app.css'
+} from "@tanstack/react-router";
+import "~/styles/app.css";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
       {
-        name: 'description',
+        name: "description",
         content:
-          'Will Cygan - Software Engineer interested in distributed systems, web applications, and system design.',
+          "Will Cygan - Software Engineer interested in distributed systems, web applications, and system design.",
       },
     ],
     links: [
-      { rel: 'icon', href: '/favicon.ico' },
+      { rel: "icon", href: "/favicon.ico" },
       {
-        rel: 'alternate',
-        type: 'application/rss+xml',
-        title: 'Will Cygan | Blog RSS Feed',
-        href: '/feed',
+        rel: "alternate",
+        type: "application/rss+xml",
+        title: "Will Cygan | Blog RSS Feed",
+        href: "/rss.xml",
       },
     ],
   }),
   component: RootDocument,
-})
+});
 
 function RootDocument() {
   return (
@@ -60,5 +60,5 @@ function RootDocument() {
         <Scripts />
       </body>
     </html>
-  )
+  );
 }
