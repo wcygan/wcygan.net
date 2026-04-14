@@ -19,7 +19,7 @@ Configured in `vite.config.ts` as the first plugin (must run before React).
 
 ## Blog Post Format
 
-```mdx
+````mdx
 ---
 title: My Post Title
 date: January 1, 2026
@@ -27,7 +27,7 @@ description: A short description for SEO and listings
 tags: [Tag1, Tag2, Tag3]
 ---
 
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 Regular markdown content here. Links, **bold**, _italic_, etc.
 
@@ -36,12 +36,14 @@ Regular markdown content here. Links, **bold**, _italic_, etc.
 ```bash
 echo "highlighted with github-light theme"
 ```
+````
 
 ## React components work inline
 
 <MermaidDiagram height={300} diagram={`flowchart LR
   A --> B --> C`} />
-```
+
+````
 
 ## Frontmatter Access
 
@@ -56,7 +58,7 @@ export const frontmatter = {
   tags: ['Tag1', 'Tag2'],
 }
 export default function MDXContent() { /* ... */ }
-```
+````
 
 **Note**: This is `frontmatter`, not `metadata` (the old MDsveX convention).
 
@@ -65,7 +67,9 @@ export default function MDXContent() { /* ... */ }
 `src/lib/services/blog.ts` uses Vite's glob import for build-time post discovery:
 
 ```ts
-const postFiles = import.meta.glob<MdxModule>('/src/posts/*.mdx', { eager: true })
+const postFiles = import.meta.glob<MdxModule>("/src/posts/*.mdx", {
+  eager: true,
+});
 ```
 
 - `eager: true` loads all posts at build time (no lazy loading for the listing)
@@ -80,13 +84,13 @@ The `$slug.tsx` route loads MDX content client-side (not in the loader) because 
 
 ```tsx
 // In the route component (NOT the loader):
-const mdxModules = import.meta.glob<MdxModule>('/src/posts/*.mdx')
+const mdxModules = import.meta.glob<MdxModule>("/src/posts/*.mdx");
 
 // Client-side loading via useEffect
 useEffect(() => {
-  const loadModule = mdxModules[`/src/posts/${slug}.mdx`]
-  loadModule().then(mod => setContent(() => mod.default))
-}, [slug])
+  const loadModule = mdxModules[`/src/posts/${slug}.mdx`];
+  loadModule().then((mod) => setContent(() => mod.default));
+}, [slug]);
 ```
 
 ## Shiki Syntax Highlighting
@@ -115,9 +119,11 @@ Use explicit markdown link syntax in posts:
 
 ```mdx
 <!-- WRONG — renders as plain text -->
+
 https://github.com/foo/bar
 
 <!-- CORRECT -->
+
 [https://github.com/foo/bar](https://github.com/foo/bar)
 ```
 

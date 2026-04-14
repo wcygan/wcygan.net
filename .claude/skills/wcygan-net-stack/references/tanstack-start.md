@@ -8,29 +8,31 @@ wcygan.net is a full-stack React app using TanStack Start (v1.167+) with TanStac
 
 Routes live in `src/routes/`. TanStack Router auto-generates `src/routeTree.gen.ts` (gitignored).
 
-| File | Route | Purpose |
-|------|-------|---------|
-| `__root.tsx` | Layout wrapper | HTML shell, header, nav, `<Outlet />` |
-| `index.tsx` | `/` | Homepage with bio + post list |
-| `posts.tsx` | `/posts` | All blog posts listing |
-| `$slug.tsx` | `/{slug}` | Dynamic blog post (MDX) |
-| `about.tsx` | `/about` | About page with experience cards |
-| `resume.tsx` | `/resume` | Resume page |
-| `mermaid-examples.tsx` | `/mermaid-examples` | Mermaid diagram showcase |
-| `feed.tsx` | `/feed` | RSS feed |
+| File                   | Route               | Purpose                               |
+| ---------------------- | ------------------- | ------------------------------------- |
+| `__root.tsx`           | Layout wrapper      | HTML shell, header, nav, `<Outlet />` |
+| `index.tsx`            | `/`                 | Homepage with bio + post list         |
+| `posts.tsx`            | `/posts`            | All blog posts listing                |
+| `$slug.tsx`            | `/{slug}`           | Dynamic blog post (MDX)               |
+| `about.tsx`            | `/about`            | About page with experience cards      |
+| `resume.tsx`           | `/resume`           | Resume page                           |
+| `mermaid-examples.tsx` | `/mermaid-examples` | Mermaid diagram showcase              |
+| `feed.tsx`             | `/feed`             | RSS feed                              |
 
 ## Route Anatomy
 
 ```tsx
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/my-route')({
+export const Route = createFileRoute("/my-route")({
   // Runs before the loader — use for guards/validation
-  beforeLoad: ({ params }) => { /* ... */ },
+  beforeLoad: ({ params }) => {
+    /* ... */
+  },
 
   // Returns SERIALIZABLE data only — no components, functions, or classes
   loader: ({ params }) => {
-    return { title: 'Hello' }  // must be JSON-serializable
+    return { title: "Hello" }; // must be JSON-serializable
   },
 
   // SEO head tags
@@ -40,11 +42,11 @@ export const Route = createFileRoute('/my-route')({
 
   // React component
   component: MyPage,
-})
+});
 
 function MyPage() {
-  const data = Route.useLoaderData()
-  return <div>{data.title}</div>
+  const data = Route.useLoaderData();
+  return <div>{data.title}</div>;
 }
 ```
 
@@ -95,15 +97,15 @@ Use plain `<a>` for external links and static assets (`/will_cygan_resume.pdf`).
 `src/router.tsx` exports `getRouter()` (name matters — the generated route tree references it):
 
 ```tsx
-import { createRouter as createTanStackRouter } from '@tanstack/react-router'
-import { routeTree } from './routeTree.gen'
+import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
   return createTanStackRouter({
     routeTree,
-    defaultPreload: 'intent',
+    defaultPreload: "intent",
     scrollRestoration: true,
-  })
+  });
 }
 ```
 
@@ -118,15 +120,15 @@ export function getRouter() {
 ```tsx
 // WRONG — crashes hydration
 loader: async ({ params }) => {
-  const post = await import(`../posts/${params.slug}.mdx`)
-  return { content: post.default }  // React component is not serializable!
-}
+  const post = await import(`../posts/${params.slug}.mdx`);
+  return { content: post.default }; // React component is not serializable!
+};
 
 // CORRECT — return metadata, load component client-side
 loader: ({ params }) => {
-  const post = getPostBySlug(params.slug)
-  return { meta: { title: post.title }, slug: params.slug }
-}
+  const post = getPostBySlug(params.slug);
+  return { meta: { title: post.title }, slug: params.slug };
+};
 ```
 
 ## The $slug Catch-All Problem

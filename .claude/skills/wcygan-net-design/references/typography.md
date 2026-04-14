@@ -6,13 +6,20 @@ System fonts. No web fonts. One sans stack, one mono stack.
 
 ```css
 /* Body / display (same stack) */
-font-family: system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif;
+font-family:
+  system,
+  -apple-system,
+  "system-ui",
+  "Helvetica Neue",
+  "Lucida Grande",
+  sans-serif;
 
 /* Monospace (code, Shiki) */
-font-family: 'Courier New', monospace;
+font-family: "Courier New", monospace;
 ```
 
 Shiki code blocks use a slightly richer mono stack for better glyph coverage:
+
 ```css
 Consolas, Menlo, "Deja Vu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
 ```
@@ -25,43 +32,43 @@ All values are the actual ones in `app.css` — match them exactly.
 
 ### Chrome
 
-| Element | Size | Weight | Transform | Color |
-|---|---|---|---|---|
-| Site title (`.site-title`) | 18px | 700 | uppercase | black |
-| Nav link (`.site-nav a`) | 14px | 400 | uppercase | `#aaa` |
+| Element                    | Size | Weight | Transform | Color  |
+| -------------------------- | ---- | ------ | --------- | ------ |
+| Site title (`.site-title`) | 18px | 700    | uppercase | black  |
+| Nav link (`.site-nav a`)   | 14px | 400    | uppercase | `#aaa` |
 
 ### Homepage post list
 
-| Element | Size | Weight | Style | Color |
-|---|---|---|---|---|
-| Post title link (`.post-title a`) | 18px | 400 | underline | `#5c8b3f` |
-| Post date (`.post-date`) | 18px | 400 | — | `#666` |
+| Element                           | Size | Weight | Style     | Color     |
+| --------------------------------- | ---- | ------ | --------- | --------- |
+| Post title link (`.post-title a`) | 18px | 400    | underline | `#5c8b3f` |
+| Post date (`.post-date`)          | 18px | 400    | —         | `#666`    |
 
 ### Blog post page
 
-| Element | Size | Weight | Style | Color |
-|---|---|---|---|---|
-| Post title (`.blog-post .post-title`) | 36px | 700 | line-height 1, mb 30px | `#5c8b3f` |
-| Post meta date (`.post-meta`) | 18px | 400 | italic | `#666` |
+| Element                               | Size | Weight | Style                  | Color     |
+| ------------------------------------- | ---- | ------ | ---------------------- | --------- |
+| Post title (`.blog-post .post-title`) | 36px | 700    | line-height 1, mb 30px | `#5c8b3f` |
+| Post meta date (`.post-meta`)         | 18px | 400    | italic                 | `#666`    |
 
 ### In-content headings (`.post-content`)
 
-| Tag | Size | Weight | Color |
-|---|---|---|---|
-| h1 | 36px | 700 | black |
-| h2 | 28px | 700 | `#666` |
-| h3 | 24px | 700 | `#5c8b3f` |
+| Tag | Size | Weight | Color     |
+| --- | ---- | ------ | --------- |
+| h1  | 36px | 700    | black     |
+| h2  | 28px | 700    | `#666`    |
+| h3  | 24px | 700    | `#5c8b3f` |
 
 Heading line-height is `1`. Margin-bottom is `30px` (the universal vertical rhythm).
 
 ### Body
 
-| Element | Size | Line-height | Color |
-|---|---|---|---|
-| `<body>` | 18px | 1.6 | black |
-| `.post-content p` | 18px | 28px | black |
-| Inline `<code>` (not Shiki) | 0.9em | — | black on `bg-gray-100` |
-| Shiki code | 14px | 14px | Shiki-themed (github-light) |
+| Element                     | Size  | Line-height | Color                       |
+| --------------------------- | ----- | ----------- | --------------------------- |
+| `<body>`                    | 18px  | 1.6         | black                       |
+| `.post-content p`           | 18px  | 28px        | black                       |
+| Inline `<code>` (not Shiki) | 0.9em | —           | black on `bg-gray-100`      |
+| Shiki code                  | 14px  | 14px        | Shiki-themed (github-light) |
 
 ## Rules
 

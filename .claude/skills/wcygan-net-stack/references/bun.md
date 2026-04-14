@@ -34,14 +34,13 @@ bun install              # Install from bun.lock
 The production build uses Nitro with the `bun` preset, configured in `vite.config.ts`:
 
 ```ts
-import { nitro } from 'nitro/vite'
+import { nitro } from "nitro/vite";
 // ...
-plugins: [
-  nitro({ preset: 'bun' }),
-]
+plugins: [nitro({ preset: "bun" })];
 ```
 
 Build output goes to `.output/server/index.mjs`. Run with:
+
 ```bash
 bun .output/server/index.mjs
 ```
@@ -51,6 +50,7 @@ The `PORT` environment variable controls the server port (default 3000).
 ## Vite Integration
 
 Bun runs Vite directly. The `vite.config.ts` uses Vite 8 with these plugins in order:
+
 1. `@mdx-js/rollup` — MDX compilation (must come before React)
 2. `@tanstack/react-start/plugin/vite` — TanStack Start SSR
 3. `@vitejs/plugin-react` — React JSX transform

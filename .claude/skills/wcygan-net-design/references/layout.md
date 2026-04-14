@@ -19,7 +19,9 @@ Defined once in `src/styles/app.css`. Applied once in `src/routes/__root.tsx`:
 <div className="min-h-screen bg-white">
   <div className="container">
     <header className="site-header">...</header>
-    <main className="main-section"><Outlet /></main>
+    <main className="main-section">
+      <Outlet />
+    </main>
   </div>
 </div>
 ```
@@ -30,17 +32,17 @@ Never nest a second `.container` inside a route. The outer frame is global.
 
 The site uses a simplified rhythm, not a full 8pt scale:
 
-| Purpose | Value |
-|---|---|
+| Purpose                     | Value              |
+| --------------------------- | ------------------ |
 | Block element bottom margin | `30px` (universal) |
-| Main section padding | `12px` |
-| Header margin | `8px 12px 12px` |
-| Header padding-bottom | `8px` |
-| Section spacing | `40px` |
-| Post item padding | `5px 0` |
-| Post item bottom margin | `16px` |
-| Bio highlight padding | `12px 20px` |
-| Pre/code padding | `18px 30px` |
+| Main section padding        | `12px`             |
+| Header margin               | `8px 12px 12px`    |
+| Header padding-bottom       | `8px`              |
+| Section spacing             | `40px`             |
+| Post item padding           | `5px 0`            |
+| Post item bottom margin     | `16px`             |
+| Bio highlight padding       | `12px 20px`        |
+| Pre/code padding            | `18px 30px`        |
 
 Don't introduce new magic numbers. If you need spacing, reach for `30px` (between blocks) or `12px` (inside blocks) first.
 
@@ -60,10 +62,18 @@ One breakpoint: `max-width: 768px`.
 
 ```css
 @media (max-width: 768px) {
-  .container { @apply px-4 py-6; }
-  .site-title { @apply text-3xl; }   /* legacy override — consider removing */
-  .post-item { @apply flex-col items-start; }
-  .post-date { @apply ml-0 mt-1; }
+  .container {
+    @apply px-4 py-6;
+  }
+  .site-title {
+    @apply text-3xl;
+  } /* legacy override — consider removing */
+  .post-item {
+    @apply flex-col items-start;
+  }
+  .post-date {
+    @apply ml-0 mt-1;
+  }
 }
 ```
 
@@ -73,8 +83,13 @@ On mobile the post-item flips from flex-row (title / date on same line) to flex-
 
 ```css
 @media print {
-  body { @apply text-black; }
-  .site-nav, .bio-highlight { display: none; }
+  body {
+    @apply text-black;
+  }
+  .site-nav,
+  .bio-highlight {
+    display: none;
+  }
 }
 ```
 

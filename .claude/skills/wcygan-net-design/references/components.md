@@ -6,7 +6,9 @@ The site has few components. Prefer named CSS classes in `app.css` over new Reac
 
 ```tsx
 <header className="site-header">
-  <h1 className="site-title"><Link to="/">Will Cygan</Link></h1>
+  <h1 className="site-title">
+    <Link to="/">Will Cygan</Link>
+  </h1>
   <nav className="site-nav">
     <a href="/will_cygan_resume.pdf">Resume</a>
     <a href="mailto:wcygan.io@gmail.com">Email</a>
@@ -17,6 +19,7 @@ The site has few components. Prefer named CSS classes in `app.css` over new Reac
 ```
 
 Rules:
+
 - Only edit in `src/routes/__root.tsx`. Never re-render header or nav in a child route.
 - Nav links are plain `<a>` (external) or `<Link>` (internal). No icons.
 - Order: Resume, Email, GitHub, LinkedIn. Add new links only with explicit request.
@@ -25,7 +28,10 @@ Rules:
 
 ```tsx
 <div className="bio-highlight">
-  <p>Software Engineer at <a href="...">LinkedIn</a> building e-commerce infrastructure.</p>
+  <p>
+    Software Engineer at <a href="...">LinkedIn</a> building e-commerce
+    infrastructure.
+  </p>
 </div>
 ```
 
@@ -40,7 +46,9 @@ Rules:
   {posts.map((post) => (
     <li key={post.slug} className="post-item">
       <div className="post-title">
-        <Link to="/$slug" params={{ slug: post.slug }}>{post.title}</Link>
+        <Link to="/$slug" params={{ slug: post.slug }}>
+          {post.title}
+        </Link>
       </div>
       <div className="post-date">{post.date}</div>
     </li>
@@ -58,7 +66,9 @@ Rules:
 <article className="blog-post">
   <header className="post-header">
     <h1 className="post-title">{title}</h1>
-    <div className="post-meta"><time dateTime={date}>{date}</time></div>
+    <div className="post-meta">
+      <time dateTime={date}>{date}</time>
+    </div>
   </header>
   <div className="post-content">
     <MDXContent />
@@ -72,12 +82,13 @@ Rules:
 ## MermaidDiagram
 
 ```tsx
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-<MermaidDiagram height={400} diagram={`flowchart TD\n  A --> B`} />
+<MermaidDiagram height={400} diagram={`flowchart TD\n  A --> B`} />;
 ```
 
 Rules:
+
 - Only use inside MDX posts (via `import` at top of the `.mdx` file).
 - Lazy-loaded: `import('mermaid')` at runtime, never top-level.
 - SessionStorage cache prevents re-render on navigation (see `src/lib/utils/mermaid-cache.ts`).
@@ -87,6 +98,7 @@ Rules:
 ## ExperienceCard (about page)
 
 Currently uses emerald/zinc Tailwind classes — **legacy drift**. When editing:
+
 - Keep the component API (`{ experience: Experience }`).
 - Migrate colors: `text-emerald-400` → primary green inline, `bg-zinc-700` → surface gray, `text-zinc-300` → black.
 - Remove `hover:scale-105` and `transition-all` — motion is not part of this design.

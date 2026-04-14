@@ -48,7 +48,7 @@ description: "Summary."
 tags: ["topic"]
 ---
 
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 Lede paragraph.
 
@@ -58,8 +58,11 @@ Body.
 
 ## Second section
 
-<MermaidDiagram height={400} diagram={`flowchart LR
-  A --> B`} />
+<MermaidDiagram
+  height={400}
+  diagram={`flowchart LR
+  A --> B`}
+/>
 ```
 
 ## Routing gotchas

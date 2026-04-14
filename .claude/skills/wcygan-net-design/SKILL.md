@@ -30,16 +30,16 @@ Minimal, text-first personal blog. The aesthetic is **editorial minimalism** wit
 
 ## The palette (memorize)
 
-| Name | Value | Use |
-|---|---|---|
-| Primary green | `rgb(92, 139, 63)` / `#5c8b3f` | Post titles, bio banner bg, header border, H3 |
-| Link green | `rgb(46, 104, 16)` / `#2e6810` | Body links (bold, no underline until hover) |
-| Text | `rgb(0, 0, 0)` | Body, H1, H2, site title |
-| Muted | `rgb(102, 102, 102)` / `#666` | Dates, H2 in post content, italic meta |
-| Nav | `rgb(170, 170, 170)` / `#aaa` | Header nav links |
-| Border | `rgb(222, 222, 222)` / `#dedede` | Tables, code blocks |
-| Surface | `rgb(249, 249, 249)` / `#f9f9f9` | Code blocks, table headers |
-| Bg | `#fff` | Page |
+| Name          | Value                            | Use                                           |
+| ------------- | -------------------------------- | --------------------------------------------- |
+| Primary green | `rgb(92, 139, 63)` / `#5c8b3f`   | Post titles, bio banner bg, header border, H3 |
+| Link green    | `rgb(46, 104, 16)` / `#2e6810`   | Body links (bold, no underline until hover)   |
+| Text          | `rgb(0, 0, 0)`                   | Body, H1, H2, site title                      |
+| Muted         | `rgb(102, 102, 102)` / `#666`    | Dates, H2 in post content, italic meta        |
+| Nav           | `rgb(170, 170, 170)` / `#aaa`    | Header nav links                              |
+| Border        | `rgb(222, 222, 222)` / `#dedede` | Tables, code blocks                           |
+| Surface       | `rgb(249, 249, 249)` / `#f9f9f9` | Code blocks, table headers                    |
+| Bg            | `#fff`                           | Page                                          |
 
 No other colors. No dark mode. No Tailwind color-scale classes in new work (`text-emerald-400`, `bg-zinc-700`) — legacy posts/components have them and are being drifted back to the palette over time.
 

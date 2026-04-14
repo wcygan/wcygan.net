@@ -9,13 +9,13 @@ Fast checks to confirm production is serving the **current TanStack Start + Vite
 
 ## Fingerprint cheat sheet
 
-| Signal | TanStack Start (current) | SvelteKit (old) |
-|---|---|---|
-| SSR hydration global | `__TSR_` / `__TSR_ROUTER_MANIFEST__` | `__sveltekit_` |
-| Asset path prefix | `/assets/<name>-<hash>.js` | `/_app/immutable/entry/start.<hash>.js` |
-| Router markers | `tsr-scroll-restoration-v`, `tsr-stream-barrier` | Svelte hydration comments `<!--[-->` |
-| Component chunk names | `MermaidDiagram-<hash>.js` (React) | `Mermaid-<hash>.svelte-<hash>.js` |
-| Console probe | `window.__TSR_ROUTER_MANIFEST__` is an object | `undefined` |
+| Signal                | TanStack Start (current)                         | SvelteKit (old)                         |
+| --------------------- | ------------------------------------------------ | --------------------------------------- |
+| SSR hydration global  | `__TSR_` / `__TSR_ROUTER_MANIFEST__`             | `__sveltekit_`                          |
+| Asset path prefix     | `/assets/<name>-<hash>.js`                       | `/_app/immutable/entry/start.<hash>.js` |
+| Router markers        | `tsr-scroll-restoration-v`, `tsr-stream-barrier` | Svelte hydration comments `<!--[-->`    |
+| Component chunk names | `MermaidDiagram-<hash>.js` (React)               | `Mermaid-<hash>.svelte-<hash>.js`       |
+| Console probe         | `window.__TSR_ROUTER_MANIFEST__` is an object    | `undefined`                             |
 
 Any SvelteKit marker on wcygan.net means the deploy didn't land or an old cached response is being served.
 
@@ -28,6 +28,7 @@ curl -s --compressed https://wcygan.net/ \
 ```
 
 Expected output:
+
 ```
 __TSR_
 /assets/
@@ -61,13 +62,13 @@ curl -sI https://wcygan.net/really-good-software/ | head -3
 
 ## Common failure modes
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| Curl shows `__TSR_` but browser shows old layout | Service worker cache from SvelteKit era | DevTools → Application → Service Workers → Unregister; or incognito |
-| Curl + browser both show SvelteKit markers | CI deploy didn't land — check `wrangler deployments list` timestamp against push time | Re-trigger build, or `npx wrangler deploy` from laptop |
-| `/assets/*.js` returns 404 while HTML loads | Asset directory mismatch — `wrangler.jsonc` `assets.directory` doesn't match actual build output | Verify `.output/public/` has `assets/` subdir; redeploy |
-| Different version IDs between `wrangler versions list` and production | Gradual rollout in progress | Wait 60s and recheck; or check Deployments tab for rollout % |
-| New deploy, edge still serves old content for >5min | Zone-level CDN cache outside Workers Assets | Cloudflare dashboard → Caching → Purge Everything |
+| Symptom                                                               | Cause                                                                                            | Fix                                                                 |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| Curl shows `__TSR_` but browser shows old layout                      | Service worker cache from SvelteKit era                                                          | DevTools → Application → Service Workers → Unregister; or incognito |
+| Curl + browser both show SvelteKit markers                            | CI deploy didn't land — check `wrangler deployments list` timestamp against push time            | Re-trigger build, or `npx wrangler deploy` from laptop              |
+| `/assets/*.js` returns 404 while HTML loads                           | Asset directory mismatch — `wrangler.jsonc` `assets.directory` doesn't match actual build output | Verify `.output/public/` has `assets/` subdir; redeploy             |
+| Different version IDs between `wrangler versions list` and production | Gradual rollout in progress                                                                      | Wait 60s and recheck; or check Deployments tab for rollout %        |
+| New deploy, edge still serves old content for >5min                   | Zone-level CDN cache outside Workers Assets                                                      | Cloudflare dashboard → Caching → Purge Everything                   |
 
 ## When to reach for this skill
 

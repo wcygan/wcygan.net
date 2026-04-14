@@ -34,6 +34,7 @@ tags: [<Tag1>, <Tag2>, ...]
 ```
 
 Notes:
+
 - `date` is a human-readable string like `November 1, 2025` — **not** ISO. Match `src/posts/really-good-software.mdx` for the canonical shape.
 - `tags` is a YAML array of bare words (no quotes unless the tag has special chars).
 - Leave the body as a one-line TODO placeholder if the user hasn't provided content yet; they'll fill it in.
@@ -55,6 +56,7 @@ Insert the new item **immediately after** the `<language>en-us/>` line (i.e. as 
 ```
 
 Notes:
+
 - `pubDate` format: `Day, DD Mon YYYY 00:00:00 GMT` (RFC 822). Example: `Sat, 01 Nov 2025 00:00:00 GMT`. Always use `00:00:00 GMT`.
 - One `<category>` per tag, in the same order as the MDX `tags` array.
 - Blank line after the new `</item>` to match existing spacing.

@@ -40,15 +40,15 @@ export const Route = createFileRoute('/about')({
 
 ```tsx
 // src/routes/$slug.tsx
-export const Route = createFileRoute('/$slug')({
+export const Route = createFileRoute("/$slug")({
   beforeLoad: ({ params }) => {
-    if (params.slug.includes('.')) {
-      throw notFound()   // Let public/ assets pass through
+    if (params.slug.includes(".")) {
+      throw notFound(); // Let public/ assets pass through
     }
   },
-  loader: ({ params }) => ({ slug: params.slug }),  // serializable only
+  loader: ({ params }) => ({ slug: params.slug }), // serializable only
   component: PostPage,
-})
+});
 ```
 
 - The dot-check is **load-bearing**. Without it, `/rss.xml`, `/favicon.ico`, `/will_cygan_resume.pdf` get caught by `$slug` and 404 (or worse, prerender as "posts").

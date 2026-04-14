@@ -9,12 +9,12 @@ This skill provides project-specific knowledge for the wcygan.net blog, covering
 
 ## Quick Reference
 
-| Area | Entry Point | Reference |
-|------|------------|-----------|
-| Bun runtime & build | `package.json`, `vite.config.ts` | [bun.md](references/bun.md) |
-| TanStack Start routing & SSR | `src/routes/`, `src/router.tsx` | [tanstack-start.md](references/tanstack-start.md) |
-| MDX markdown pipeline | `vite.config.ts` MDX plugin, `src/posts/` | [mdx-pipeline.md](references/mdx-pipeline.md) |
-| Mermaid diagrams | `src/components/MermaidDiagram.tsx` | [mermaid-diagrams.md](references/mermaid-diagrams.md) |
+| Area                         | Entry Point                               | Reference                                             |
+| ---------------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| Bun runtime & build          | `package.json`, `vite.config.ts`          | [bun.md](references/bun.md)                           |
+| TanStack Start routing & SSR | `src/routes/`, `src/router.tsx`           | [tanstack-start.md](references/tanstack-start.md)     |
+| MDX markdown pipeline        | `vite.config.ts` MDX plugin, `src/posts/` | [mdx-pipeline.md](references/mdx-pipeline.md)         |
+| Mermaid diagrams             | `src/components/MermaidDiagram.tsx`       | [mermaid-diagrams.md](references/mermaid-diagrams.md) |
 
 ## Critical Gotchas
 
