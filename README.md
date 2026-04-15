@@ -16,8 +16,8 @@ Install [bun](https://bun.sh/), [just](https://github.com/casey/just), and
 [uv](https://docs.astral.sh/uv/).
 
 ```bash
-bun install
-bun run dev
+just install
+just dev
 ```
 
 Task runner recipes live in the `justfile` — run `just` to list them. Python
@@ -25,17 +25,14 @@ helpers are executed via `uv run`.
 
 ## Create a new post
 
-```bash
-just post
-```
+Drop a new `.mdx` file into `src/posts/` with YAML frontmatter (`title`, `date`,
+`description`, `tags`). It will appear automatically on the homepage and
+`/posts`.
 
 ## Download Resume
 
-To fetch the latest version of the resume from GitHub:
-
-```bash
-just download
-```
+The latest resume PDF lives in `public/` and is updated manually — no task
+recipe is wired up yet.
 
 ## Integration Testing
 
@@ -45,7 +42,7 @@ The project includes comprehensive end-to-end integration tests for Mermaid diag
 
 - Node.js 18+ (required for built-in fetch API)
 - Built project in `/build` directory
-- All dependencies installed via `bun install`
+- All dependencies installed via `just install`
 
 ### Running Integration Tests
 
@@ -55,13 +52,13 @@ The integration tests use a global server setup that automatically manages the t
 
 ```bash
 # Build the project (required before integration tests)
-bun run build
+just build
 
 # Run all integration tests (server starts/stops automatically)
-NODE_OPTIONS="" bun run test:integration
+NODE_OPTIONS="" just test tests/integration
 
 # Run specific test file
-NODE_OPTIONS="" bun run test:integration tests/integration/mermaid-diagrams.test.ts
+NODE_OPTIONS="" just test tests/integration/mermaid-diagrams.test.ts
 ```
 
 #### Manual Server Setup (Legacy)
@@ -70,10 +67,10 @@ For debugging or development purposes, you can manually control the server:
 
 ```bash
 # Terminal 1: Start development server
-bun run dev
+just dev
 
 # Terminal 2: Run integration tests against dev server
-NODE_OPTIONS="" BASE_URL="http://localhost:5173" bun run test:integration
+NODE_OPTIONS="" BASE_URL="http://localhost:5173" just test tests/integration
 ```
 
 ### Environment Variables
@@ -106,7 +103,7 @@ The integration tests cover:
 **Build directory missing:**
 
 ```bash
-bun run build
+just build
 ```
 
 **Port already in use:**
@@ -122,10 +119,14 @@ For more detailed information about the integration test architecture, see `test
 
 ## CI Testing
 
-```bash
-just ci-test
-```
+Run the full quality gate locally (format + typecheck + test):
 
 ```bash
-just ci-test-quick
+just check
+```
+
+Verify production after a deploy:
+
+```bash
+just verify-prod
 ```
