@@ -12,17 +12,21 @@ Managed on https://dash.cloudflare.com/
 
 ## Quickstart
 
-Install [pnpm](https://pnpm.io/installation) and (Optionally)
-[Deno](https://docs.deno.com/runtime/getting_started/installation/).
+Install [bun](https://bun.sh/), [just](https://github.com/casey/just), and
+[uv](https://docs.astral.sh/uv/).
 
 ```bash
-pnpm run dev
+bun install
+bun run dev
 ```
+
+Task runner recipes live in the `justfile` — run `just` to list them. Python
+helpers are executed via `uv run`.
 
 ## Create a new post
 
 ```bash
-pnpm post
+just post
 ```
 
 ## Download Resume
@@ -30,13 +34,7 @@ pnpm post
 To fetch the latest version of the resume from GitHub:
 
 ```bash
-pnpm download
-```
-
-Or with Deno directly:
-
-```bash
-deno task download
+just download
 ```
 
 ## Integration Testing
@@ -47,7 +45,7 @@ The project includes comprehensive end-to-end integration tests for Mermaid diag
 
 - Node.js 18+ (required for built-in fetch API)
 - Built project in `/build` directory
-- All dependencies installed via `pnpm install`
+- All dependencies installed via `bun install`
 
 ### Running Integration Tests
 
@@ -57,13 +55,13 @@ The integration tests use a global server setup that automatically manages the t
 
 ```bash
 # Build the project (required before integration tests)
-pnpm run build
+bun run build
 
 # Run all integration tests (server starts/stops automatically)
-NODE_OPTIONS="" pnpm run test:integration
+NODE_OPTIONS="" bun run test:integration
 
 # Run specific test file
-NODE_OPTIONS="" pnpm run test:integration tests/integration/mermaid-diagrams.test.ts
+NODE_OPTIONS="" bun run test:integration tests/integration/mermaid-diagrams.test.ts
 ```
 
 #### Manual Server Setup (Legacy)
@@ -72,10 +70,10 @@ For debugging or development purposes, you can manually control the server:
 
 ```bash
 # Terminal 1: Start development server
-pnpm run dev
+bun run dev
 
 # Terminal 2: Run integration tests against dev server
-NODE_OPTIONS="" BASE_URL="http://localhost:5173" pnpm run test:integration
+NODE_OPTIONS="" BASE_URL="http://localhost:5173" bun run test:integration
 ```
 
 ### Environment Variables
@@ -108,7 +106,7 @@ The integration tests cover:
 **Build directory missing:**
 
 ```bash
-pnpm run build
+bun run build
 ```
 
 **Port already in use:**
@@ -125,9 +123,9 @@ For more detailed information about the integration test architecture, see `test
 ## CI Testing
 
 ```bash
-pnpm ci:test
+just ci-test
 ```
 
 ```bash
-pnpm ci:test:quick
+just ci-test-quick
 ```
