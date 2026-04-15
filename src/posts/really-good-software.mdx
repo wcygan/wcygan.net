@@ -5,39 +5,54 @@ description: Programs that I can't live without
 tags: [Programming, CLI, Productivity]
 ---
 
-Software that I really like right now:
-
-# Ghostty
+## Ghostty
 
 [https://github.com/ghostty-org/ghostty](https://github.com/ghostty-org/ghostty)
 
-_"Ghostty is a terminal emulator that differentiates itself by being fast, feature-rich, and native. While there are many excellent terminal emulators available, they all force you to choose between speed, features, or native UIs. Ghostty provides all three."_
+<aside class="pull-quote">
+  <p>
+    Ghostty is a terminal emulator that differentiates itself by being fast,
+    feature-rich, and native.
+  </p>
+</aside>
 
-... It's fast and pretty
+This is the best terminal I've used; it's replaced iTerm and Warp for me.
 
-I used [iterm2](https://iterm2.com/) and [warp](https://www.warp.dev/) before, and I haven't looked back since
-
-Anything other than the MacOS default terminal is fine, but [Ghostty](https://ghostty.org/) is _mega fine_!
-
-# Zed
+## Zed
 
 [https://github.com/zed-industries/zed](https://github.com/zed-industries/zed)
 
-In my opinion, it feels and looks nicer than [VSCode](https://code.visualstudio.com/). I also don't like to edit in the terminal; I never got into using programs like [Neovim](https://neovim.io/), [Emacs](https://www.gnu.org/software/emacs/), or [Helix](https://helix-editor.com/)
+<aside class="pull-quote">
+  <p>
+    Zed is a high-performance, multiplayer code editor from the creators of Atom
+    and Tree-sitter.
+  </p>
+</aside>
 
 They also made a really nice contribution to the Rust ecosystem with [gpui](https://www.gpui.rs/)!
 
-# Fish
+## Fish
 
 [https://github.com/fish-shell/fish-shell](https://github.com/fish-shell/fish-shell)
 
+<aside class="pull-quote">
+  <p>
+    fish is a smart and user-friendly command line shell for macOS, Linux, and
+    the rest of the family. fish includes features like syntax highlighting,
+    autosuggest-as-you-type, and fancy tab completions that just work, with no
+    configuration required.
+  </p>
+</aside>
+
 I really like the [tab completion](https://fishshell.com/docs/current/interactive.html#tab-completion) and [syntax highlighting](https://fishshell.com/docs/current/tutorial.html#syntax-highlighting)
 
-Not much else to say, it just feels good.
-
-# LazyGit
+## LazyGit
 
 [https://github.com/jesseduffield/lazygit](https://github.com/jesseduffield/lazygit)
+
+<aside class="pull-quote">
+  <p>simple terminal UI for git commands</p>
+</aside>
 
 Before LazyGit, working on stacked PRs was a pain...
 
@@ -55,20 +70,16 @@ git merge wcygan/branch-two
 
 After LazyGit, the amount of keystrokes that I needed to achieve this went down by ~80%!
 
-<aside class="pull-quote">
-  <p>
-    The right tools don't just save time — they change how you think about the
-    work itself.
-  </p>
-</aside>
-
-# RipGrep
+## RipGrep
 
 [https://github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)
 
-Search for patterns in files. Really nice for searching through logs.
-
-<div class="section-rule" role="separator" aria-hidden="true" />
+<aside class="pull-quote">
+  <p>
+    ripgrep recursively searches directories for a regex pattern while
+    respecting your gitignore
+  </p>
+</aside>
 
 ```bash
 → rg 'rpc'
@@ -81,9 +92,15 @@ pnpm-lock.yaml
 8944:      vscode-jsonrpc: 8.2.0
 ```
 
-# Fzf
+Search for patterns in files. Really nice for searching through logs.
+
+## fzf
 
 [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
+
+<aside class="pull-quote">
+  <p>fzf is a general-purpose command-line fuzzy finder.</p>
+</aside>
 
 I use this to fuzzy-search my `history`. It's similar to doing this:
 
@@ -93,9 +110,16 @@ history | nl | fzf
 
 This makes it really easy to find commands you did in the past.
 
-# fd
+## fd
 
 [https://github.com/sharkdp/fd](https://github.com/sharkdp/fd)
+
+<aside class="pull-quote">
+  <p>
+    fd is a program to find entries in your filesystem. It is a simple, fast and
+    user-friendly alternative to find.
+  </p>
+</aside>
 
 Find files on your computer
 
@@ -106,9 +130,13 @@ package.json
 tsconfig.json
 ```
 
-# jq
+## jq
 
 [https://github.com/jqlang/jq](https://github.com/jqlang/jq)
+
+<aside class="pull-quote">
+  <p>jq is a command-line JSON processor.</p>
+</aside>
 
 Make your json pretty and run commands on it.
 
@@ -125,9 +153,15 @@ Make your json pretty and run commands on it.
 }
 ```
 
-# Starship
+## Starship
 
 [https://github.com/starship/starship](https://github.com/starship/starship)
+
+<aside class="pull-quote">
+  <p>
+    The minimal, blazing-fast, and infinitely customizable prompt for any shell!
+  </p>
+</aside>
 
 My prompt:
 
@@ -137,3 +171,51 @@ wcygan@foobar wcygan.net on main
 ```
 
 You can customize it in very dynamic ways too, if that's what you want.
+
+## uv
+
+[https://docs.astral.sh/uv/](https://docs.astral.sh/uv/)
+
+<aside class="pull-quote">
+  <p>An extremely fast Python package and project manager, written in Rust.</p>
+</aside>
+
+`uv` has become my defacto scripting platform. With [PEP 723 inline script metadata](https://docs.astral.sh/uv/guides/scripts/), a single `.py` file can declare its own dependencies and `uv run` will resolve them into an ephemeral environment before executing.
+
+```python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = ["httpx"]
+# ///
+import httpx
+print(httpx.get("https://example.com").status_code)
+```
+
+```bash
+→ uv run script.py
+200
+```
+
+## just
+
+[https://github.com/casey/just](https://github.com/casey/just)
+
+<aside class="pull-quote">
+  <p>just is a handy way to save and run project-specific commands.</p>
+</aside>
+
+I use `just` for task orchestration across every project — it's a `make` replacement that doesn't pretend to be a build system. Recipes are readable, arguments are first-class, and a `justfile` at the repo root becomes the one obvious place to find "how do I run this thing."
+
+## jj (experimental)
+
+[https://github.com/jj-vcs/jj](https://github.com/jj-vcs/jj)
+
+<aside class="pull-quote">
+  <p>
+    Jujutsu is a powerful version control system for software projects. You use
+    it to get a copy of your code, track changes to the code, and finally
+    publish those changes for others to see and use.
+  </p>
+</aside>
+
+I'm currently testing `jj` as a replacement for `git`. It's git-compatible at the wire level — my coworkers don't need to know — but local history rewriting, rebasing, and conflict handling feel dramatically better. Still early days for me, but the ergonomics of `jj split`, `jj squash`, and first-class conflict objects are hard to go back from.

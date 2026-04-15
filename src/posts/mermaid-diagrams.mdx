@@ -7,9 +7,10 @@ tags: [Mermaid, Visualization, Diagrams]
 
 import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-I've integrated [Mermaid.js](https://mermaid.js.org/) into this blog to create
-interactive diagrams directly in markdown. This enables clear visualization of
-architectures, workflows, and processes.
+I wired [Mermaid.js](https://mermaid.js.org/) into this blog so I can drop
+diagrams straight into a post. It's lazy-loaded and client-rendered, so the
+initial page stays light and I get an architecture sketch or state machine
+without leaving markdown.
 
 ## Examples
 
@@ -146,11 +147,11 @@ Technology stack distribution:
   height={300}
   diagram={`pie title Technology Stack
 	  accTitle: Technology Stack Distribution
-	  accDescr: This pie chart shows the distribution of technologies used in the project. SvelteKit makes up 35%, TypeScript 25%, Tailwind CSS 20%, MDsveX 15%, and Tooling 5% of the technology stack.
-	  "SvelteKit" : 35
+	  accDescr: This pie chart shows the rough distribution of technologies powering this site: TanStack Start 35%, TypeScript 25%, Tailwind CSS 20%, MDX with Shiki 15%, and Tooling 5%.
+	  "TanStack Start" : 35
 	  "TypeScript" : 25
 	  "Tailwind CSS" : 20
-	  "MDsveX" : 15
+	  "MDX + Shiki" : 15
 	  "Tooling" : 5`}
 />
 
@@ -166,13 +167,11 @@ diagram={`flowchart LR
 	  Start --> Process --> End`} />
 ```
 
-## Bonus: Code Blocks with Shiki and MDsveX
+## Bonus: Code Blocks with Shiki
 
-I've added code blocks with:
-
-1. Syntax Highlighting
-2. Line Numbers
-3. Copy Button
+Code fences get syntax highlighting at build time via
+[Shiki](https://shiki.style/) — no runtime JS, no theme flash. Same `github-light`
+theme every post.
 
 Bash:
 

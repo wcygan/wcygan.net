@@ -1,0 +1,58 @@
+---
+title: Example Post Title
+date: November 1, 2025
+description: One-line summary for lists and RSS
+tags: [Tag1, Tag2]
+---
+
+import { MermaidDiagram } from "~/components/MermaidDiagram";
+
+One or two sentences that state the subject directly. No "in this post" or "let's dive into." Open with the thing.
+
+## First section
+
+Body paragraphs. Keep sentences short. State opinions flat.
+
+Before/after, code, or a concrete artifact belongs near the claim it supports:
+
+```bash
+→ some-tool --flag input
+expected output
+```
+
+### A subsection when you need one
+
+Use `###` sparingly. Don't nest deeper.
+
+## A section that earns a diagram
+
+<MermaidDiagram
+  height={300}
+  diagram={`flowchart LR
+    accTitle: Short accessible title
+    accDescr: One-sentence description of what this diagram shows and why.
+    A[Start] --> B[Middle] --> C[End]`}
+/>
+
+The diagram replaces a paragraph — don't also write the paragraph.
+
+## A section with a table
+
+When specs or structured comparison beat prose:
+
+| Name | Thing | Notes |
+| ---- | ----- | ----- |
+| one  | value | short |
+| two  | value | short |
+
+## Optional pull-quote
+
+At most one per post, for a line that should land alone:
+
+<aside class="pull-quote">
+  <p>The standout line goes here — one sentence, no attribution.</p>
+</aside>
+
+## Closing
+
+Short. A shrug or a concrete line. **Never `## Conclusion`.**

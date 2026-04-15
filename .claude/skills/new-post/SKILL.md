@@ -30,14 +30,16 @@ description: <Description>
 tags: [<Tag1>, <Tag2>, ...]
 ---
 
-<body — start with a short intro paragraph, then H1 sections>
+<body — start with a short intro paragraph, then H2 sections>
 ```
 
 Notes:
 
 - `date` is a human-readable string like `November 1, 2025` — **not** ISO. Match `src/posts/really-good-software.mdx` for the canonical shape.
 - `tags` is a YAML array of bare words (no quotes unless the tag has special chars).
+- **Never use `#` (H1) inside the body.** The post title is already rendered as H1 from frontmatter; body sections start at `##`. `###` for subsections.
 - Leave the body as a one-line TODO placeholder if the user hasn't provided content yet; they'll fill it in.
+- For prose, voice, markdown-usage, and essay-structure conventions, see [`.claude/skills/wcygan-net-design/references/blog-prose.md`](../wcygan-net-design/references/blog-prose.md). A fully-worked reference template lives at [`templates/post.mdx`](templates/post.mdx).
 
 ## Step 2 — Prepend `<item>` to `public/rss.xml`
 
