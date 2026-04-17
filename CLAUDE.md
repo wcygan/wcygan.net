@@ -95,9 +95,9 @@ public/                # Static assets (images, resume PDF, rss.xml)
 
 ## Adding Blog Posts
 
-1. Create `src/posts/my-post.mdx` with frontmatter
+1. Create `src/posts/my-post.mdx` with frontmatter (`title`, `date`, `description`, `tags`)
 2. Posts automatically appear on homepage and `/posts`
-3. Update `public/rss.xml` manually for RSS subscribers
+3. `robots.txt`, `sitemap.xml`, and `rss.xml` regenerate on every `bun run build` via `scripts/site-metadata-plugin.ts` — no manual edits
 
 ## Mermaid Diagrams in MDX
 
