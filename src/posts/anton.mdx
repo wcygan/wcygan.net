@@ -5,12 +5,9 @@ description: Building a Kubernetes cluster in my basement
 tags: [Kubernetes, Talos, Homelab]
 ---
 
-Meet Anton - a Kubernetes cluster that runs in my basement. Built on the
-foundation of
-[onedr0p's cluster-template](https://github.com/onedr0p/cluster-template), Anton
-represents my journey into self-hosted infrastructure.
+I built a Kubernetes cluster in my basement:
 
-<div class="flex justify-center my-6">
+<div class="flex my-6">
   <img src="/anton.jpg" alt="Anton Cluster" width="200" />
 </div>
 
@@ -18,7 +15,7 @@ represents my journey into self-hosted infrastructure.
 
 Anton consists of three identical
 [MINISFORUM MS-01](https://www.minisforum.com/collections/station-mini-series/products/minisforum-ms-01)
-mini PCs, each packing serious compute power into a compact form factor:
+mini PCs:
 
 | Name  | Model | CPU       | Storage    | RAM  | OS    | Role          |
 | ----- | ----- | --------- | ---------- | ---- | ----- | ------------- |
@@ -31,16 +28,12 @@ mini PCs, each packing serious compute power into a compact form factor:
 ### Operating System: Talos Linux
 
 Anton runs on [Talos Linux](https://github.com/siderolabs/talos), an immutable
-Kubernetes-focused operating system. Unlike traditional Linux distributions,
-Talos:
+Kubernetes-focused operating system. Talos:
 
 - Has no SSH access or package manager
 - Is configured entirely through declarative YAML
 - Provides atomic updates and rollbacks
 - Offers enhanced security through immutability
-
-This choice eliminated the operational overhead of managing traditional Linux
-installations while providing a rock-solid foundation for Kubernetes.
 
 ### Kubernetes Distribution
 
