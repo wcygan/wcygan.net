@@ -52,8 +52,7 @@ Frontmatter `title` becomes the page `<h1>` via `.post-title`. Do not add a seco
 - `<nav>` in the header is announced as "navigation landmark."
 - `<main>` announced as "main landmark."
 - Post dates wrapped in `<time>` with machine-readable `dateTime`.
-- Images use `alt` — `public/wcygan.jpeg` uses `alt="Will Cygan"` on `about.tsx`.
-- Mermaid diagrams should have an `aria-label` or adjacent text description (not consistently enforced — flag when adding new ones).
+- Images use `alt`. Mermaid diagrams should have an `aria-label` or adjacent text description (not consistently enforced — flag when adding new ones).
 
 ## NEVER / INSTEAD
 
