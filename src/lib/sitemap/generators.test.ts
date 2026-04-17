@@ -75,10 +75,9 @@ describe("deriveStaticPathsFromFilenames", () => {
       "__root.tsx",
       "$slug.tsx",
       "index.tsx",
-      "about.tsx",
       "posts.tsx",
     ]);
-    expect(paths).toEqual(["/", "/about", "/posts"]);
+    expect(paths).toEqual(["/", "/posts"]);
   });
 
   it("returns an empty list when only dynamic routes exist", () => {
@@ -118,7 +117,7 @@ describe("buildSitemapEntries + generateSitemapXml", () => {
 
   it("produces a valid XML document with all paths", () => {
     const entries = buildSitemapEntries(
-      ["/", "/about", "/posts"],
+      ["/", "/posts"],
       [{ slug: "really-good-software", date: "Nov 1, 2025" }],
       fixedDate,
     );
@@ -126,7 +125,6 @@ describe("buildSitemapEntries + generateSitemapXml", () => {
     expect(xml).toContain('<?xml version="1.0"');
     expect(xml).toContain("<urlset");
     expect(xml).toContain(`<loc>${SITE_URL}/</loc>`);
-    expect(xml).toContain(`<loc>${SITE_URL}/about</loc>`);
     expect(xml).toContain(`<loc>${SITE_URL}/posts</loc>`);
     expect(xml).toContain(`<loc>${SITE_URL}/really-good-software</loc>`);
     expect(xml).toContain("<lastmod>2025-11-01</lastmod>");
