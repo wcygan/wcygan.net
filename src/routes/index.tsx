@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getAllPosts } from "~/lib/services/blog";
+import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 
 export const Route = createFileRoute("/")({
   loader: () => ({ posts: getAllPosts() }),
@@ -27,7 +28,9 @@ function HomePage() {
                   {post.title}
                 </Link>
               </div>
-              <div className="post-date">{post.date}</div>
+              <time className="post-date" dateTime={toIsoDate(post.date)}>
+                {toDisplayDate(post.date)}
+              </time>
             </li>
           ))}
         </ul>

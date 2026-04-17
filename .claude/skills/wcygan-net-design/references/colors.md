@@ -4,21 +4,21 @@ Eight colors. That's the whole palette. Do not add a ninth without updating `des
 
 ## Full table
 
-| Token        | RGB                  | Hex       | Usage                                                                                               |
-| ------------ | -------------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| Primary blue | `rgb(70, 110, 170)`  | `#466eaa` | Post titles, bio-highlight background, header bottom border, H3 in post content, focus ring outline |
-| Link blue    | `rgb(30, 70, 140)`   | `#1e468c` | Body `<a>` tag color, `.post-content a`                                                             |
-| Text primary | `rgb(0, 0, 0)`       | `#000000` | Body text, H1, H2, site title                                                                       |
-| Text muted   | `rgb(102, 102, 102)` | `#666666` | Post dates, `.post-meta` (italic), H2 in post content                                               |
-| Nav gray     | `rgb(170, 170, 170)` | `#aaaaaa` | Header nav links                                                                                    |
-| Border light | `rgb(222, 222, 222)` | `#dedede` | Tables, `<pre>`, code blocks, Mermaid containers                                                    |
-| Surface      | `rgb(249, 249, 249)` | `#f9f9f9` | `<pre>` background, table `<th>` background, Mermaid bg                                             |
-| Background   | `rgb(255, 255, 255)` | `#ffffff` | Page background, banner text                                                                        |
+| Token        | RGB                  | Hex       | Usage                                                                                                                      |
+| ------------ | -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Primary blue | `rgb(70, 110, 170)`  | `#466eaa` | Post titles (`.post-permalink`), bio-highlight background, header bottom border, pull-quote accent bar, focus ring outline |
+| Link blue    | `rgb(30, 70, 140)`   | `#1e468c` | Body `<a>` tag color, `.post-content a`                                                                                    |
+| Text primary | `rgb(0, 0, 0)`       | `#000000` | Body text, in-content H1, site title                                                                                       |
+| Text muted   | `rgb(102, 102, 102)` | `#666666` | Post-list dates (`.post-date`), in-content H2 **and** H3 (both muted grey now)                                             |
+| Footnote     | `rgb(170, 170, 170)` | `#aaaaaa` | Header nav links, `.post-footnote` italic date on the post page                                                            |
+| Border light | `rgb(222, 222, 222)` | `#dedede` | Tables, `<pre>`, code blocks, pull-quote bg border (via surface), Mermaid containers                                       |
+| Surface      | `rgb(249, 249, 249)` | `#f9f9f9` | `<pre>` background, table `<th>` background, `.pull-quote` background, Mermaid bg                                          |
+| Background   | `rgb(255, 255, 255)` | `#ffffff` | Page background, banner text                                                                                               |
 
 ## Where they live in code
 
 - Raw values appear in `src/styles/app.css` (that's fine — it's the design system file).
-- Some are also mirrored as CSS variables under `@layer base :root` (`--color-primary`, `--color-primary-hover`, etc.) but **not every value has a variable** — the class-based usage (`.bio-highlight`, `.post-title`, `.post-meta`) is the canonical surface.
+- Some are also mirrored as CSS variables under `@layer base :root` (`--color-primary`, `--color-primary-hover`, etc.) but **not every value has a variable** — the class-based usage (`.bio-highlight`, `.post-title`, `.post-permalink`, `.post-footnote`) is the canonical surface.
 - `design.md` is the human-readable spec.
 
 ## NEVER / INSTEAD

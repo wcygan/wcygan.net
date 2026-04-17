@@ -44,11 +44,21 @@ function RootDocument() {
               <h1 className="site-title">
                 <Link to="/">Will Cygan</Link>
               </h1>
-              <nav className="site-nav">
-                <a href="/will_cygan_resume.pdf">Resume</a>
-                <a href="mailto:wcygan.io@gmail.com">Email</a>
-                <a href="https://github.com/wcygan">GitHub</a>
-                <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a>
+              <nav className="site-nav" aria-label="Primary">
+                <ul>
+                  <li>
+                    <a href="/will_cygan_resume.pdf">Resume</a>
+                  </li>
+                  <li>
+                    <a href="mailto:wcygan.io@gmail.com">Email</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/wcygan">GitHub</a>
+                  </li>
+                  <li>
+                    <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a>
+                  </li>
+                </ul>
               </nav>
             </header>
 

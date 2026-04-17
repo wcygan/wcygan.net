@@ -15,7 +15,7 @@ description: >
 
 # wcygan.net Design System
 
-Minimal, text-first personal blog. The aesthetic is **editorial minimalism** with one committed cornflower-blue accent — no cards, no gradients, no drop shadows, no web fonts. System fonts, 800px column, generous vertical rhythm.
+Minimal, text-first personal blog. The aesthetic is **editorial minimalism** with one committed cornflower-blue accent — no cards, no gradients, no drop shadows, no web fonts. System fonts, 800px column, **tight vertical rhythm** (a deliberate move away from the old "30px between every block" rule — see `layout.md` for the current scale).
 
 **Project root**: `/Users/wcygan/Development/wcygan.net`
 
@@ -30,29 +30,29 @@ Minimal, text-first personal blog. The aesthetic is **editorial minimalism** wit
 
 ## The palette (memorize)
 
-| Name         | Value                            | Use                                           |
-| ------------ | -------------------------------- | --------------------------------------------- |
-| Primary blue | `rgb(70, 110, 170)` / `#466eaa`  | Post titles, bio banner bg, header border, H3 |
-| Link blue    | `rgb(30, 70, 140)` / `#1e468c`   | Body links (bold, no underline until hover)   |
-| Text         | `rgb(0, 0, 0)`                   | Body, H1, H2, site title                      |
-| Muted        | `rgb(102, 102, 102)` / `#666`    | Dates, H2 in post content, italic meta        |
-| Nav          | `rgb(170, 170, 170)` / `#aaa`    | Header nav links                              |
-| Border       | `rgb(222, 222, 222)` / `#dedede` | Tables, code blocks                           |
-| Surface      | `rgb(249, 249, 249)` / `#f9f9f9` | Code blocks, table headers                    |
-| Bg           | `#fff`                           | Page                                          |
+| Name         | Value                            | Use                                                   |
+| ------------ | -------------------------------- | ----------------------------------------------------- |
+| Primary blue | `rgb(70, 110, 170)` / `#466eaa`  | Post titles, bio banner bg, header border             |
+| Link blue    | `rgb(30, 70, 140)` / `#1e468c`   | Body links (bold, no underline until hover)           |
+| Text         | `rgb(0, 0, 0)`                   | Body, H1 (in-content), site title                     |
+| Muted        | `rgb(102, 102, 102)` / `#666`    | Dates, H2/H3 in post content                          |
+| Footnote     | `rgb(170, 170, 170)` / `#aaa`    | Nav links, post-footnote (italic date under title)    |
+| Border       | `rgb(222, 222, 222)` / `#dedede` | Tables, code blocks, pull-quote, post-footer hairline |
+| Surface      | `rgb(249, 249, 249)` / `#f9f9f9` | Code blocks, pull-quote, table headers                |
+| Bg           | `#fff`                           | Page                                                  |
 
 No other colors. No dark mode. No Tailwind color-scale classes in new work (`text-emerald-400`, `bg-zinc-700`) — legacy posts/components have them and are being drifted back to the palette over time.
 
 ## Type, layout, motion (one-liners)
 
 - **Type**: system stack (`system, -apple-system, system-ui, 'Helvetica Neue', 'Lucida Grande', sans-serif`), body 18px / line-height 28px. Monospace: `'Courier New', monospace` at 16px.
-- **Layout**: 800px max-width container (`.container`), 12px main-section padding, 30px vertical rhythm between block elements.
+- **Layout**: 800px max-width container (`.container`), 12px main-section padding. **Tight vertical rhythm**: paragraph mb 20px, heading mb 10–14px, code/pre margin 16px, pull-quote margin 12px, post-list items mb 8px. The old universal 30px block-margin rule is gone — see `layout.md` for the current scale.
 - **Motion**: none. Links change text-decoration on hover. That is the entire motion vocabulary.
 
 ## Before you touch anything
 
 1. Read the relevant reference below.
-2. Prefer existing named classes (`.bio-highlight`, `.post-list`, `.post-item`, `.site-header`, `.blog-post`, `.post-content`) over new Tailwind utilities.
+2. Prefer existing named classes (`.bio-highlight`, `.post-list`, `.post-item`, `.post-date`, `.site-header`, `.site-nav`, `.blog-post`, `.post-title`, `.post-permalink`, `.post-footnote`, `.post-content`, `.pull-quote`) over new Tailwind utilities.
 3. If a new color, size, or spacing is truly needed, add it to `src/styles/app.css` — not inline — and update `design.md`.
 4. Never touch the `$slug` route's `beforeLoad` dot-rejection logic (it protects `/rss.xml`, `/favicon.ico`, etc.).
 

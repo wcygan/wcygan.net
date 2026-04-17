@@ -25,12 +25,12 @@ GUIDE = """\
 **Aesthetic is locked**: editorial minimalism, one cornflower-blue accent, system fonts only, 800px column. Do not introduce new directions without being asked.
 
 **Palette** (no others in new code):
-- `rgb(70, 110, 170)` primary blue — titles, bio banner, H3
+- `rgb(70, 110, 170)` primary blue — post titles, bio banner, header border
 - `rgb(30, 70, 140)` link blue — body links
-- `rgb(0, 0, 0)` body text  ·  `rgb(102, 102, 102)` muted/dates
-- `rgb(170, 170, 170)` nav  ·  `rgb(222, 222, 222)` border  ·  `rgb(249, 249, 249)` surface  ·  `#fff` bg
+- `rgb(0, 0, 0)` body text  ·  `rgb(102, 102, 102)` muted (dates, in-content H2 + H3)
+- `rgb(170, 170, 170)` nav + post-footnote italic date  ·  `rgb(222, 222, 222)` border  ·  `rgb(249, 249, 249)` surface  ·  `#fff` bg
 
-**Layout**: `.container` 800px max-width, 12px padding, 30px vertical rhythm. Type: system stack, 18px/28px body, `'Courier New'` mono.
+**Layout**: `.container` 800px max-width, 12px padding. **Tight vertical rhythm** (paragraph mb 20px, heading mb 10–14px, code/pre margin 16px, pull-quote margin 12px, post-list items mb 8px) — the old universal 30px rule is retired. Type: system stack, 18px/28px body, `'Courier New'` mono.
 
 **Hard rules**:
 - Tailwind **v3** here (has `tailwind.config.ts`). Do not apply v4 `@theme` patterns.
@@ -41,7 +41,7 @@ GUIDE = """\
 - Loaders return **serializable data only**. No React components from loaders.
 - Never `ref.current.innerHTML` — use `dangerouslySetInnerHTML` via state.
 - Mermaid is `import('mermaid')` dynamic only. Never top-level import.
-- Prefer named classes (`.bio-highlight`, `.post-list`, `.post-item`, `.site-header`, `.blog-post`, `.post-content`) over new Tailwind utilities.
+- Prefer named classes (`.bio-highlight`, `.post-list`, `.post-item`, `.post-date`, `.site-header`, `.site-nav`, `.blog-post`, `.post-title`, `.post-permalink`, `.post-footnote`, `.post-content`, `.pull-quote`) over new Tailwind utilities.
 
 **Load the full `wcygan-net-design` skill** (references/colors.md, typography.md, layout.md, components.md, blog-mdx.md, routing-and-chrome.md, accessibility.md) for specifics before non-trivial design work.
 

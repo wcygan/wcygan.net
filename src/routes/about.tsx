@@ -9,14 +9,16 @@ export const Route = createFileRoute("/about")({
 function AboutPage() {
   return (
     <article className="blog-post">
-      <header className="post-header">
-        <h1 className="post-title">About</h1>
-      </header>
+      <h2 className="post-title">About</h2>
 
       <div className="post-content">
         <img src="/wcygan.jpeg" alt="Will Cygan" className="about-portrait" />
 
         <p>Software Engineer from Chicago, Illinois.</p>
+
+        <p>
+          You can download my <a href="/will_cygan_resume.pdf">resume (PDF)</a>.
+        </p>
 
         <h2>Experience</h2>
         <ul className="experience-list">
