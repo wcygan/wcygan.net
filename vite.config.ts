@@ -8,6 +8,7 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
+import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
 
 export default defineConfig({
   server: {
@@ -84,6 +85,7 @@ export default defineConfig({
     }),
     react(),
     nitro({ preset: "bun" }),
+    siteMetadataPlugin(),
   ],
   resolve: {
     alias: [

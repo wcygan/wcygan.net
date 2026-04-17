@@ -16,7 +16,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Will Cygan - Software Engineer interested in distributed systems, web applications, and system design.",
+          "Senior Software Engineer at LinkedIn building the Checkout & Order placement experience.",
       },
     ],
     links: [
@@ -24,7 +24,7 @@ export const Route = createRootRoute({
       {
         rel: "alternate",
         type: "application/rss+xml",
-        title: "Will Cygan | Blog RSS Feed",
+        title: "Will Cygan RSS Feed",
         href: "/rss.xml",
       },
     ],
