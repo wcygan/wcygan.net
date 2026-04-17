@@ -7,6 +7,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
+import { addCopyButton } from "shiki-transformer-copy-button";
 
 export default defineConfig({
   server: {
@@ -46,6 +47,7 @@ export default defineConfig({
                   node.properties["data-line"] = line;
                 },
               },
+              addCopyButton({ toggle: 2000 }),
             ],
           },
         ],

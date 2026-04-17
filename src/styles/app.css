@@ -692,9 +692,8 @@
   backdrop-filter: blur(4px);
 }
 
-.shiki button::before {
-  content: "📋";
-  font-size: 12px;
+.shiki button > span {
+  display: none;
 }
 
 .shiki button::after {
@@ -715,10 +714,6 @@
 
 .shiki button:active {
   transform: translateY(0);
-}
-
-.shiki button.copied::before {
-  content: "✅";
 }
 
 .shiki button.copied::after {
