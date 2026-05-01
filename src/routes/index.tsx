@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { RotatingPenguin } from "~/components/RotatingPenguin";
 import { getAllPosts } from "~/lib/services/blog";
 import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 
@@ -18,6 +19,8 @@ function HomePage() {
           Checkout &amp; Order placement experience
         </p>
       </div>
+
+      <RotatingPenguin />
 
       <section>
         <ul className="post-list">

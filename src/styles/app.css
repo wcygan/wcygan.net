@@ -610,6 +610,65 @@ pre:not(.shiki) code {
   @apply bg-transparent p-0;
 }
 
+/* Rotating ASCII penguin — copied 1:1 from rotating-animations.localhost.
+   Off-palette by design (warm coral/mustard) — kept as a small accent block.
+   Unlayered so it overrides the unlayered `pre:not(.shiki)` fallback above. */
+.rotating-penguin {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 30px;
+  overflow: hidden;
+}
+
+.rotating-penguin pre {
+  font-family: var(--font-mono);
+  font-size: clamp(7px, 1.3vw, 13px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 0;
+  white-space: pre;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  color: #0a0806;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Paint each glyph as a solid block of its colored span. The text-shadow
+   stack thickens strokes in currentColor so sparse chars (`+~*o`) stop
+   reading as faded against white. */
+.rotating-penguin pre div,
+.rotating-penguin pre span {
+  text-shadow:
+    0 0 0.6px currentColor,
+    0.4px 0 0 currentColor,
+    -0.4px 0 0 currentColor,
+    0 0.4px 0 currentColor,
+    0 -0.4px 0 currentColor;
+}
+
+.rotating-penguin pre div {
+  white-space: pre;
+}
+
+/* Pure-saturation palette — relies on font-weight 900 + text-shadow stack
+   above to render each glyph as a solid block on white. */
+.rotating-penguin .body {
+  color: #000000;
+}
+.rotating-penguin .belly {
+  color: #f0ece6;
+}
+.rotating-penguin .collar {
+  color: #d49000;
+}
+.rotating-penguin .beak {
+  color: #e03c00;
+}
+
 /* Tables - simple styling */
 table {
   @apply my-4 w-full border-collapse;
