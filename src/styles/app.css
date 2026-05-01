@@ -623,10 +623,12 @@ pre:not(.shiki) code {
 
 /* Frames are 100 chars wide. `cqi` = 1% of container width, so 1.4cqi
    gives 100 chars × ~0.6em ≈ 84% of wrapper — the pre always fits its
-   column on every viewport, no media query / full-bleed needed. */
+   column on every viewport, no media query / full-bleed needed. The
+   6.6px cap shrinks the penguin to ~60% of its natural size on desktop
+   while leaving narrow viewports unchanged (cqi already wins there). */
 .rotating-penguin pre {
   font-family: var(--font-mono);
-  font-size: min(1.4cqi, 11px);
+  font-size: min(1.4cqi, 6.6px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0;
