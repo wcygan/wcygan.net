@@ -9,20 +9,20 @@ import { RotatingHotdog } from "~/components/RotatingHotdog";
 
 <RotatingHotdog />
 
+The [Ghostty](https://ghostty.org/) animation is really cool, so I animated a [Hot Dog](https://poly.pizza/m/eiPR4iwcYpa) (and other things).
+
 ## How it works
 
 The pipeline goes from a 3D model to a rotating ASCII flipbook in four stages:
 
-1. **Start with a 3D model.** A `.glb` file is the source. [Poly Pizza](https://poly.pizza/) is a great place to find free, low-poly models — most of the animations on this site started there.
-2. **Spin it and take photos.** Blender loads the model, points a camera at it, and renders 60 PNGs as it rotates a full 360°. Each PNG is one frame of the spin.
-3. **Turn each photo into ASCII art.** A Python script walks the PNG in a grid and, for each cell, picks a character (denser where the object is solid) and a CSS class (based on the cell's dominant color). All 60 frames are packed into one JSON file.
-4. **Flipbook it in the browser.** The route imports that JSON, and a `requestAnimationFrame` loop swaps which frame's HTML is on screen ~30 times a second. CSS colors each class, so the ASCII appears to rotate in full color.
-
-The "3D-ness" only exists at render time. The browser just flips through pre-computed text frames.
+1. **Start with a 3D model.** The source is a `.glb` file (which I found on [Poly Pizza](https://poly.pizza/)).
+2. **Spin it and take photos.** [Blender](https://www.blender.org/) loads the model, points a camera at it, and saves 60 to 120 images as it rotates a full 360°. Each image is one frame of the spin.
+3. **Turn each photo into ASCII art.** A Python script scans each image in a grid. For every cell it picks a character and tags it with a color. All the frames are saved together in one file.
+4. **Flipbook it in the browser.** The page loads that file and swaps which frame is on screen about 30 times a second.
 
 ## In practice
 
-The full pipeline lives at [wcygan/rotating-animations](https://github.com/wcygan/rotating-animations).
+The example can be found at [wcygan/rotating-animations](https://github.com/wcygan/rotating-animations).
 
 Render 60 frames of a model spinning in Blender — see [`scripts/render_spin.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/render_spin.py):
 
@@ -36,9 +36,9 @@ Convert that frame directory into an ASCII flipbook JSON — see [`scripts/to_as
 uv run scripts/to_ascii_generic.py frames_penguin web/src/penguin.json
 ```
 
-The converter uses Pillow to read each PNG and walks it in a grid (default 100×41). The [character ramp](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L28) goes sparse → dense, and the [per-cell loop](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L60-L99) averages pixels, picks a character by density, and picks a CSS class by saturation. Adjacent same-class cells get coalesced into one `<span class="...">...</span>`, and all 60 frames go into one JSON file the route imports.
+The converter uses [Pillow](https://pillow.readthedocs.io/) (a Python image library) to read each PNG and scan it in a grid (100 columns × 41 rows by default). The [character ramp](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L28) goes from sparse to dense, and the [per-cell loop](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L60-L99) averages the pixels in each cell, picks a character based on how filled-in that area is, and picks a color group based on how vivid the color is. Neighboring cells with the same color group get merged into one HTML element, and all 60 frames end up in a [single JSON file](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/web/src/penguin.json) the page imports.
 
-Per-model converters (e.g. [`to_ascii_mallard.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_mallard.py)) use the same shape but swap in hand-tuned RGB/HSV thresholds to emit richer per-region classes (body / head / bill / feet / collar).
+Per-model converters (e.g. [`to_ascii_mallard.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_mallard.py)) follow the same shape but swap in hand-tuned color thresholds, so different parts of the model (body, head, bill, feet, collar) get their own distinct colors.
 
 ## Credits
 
