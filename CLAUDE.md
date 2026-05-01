@@ -6,15 +6,38 @@ Modern UI/UX Engineering guide for wcygan.net — a TanStack Start blog with cle
 
 ```bash
 # Development
-bun run dev           # Start development server (port 3000)
+just dev              # Dev server at https://wcygan.localhost (portless wraps Vite)
+just dev-vite         # Bare Vite on :3000 (CI / no-portless fallback)
+bun run dev           # Same as `just dev` (portless-wrapped)
 bun run build         # Build for production (Nitro + Bun)
-bun run start         # Start production server
 bun run preview       # Preview production build
 
 # Quality & Testing
-bun run pre-commit    # Format + typecheck (recommended before commits)
+bun run pre-commit    # Format + typecheck + tests (run before commits)
 bun run test          # Run Vitest unit tests
 ```
+
+### Local dev URL: `https://wcygan.localhost`
+
+`just dev` runs Vite under [portless](https://github.com/vercel-labs/portless), which gives a stable HTTPS URL backed by a local CA. Configured via `portless.json` (`{ "name": "wcygan" }`); the justfile also `open`s the URL after a 2s delay.
+
+- **First run on a new machine** prompts for sudo to trust the local CA and bind :443.
+- **Vite must bind IPv4** so portless's proxy (which dials `127.0.0.1`) can reach it. `vite.config.ts` reads `host`/`port` from env (`HOST`, `PORT`) — portless sets both. Don't hardcode `host: 'localhost'` (resolves to IPv6-only `::1` on macOS, causes 502s).
+- **Stale routes** after a crash: `bunx portless prune` (clears dead PIDs); `bunx portless list` (inspect table).
+- **CI / no-portless**: use `just dev-vite` or run `bun --bun vite dev` directly.
+
+### Verifying frontend changes
+
+For UI work, use [agent-browser](https://github.com/vercel-labs/agent-browser) against the running dev server — type-checks and unit tests don't catch hydration mismatches, broken loaders, or layout regressions.
+
+```bash
+agent-browser open https://wcygan.localhost/
+agent-browser get title
+agent-browser get text "h1"
+agent-browser screenshot /tmp/page.png
+```
+
+The `agent-browser` skill auto-loads on browser-automation requests; prefer it over generic web tools.
 
 ## Technology Stack
 

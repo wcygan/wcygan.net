@@ -8,8 +8,13 @@ default:
 # Development
 # ---------------------------------------------------------------------------
 
-# Start the Vite dev server on :3000
+# Start the dev server at https://wcygan.localhost (portless wraps Vite)
 dev:
+    (sleep 2 && open https://wcygan.localhost) &
+    bunx portless run bun --bun vite dev
+
+# Start the bare Vite dev server on :3000 (CI / no-portless fallback)
+dev-vite:
     bun --bun vite dev
 
 # Build for production (Nitro + Bun)
