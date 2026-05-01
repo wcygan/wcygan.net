@@ -1,0 +1,46 @@
+---
+title: ASCII Animation
+date: May 1, 2026
+description: Notes on building ASCII animations for the web
+tags: [Animation, ASCII, Web]
+---
+
+import { RotatingHotdog } from "~/components/RotatingHotdog";
+
+<RotatingHotdog />
+
+## How it works
+
+The pipeline goes from a 3D model to a rotating ASCII flipbook in four stages:
+
+1. **Start with a 3D model.** A `.glb` file is the source. [Poly Pizza](https://poly.pizza/) is a great place to find free, low-poly models — most of the animations on this site started there.
+2. **Spin it and take photos.** Blender loads the model, points a camera at it, and renders 60 PNGs as it rotates a full 360°. Each PNG is one frame of the spin.
+3. **Turn each photo into ASCII art.** A Python script walks the PNG in a grid and, for each cell, picks a character (denser where the object is solid) and a CSS class (based on the cell's dominant color). All 60 frames are packed into one JSON file.
+4. **Flipbook it in the browser.** The route imports that JSON, and a `requestAnimationFrame` loop swaps which frame's HTML is on screen ~30 times a second. CSS colors each class, so the ASCII appears to rotate in full color.
+
+The "3D-ness" only exists at render time. The browser just flips through pre-computed text frames.
+
+## In practice
+
+The full pipeline lives at [wcygan/rotating-animations](https://github.com/wcygan/rotating-animations).
+
+Render 60 frames of a model spinning in Blender — see [`scripts/render_spin.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/render_spin.py):
+
+```bash
+blender -b -P scripts/render_spin.py -- models/penguin.glb frames_penguin 60 upright
+```
+
+Convert that frame directory into an ASCII flipbook JSON — see [`scripts/to_ascii_generic.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py):
+
+```bash
+uv run scripts/to_ascii_generic.py frames_penguin web/src/penguin.json
+```
+
+The converter uses Pillow to read each PNG and walks it in a grid (default 100×41). The [character ramp](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L28) goes sparse → dense, and the [per-cell loop](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_generic.py#L60-L99) averages pixels, picks a character by density, and picks a CSS class by saturation. Adjacent same-class cells get coalesced into one `<span class="...">...</span>`, and all 60 frames go into one JSON file the route imports.
+
+Per-model converters (e.g. [`to_ascii_mallard.py`](https://github.com/wcygan/rotating-animations/blob/7a9f9b4c38d9f10dc4a1dadb46962afde862c6f8/scripts/to_ascii_mallard.py)) use the same shape but swap in hand-tuned RGB/HSV thresholds to emit richer per-region classes (body / head / bill / feet / collar).
+
+## Credits
+
+- Hot dog by jeremy [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via [Poly Pizza](https://poly.pizza/m/eiPR4iwcYpa)
+- Penguin by Poly by Google [[CC-BY](https://creativecommons.org/licenses/by/3.0/)] via [Poly Pizza](https://poly.pizza/m/fBXvsC6pe_V)
