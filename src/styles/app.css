@@ -618,11 +618,15 @@ pre:not(.shiki) code {
   justify-content: center;
   margin: 0 0 30px;
   overflow: hidden;
+  container-type: inline-size;
 }
 
+/* Frames are 100 chars wide. `cqi` = 1% of container width, so 1.4cqi
+   gives 100 chars × ~0.6em ≈ 84% of wrapper — the pre always fits its
+   column on every viewport, no media query / full-bleed needed. */
 .rotating-penguin pre {
   font-family: var(--font-mono);
-  font-size: clamp(7px, 1.3vw, 13px);
+  font-size: min(1.4cqi, 11px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0;
@@ -632,8 +636,6 @@ pre:not(.shiki) code {
   background: transparent;
   border-radius: 0;
   color: #0a0806;
-  max-width: 100%;
-  overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
