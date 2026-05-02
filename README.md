@@ -34,6 +34,21 @@ Drop a new `.mdx` file into `src/posts/` with YAML frontmatter (`title`, `date`,
 The latest resume PDF lives in `public/` and is updated manually — no task
 recipe is wired up yet.
 
+## IndieWeb
+
+This site is part of the [IndieWeb](https://indieweb.org/). It exposes a
+representative `h-card` (name, photo, note) on the homepage, `h-entry` on every
+blog post, and `rel=me` links to GitHub/LinkedIn so the domain works as an
+IndieAuth identity.
+
+- Cross-site replies, likes, and reposts arrive via
+  [webmention.io](https://webmention.io/) — the `<link rel="webmention">` in the
+  root layout points at `https://webmention.io/wcygan.net/webmention`.
+- The site is a member of [An IndieWeb Webring](https://xn--sr8hvo.ws/); the
+  prev/next/index widget renders in the site footer.
+
+Validate the markup at [indiewebify.me](https://indiewebify.me/).
+
 ## Integration Testing
 
 The project includes comprehensive end-to-end integration tests for Mermaid diagram rendering using Puppeteer and Vitest.

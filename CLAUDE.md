@@ -116,6 +116,18 @@ public/                # Static assets (images, resume PDF, rss.xml)
 - Clean URLs: `/{slug}` (no `/blog` prefix)
 - RSS available at `/feed` route and `/rss.xml` static file
 
+## IndieWeb
+
+The site is wired into the [IndieWeb](https://indieweb.org/):
+
+- **Representative h-card** lives on the homepage bio block in `src/routes/index.tsx` — carries `p-name`, `u-photo`, `u-url`, `p-note`. Do not move it back to `<header>` in `__root.tsx`: that location has no `u-url` and no note content, so parsers (and the webring directory) ignore it.
+- **h-entry** wraps every blog post `<article>` in `src/routes/$slug.tsx` with `p-name` (title), `dt-published` (date), `e-content` (body). Author is implied via the homepage representative h-card — no per-post byline needed.
+- **`rel="me"`** is set on the GitHub and LinkedIn anchors in `__root.tsx` and the LinkedIn link in `index.tsx`. Both external profiles must list `https://wcygan.net` for the bidirectional chain (and IndieAuth) to verify.
+- **Webmention discovery** — `<link rel="webmention">` and `<link rel="pingback">` in `__root.tsx` head point at [webmention.io](https://webmention.io/) (`https://webmention.io/wcygan.net/…`). Received mentions land in the webmention.io dashboard.
+- **IndieWeb Webring** — the `.site-footer` in `__root.tsx` carries the prev/index/next widget for [An IndieWeb Webring](https://xn--sr8hvo.ws/). The prev/next links use the Referer header to resolve the current member; no domain-specific URL needed.
+
+Social URLs are centralized in `src/lib/socials.ts`. Validate markup with [indiewebify.me](https://indiewebify.me/).
+
 ## Adding Blog Posts
 
 1. Create `src/posts/my-post.mdx` with frontmatter (`title`, `date`, `description`, `tags`)
