@@ -15,8 +15,14 @@ function HomePage() {
       <div className="bio-highlight">
         <p>
           Senior Software Engineer at{" "}
-          <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a> building the
-          Checkout &amp; Order placement experience
+          <a
+            href="https://www.linkedin.com/in/wcygan"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LinkedIn
+          </a>{" "}
+          building the Checkout &amp; Order placement experience
         </p>
       </div>
 

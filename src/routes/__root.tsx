@@ -66,16 +66,49 @@ function RootDocument() {
               <nav className="site-nav" aria-label="Primary">
                 <ul>
                   <li>
-                    <a href="/will_cygan_resume.pdf">Resume</a>
+                    <a
+                      href="/will_cygan_resume.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Resume
+                    </a>
                   </li>
                   <li>
-                    <a href="mailto:wcygan.io@gmail.com">Email</a>
+                    <a
+                      href="mailto:wcygan.io@gmail.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Email
+                    </a>
                   </li>
                   <li>
-                    <a href="https://github.com/wcygan">GitHub</a>
+                    <a
+                      href="https://github.com/wcygan"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      GitHub
+                    </a>
                   </li>
                   <li>
-                    <a href="https://www.linkedin.com/in/wcygan">LinkedIn</a>
+                    <a
+                      href="https://www.linkedin.com/in/wcygan"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      LinkedIn
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://nu-sync.net/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Projects
+                    </a>
                   </li>
                 </ul>
               </nav>
