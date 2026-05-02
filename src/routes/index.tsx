@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { RotatingPenguin } from "~/components/RotatingPenguin";
 import { getAllPosts } from "~/lib/services/blog";
+import { socials } from "~/lib/socials";
 import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 
 export const Route = createFileRoute("/")({
@@ -16,9 +17,9 @@ function HomePage() {
         <p>
           Senior Software Engineer at{" "}
           <a
-            href="https://www.linkedin.com/in/wcygan"
+            href={socials.linkedin}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener noreferrer me"
           >
             LinkedIn
           </a>{" "}

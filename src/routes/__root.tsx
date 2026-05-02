@@ -6,6 +6,7 @@ import {
   Link,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { socials } from "~/lib/socials";
 import "~/styles/app.css";
 
 export const Route = createRootRoute({
@@ -27,6 +28,11 @@ export const Route = createRootRoute({
         title: "Will Cygan RSS Feed",
         href: "/rss.xml",
       },
+      {
+        rel: "webmention",
+        href: "https://webmention.io/wcygan.net/webmention",
+      },
+      { rel: "pingback", href: "https://webmention.io/wcygan.net/xmlrpc" },
     ],
   }),
   component: RootDocument,
@@ -59,9 +65,11 @@ function RootDocument() {
       <body>
         <div className="min-h-screen bg-white">
           <div className="container">
-            <header className="site-header">
+            <header className="site-header h-card">
               <h1 className="site-title">
-                <Link to="/">Will Cygan</Link>
+                <Link to="/" className="p-name">
+                  Will Cygan
+                </Link>
               </h1>
               <nav className="site-nav" aria-label="Primary">
                 <ul>
@@ -85,18 +93,18 @@ function RootDocument() {
                   </li>
                   <li>
                     <a
-                      href="https://github.com/wcygan"
+                      href={socials.github}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer me"
                     >
                       GitHub
                     </a>
                   </li>
                   <li>
                     <a
-                      href="https://www.linkedin.com/in/wcygan"
+                      href={socials.linkedin}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="noopener noreferrer me"
                     >
                       LinkedIn
                     </a>

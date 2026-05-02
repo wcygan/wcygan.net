@@ -66,17 +66,19 @@ function BlogPostPage() {
   }, [slug]);
 
   return (
-    <article className="blog-post">
-      <h2 className="post-title">
+    <article className="blog-post h-entry">
+      <h2 className="post-title p-name">
         <Link to="/$slug" params={{ slug }} className="post-permalink">
           {meta.title}
         </Link>
       </h2>
       <p className="post-footnote">
-        <time dateTime={toIsoDate(meta.date)}>{meta.date}</time>
+        <time className="dt-published" dateTime={toIsoDate(meta.date)}>
+          {meta.date}
+        </time>
       </p>
 
-      <div className="post-content">
+      <div className="post-content e-content">
         {Content ? <Content /> : <p>Loading...</p>}
       </div>
 
