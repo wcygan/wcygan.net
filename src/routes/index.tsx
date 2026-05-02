@@ -13,17 +13,24 @@ function HomePage() {
   const { posts } = Route.useLoaderData();
   return (
     <>
-      <div className="bio-highlight">
+      <div className="bio-highlight h-card">
+        <img className="u-photo" src="/wcygan.jpg" alt="Will Cygan" />
         <p>
-          Senior Software Engineer at{" "}
-          <a
-            href={socials.linkedin}
-            target="_blank"
-            rel="noopener noreferrer me"
-          >
-            LinkedIn
-          </a>{" "}
-          building the Checkout &amp; Order placement experience
+          <a className="p-name u-url" href="https://wcygan.net/">
+            Will Cygan
+          </a>
+          {" — "}
+          <span className="p-note">
+            Senior Software Engineer at{" "}
+            <a
+              href={socials.linkedin}
+              target="_blank"
+              rel="noopener noreferrer me"
+            >
+              LinkedIn
+            </a>{" "}
+            building the Checkout &amp; Order placement experience
+          </span>
         </p>
       </div>
 

@@ -178,11 +178,26 @@
     padding: 12px 20px;
     margin-bottom: 30px;
     line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bio-highlight .u-photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid rgb(255, 255, 255);
   }
 
   .bio-highlight p {
     margin: 0;
     font-size: 18px;
+  }
+
+  .bio-highlight .p-name {
+    font-weight: 600;
   }
 
   .bio-highlight a {

@@ -65,11 +65,9 @@ function RootDocument() {
       <body>
         <div className="min-h-screen bg-white">
           <div className="container">
-            <header className="site-header h-card">
+            <header className="site-header">
               <h1 className="site-title">
-                <Link to="/" className="p-name">
-                  Will Cygan
-                </Link>
+                <Link to="/">Will Cygan</Link>
               </h1>
               <nav className="site-nav" aria-label="Primary">
                 <ul>
