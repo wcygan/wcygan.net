@@ -125,6 +125,12 @@ function RootDocument() {
             <main className="main-section">
               <Outlet />
             </main>
+
+            <footer className="site-footer">
+              <a href="https://xn--sr8hvo.ws/previous">←</a> An{" "}
+              <a href="https://xn--sr8hvo.ws">IndieWeb Webring</a> 🕸💍{" "}
+              <a href="https://xn--sr8hvo.ws/next">→</a>
+            </footer>
           </div>
         </div>
         <Scripts />
