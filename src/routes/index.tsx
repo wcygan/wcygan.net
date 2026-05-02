@@ -28,8 +28,7 @@ function HomePage() {
               rel="noopener noreferrer me"
             >
               LinkedIn
-            </a>{" "}
-            building the Checkout &amp; Order placement experience
+            </a>
           </span>
         </p>
       </div>
