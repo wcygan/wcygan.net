@@ -191,6 +191,13 @@
     border: 2px solid rgb(255, 255, 255);
   }
 
+  .bio-highlight .bio-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
   .bio-highlight p {
     margin: 0;
     font-size: 18px;
@@ -198,6 +205,26 @@
 
   .bio-highlight .p-name {
     font-weight: 600;
+  }
+
+  .bio-highlight .bio-interests {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  .bio-interest-chip {
+    font-size: 13px;
+    font-weight: 500;
+    padding: 3px 10px;
+    background: rgb(255, 255, 255);
+    color: rgb(70, 110, 170);
+    border-radius: 2px;
+    line-height: 1.4;
   }
 
   .bio-highlight a {

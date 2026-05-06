@@ -9,28 +9,39 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+const INTERESTS = ["Distributed Systems", "Self Hosting", "Local LLMs"];
+
 function HomePage() {
   const { posts } = Route.useLoaderData();
   return (
     <>
       <div className="bio-highlight h-card">
         <img className="u-photo" src="/wcygan.jpg" alt="Will Cygan" />
-        <p>
-          <a className="p-name u-url" href="https://wcygan.net/">
-            Will Cygan
-          </a>
-          {" — "}
-          <span className="p-note">
-            Senior Software Engineer at{" "}
-            <a
-              href={socials.linkedin}
-              target="_blank"
-              rel="noopener noreferrer me"
-            >
-              LinkedIn
+        <div className="bio-text">
+          <p>
+            <a className="p-name u-url" href="https://wcygan.net/">
+              Will Cygan
             </a>
-          </span>
-        </p>
+            {" — "}
+            <span className="p-note">
+              Senior Software Engineer at{" "}
+              <a
+                href={socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer me"
+              >
+                LinkedIn
+              </a>
+            </span>
+          </p>
+          <p className="bio-interests">
+            {INTERESTS.map((it) => (
+              <span key={it} className="bio-interest-chip">
+                {it}
+              </span>
+            ))}
+          </p>
+        </div>
       </div>
 
       <RotatingPenguin />
