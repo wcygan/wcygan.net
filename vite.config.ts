@@ -85,7 +85,7 @@ export default defineConfig({
       },
     }),
     react(),
-    nitro({ preset: "bun" }),
+    nitro({ preset: "deno-server" }),
     siteMetadataPlugin(),
   ],
   resolve: {

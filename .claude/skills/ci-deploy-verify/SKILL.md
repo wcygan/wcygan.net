@@ -28,7 +28,7 @@ The workflow is `.github/workflows/ci.yml` — build → typecheck → test.
 ## Phase 2 — Cloudflare deploy
 
 ```bash
-bunx wrangler deployments list | tail -12
+deno task --eval "wrangler deployments list" | tail -12
 ```
 
 Each deploy entry has `Created:` timestamp and a version ID. The most recent one should be newer than your push time. If not:
@@ -39,8 +39,8 @@ Each deploy entry has `Created:` timestamp and a version ID. The most recent one
 For a specific version:
 
 ```bash
-bunx wrangler deployments list --name wcygan-net
-bunx wrangler versions list --name wcygan-net | tail -10
+deno task --eval "wrangler deployments list --name wcygan-net"
+deno task --eval "wrangler versions list --name wcygan-net" | tail -10
 ```
 
 ## Phase 3 — Regression suite against production
@@ -76,7 +76,7 @@ Verbose mode prints the URL + status code on failure:
 
 ```bash
 gh run list --branch main --limit 1 \
-  && bunx wrangler deployments list | tail -6 \
+  && deno task --eval "wrangler deployments list" | tail -6 \
   && ./scripts/verify-prod.sh
 ```
 
@@ -84,15 +84,15 @@ All three exit cleanly → deploy is healthy.
 
 ## Common failure patterns
 
-| Symptom                                              | Phase | Likely cause                                              | Next step                                                       |
-| ---------------------------------------------------- | ----- | --------------------------------------------------------- | --------------------------------------------------------------- |
-| CI failed on typecheck                               | 1     | `routeTree.gen.ts` stale — `bun run build` must run first | Check `.github/workflows/ci.yml` build step order               |
-| CI green, no new Cloudflare deploy                   | 2     | Cloudflare Workers Builds not configured to watch branch  | Dashboard → Workers & Pages → project → Settings → Builds       |
-| Phase 3 fingerprint fails (`__sveltekit` present)    | 3     | Old CDN cache or failed deploy                            | Load `verify-live-stack` skill; purge zone cache if needed      |
-| `/rss.xml` → 404 but CI is green                     | 3     | `public/rss.xml` not committed or Nitro copy failed       | Verify `public/rss.xml` exists locally and in `.output/public/` |
-| `/feed` → 200 (regression)                           | 3     | Someone re-added `src/routes/feed.tsx`                    | Grep repo for `feed.tsx`; remove route                          |
-| Dot-rejection `/will_cygan_resume.pdf` → 404 in prod | 3     | `isStaticAssetSlug` changed or guard removed              | Check `src/lib/routing/static-asset-guard.ts` and its test      |
-| Phase 1 + 2 pass, homepage 5xx                       | 3     | Runtime error in prerendered HTML or Worker config drift  | Check Cloudflare dashboard → Workers → Logs                     |
+| Symptom                                              | Phase | Likely cause                                                | Next step                                                       |
+| ---------------------------------------------------- | ----- | ----------------------------------------------------------- | --------------------------------------------------------------- |
+| CI failed on typecheck                               | 1     | `routeTree.gen.ts` stale — `deno task build` must run first | Check `.github/workflows/ci.yml` build step order               |
+| CI green, no new Cloudflare deploy                   | 2     | Cloudflare Workers Builds not configured to watch branch    | Dashboard → Workers & Pages → project → Settings → Builds       |
+| Phase 3 fingerprint fails (`__sveltekit` present)    | 3     | Old CDN cache or failed deploy                              | Load `verify-live-stack` skill; purge zone cache if needed      |
+| `/rss.xml` → 404 but CI is green                     | 3     | `public/rss.xml` not committed or Nitro copy failed         | Verify `public/rss.xml` exists locally and in `.output/public/` |
+| `/feed` → 200 (regression)                           | 3     | Someone re-added `src/routes/feed.tsx`                      | Grep repo for `feed.tsx`; remove route                          |
+| Dot-rejection `/will_cygan_resume.pdf` → 404 in prod | 3     | `isStaticAssetSlug` changed or guard removed                | Check `src/lib/routing/static-asset-guard.ts` and its test      |
+| Phase 1 + 2 pass, homepage 5xx                       | 3     | Runtime error in prerendered HTML or Worker config drift    | Check Cloudflare dashboard → Workers → Logs                     |
 
 ## Related skills
 

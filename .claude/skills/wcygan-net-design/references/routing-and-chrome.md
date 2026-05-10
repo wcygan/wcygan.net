@@ -71,4 +71,4 @@ TanStack Router serializes loader return values to JSON for SSR hydration. Rules
 
 ## Scripts prerendering
 
-The project prerenders routes to static output served via Cloudflare Workers Assets. Commits like "fix: stop prerenderer from corrupting resume PDF" are evidence of past edge cases. When adding a new route, verify `bun run build` completes without corrupting public assets.
+The project prerenders routes to static output served via Cloudflare Workers Assets. Commits like "fix: stop prerenderer from corrupting resume PDF" are evidence of past edge cases. When adding a new route, verify `deno task build` completes without corrupting public assets.

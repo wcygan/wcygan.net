@@ -3,13 +3,13 @@
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
-"""PreToolUse hook: block npm/pnpm/yarn in this Bun-only repo.
+"""PreToolUse hook: block non-Deno JavaScript package managers.
 
-bun.lock is load-bearing for Cloudflare Workers Builds — a stray
-`npm install` regenerates a package-lock.json and breaks deploys.
-`npx` and `bunx` are allowed (the deploy script uses `npx wrangler`).
+deno.lock is load-bearing for CI and deploy reproducibility. A stray
+`npm install`, `pnpm install`, `yarn`, or `bun install` can create a
+competing lockfile or install tree that hides Deno compatibility problems.
 
-Escape hatch: set CLAUDE_ALLOW_NON_BUN_PM=1.
+Escape hatch: set CLAUDE_ALLOW_NON_DENO_PM=1.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import os
 import re
 import sys
 
-BLOCKED = ("npm", "pnpm", "yarn")
+BLOCKED = ("bun", "bunx", "npm", "npx", "pnpm", "pnpx", "yarn", "yarnpkg")
 
 # Match blocked tool as the first token of a pipeline/command segment.
 # Segment starts at BOL or after ; | & (covering &&, ||, |, ;, &).
@@ -28,13 +28,14 @@ PATTERN = re.compile(
 )
 
 MESSAGE = """\
-Blocked: this repo is Bun-only. Use `bun` instead.
+Blocked: this repo uses Deno for JavaScript tasks and dependency management.
 
-  bun install       # not: npm install / pnpm install / yarn
-  bun add <pkg>     # not: npm install <pkg>
-  bun run <script>  # not: npm run <script>
+  deno install              # not: npm install / pnpm install / yarn / bun install
+  deno install npm:<pkg>    # not: npm install <pkg>
+  deno task <task>          # not: npm run <task> / bun run <task>
 
-`npx` and `bunx` are allowed. Set CLAUDE_ALLOW_NON_BUN_PM=1 to bypass.
+Use `deno run npm:<pkg>` for one-off npm package binaries.
+Set CLAUDE_ALLOW_NON_DENO_PM=1 to bypass.
 """
 
 
@@ -48,7 +49,7 @@ def main() -> int:
     if not isinstance(command, str) or not PATTERN.search(command):
         return 0
 
-    if os.environ.get("CLAUDE_ALLOW_NON_BUN_PM") == "1":
+    if os.environ.get("CLAUDE_ALLOW_NON_DENO_PM") == "1":
         return 0
 
     sys.stderr.write(MESSAGE)

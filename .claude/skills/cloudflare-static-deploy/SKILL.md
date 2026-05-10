@@ -1,6 +1,6 @@
 ---
 name: cloudflare-static-deploy
-description: Deploy wcygan.net as a pure static site to Cloudflare via Workers Assets. Use when configuring static prerendering, updating vite.config.ts Nitro preset, writing wrangler.jsonc, tuning Cloudflare Workers Builds dashboard settings, switching from pnpm to Bun in CI, or debugging failed Cloudflare deploys. Keywords cloudflare, wrangler, workers assets, pages, deploy, prerender, static, nitro preset, bun ci, workers builds, wrangler.jsonc, BUN_VERSION, .output/public
+description: Deploy wcygan.net as a pure static site to Cloudflare via Workers Assets. Use when configuring static prerendering, updating vite.config.ts Nitro preset, writing wrangler.jsonc, tuning Cloudflare Workers Builds dashboard settings, switching CI or deploys to Deno, or debugging failed Cloudflare deploys. Keywords cloudflare, wrangler, workers assets, pages, deploy, prerender, static, nitro preset, deno ci, workers builds, wrangler.jsonc, deno.lock, .output/public
 ---
 
 # Cloudflare Static Deploy
@@ -15,7 +15,7 @@ If we ever add auth, per-user data, or build-time bindings (KV/D1), revisit — 
 
 ## Required pieces
 
-### 1. `vite.config.ts` — prerender + keep Nitro `bun` preset
+### 1. `vite.config.ts` — prerender + keep Nitro `deno-server` preset
 
 ```ts
 tanstackStart({
@@ -28,10 +28,10 @@ tanstackStart({
   },
 }),
 react(),
-nitro({ preset: 'bun' }),
+nitro({ preset: 'deno-server' }),
 ```
 
-- **Do NOT use `preset: 'static'`**. Nitro's own prerenderer with that preset does not know about TanStack Start's route handlers and 404s on every path. TanStack Start runs its own prerender _against_ the Nitro-built server via a preview server. Keeping `preset: 'bun'` gives it a server to probe, and the prerendered HTML lands in `.output/public/` alongside a server bundle in `.output/server/` that we simply don't ship.
+- **Do NOT use `preset: 'static'`**. Nitro's own prerenderer with that preset does not know about TanStack Start's route handlers and 404s on every path. TanStack Start runs its own prerender _against_ the Nitro-built server via a preview server. Keeping `preset: 'deno-server'` gives it a Deno-compatible server to probe, and the prerendered HTML lands in `.output/public/` alongside a server bundle in `.output/server/` that we simply don't ship.
 - `crawlLinks` discovers posts via links from `/` and `/posts`. Every post must be reachable from a crawled page, otherwise add it to `prerender.pages: ['/slug-a', ...]`.
 - `autoSubfolderIndex` emits `/posts/foo/index.html` (correct for Workers Assets routing) rather than `/posts/foo.html`.
 
@@ -63,39 +63,39 @@ ssr: { external: ['mermaid'] },
 
 No `main`. No `nodejs_compat`. Wrangler is a deploy CLI only — not a runtime dependency. Keep the file minimal; every added field is a coupling point.
 
-### 3. `package.json` scripts
+### 3. `deno.json` tasks
 
 ```json
-"build": "bun --bun vite build",
-"deploy": "bun run build && npx wrangler deploy",
-"preview-static": "bunx serve .output/public"
+"build": "vite build",
+"deploy": "deno task build && wrangler deploy",
+"preview-static": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server .output/public"
 ```
 
 Delete any `start` script pointing at `.output/server/index.mjs` — that file no longer exists under the `static` preset.
 
 ### 4. Cloudflare Workers Builds dashboard
 
-| Field             | Value                          |
-| ----------------- | ------------------------------ |
-| Build command     | `bun install && bun run build` |
-| Deploy command    | `npx wrangler deploy`          |
-| Version command   | `npx wrangler versions upload` |
-| Root directory    | `/`                            |
-| Production branch | `main`                         |
+| Field             | Value                                         |
+| ----------------- | --------------------------------------------- |
+| Build command     | `deno install --frozen && deno task build`    |
+| Deploy command    | `deno task --eval "wrangler deploy"`          |
+| Version command   | `deno task --eval "wrangler versions upload"` |
+| Root directory    | `/`                                           |
+| Production branch | `main`                                        |
 
-**Environment variable**: `BUN_VERSION=1.2.23` (match local `bun --version`). Cloudflare's build image auto-installs Bun when this is set.
+If the Workers Builds image does not already provide Deno, install Deno before the build command or run deploys from GitHub Actions with `denoland/setup-deno@v2`.
 
 Enable **Build cache** to reuse `node_modules` across builds.
 
-Commit only `bun.lock` — never both `bun.lock` and `pnpm-lock.yaml`/`package-lock.json` (ambiguous manager detection).
+Commit only `deno.lock` — never `bun.lock`, `pnpm-lock.yaml`, or `package-lock.json` alongside it.
 
-## Verification checklist after `bun run build`
+## Verification checklist after `deno task build`
 
 - `.output/public/index.html` exists
 - `.output/public/posts/index.html` exists
 - `.output/public/<slug>/index.html` exists for every MDX post
 - `.output/public/rss.xml` present (copied from `public/`)
-- `.output/server/` exists (Nitro bun bundle — we just don't deploy it; `wrangler.jsonc` has no `main`, only `assets.directory`)
+- `.output/server/` exists (Nitro Deno bundle — we just don't deploy it; `wrangler.jsonc` has no `main`, only `assets.directory`)
 - Total `.output/public/` size sane (posts + mermaid client chunk)
 
 ## Catch-all route gotcha
@@ -104,14 +104,14 @@ Commit only `bun.lock` — never both `bun.lock` and `pnpm-lock.yaml`/`package-l
 
 ## Common failure modes
 
-| Symptom                                                           | Cause                                                                                                                                                                          | Fix                                                                             |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Cloudflare build fails with "pnpm not found" or lockfile mismatch | Dashboard still running `pnpm run build` from old SvelteKit config                                                                                                             | Update Build command to `bun install && bun run build`, set `BUN_VERSION`       |
-| `wrangler deploy` errors "No compatible entrypoint"               | `wrangler.jsonc` has `main` but no server bundle built                                                                                                                         | Remove `main` — assets-only deploys omit it                                     |
-| Post route returns 404 in prod but works locally                  | Prerender crawler didn't discover it                                                                                                                                           | Add to `prerender.pages` explicitly or ensure it's linked from `/posts`         |
-| `/rss.xml` returns HTML 404 page                                  | Catch-all matched before static file                                                                                                                                           | Confirm `$slug.tsx` `beforeLoad` still rejects dotted slugs                     |
-| Mermaid chunk huge in client bundle                               | Top-level `import 'mermaid'` reintroduced                                                                                                                                      | Restore dynamic `import('mermaid')` in `MermaidDiagram.tsx`                     |
-| Build succeeds locally, fails on Cloudflare                       | Bun-specific API in build-time code (Nitro runs build-time code in the CI Bun runtime which matches — usually it's a Node API missing from the `static` preset's minimal shim) | Check build log for module resolution errors; avoid `node:fs` in config/plugins |
+| Symptom                                                                             | Cause                                                                     | Fix                                                                                     |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Cloudflare build fails with "pnpm not found", "bun not found", or lockfile mismatch | Dashboard still running an old package-manager command                    | Update Build command to `deno install --frozen && deno task build`                      |
+| `wrangler deploy` errors "No compatible entrypoint"                                 | `wrangler.jsonc` has `main` but no server bundle built                    | Remove `main` — assets-only deploys omit it                                             |
+| Post route returns 404 in prod but works locally                                    | Prerender crawler didn't discover it                                      | Add to `prerender.pages` explicitly or ensure it's linked from `/posts`                 |
+| `/rss.xml` returns HTML 404 page                                                    | Catch-all matched before static file                                      | Confirm `$slug.tsx` `beforeLoad` still rejects dotted slugs                             |
+| Mermaid chunk huge in client bundle                                                 | Top-level `import 'mermaid'` reintroduced                                 | Restore dynamic `import('mermaid')` in `MermaidDiagram.tsx`                             |
+| Build succeeds locally, fails on Cloudflare                                         | Build image Deno/Wrangler mismatch or a missing lifecycle script approval | Check build log for Deno version, `deno install` warnings, and module resolution errors |
 
 ## When to switch to the Workers runtime
 
@@ -130,7 +130,7 @@ Primary:
 - [TanStack Start — Static Prerendering](https://tanstack.com/start/latest/docs/framework/react/guide/static-prerendering) — `prerender` config shape; crawler behavior
 - [Nitro — Deployment presets](https://nitro.build/deploy) — `static` preset and output layout
 - [Cloudflare Workers — Static Assets](https://developers.cloudflare.com/workers/static-assets/) — `assets` binding in `wrangler.jsonc`, `not_found_handling` modes
-- [Cloudflare Workers Builds — Build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/) — dashboard fields, env vars, `BUN_VERSION`
+- [Cloudflare Workers Builds — Build configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/) — dashboard build and deploy fields
 
 Secondary / "if we migrate to Workers runtime":
 
@@ -141,5 +141,5 @@ Secondary / "if we migrate to Workers runtime":
 
 Adjacent project skills:
 
-- `wcygan-net-stack` — stack fundamentals (Bun, TanStack Start, MDX, Mermaid)
+- `wcygan-net-stack` — stack fundamentals (Deno, TanStack Start, MDX, Mermaid)
 - `github-actions-troubleshooter` — CI failures that aren't Cloudflare-specific

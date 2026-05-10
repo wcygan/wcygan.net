@@ -81,4 +81,4 @@ curl -sI https://wcygan.net/really-good-software/ | head -3
 ## Related
 
 - `cloudflare-static-deploy` — how the deploy gets there in the first place
-- `wcygan-net-stack` — stack reference (TanStack, Bun, MDX, Mermaid)
+- `wcygan-net-stack` — stack reference (TanStack, Deno, MDX, Mermaid)

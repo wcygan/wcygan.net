@@ -1,6 +1,6 @@
 ---
 name: wcygan-net-stack
-description: Project stack guide for wcygan.net covering Bun runtime, TanStack Start framework, MDX markdown rendering, and Mermaid diagram components. Auto-loads when working on routes, components, blog posts, MDX config, Vite config, mermaid diagrams, or build/deploy. Keywords: bun, tanstack, tanstack start, tanstack router, mdx, markdown, mermaid, diagram, vite, nitro, blog post, route, shiki
+description: Project stack guide for wcygan.net covering Deno runtime, TanStack Start framework, MDX markdown rendering, and Mermaid diagram components. Auto-loads when working on routes, components, blog posts, MDX config, Vite config, mermaid diagrams, or build/deploy. Keywords: deno, tanstack, tanstack start, tanstack router, mdx, markdown, mermaid, diagram, vite, nitro, blog post, route, shiki
 ---
 
 # wcygan.net Stack Guide
@@ -9,12 +9,12 @@ This skill provides project-specific knowledge for the wcygan.net blog, covering
 
 ## Quick Reference
 
-| Area                         | Entry Point                               | Reference                                             |
-| ---------------------------- | ----------------------------------------- | ----------------------------------------------------- |
-| Bun runtime & build          | `package.json`, `vite.config.ts`          | [bun.md](references/bun.md)                           |
-| TanStack Start routing & SSR | `src/routes/`, `src/router.tsx`           | [tanstack-start.md](references/tanstack-start.md)     |
-| MDX markdown pipeline        | `vite.config.ts` MDX plugin, `src/posts/` | [mdx-pipeline.md](references/mdx-pipeline.md)         |
-| Mermaid diagrams             | `src/components/MermaidDiagram.tsx`       | [mermaid-diagrams.md](references/mermaid-diagrams.md) |
+| Area                         | Entry Point                                   | Reference                                             |
+| ---------------------------- | --------------------------------------------- | ----------------------------------------------------- |
+| Deno runtime & build         | `deno.json`, `package.json`, `vite.config.ts` | [deno.md](references/deno.md)                         |
+| TanStack Start routing & SSR | `src/routes/`, `src/router.tsx`               | [tanstack-start.md](references/tanstack-start.md)     |
+| MDX markdown pipeline        | `vite.config.ts` MDX plugin, `src/posts/`     | [mdx-pipeline.md](references/mdx-pipeline.md)         |
+| Mermaid diagrams             | `src/components/MermaidDiagram.tsx`           | [mermaid-diagrams.md](references/mermaid-diagrams.md) |
 
 ## Critical Gotchas
 

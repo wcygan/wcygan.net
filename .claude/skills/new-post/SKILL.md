@@ -67,11 +67,11 @@ Notes:
 
 After both files are written, output exactly:
 
-> Created `src/posts/<slug>.mdx` and updated `public/rss.xml`. Run `bun run dev` to preview at `/<slug>`, then `bun run pre-commit` before committing.
+> Created `src/posts/<slug>.mdx` and updated `public/rss.xml`. Run `deno task dev` to preview at `/<slug>`, then `deno task pre-commit` before committing.
 
 ## Do not
 
 - Do **not** touch `src/routes/` — the `$slug` catch-all route picks up new posts automatically.
 - Do **not** edit `src/lib/services/blog.ts` — it uses `import.meta.glob` and discovers new MDX files on build.
-- Do **not** run `bun run build` or `bun run dev` yourself unless the user asks; the skill's job is the file writes.
+- Do **not** run `deno task build` or `deno task dev` yourself unless the user asks; the skill's job is the file writes.
 - Do **not** invent content for the body — leave a placeholder if the user didn't supply one.

@@ -12,7 +12,7 @@ Managed on https://dash.cloudflare.com/
 
 ## Quickstart
 
-Install [bun](https://bun.sh/), [just](https://github.com/casey/just), and
+Install [Deno](https://deno.com/), [just](https://github.com/casey/just), and
 [uv](https://docs.astral.sh/uv/).
 
 ```bash
@@ -55,8 +55,8 @@ The project includes comprehensive end-to-end integration tests for Mermaid diag
 
 ### Prerequisites
 
-- Node.js 18+ (required for built-in fetch API)
-- Built project in `/build` directory
+- Deno 2.x
+- Built project in `.output/public`
 - All dependencies installed via `just install`
 
 ### Running Integration Tests

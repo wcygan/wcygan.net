@@ -1,6 +1,6 @@
 # wcygan.net — auto-generated site metadata
 
-How `robots.txt`, `sitemap.xml`, and `rss.xml` are produced at build time with zero ongoing maintenance. Add a route or a post and the outputs update automatically on the next `bun run build`.
+How `robots.txt`, `sitemap.xml`, and `rss.xml` are produced at build time with zero ongoing maintenance. Add a route or a post and the outputs update automatically on the next `deno task build`.
 
 ## File layout
 
@@ -85,8 +85,8 @@ Do not delete this guard. The unit test next to it pins the behavior.
 1. Add a pure builder to `src/lib/sitemap/generators.ts`.
 2. Add tests to `generators.test.ts` — reject regressions, not just happy paths.
 3. Call the builder from `scripts/site-metadata-plugin.ts` inside the existing `closeBundle` handler.
-4. Run `bun run build` — confirm the log line (`[site-metadata] wrote ...`) names your new file.
-5. Verify the output at `.output/public/<yourfile>` and probe with `bunx serve .output/public` before deploy.
+4. Run `deno task build` — confirm the log line (`[site-metadata] wrote ...`) names your new file.
+5. Verify the output at `.output/public/<yourfile>` and probe with `deno task preview-static` before deploy.
 
 Do not introduce a new Vite plugin — extend the existing one.
 

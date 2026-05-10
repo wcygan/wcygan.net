@@ -11,38 +11,38 @@ default:
 # Start the dev server at https://wcygan.localhost (portless wraps Vite)
 dev:
     (sleep 2 && open https://wcygan.localhost) &
-    bunx portless run bun --bun vite dev
+    deno task dev
 
 # Start the bare Vite dev server on :3000 (CI / no-portless fallback)
 dev-vite:
-    bun --bun vite dev
+    deno task dev-vite
 
-# Build for production (Nitro + Bun)
+# Build for production (Nitro + Deno)
 build:
-    bun --bun vite build
+    deno task build
 
 # Preview the production build
 preview:
-    bun --bun vite preview
+    deno task preview
 
 # Serve the built static output from .output/public
 preview-static:
-    bunx serve .output/public
+    deno task preview-static
 
 # Quality & Testing
 # ---------------------------------------------------------------------------
 
 # Run Vitest unit tests (pass extra args: `just test --watch`)
 test *args:
-    bunx vitest run {{args}}
+    deno task test {{args}}
 
 # Format the repo with Prettier
 fmt:
-    bunx prettier --write .
+    deno task fmt
 
 # Type-check without emitting
 typecheck:
-    bunx tsc --noEmit
+    deno task typecheck
 
 # Format + typecheck + tests (matches package.json pre-commit)
 check: fmt typecheck test
@@ -53,7 +53,7 @@ check: fmt typecheck test
 
 # Install JS dependencies
 install:
-    bun install
+    deno install
 
 # Remove build artifacts
 clean:
@@ -64,8 +64,7 @@ clean:
 
 # Build and deploy to Cloudflare via Wrangler
 deploy:
-    bun run build
-    bunx wrangler deploy
+    deno task deploy
 
 # Hit production with the regression suite (scripts/verify-prod.sh)
 verify-prod *args:

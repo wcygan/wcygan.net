@@ -199,8 +199,8 @@ jobs:
 
 **This project uses:**
 
-- **Package Manager**: pnpm
-- **Pre-commit checks**: `pnpm run pre-commit` (format + lint + typecheck)
+- **Package Manager**: Deno
+- **Pre-commit checks**: `deno task pre-commit` (format + typecheck + test)
 - **Common CI tasks**: format check, typecheck, build, test
 
 **Standard workflow pattern:**
@@ -213,17 +213,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - uses: denoland/setup-deno@v2
         with:
-          version: 8
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
-      - run: pnpm install
-      - run: pnpm run pre-commit
-      - run: pnpm run test
-      - run: pnpm run build
+          deno-version: v2.x
+          cache: true
+      - run: deno install --frozen
+      - run: deno task build
+      - run: deno task typecheck
+      - run: deno task test
 ```
 
 ### 6. Output Format
@@ -242,12 +239,12 @@ Present findings as:
 ```yaml
 # File: .github/workflows/ci.yml:15
 - name: Format check
-  run: pnpm exec prettier --config .config/.prettierrc --check .
+  run: deno task --eval "prettier --config .config/.prettierrc --check ."
 ```
 
 **✅ Verification**
 
-- Run locally: `pnpm exec prettier --write .`
+- Run locally: `deno task fmt`
 - Commit formatted files
 - Monitor next CI run
 
@@ -257,7 +254,7 @@ Present findings as:
 
 - Run formatters before commit
 - Validate locally before pushing
-- Use `pnpm run pre-commit`
+- Use `deno task pre-commit`
 
 **Workflow best practices:**
 

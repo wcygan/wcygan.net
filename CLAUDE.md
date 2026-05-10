@@ -8,13 +8,13 @@ Modern UI/UX Engineering guide for wcygan.net — a TanStack Start blog with cle
 # Development
 just dev              # Dev server at https://wcygan.localhost (portless wraps Vite)
 just dev-vite         # Bare Vite on :3000 (CI / no-portless fallback)
-bun run dev           # Same as `just dev` (portless-wrapped)
-bun run build         # Build for production (Nitro + Bun)
-bun run preview       # Preview production build
+deno task dev         # Same as `just dev` (portless-wrapped)
+deno task build       # Build for production (Nitro + Deno)
+deno task preview     # Preview production build
 
 # Quality & Testing
-bun run pre-commit    # Format + typecheck + tests (run before commits)
-bun run test          # Run Vitest unit tests
+deno task pre-commit  # Format + typecheck + tests (run before commits)
+deno task test        # Run Vitest unit tests
 ```
 
 ### Local dev URL: `https://wcygan.localhost`
@@ -23,8 +23,8 @@ bun run test          # Run Vitest unit tests
 
 - **First run on a new machine** prompts for sudo to trust the local CA and bind :443.
 - **Vite must bind IPv4** so portless's proxy (which dials `127.0.0.1`) can reach it. `vite.config.ts` reads `host`/`port` from env (`HOST`, `PORT`) — portless sets both. Don't hardcode `host: 'localhost'` (resolves to IPv6-only `::1` on macOS, causes 502s).
-- **Stale routes** after a crash: `bunx portless prune` (clears dead PIDs); `bunx portless list` (inspect table).
-- **CI / no-portless**: use `just dev-vite` or run `bun --bun vite dev` directly.
+- **Stale routes** after a crash: `deno task --eval "portless prune"` (clears dead PIDs); `deno task --eval "portless list"` (inspect table).
+- **CI / no-portless**: use `just dev-vite` or run `deno task dev-vite` directly.
 
 ### Verifying frontend changes
 
@@ -42,16 +42,16 @@ The `agent-browser` skill auto-loads on browser-automation requests; prefer it o
 ## Technology Stack
 
 - **TanStack Start** with TanStack Router for full-stack React SSR
-- **Bun** runtime and package manager
+- **Deno** runtime and package manager
 - **React 19** with hooks for state management
 - **Tailwind CSS 3** with Typography plugin for consistent styling
 - **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component imports
 - **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (github-light theme)
 - **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage cached)
 - **TypeScript** with strict mode for type safety
-- **Nitro** with `bun` preset for deployment
+- **Nitro** with `deno-server` preset for prerendering
 
-A project-local skill (`wcygan-net-stack`) documents Bun, TanStack Start, MDX, and Mermaid patterns in detail under `.claude/skills/wcygan-net-stack/references/`.
+A project-local skill (`wcygan-net-stack`) documents Deno, TanStack Start, MDX, and Mermaid patterns in detail under `.claude/skills/wcygan-net-stack/references/`.
 
 ## Project Structure
 
@@ -132,7 +132,7 @@ Social URLs are centralized in `src/lib/socials.ts`. Validate markup with [indie
 
 1. Create `src/posts/my-post.mdx` with frontmatter (`title`, `date`, `description`, `tags`)
 2. Posts automatically appear on homepage and `/posts`
-3. `robots.txt`, `sitemap.xml`, and `rss.xml` regenerate on every `bun run build` via `scripts/site-metadata-plugin.ts` — no manual edits
+3. `robots.txt`, `sitemap.xml`, and `rss.xml` regenerate on every `deno task build` via `scripts/site-metadata-plugin.ts` — no manual edits
 
 ## Mermaid Diagrams in MDX
 

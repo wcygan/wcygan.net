@@ -79,7 +79,7 @@ Before calling frontend work on wcygan.net done:
 - [ ] Loaders return serializable data only (no React components from loaders)
 - [ ] No `ref.current.innerHTML` — use `dangerouslySetInnerHTML` via state
 - [ ] Mermaid imported dynamically (`import('mermaid')`), never top-level
-- [ ] `bun run pre-commit` passes (format + typecheck)
+- [ ] `deno task pre-commit` passes (format + typecheck)
 
 ## External canonical docs
 

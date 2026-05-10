@@ -45,7 +45,7 @@ GUIDE = """\
 
 **Load the full `wcygan-net-design` skill** (references/colors.md, typography.md, layout.md, components.md, blog-mdx.md, routing-and-chrome.md, accessibility.md) for specifics before non-trivial design work.
 
-**Before done**: `bun run pre-commit` must pass. See SKILL.md validation checklist.
+**Before done**: `deno task pre-commit` must pass. See SKILL.md validation checklist.
 """
 
 

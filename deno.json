@@ -1,0 +1,19 @@
+{
+  "nodeModulesDir": "manual",
+  "imports": {
+    "~/": "./src/"
+  },
+  "tasks": {
+    "dev": "portless run deno task dev-vite",
+    "dev-vite": "vite dev",
+    "build": "deno run -A scripts/build.mjs",
+    "preview": "vite preview",
+    "preview-static": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server .output/public",
+    "deploy": "deno task build && wrangler deploy",
+    "test": "vitest run",
+    "fmt": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "pre-commit": "deno task fmt && deno task typecheck && deno task test",
+    "check": "deno task fmt && deno task typecheck && deno task test"
+  }
+}
