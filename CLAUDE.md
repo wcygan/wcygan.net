@@ -6,9 +6,9 @@ Modern UI/UX Engineering guide for wcygan.net — a TanStack Start blog with cle
 
 ```bash
 # Development
-just dev              # Dev server at https://wcygan.localhost (portless wraps Vite)
+just dev              # Dev server at https://wcygan.localhost (portless-wrapped, opens browser)
 just dev-vite         # Bare Vite on :3000 (CI / no-portless fallback)
-deno task dev         # Same as `just dev` (portless-wrapped)
+deno task dev         # Portless-wrapped Vite without the browser-open
 deno task build       # Build for production (Nitro + Deno)
 deno task preview     # Preview production build
 
