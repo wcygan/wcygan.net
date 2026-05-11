@@ -11,7 +11,7 @@
     "@vitejs/plugin-react": "5.1.1",
     "jsdom": "^29.0.2",
     "lefthook": "^2.1.5",
-    "nitro": "^3.0.260311-beta",
+    "nitro": "^3.0.260429-beta",
     "portless": "^0.12.0",
     "prettier": "3.8.3",
     "remark-gfm": "^4.0.1",

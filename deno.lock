@@ -17,7 +17,7 @@
     "npm:jsdom@^29.0.2": "29.1.1_css-tree@3.2.1",
     "npm:lefthook@^2.1.5": "2.1.6",
     "npm:mermaid@^11.14.0": "11.14.0_cytoscape@3.33.3",
-    "npm:nitro@^3.0.260311-beta": "3.0.260311-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_srvx@0.11.15_crossws@0.4.5__srvx@0.11.15_db0@0.3.4_ofetch@2.0.0-alpha.3_@types+node@25.6.2",
+    "npm:nitro@^3.0.260429-beta": "3.0.260429-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_srvx@0.11.15_crossws@0.4.5__srvx@0.11.15_db0@0.3.4_ofetch@2.0.0-alpha.3_@types+node@25.6.2",
     "npm:portless@0.12": "0.12.0",
     "npm:postcss@^8.5.9": "8.5.14",
     "npm:prettier@3.8.3": "3.8.3",
@@ -346,15 +346,15 @@
     "@csstools/css-tokenizer@4.0.0": {
       "integrity": "sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA=="
     },
-    "@emnapi/core@1.9.2": {
-      "integrity": "sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==",
+    "@emnapi/core@1.10.0": {
+      "integrity": "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==",
       "dependencies": [
         "@emnapi/wasi-threads",
         "tslib"
       ]
     },
-    "@emnapi/runtime@1.9.2": {
-      "integrity": "sha512-3U4+MIWHImeyu1wnmVygh5WlgfYDtyf0k8AbLhMFxOipihf6nrWC4syIm/SwEeec0mNSafiiNnMJwbza/Is6Lw==",
+    "@emnapi/runtime@1.10.0": {
+      "integrity": "sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==",
       "dependencies": [
         "tslib"
       ]
@@ -882,7 +882,7 @@
         "langium"
       ]
     },
-    "@napi-rs/wasm-runtime@1.1.4_@emnapi+core@1.9.2_@emnapi+runtime@1.9.2": {
+    "@napi-rs/wasm-runtime@1.1.4_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0": {
       "integrity": "sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow==",
       "dependencies": [
         "@emnapi/core",
@@ -931,8 +931,8 @@
     "@oozcitak/util@10.0.0": {
       "integrity": "sha512-hAX0pT/73190NLqBPPWSdBVGtbY6VOhWYK3qqHqtXQ1gK7kS2yz4+ivsN07hpJ6I3aeMtKP6J6npsEKOAzuTLA=="
     },
-    "@oxc-project/types@0.124.0": {
-      "integrity": "sha512-VBFWMTBvHxS11Z5Lvlr3IWgrwhMTXV+Md+EQF0Xf60+wAdsGFTBx7X7K/hP4pi8N7dcm1RvcHwDxZ16Qx8keUg=="
+    "@oxc-project/types@0.129.0": {
+      "integrity": "sha512-3oz8m3FGdr2nDXVqmFUw7jolKliC4MoyXYIG2c7gpjBnzUWQpUGIYcXYKxTdTi+N2jusvt610ckTMkxdwHkYEg=="
     },
     "@poppinss/colors@4.1.6": {
       "integrity": "sha512-H9xkIdFswbS8n1d6vmRd8+c10t2Qe+rZITbbDHHkQixH5+2x1FDGmi/0K+WgWiqQFKPSlIYB7jlH6Kpfn6Fleg==",
@@ -951,68 +951,68 @@
     "@poppinss/exception@1.2.3": {
       "integrity": "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="
     },
-    "@rolldown/binding-android-arm64@1.0.0-rc.15": {
-      "integrity": "sha512-YYe6aWruPZDtHNpwu7+qAHEMbQ/yRl6atqb/AhznLTnD3UY99Q1jE7ihLSahNWkF4EqRPVC4SiR4O0UkLK02tA==",
+    "@rolldown/binding-android-arm64@1.0.0": {
+      "integrity": "sha512-TWMZnRLMe63C2Lhyicviu7ZHaU4kxa6PS3rofvc9GmcvptzNN11BcfQ4Sl7MwTOsisQoa2keB/EBdNCAnUo8vA==",
       "os": ["android"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-darwin-arm64@1.0.0-rc.15": {
-      "integrity": "sha512-oArR/ig8wNTPYsXL+Mzhs0oxhxfuHRfG7Ikw7jXsw8mYOtk71W0OkF2VEVh699pdmzjPQsTjlD1JIOoHkLP1Fg==",
+    "@rolldown/binding-darwin-arm64@1.0.0": {
+      "integrity": "sha512-6XcD+8k0gPVItNagEw78/qqcBDwKcwDYS8V2hRmVsfUSIrd8cWe/CBvRDI5toqFyPfj+FJr6t8U6Xj2P2prEew==",
       "os": ["darwin"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-darwin-x64@1.0.0-rc.15": {
-      "integrity": "sha512-YzeVqOqjPYvUbJSWJ4EDL8ahbmsIXQpgL3JVipmN+MX0XnXMeWomLN3Fb+nwCmP/jfyqte5I3XRSm7OfQrbyxw==",
+    "@rolldown/binding-darwin-x64@1.0.0": {
+      "integrity": "sha512-iN/tWVXRQDWvmZlKdceP1Dwug9GDpEymhb9p4xnEe6zvCg5lFmzVljl+1qR1NVx3yfGpr2Na+CuLmv5IU8uzfQ==",
       "os": ["darwin"],
       "cpu": ["x64"]
     },
-    "@rolldown/binding-freebsd-x64@1.0.0-rc.15": {
-      "integrity": "sha512-9Erhx956jeQ0nNTyif1+QWAXDRD38ZNjr//bSHrt6wDwB+QkAfl2q6Mn1k6OBPerznjRmbM10lgRb1Pli4xZPw==",
+    "@rolldown/binding-freebsd-x64@1.0.0": {
+      "integrity": "sha512-jjQMDvvwSOuhOwMszD/klSOjyWMM3zI64hWTj9KT5x4MxRbZAf+7vLQ6qouRhtsLVFHr3f0ILaJAfgENPiQdAQ==",
       "os": ["freebsd"],
       "cpu": ["x64"]
     },
-    "@rolldown/binding-linux-arm-gnueabihf@1.0.0-rc.15": {
-      "integrity": "sha512-cVwk0w8QbZJGTnP/AHQBs5yNwmpgGYStL88t4UIaqcvYJWBfS0s3oqVLZPwsPU6M0zlW4GqjP0Zq5MnAGwFeGA==",
+    "@rolldown/binding-linux-arm-gnueabihf@1.0.0": {
+      "integrity": "sha512-d//Dtg2x6/m3mbV64yUGNnDGNZaDGRpDLLNGerHQUVObuNaIQaaDp25yUiqGXtHEXX+NP2d0wAlmKgpYgIAJ2A==",
       "os": ["linux"],
       "cpu": ["arm"]
     },
-    "@rolldown/binding-linux-arm64-gnu@1.0.0-rc.15": {
-      "integrity": "sha512-eBZ/u8iAK9SoHGanqe/jrPnY0JvBN6iXbVOsbO38mbz+ZJsaobExAm1Iu+rxa4S1l2FjG0qEZn4Rc6X8n+9M+w==",
+    "@rolldown/binding-linux-arm64-gnu@1.0.0": {
+      "integrity": "sha512-n7Ofp0mx+aB2cC+Sdy5YtMnXtY9lchnHbY+3Yt0uq9JsWQExf4f5Whu0tK0R8Jdc9S6RchTHjIFY7uc92puOVQ==",
       "os": ["linux"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-linux-arm64-musl@1.0.0-rc.15": {
-      "integrity": "sha512-ZvRYMGrAklV9PEkgt4LQM6MjQX2P58HPAuecwYObY2DhS2t35R0I810bKi0wmaYORt6m/2Sm+Z+nFgb0WhXNcQ==",
+    "@rolldown/binding-linux-arm64-musl@1.0.0": {
+      "integrity": "sha512-EIVjy2cgd7uuMMo94FVkBp7F6DhcZAUwNURkSG3RwUmvAXR6s0ISxM81U+IydcZByPG0pZIHsf1b6kTxoFDgJA==",
       "os": ["linux"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.15": {
-      "integrity": "sha512-VDpgGBzgfg5hLg+uBpCLoFG5kVvEyafmfxGUV0UHLcL5irxAK7PKNeC2MwClgk6ZAiNhmo9FLhRYgvMmedLtnQ==",
+    "@rolldown/binding-linux-ppc64-gnu@1.0.0": {
+      "integrity": "sha512-JEwwOPcwTLAcpDQlqSmjEmfs63xJnSiUNIGvLcDLUHCWK4XowpS/7c7tUsUH6uT/ct6bMUTdXKfI8967FYj6mg==",
       "os": ["linux"],
       "cpu": ["ppc64"]
     },
-    "@rolldown/binding-linux-s390x-gnu@1.0.0-rc.15": {
-      "integrity": "sha512-y1uXY3qQWCzcPgRJATPSOUP4tCemh4uBdY7e3EZbVwCJTY3gLJWnQABgeUetvED+bt1FQ01OeZwvhLS2bpNrAQ==",
+    "@rolldown/binding-linux-s390x-gnu@1.0.0": {
+      "integrity": "sha512-0wjCFhLrihtAubnT9iA0N++0pSV0z5Hg7tNGdNJ4RFaINceHadoF+kiFGyY1qSSNVIAZtLotG8Ju1bgDPkjnFA==",
       "os": ["linux"],
       "cpu": ["s390x"]
     },
-    "@rolldown/binding-linux-x64-gnu@1.0.0-rc.15": {
-      "integrity": "sha512-023bTPBod7J3Y/4fzAN6QtpkSABR0rigtrwaP+qSEabUh5zf6ELr9Nc7GujaROuPY3uwdSIXWrvhn1KxOvurWA==",
+    "@rolldown/binding-linux-x64-gnu@1.0.0": {
+      "integrity": "sha512-Dfn7iak9BcMMePxcoJfpSbWqnEyrp/dRF63/8qW/eHBdOZov6x5aShLLEYGYdIeSJ6vMLK/XCVB+lGIxm41bQA==",
       "os": ["linux"],
       "cpu": ["x64"]
     },
-    "@rolldown/binding-linux-x64-musl@1.0.0-rc.15": {
-      "integrity": "sha512-witB2O0/hU4CgfOOKUoeFgQ4GktPi1eEbAhaLAIpgD6+ZnhcPkUtPsoKKHRzmOoWPZue46IThdSgdo4XneOLYw==",
+    "@rolldown/binding-linux-x64-musl@1.0.0": {
+      "integrity": "sha512-5/utzzDmD/pD/bmuaUcbTf/sZYy0aztwIVlfpoW1fTjCZ0BaPOMVWGZL1zvgxyi7ZIVYWlxKONHmSbHuiOh8Jw==",
       "os": ["linux"],
       "cpu": ["x64"]
     },
-    "@rolldown/binding-openharmony-arm64@1.0.0-rc.15": {
-      "integrity": "sha512-UCL68NJ0Ud5zRipXZE9dF5PmirzJE4E4BCIOOssEnM7wLDsxjc6Qb0sGDxTNRTP53I6MZpygyCpY8Aa8sPfKPg==",
+    "@rolldown/binding-openharmony-arm64@1.0.0": {
+      "integrity": "sha512-ouJs8VcUomfLfpbUECqFMRqdV4x6aeAK3MA4m6vTrJJjKyWTV5KnxZx7Jd9G+GlDaQQxubcba00x16OyJ1meig==",
       "os": ["openharmony"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-wasm32-wasi@1.0.0-rc.15_@emnapi+core@1.9.2_@emnapi+runtime@1.9.2": {
-      "integrity": "sha512-ApLruZq/ig+nhaE7OJm4lDjayUnOHVUa77zGeqnqZ9pn0ovdVbbNPerVibLXDmWeUZXjIYIT8V3xkT58Rm9u5Q==",
+    "@rolldown/binding-wasm32-wasi@1.0.0_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0": {
+      "integrity": "sha512-E+oHKGiDA+lsKMmFtffDDw91EryDT7uJocrIuCHqhm6bCTM6xFK+3gaCkYOHfPwQr0cCNarSM2xaELoQDz9jJg==",
       "dependencies": [
         "@emnapi/core",
         "@emnapi/runtime",
@@ -1020,24 +1020,24 @@
       ],
       "cpu": ["wasm32"]
     },
-    "@rolldown/binding-win32-arm64-msvc@1.0.0-rc.15": {
-      "integrity": "sha512-KmoUoU7HnN+Si5YWJigfTws1jz1bKBYDQKdbLspz0UaqjjFkddHsqorgiW1mxcAj88lYUE6NC/zJNwT+SloqtA==",
+    "@rolldown/binding-win32-arm64-msvc@1.0.0": {
+      "integrity": "sha512-yYK02n8Rngo+gbm1y6G0+7jk1sJ/2Wt7K0me0Y7k/ErBpyf+LJ2gFpqWVTcRV1rUepBlQRmpgWkTQCiiwrK0Ow==",
       "os": ["win32"],
       "cpu": ["arm64"]
     },
-    "@rolldown/binding-win32-x64-msvc@1.0.0-rc.15": {
-      "integrity": "sha512-3P2A8L+x75qavWLe/Dll3EYBJLQmtkJN8rfh+U/eR3MqMgL/h98PhYI+JFfXuDPgPeCB7iZAKiqii5vqOvnA0g==",
+    "@rolldown/binding-win32-x64-msvc@1.0.0": {
+      "integrity": "sha512-14bpChMahXRRXiTwahSl+zzHPW6qQTXtkMuJBFlbo+pqSAews2d4BdCSHfrJ/MBsCZtpmTafsY+1QhBzitcmdg==",
       "os": ["win32"],
       "cpu": ["x64"]
+    },
+    "@rolldown/pluginutils@1.0.0": {
+      "integrity": "sha512-aKs/3GSWyV0mrhNmt/96/Z3yczC3yvrzYATCiCXQebBsGyYzjNdUphRVLeJQ67ySKVXRfMxt2lm12pmXvbPFQQ=="
     },
     "@rolldown/pluginutils@1.0.0-beta.40": {
       "integrity": "sha512-s3GeJKSQOwBlzdUrj4ISjJj5SfSh+aqn0wjOar4Bx95iV1ETI7F6S/5hLcfAxZ9kXDcyrAkxPlqmd1ZITttf+w=="
     },
     "@rolldown/pluginutils@1.0.0-beta.47": {
       "integrity": "sha512-8QagwMH3kNCuzD8EWL8R2YPW5e4OrHNSAHRFDdmFqEwEaD/KcNKjVoumo+gP2vW5eKB2UPbM6vTYiGZX0ixLnw=="
-    },
-    "@rolldown/pluginutils@1.0.0-rc.15": {
-      "integrity": "sha512-UromN0peaE53IaBRe9W7CjrZgXl90fqGpK+mIZbA3qSTeYqg3pqpROBdIPvOG3F5ereDHNwoHBI2e50n1BDr1g=="
     },
     "@rollup/pluginutils@5.3.0_rollup@4.60.3": {
       "integrity": "sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==",
@@ -1275,7 +1275,7 @@
       "dependencies": [
         "@tanstack/history",
         "@tanstack/react-store",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "isbot",
         "react",
         "react-dom"
@@ -1285,7 +1285,7 @@
       "integrity": "sha512-FFlYKUMLeFK53eh258RtmK/sT3ZJW4/LAHhjElGYZEhl6PeUSheZ8J+xw1Fn5t02nYixuj4CyCuLpzq/2XUVgQ==",
       "dependencies": [
         "@tanstack/react-router",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/start-client-core",
         "react",
         "react-dom"
@@ -1296,7 +1296,7 @@
       "dependencies": [
         "@tanstack/react-router",
         "@tanstack/react-start-server",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/router-utils",
         "@tanstack/start-client-core",
         "@tanstack/start-fn-stubs",
@@ -1313,7 +1313,7 @@
       "dependencies": [
         "@tanstack/history",
         "@tanstack/react-router",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/start-client-core",
         "@tanstack/start-server-core",
         "react",
@@ -1357,19 +1357,10 @@
       ],
       "bin": true
     },
-    "@tanstack/router-core@1.169.2_seroval@1.5.4": {
-      "integrity": "sha512-5sm0DJF1A7Mz+9gy4Gz/lLovNailK3yot4vYvz9MkBUPw26uLnhQiR8hSCYxucjE0wD6Mdlc5l+Z0/XTlZ7xHw==",
-      "dependencies": [
-        "@tanstack/history",
-        "cookie-es",
-        "seroval",
-        "seroval-plugins"
-      ]
-    },
-    "@tanstack/router-devtools-core@1.167.3_@tanstack+router-core@1.169.2__seroval@1.5.4": {
+    "@tanstack/router-devtools-core@1.167.3_@tanstack+router-core@1.168.14__seroval@1.5.4": {
       "integrity": "sha512-fJ1VMhyQgnoashTrP763c2HRc9kofgF61L7Jb3F6eTHAmCKtGVx8BRtiFt37sr3U0P0jmaaiiSPGP6nT5JtVNg==",
       "dependencies": [
-        "@tanstack/router-core@1.169.2_seroval@1.5.4",
+        "@tanstack/router-core",
         "clsx",
         "goober"
       ]
@@ -1377,7 +1368,7 @@
     "@tanstack/router-generator@1.166.29": {
       "integrity": "sha512-X/9/4z4tcPyiQfm1kGm9vzEpJboNbfpg/p+QoI5KyaWtqZgF00nyq5dUQKXwacwZBEgHCzUaWCM9etRFCNnXrg==",
       "dependencies": [
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/router-utils",
         "@tanstack/virtual-file-routes",
         "prettier",
@@ -1397,7 +1388,7 @@
         "@babel/traverse",
         "@babel/types",
         "@tanstack/react-router",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/router-generator",
         "@tanstack/router-utils",
         "@tanstack/virtual-file-routes",
@@ -1429,7 +1420,7 @@
     "@tanstack/start-client-core@1.167.16": {
       "integrity": "sha512-ftQ+f5SB2gLqU24QeofmbkfXiSSPS/VlLRdNC6DmshUIrDp8SQFb8gP/7hbkORs7jx4YULGA4z2xQrz/RmC+Kg==",
       "dependencies": [
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/start-fn-stubs",
         "@tanstack/start-storage-context",
         "seroval"
@@ -1446,7 +1437,7 @@
         "@babel/core",
         "@babel/types",
         "@rolldown/pluginutils@1.0.0-beta.40",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/router-generator",
         "@tanstack/router-plugin",
         "@tanstack/router-utils",
@@ -1471,7 +1462,7 @@
       "integrity": "sha512-JiV0Eqyj5SfEjGZrm/u3nBICeLZRQyeYNI7ine4PjTh0TVL7IklfN5Xfka+p80a/DuUvpHWqKvE4s3tdFZyc1A==",
       "dependencies": [
         "@tanstack/history",
-        "@tanstack/router-core@1.168.14_seroval@1.5.4",
+        "@tanstack/router-core",
         "@tanstack/start-client-core",
         "@tanstack/start-storage-context",
         "h3-v2@npm:h3@2.0.1-rc.20_crossws@0.4.5__srvx@0.11.15_srvx@0.11.15",
@@ -1482,7 +1473,7 @@
     "@tanstack/start-storage-context@1.166.28": {
       "integrity": "sha512-CUQMd6YtJ7hejKXDqT1R4N5gQ9PYyxUCv/ERNJ6/c/8ohNuhMPlOGSFVvqy2BLYNTFSj9GWjahMazeQpQomPgw==",
       "dependencies": [
-        "@tanstack/router-core@1.168.14_seroval@1.5.4"
+        "@tanstack/router-core"
       ]
     },
     "@tanstack/store@0.9.3": {
@@ -3805,8 +3796,8 @@
     "nf3@0.3.17": {
       "integrity": "sha512-N9zEWySuJFw+gR0lhS5863YsvNeudOdqRyFvNb+jMXbeTJOdrjDqkCpDginIZfUm0LzT1t1nCRiDeqQm/8kirQ=="
     },
-    "nitro@3.0.260311-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_srvx@0.11.15_crossws@0.4.5__srvx@0.11.15_db0@0.3.4_ofetch@2.0.0-alpha.3_@types+node@25.6.2": {
-      "integrity": "sha512-0o0fJ9LUh4WKUqJNX012jyieUOtMCnadkNDWr0mHzdraoHpJP/1CGNefjRyZyMXSpoJfwoWdNEZu2iGf35TUvQ==",
+    "nitro@3.0.260429-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_srvx@0.11.15_crossws@0.4.5__srvx@0.11.15_db0@0.3.4_ofetch@2.0.0-alpha.3_@types+node@25.6.2": {
+      "integrity": "sha512-KweLVCUN5X9v9g+4yxAyRcz3FcOlnjmt9FyrAIWDxJETJmNT7I0JV0clgsONjo2nI0U5gwedXYA3RaNtF5XWzg==",
       "dependencies": [
         "consola",
         "crossws",
@@ -4221,11 +4212,11 @@
     "robust-predicates@3.0.3": {
       "integrity": "sha512-NS3levdsRIUOmiJ8FZWCP7LG3QpJyrs/TE0Zpf1yvZu8cAJJ6QMW92H1c7kWpdIHo8RvmLxN/o2JXTKHp74lUA=="
     },
-    "rolldown@1.0.0-rc.15": {
-      "integrity": "sha512-Ff31guA5zT6WjnGp0SXw76X6hzGRk/OQq2hE+1lcDe+lJdHSgnSX6nK3erbONHyCbpSj9a9E+uX/OvytZoWp2g==",
+    "rolldown@1.0.0": {
+      "integrity": "sha512-yD986aXDESFGS95spT1LAv0jssywP4npMEjmMHyN2/5+eE8qQJUype2AaKkRiLgBgyD0LFlubwAht7VmY8rGoA==",
       "dependencies": [
         "@oxc-project/types",
-        "@rolldown/pluginutils@1.0.0-rc.15"
+        "@rolldown/pluginutils@1.0.0"
       ],
       "optionalDependencies": [
         "@rolldown/binding-android-arm64",
@@ -4937,7 +4928,7 @@
         "npm:jsdom@^29.0.2",
         "npm:lefthook@^2.1.5",
         "npm:mermaid@^11.14.0",
-        "npm:nitro@^3.0.260311-beta",
+        "npm:nitro@^3.0.260429-beta",
         "npm:portless@0.12",
         "npm:postcss@^8.5.9",
         "npm:prettier@3.8.3",
