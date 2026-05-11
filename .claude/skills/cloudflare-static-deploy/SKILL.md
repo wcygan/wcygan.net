@@ -75,15 +75,21 @@ Delete any `start` script pointing at `.output/server/index.mjs` — that file n
 
 ### 4. Cloudflare Workers Builds dashboard
 
-| Field             | Value                                         |
-| ----------------- | --------------------------------------------- |
-| Build command     | `deno install --frozen && deno task build`    |
-| Deploy command    | `deno task --eval "wrangler deploy"`          |
-| Version command   | `deno task --eval "wrangler versions upload"` |
-| Root directory    | `/`                                           |
-| Production branch | `main`                                        |
+The Workers Builds image as of 2026-05 ships **Bun and Node, but not Deno**, so we install Deno inline. CF auto-runs `bun install` first (because `package.json` exists); that's fine — the build command then layers Deno on top for the actual build.
 
-If the Workers Builds image does not already provide Deno, install Deno before the build command or run deploys from GitHub Actions with `denoland/setup-deno@v2`.
+| Field                            | Value                                                                                                                                               |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build command                    | `curl -fsSL https://deno.land/install.sh \| sh -s -- -y v2.6.10 && export PATH="$HOME/.deno/bin:$PATH" && deno install --frozen && deno task build` |
+| Deploy command                   | `export PATH="$HOME/.deno/bin:$PATH" && deno x wrangler deploy`                                                                                     |
+| Non-production branch deploy cmd | `export PATH="$HOME/.deno/bin:$PATH" && deno x wrangler versions upload`                                                                            |
+| Path                             | `/`                                                                                                                                                 |
+| Production branch                | `main`                                                                                                                                              |
+
+Three non-obvious requirements baked into those commands:
+
+1. **Pin the Deno version** (`v2.6.10` as the `sh -s` positional arg — see install script source). The unpinned `curl | sh` form grabs the latest release, and newer Deno tightens `node:_http_server.writeHead` argument validation, which breaks `srvx@0.11.15` during TanStack Start's prerender step. Bump the pin only after locally rebuilding on a newer Deno and confirming `.output/public/*.html` still emits.
+2. **Each command exports `$HOME/.deno/bin` to PATH** independently. The build command's `export` doesn't persist — deploy commands run in a fresh shell. Without the re-export you get `/bin/sh: 1: deno: not found`.
+3. **`deno x wrangler ...` replaces `bunx` and `deno task --eval`.** `deno x` is the npx/bunx equivalent (since Deno 2). It resolves `wrangler` from `node_modules` populated by `deno install --frozen`. No Bun on the deploy path.
 
 Enable **Build cache** to reuse `node_modules` across builds.
 
@@ -91,12 +97,26 @@ Commit only `deno.lock` — never `bun.lock`, `pnpm-lock.yaml`, or `package-lock
 
 ## Verification checklist after `deno task build`
 
-- `.output/public/index.html` exists
+- `.output/public/index.html` exists **and is non-empty** (silent prerender failure can leave the dir asset-only)
 - `.output/public/posts/index.html` exists
 - `.output/public/<slug>/index.html` exists for every MDX post
 - `.output/public/rss.xml` present (copied from `public/`)
 - `.output/server/` exists (Nitro Deno bundle — we just don't deploy it; `wrangler.jsonc` has no `main`, only `assets.directory`)
 - Total `.output/public/` size sane (posts + mermaid client chunk)
+- Build log contains `[prerender] Prerendered N pages:` with the expected route list, not `Prerendered 0 pages:`
+
+## `scripts/build.mjs` must fail loudly
+
+TanStack Start's prerender step rejects with an `unhandledRejection` rather than throwing, so a naïve `try/catch + process.exit(0)` builder script reports success even when zero HTML emitted. Guard against this at the top of `scripts/build.mjs`:
+
+```js
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection during build:", err);
+  process.exit(1);
+});
+```
+
+Without this, a broken prerender produces a deploy that uploads only `/assets/*.js` and yields a 404 on every route — the failure mode behind the May 2026 outage.
 
 ## Catch-all route gotcha
 
@@ -104,14 +124,17 @@ Commit only `deno.lock` — never `bun.lock`, `pnpm-lock.yaml`, or `package-lock
 
 ## Common failure modes
 
-| Symptom                                                                             | Cause                                                                     | Fix                                                                                     |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Cloudflare build fails with "pnpm not found", "bun not found", or lockfile mismatch | Dashboard still running an old package-manager command                    | Update Build command to `deno install --frozen && deno task build`                      |
-| `wrangler deploy` errors "No compatible entrypoint"                                 | `wrangler.jsonc` has `main` but no server bundle built                    | Remove `main` — assets-only deploys omit it                                             |
-| Post route returns 404 in prod but works locally                                    | Prerender crawler didn't discover it                                      | Add to `prerender.pages` explicitly or ensure it's linked from `/posts`                 |
-| `/rss.xml` returns HTML 404 page                                                    | Catch-all matched before static file                                      | Confirm `$slug.tsx` `beforeLoad` still rejects dotted slugs                             |
-| Mermaid chunk huge in client bundle                                                 | Top-level `import 'mermaid'` reintroduced                                 | Restore dynamic `import('mermaid')` in `MermaidDiagram.tsx`                             |
-| Build succeeds locally, fails on Cloudflare                                         | Build image Deno/Wrangler mismatch or a missing lifecycle script approval | Check build log for Deno version, `deno install` warnings, and module resolution errors |
+| Symptom                                                                                                 | Cause                                                                                                                                                                                   | Fix                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare build fails with "pnpm not found", "bun not found", or lockfile mismatch                     | Dashboard still running an old package-manager command                                                                                                                                  | Replace Build command with the pinned-Deno form from the dashboard table above                                                                                         |
+| `wrangler deploy` errors "No compatible entrypoint"                                                     | `wrangler.jsonc` has `main` but no server bundle built                                                                                                                                  | Remove `main` — assets-only deploys omit it                                                                                                                            |
+| Post route returns 404 in prod but works locally                                                        | Prerender crawler didn't discover it                                                                                                                                                    | Add to `prerender.pages` explicitly or ensure it's linked from `/posts`                                                                                                |
+| `/rss.xml` returns HTML 404 page                                                                        | Catch-all matched before static file                                                                                                                                                    | Confirm `$slug.tsx` `beforeLoad` still rejects dotted slugs                                                                                                            |
+| Mermaid chunk huge in client bundle                                                                     | Top-level `import 'mermaid'` reintroduced                                                                                                                                               | Restore dynamic `import('mermaid')` in `MermaidDiagram.tsx`                                                                                                            |
+| Build succeeds locally, fails on Cloudflare                                                             | Build image Deno/Wrangler mismatch or a missing lifecycle script approval                                                                                                               | Check build log for Deno version, `deno install` warnings, and module resolution errors                                                                                |
+| Prod 404 on every route; build reported "Success"; deploy uploaded only `/assets/*.js`                  | Prerender crashed with `TypeError [ERR_INVALID_ARG_TYPE]: "headers" argument must be an Array` from `srvx/dist/adapters/node.mjs writeHead`. CF's unpinned Deno is stricter than local. | Pin Deno version in the build command (`sh -s -- -y vX.Y.Z`). Add the `unhandledRejection` guard above so future regressions fail the build instead of shipping empty. |
+| `/bin/sh: 1: deno: not found` during deploy command                                                     | Build command's `export PATH` doesn't survive into the fresh deploy shell                                                                                                               | Prepend `export PATH="$HOME/.deno/bin:$PATH" && ` to every deploy/version command                                                                                      |
+| Transient `error reading a body from connection` on a single npm tarball during `deno install --frozen` | npm CDN flake in CF build sandbox                                                                                                                                                       | Hit "Retry deployment" in dashboard. If recurrent, wrap with `for i in 1 2 3; do deno install --frozen && break; sleep 3; done`                                        |
 
 ## When to switch to the Workers runtime
 
