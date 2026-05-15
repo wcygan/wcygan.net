@@ -397,6 +397,70 @@
     margin-bottom: 30px;
   }
 
+  .post-content .software-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+    gap: 12px;
+    list-style: none;
+    margin: 0 0 32px;
+    padding: 0;
+  }
+
+  .post-content .software-icon-grid li {
+    padding: 0;
+  }
+
+  .post-content .software-icon-card {
+    min-height: 106px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 6px;
+    background: rgb(249, 249, 249);
+    color: rgb(0, 0, 0);
+    display: grid;
+    grid-template-rows: 56px auto;
+    place-items: center;
+    gap: 8px;
+    padding: 14px 8px 12px;
+    text-align: center;
+    text-decoration: none;
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease,
+      transform 120ms ease;
+  }
+
+  .post-content .software-icon-card:hover {
+    border-color: rgb(70, 110, 170);
+    background: rgb(255, 255, 255);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .post-content .software-icon-frame {
+    width: 88px;
+    height: 56px;
+    display: grid;
+    place-items: center;
+  }
+
+  .post-content .software-icon-card .software-icon-image {
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    object-fit: contain;
+  }
+
+  .post-content .software-icon-card .software-icon-image--wide {
+    width: 84px;
+    height: 46px;
+  }
+
+  .post-content .software-icon-name {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
   .post-content table {
     width: 100%;
     border-collapse: collapse;

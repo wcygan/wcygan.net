@@ -1,0 +1,7 @@
+<svg role="img" viewBox="0 0 96 64" xmlns="http://www.w3.org/2000/svg">
+  <title>ripgrep</title>
+  <rect x="6" y="8" width="84" height="48" rx="10" fill="#111827"/>
+  <path d="M19 22h28m-28 10h22m-22 10h28" fill="none" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="64" cy="28" r="11" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+  <path d="m72 36 9 9" fill="none" stroke="#e5e7eb" stroke-width="5" stroke-linecap="round"/>
+</svg>
