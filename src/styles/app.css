@@ -1,6 +1,7 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import "leaflet/dist/leaflet.css";
 
 /* Design System - Light Theme inspired by modern minimal design */
 @layer base {
@@ -435,6 +436,64 @@
       249
     ) !important; /* Light background instead of dark */
     border: 1px solid rgb(222, 222, 222) !important; /* Light border */
+  }
+
+  .osm-map-frame {
+    margin: 0 0 30px;
+  }
+
+  .osm-map-shell {
+    position: relative;
+    border: 1px solid rgb(222, 222, 222);
+    background: rgb(249, 249, 249);
+  }
+
+  .osm-map {
+    width: 100%;
+    height: var(--osm-map-height, 420px);
+    min-height: 320px;
+  }
+
+  .osm-map-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    background: rgba(249, 249, 249, 0.92);
+    color: rgb(102, 102, 102);
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: center;
+    z-index: 500;
+  }
+
+  .osm-map .leaflet-control-attribution {
+    font-size: 11px;
+  }
+
+  .osm-map .leaflet-control-zoom a {
+    color: rgb(30, 70, 140);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .osm-map-marker {
+    background: transparent;
+    border: 0;
+  }
+
+  .osm-map-marker span {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgb(255, 255, 255);
+    border-radius: 999px;
+    background: rgb(70, 110, 170);
+    box-shadow:
+      0 0 0 2px rgba(30, 70, 140, 0.45),
+      0 2px 8px rgba(0, 0, 0, 0.25);
   }
 
   /* Reset site typography inside Mermaid's foreignObject labels so they

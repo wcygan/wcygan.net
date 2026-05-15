@@ -29,6 +29,7 @@ export default defineConfig({
             langs: [
               "javascript",
               "typescript",
+              "tsx",
               "json",
               "bash",
               "markdown",
