@@ -5,11 +5,58 @@ description: Building a Kubernetes cluster in my basement
 tags: [Kubernetes, Talos, Homelab]
 ---
 
-I built a Kubernetes cluster in my basement:
+import { EchoLivenessCheck } from "~/components/EchoLivenessCheck";
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-<div class="flex my-6">
-  <img src="/anton.jpg" alt="Anton Cluster" width="200" />
-</div>
+<section className="anton-hero">
+  <div>
+    <p className="anton-kicker">Homelab Kubernetes</p>
+    <p>
+      Anton is the Kubernetes cluster in my basement. It runs three Talos
+      control-plane nodes and exposes selected services to the internet through
+      Cloudflare Tunnel and Envoy Gateway.
+    </p>
+    <dl className="anton-metrics">
+      <div>
+        <dt>Nodes</dt>
+        <dd>3</dd>
+      </div>
+      <div>
+        <dt>Kubernetes</dt>
+        <dd>v1.36.0</dd>
+      </div>
+      <div>
+        <dt>Role</dt>
+        <dd>HA control plane</dd>
+      </div>
+    </dl>
+  </div>
+  <img src="/anton.jpg" alt="Anton Kubernetes cluster hardware" />
+</section>
+
+## Request Topology
+
+<EchoLivenessCheck />
+
+<MermaidDiagram
+  height={430}
+  diagram={`sequenceDiagram
+    participant Browser
+    participant CF as Cloudflare edge
+    participant Tunnel as Cloudflare Tunnel
+    participant Envoy as Envoy Gateway
+    participant Echo as echo service
+
+    Browser->>CF: GET https://echo.wcygan.net/
+    CF->>Tunnel: Forward over tunnel
+    Tunnel->>Envoy: HTTP request
+    Envoy->>Echo: Route by Host header
+    Echo-->>Envoy: JSON echo response
+    Envoy-->>Tunnel: 200 OK
+    Tunnel-->>CF: Response
+    CF-->>Browser: JSON + cf-ray`}
+
+/>
 
 ## The Hardware
 
@@ -37,7 +84,7 @@ Kubernetes-focused operating system. Talos:
 
 ### Kubernetes Distribution
 
-The cluster runs vanilla Kubernetes deployed through Talos, giving me:
+The cluster runs vanilla Kubernetes deployed through Talos to achieve:
 
 - **High Availability**: Three control-plane nodes ensure the cluster survives
   hardware failures
@@ -47,7 +94,7 @@ The cluster runs vanilla Kubernetes deployed through Talos, giving me:
 
 ## Conclusion
 
-Hosting your own hardware (and software) can be a great way to learn while
-avoiding bills from cloud providers. For anyone considering a similar project,
-the [cluster-template](https://github.com/onedr0p/cluster-template) provides an
-excellent starting point.
+Anton is based on
+[cluster-template](https://github.com/onedr0p/cluster-template), a GitOps
+Kubernetes homelab template that provides the starting structure for Talos,
+Flux, and common cluster services.
