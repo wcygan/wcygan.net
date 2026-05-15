@@ -660,6 +660,8 @@
   }
 
   .anton-probe {
+    --anton-probe-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
     margin: 28px 0 34px;
     padding: 18px;
     border: 1px solid rgb(222, 222, 222);
@@ -669,9 +671,13 @@
 
   .anton-probe-header {
     display: flex;
-    gap: 16px;
+    flex-direction: column;
+    gap: 12px;
     align-items: flex-start;
-    justify-content: space-between;
+  }
+
+  .anton-probe-header > div {
+    min-width: 0;
   }
 
   .anton-probe h3 {
@@ -693,6 +699,9 @@
     flex: 0 0 auto;
     gap: 8px;
     align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    min-width: 220px;
     min-height: 42px;
     padding: 9px 14px;
     border: 1px solid rgb(30, 70, 140);
@@ -705,12 +714,15 @@
     font-weight: 700;
     line-height: 1.2;
     transition:
-      background-color 0.15s ease,
-      transform 0.08s ease;
+      background-color 140ms ease,
+      border-color 140ms ease,
+      transform 120ms var(--anton-probe-ease-out);
   }
 
-  .anton-probe-button:hover:not(:disabled) {
-    background: rgb(70, 110, 170);
+  @media (hover: hover) and (pointer: fine) {
+    .anton-probe-button:hover:not(:disabled) {
+      background: rgb(70, 110, 170);
+    }
   }
 
   .anton-probe-button:active:not(:disabled) {
@@ -718,11 +730,24 @@
   }
 
   .anton-probe-button:disabled {
+    cursor: default;
+  }
+
+  .anton-probe-button[data-busy="true"] {
     cursor: progress;
-    opacity: 0.85;
+  }
+
+  .anton-probe-button-icon {
+    display: inline-flex;
+    flex: 0 0 14px;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
   }
 
   .anton-probe-spinner {
+    display: block;
     width: 14px;
     height: 14px;
     border: 2px solid rgba(255, 255, 255, 0.4);
@@ -749,12 +774,14 @@
     height: 100%;
     border-radius: 999px;
     background: rgb(70, 110, 170);
-    transition: width 0.5s ease;
+    transition:
+      width 180ms var(--anton-probe-ease-out),
+      background-color 140ms ease;
   }
 
   .anton-probe-track[data-state="checking"] .anton-probe-track-fill {
     width: 35%;
-    animation: anton-probe-indeterminate 1.1s ease-in-out infinite;
+    animation: anton-probe-indeterminate 760ms ease-in-out infinite;
   }
 
   .anton-probe-track[data-state="ok"] .anton-probe-track-fill,
@@ -772,6 +799,7 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    min-height: 28px;
     margin-top: 12px;
     color: rgb(102, 102, 102);
     font-size: 15px;
@@ -784,7 +812,7 @@
     height: 10px;
     border-radius: 999px;
     background: rgb(170, 170, 170);
-    transition: background-color 0.2s ease;
+    transition: background-color 140ms ease;
   }
 
   .anton-probe-status[data-state="checking"] .anton-probe-dot {
@@ -810,6 +838,8 @@
     display: inline-flex;
     gap: 4px;
     align-items: center;
+    justify-content: center;
+    min-width: 76px;
     margin-left: auto;
     padding: 3px 8px;
     border-radius: 999px;
@@ -819,13 +849,21 @@
     font-size: 13px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    transition:
+      background-color 140ms ease,
+      color 140ms ease,
+      opacity 140ms ease;
+  }
+
+  .anton-probe-latency[data-empty="true"] {
+    visibility: hidden;
   }
 
   .anton-probe-latency[data-state="ok"],
   .anton-probe-latency[data-state="opaque"] {
     background: rgba(0, 128, 96, 0.12);
     color: rgb(0, 110, 82);
-    animation: anton-probe-pop 0.35s ease-out;
+    animation: anton-probe-pop 200ms var(--anton-probe-ease-out);
   }
 
   .anton-probe-latency[data-state="error"] {
@@ -839,12 +877,20 @@
     animation: anton-probe-draw 0.4s ease-out 0.1s forwards;
   }
 
+  .anton-probe-result {
+    transition: opacity 160ms ease;
+  }
+
+  .anton-probe[aria-busy="true"] .anton-probe-result {
+    opacity: 0.72;
+  }
+
   .anton-probe-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-    margin: 16px 0 0;
-    animation: anton-probe-rise 0.35s ease-out;
+    margin: 12px 0 0;
+    animation: anton-probe-rise 180ms var(--anton-probe-ease-out);
   }
 
   .anton-probe-details div {
@@ -857,12 +903,29 @@
   .anton-probe-message {
     min-height: 48px;
     margin-top: 12px !important;
-    animation: anton-probe-rise 0.35s ease-out;
+    animation: anton-probe-rise 180ms var(--anton-probe-ease-out);
   }
 
   .anton-probe-message[data-empty="true"] {
     visibility: hidden;
     animation: none;
+  }
+
+  .anton-probe-details + .anton-probe-message[data-empty="true"] {
+    min-height: 0;
+    margin-top: 0 !important;
+  }
+
+  .anton-probe-announcement {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   @keyframes anton-probe-spin {
@@ -922,6 +985,14 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .anton-probe-button,
+    .anton-probe-track-fill,
+    .anton-probe-dot,
+    .anton-probe-latency,
+    .anton-probe-result {
+      transition-duration: 0.01ms;
+    }
+
     .anton-probe-spinner,
     .anton-probe-track[data-state="checking"] .anton-probe-track-fill,
     .anton-probe-status[data-state="checking"] .anton-probe-dot,
@@ -934,6 +1005,10 @@
 
     .anton-probe-check {
       stroke-dashoffset: 0;
+    }
+
+    .anton-probe-button:active:not(:disabled) {
+      transform: none;
     }
   }
 
@@ -1539,7 +1614,9 @@ th {
   }
 
   .anton-probe-button {
+    align-self: stretch;
     width: 100%;
+    min-width: 0;
   }
 
   .anton-probe-message {
