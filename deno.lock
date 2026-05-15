@@ -7,7 +7,7 @@
     "npm:@tailwindcss/typography@~0.5.19": "0.5.19_tailwindcss@3.4.19__postcss@8.5.14__jiti@1.21.7",
     "npm:@tanstack/react-router-devtools@^1.166.13": "1.166.13_@tanstack+react-router@1.168.18__react@19.2.6__react-dom@19.2.6___react@19.2.6_react@19.2.6_react-dom@19.2.6__react@19.2.6",
     "npm:@tanstack/react-router@1.168.18": "1.168.18_react@19.2.6_react-dom@19.2.6__react@19.2.6",
-    "npm:@tanstack/react-start@1.167.32": "1.167.32_react@19.2.6_react-dom@19.2.6__react@19.2.6_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2",
+    "npm:@tanstack/react-start@1.167.32": "1.167.32_react@19.2.6_react-dom@19.2.6__react@19.2.6_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2",
     "npm:@testing-library/react@^16.3.2": "16.3.2_@testing-library+dom@10.4.1_@types+react@19.2.14_@types+react-dom@19.2.3__@types+react@19.2.14_react@19.2.6_react-dom@19.2.6__react@19.2.6",
     "npm:@types/leaflet@^1.9.21": "1.9.21",
     "npm:@types/node@^25.6.2": "25.6.2",
@@ -19,7 +19,7 @@
     "npm:leaflet@^1.9.4": "1.9.4",
     "npm:lefthook@^2.1.5": "2.1.6",
     "npm:mermaid@^11.14.0": "11.14.0_cytoscape@3.33.3",
-    "npm:nitro@^3.0.260429-beta": "3.0.260429-beta_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2",
+    "npm:nitro@^3.0.260429-beta": "3.0.260429-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2",
     "npm:portless@0.12": "0.12.0",
     "npm:postcss@^8.5.9": "8.5.14",
     "npm:prettier@3.8.3": "3.8.3",
@@ -32,8 +32,8 @@
     "npm:shiki@^4.0.2": "4.0.2",
     "npm:tailwindcss@3": "3.4.19_postcss@8.5.14_jiti@1.21.7",
     "npm:typescript@^5.9.3": "5.9.3",
-    "npm:vite@^8.0.13": "8.0.13_@types+node@25.6.2",
-    "npm:vitest@^4.1.4": "4.1.5_@types+node@25.6.2_jsdom@29.1.1__css-tree@3.2.1_vite@8.0.13__@types+node@25.6.2",
+    "npm:vite@7.2.7": "7.2.7_@types+node@25.6.2_picomatch@4.0.4",
+    "npm:vitest@^4.1.4": "4.1.5_@types+node@25.6.2_jsdom@29.1.1__css-tree@3.2.1_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4",
     "npm:wrangler@^4.90.0": "4.90.0_unenv@2.0.0-rc.24_workerd@1.20260507.1"
   },
   "npm": {
@@ -1293,7 +1293,7 @@
         "react-dom"
       ]
     },
-    "@tanstack/react-start-rsc@0.0.12_react@19.2.6_react-dom@19.2.6__react@19.2.6_@types+node@25.6.2_vite@8.0.13__@types+node@25.6.2": {
+    "@tanstack/react-start-rsc@0.0.12_react@19.2.6_react-dom@19.2.6__react@19.2.6_@types+node@25.6.2_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4": {
       "integrity": "sha512-P2fmYmDBeXyO+9rxUdgvWfa5YD+3RFm+G4z6msEUM0F9QL0RdK8OJW70pkTO4Q1BGf5R9PgGoeQ+yRWMXyCQ/A==",
       "dependencies": [
         "@tanstack/react-router",
@@ -1322,7 +1322,7 @@
         "react-dom"
       ]
     },
-    "@tanstack/react-start@1.167.32_react@19.2.6_react-dom@19.2.6__react@19.2.6_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "@tanstack/react-start@1.167.32_react@19.2.6_react-dom@19.2.6__react@19.2.6_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-y/f6ALbDKslMwb6O/Epzt8cl2C+oBWEcjiWtfNIziIaAX6vyCnRSgwRtZ6lNGTmEOzRZK3dSnAHkZQdYBtEiJg==",
       "dependencies": [
         "@tanstack/react-router",
@@ -1336,7 +1336,7 @@
         "pathe",
         "react",
         "react-dom",
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "bin": true
     },
@@ -1380,7 +1380,7 @@
         "zod"
       ]
     },
-    "@tanstack/router-plugin@1.167.18_@tanstack+react-router@1.168.18__react@19.2.6__react-dom@19.2.6___react@19.2.6_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "@tanstack/router-plugin@1.167.18_@tanstack+react-router@1.168.18__react@19.2.6__react-dom@19.2.6___react@19.2.6_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-LkQYEv9rXWSXJ9BKVmaZz27lZij5UDBJscGY3HHK+IenFlakqqiozKBZKlSMl8/WUGZ2JTAecBzAAOCRE9Vm9Q==",
       "dependencies": [
         "@babel/core",
@@ -1396,12 +1396,12 @@
         "@tanstack/virtual-file-routes",
         "chokidar",
         "unplugin",
-        "vite@8.0.13_@types+node@25.6.2",
+        "vite",
         "zod"
       ],
       "optionalPeers": [
         "@tanstack/react-router",
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "bin": true
     },
@@ -1432,7 +1432,7 @@
     "@tanstack/start-fn-stubs@1.161.6": {
       "integrity": "sha512-Y6QSlGiLga8cHfvxGGaonXIlt2bIUTVdH6AMjmpMp7+ANNCp+N96GQbjjhLye3JkaxDfP68x5iZA8NK4imgRig=="
     },
-    "@tanstack/start-plugin-core@1.167.29_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "@tanstack/start-plugin-core@1.167.29_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-thH2Gg3N3oFxUo9K0FBDLUj93Z50SGZtjn78PIHgx9RV5fYjqeMrwTgNRG4x1M92RiCWT5SXWJccHJrxLTA+RQ==",
       "dependencies": [
         "@babel/code-frame@7.27.1",
@@ -1454,7 +1454,7 @@
         "srvx",
         "tinyglobby",
         "ufo",
-        "vite@8.0.13_@types+node@25.6.2",
+        "vite",
         "vitefu",
         "xmlbuilder2",
         "zod"
@@ -1809,7 +1809,7 @@
         "@rolldown/pluginutils@1.0.0-beta.47",
         "@types/babel__core",
         "react-refresh",
-        "vite@7.2.7_@types+node@25.6.2_picomatch@4.0.4"
+        "vite"
       ]
     },
     "@vitest/expect@4.1.5": {
@@ -1823,16 +1823,16 @@
         "tinyrainbow"
       ]
     },
-    "@vitest/mocker@4.1.5_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "@vitest/mocker@4.1.5_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-/x2EmFC4mT4NNzqvC3fmesuV97w5FC903KPmey4gsnJiMQ3Be1IlDKVaDaG8iqaLFHqJ2FVEkxZk5VmeLjIItw==",
       "dependencies": [
         "@vitest/spy",
         "estree-walker@3.0.3",
         "magic-string",
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "optionalPeers": [
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ]
     },
     "@vitest/pretty-format@4.1.5": {
@@ -3807,7 +3807,7 @@
     "nf3@0.3.17": {
       "integrity": "sha512-N9zEWySuJFw+gR0lhS5863YsvNeudOdqRyFvNb+jMXbeTJOdrjDqkCpDginIZfUm0LzT1t1nCRiDeqQm/8kirQ=="
     },
-    "nitro@3.0.260429-beta_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "nitro@3.0.260429-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-KweLVCUN5X9v9g+4yxAyRcz3FcOlnjmt9FyrAIWDxJETJmNT7I0JV0clgsONjo2nI0U5gwedXYA3RaNtF5XWzg==",
       "dependencies": [
         "consola",
@@ -3824,10 +3824,10 @@
         "srvx",
         "unenv",
         "unstorage",
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "optionalPeers": [
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "bin": true
     },
@@ -4734,34 +4734,16 @@
       ],
       "bin": true
     },
-    "vite@8.0.13_@types+node@25.6.2": {
-      "integrity": "sha512-MFtjBYgzmSxmgA4RAfjIyXWpGe1oALnjgUTzzV7QLx/TKxCzjtMH6Fd9/eVK+5Fg1qNoz5VAwsmMs/NofrmJvw==",
-      "dependencies": [
-        "@types/node",
-        "lightningcss",
-        "picomatch@4.0.4",
-        "postcss",
-        "rolldown",
-        "tinyglobby"
-      ],
-      "optionalDependencies": [
-        "fsevents"
-      ],
-      "optionalPeers": [
-        "@types/node"
-      ],
-      "bin": true
-    },
-    "vitefu@1.1.3_vite@8.0.13__@types+node@25.6.2_@types+node@25.6.2": {
+    "vitefu@1.1.3_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2": {
       "integrity": "sha512-ub4okH7Z5KLjb6hDyjqrGXqWtWvoYdU3IGm/NorpgHncKoLTCfRIbvlhBm7r0YstIaQRYlp4yEbFqDcKSzXSSg==",
       "dependencies": [
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ],
       "optionalPeers": [
-        "vite@8.0.13_@types+node@25.6.2"
+        "vite"
       ]
     },
-    "vitest@4.1.5_@types+node@25.6.2_jsdom@29.1.1__css-tree@3.2.1_vite@8.0.13__@types+node@25.6.2": {
+    "vitest@4.1.5_@types+node@25.6.2_jsdom@29.1.1__css-tree@3.2.1_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4": {
       "integrity": "sha512-9Xx1v3/ih3m9hN+SbfkUyy0JAs72ap3r7joc87XL6jwF0jGg6mFBvQ1SrwaX+h8BlkX6Hz9shdd1uo6AF+ZGpg==",
       "dependencies": [
         "@types/node",
@@ -4784,7 +4766,7 @@
         "tinyexec",
         "tinyglobby",
         "tinyrainbow",
-        "vite@8.0.13_@types+node@25.6.2",
+        "vite",
         "why-is-node-running"
       ],
       "optionalPeers": [
@@ -4972,7 +4954,7 @@
         "npm:shiki@^4.0.2",
         "npm:tailwindcss@3",
         "npm:typescript@^5.9.3",
-        "npm:vite@^8.0.13",
+        "npm:vite@7.2.7",
         "npm:vitest@^4.1.4",
         "npm:wrangler@^4.90.0"
       ]
