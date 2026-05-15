@@ -9,6 +9,9 @@ import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
+import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHttp";
+
+installDenoWriteHeadHeaderPairsPatch();
 
 export default defineConfig({
   server: {
@@ -33,6 +36,7 @@ export default defineConfig({
               "json",
               "bash",
               "markdown",
+              "mdx",
               "html",
               "css",
               "rust",

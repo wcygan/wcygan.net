@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import type { Map as LeafletMap } from "leaflet";
 
-const CHICAGO_CENTER = [41.8781, -87.6298] as const;
+const ALEXANDERPLATZ_CENTER = [52.5219, 13.4132] as const;
 const OPENSTREETMAP_TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const OPENSTREETMAP_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -15,9 +15,9 @@ interface OpenStreetMapProps {
 }
 
 export function OpenStreetMap({
-  center = CHICAGO_CENTER,
+  center = ALEXANDERPLATZ_CENTER,
   height = 420,
-  markerLabel = "Chicago, Illinois",
+  markerLabel = "You are at Alexanderplatz, Berlin",
   zoom = 11,
 }: OpenStreetMapProps) {
   const mapElementRef = useRef<HTMLDivElement>(null);
@@ -114,10 +114,7 @@ export function OpenStreetMap({
           </p>
         )}
       </div>
-      <figcaption>
-        OpenStreetMap view centered on {markerLabel}. Use the mouse wheel or map
-        controls to zoom.
-      </figcaption>
+      <figcaption>OpenStreetMap view centered on Berlin, Germany</figcaption>
     </figure>
   );
 }
