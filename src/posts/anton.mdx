@@ -8,35 +8,44 @@ tags: [Kubernetes, Talos, Homelab]
 import { EchoLivenessCheck } from "~/components/EchoLivenessCheck";
 import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-<section className="anton-hero">
-  <div>
+<section className="anton-hero" aria-label="Anton cluster overview">
+  <div className="anton-hero-description">
     <p className="anton-kicker">Homelab Kubernetes</p>
-    <p>
+    <p className="anton-hero-lede">
       Anton is the Kubernetes cluster in my basement. It runs three Talos
       control-plane nodes and exposes selected services to the internet through
       Cloudflare Tunnel and Envoy Gateway.
     </p>
-    <dl className="anton-metrics">
-      <div>
-        <dt>Nodes</dt>
-        <dd>3</dd>
-      </div>
-      <div>
-        <dt>Kubernetes</dt>
-        <dd>v1.36.0</dd>
-      </div>
-      <div>
-        <dt>Role</dt>
-        <dd>HA control plane</dd>
-      </div>
-    </dl>
   </div>
-  <img src="/anton.jpg" alt="Anton Kubernetes cluster hardware" />
+
+<div className="anton-hero-liveness">
+  <EchoLivenessCheck />
+</div>
+
+<dl className="anton-metrics anton-hero-stats">
+  <div>
+    <dt>Nodes</dt>
+    <dd>3</dd>
+  </div>
+  <div>
+    <dt>Kubernetes</dt>
+    <dd>v1.36.0</dd>
+  </div>
+  <div>
+    <dt>Role</dt>
+    <dd>HA control plane</dd>
+  </div>
+</dl>
+
+  <figure className="anton-hero-image">
+    <img src="/anton.jpg" alt="Anton Kubernetes cluster hardware" />
+    <figcaption>
+      Three-node Talos control plane running on MS-01 mini PCs.
+    </figcaption>
+  </figure>
 </section>
 
 ## Request Topology
-
-<EchoLivenessCheck />
 
 <MermaidDiagram
   height={430}
