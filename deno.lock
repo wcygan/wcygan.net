@@ -9,12 +9,14 @@
     "npm:@tanstack/react-router@1.168.18": "1.168.18_react@19.2.6_react-dom@19.2.6__react@19.2.6",
     "npm:@tanstack/react-start@1.167.32": "1.167.32_react@19.2.6_react-dom@19.2.6__react@19.2.6_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@types+node@25.6.2_@tanstack+react-router@1.168.18__react@19.2.6__react-dom@19.2.6___react@19.2.6",
     "npm:@testing-library/react@^16.3.2": "16.3.2_@testing-library+dom@10.4.1_@types+react@19.2.14_@types+react-dom@19.2.3__@types+react@19.2.14_react@19.2.6_react-dom@19.2.6__react@19.2.6",
+    "npm:@types/leaflet@^1.9.21": "1.9.21",
     "npm:@types/node@^25.6.2": "25.6.2",
     "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.14",
     "npm:@types/react@^19.2.14": "19.2.14",
     "npm:@vitejs/plugin-react@5.1.1": "5.1.1_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_@babel+core@7.29.0_@types+node@25.6.2",
     "npm:autoprefixer@^10.4.27": "10.5.0_postcss@8.5.14",
     "npm:jsdom@^29.0.2": "29.1.1_css-tree@3.2.1",
+    "npm:leaflet@^1.9.4": "1.9.4",
     "npm:lefthook@^2.1.5": "2.1.6",
     "npm:mermaid@^11.14.0": "11.14.0_cytoscape@3.33.3",
     "npm:nitro@^3.0.260429-beta": "3.0.260429-beta_vite@7.2.7__@types+node@25.6.2__picomatch@4.0.4_srvx@0.11.15_crossws@0.4.5__srvx@0.11.15_db0@0.3.4_ofetch@2.0.0-alpha.3_@types+node@25.6.2",
@@ -1743,6 +1745,12 @@
         "@types/unist@3.0.3"
       ]
     },
+    "@types/leaflet@1.9.21": {
+      "integrity": "sha512-TbAd9DaPGSnzp6QvtYngntMZgcRk+igFELwR2N99XZn7RXUdKgsXMR+28bUO0rPsWp8MIu/f47luLIQuSLYv/w==",
+      "dependencies": [
+        "@types/geojson"
+      ]
+    },
     "@types/mdast@4.0.4": {
       "integrity": "sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==",
       "dependencies": [
@@ -3021,6 +3029,9 @@
     },
     "layout-base@2.0.1": {
       "integrity": "sha512-dp3s92+uNI1hWIpPGH3jK2kxE2lMjdXdr+DH8ynZHpd6PUlH6x6cbuXnoMmiNumznqaNO31xu9e79F0uuZ0JFg=="
+    },
+    "leaflet@1.9.4": {
+      "integrity": "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA=="
     },
     "lefthook-darwin-arm64@2.1.6": {
       "integrity": "sha512-hyB7eeiX78BS66f70byTJacDLC/xV1vgMv9n+idFUsrM7J3Udd/ag9Ag5NP3t0eN0EqQqAtrNnt35EH01lxnRQ==",
@@ -4920,12 +4931,14 @@
         "npm:@tanstack/react-router@1.168.18",
         "npm:@tanstack/react-start@1.167.32",
         "npm:@testing-library/react@^16.3.2",
+        "npm:@types/leaflet@^1.9.21",
         "npm:@types/node@^25.6.2",
         "npm:@types/react-dom@^19.2.3",
         "npm:@types/react@^19.2.14",
         "npm:@vitejs/plugin-react@5.1.1",
         "npm:autoprefixer@^10.4.27",
         "npm:jsdom@^29.0.2",
+        "npm:leaflet@^1.9.4",
         "npm:lefthook@^2.1.5",
         "npm:mermaid@^11.14.0",
         "npm:nitro@^3.0.260429-beta",
