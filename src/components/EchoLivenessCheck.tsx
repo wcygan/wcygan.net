@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 const ECHO_URL = "https://echo.wcygan.net/";
 
@@ -22,6 +22,14 @@ interface ProbeResult {
   data?: EchoResponse;
 }
 
+const STATUS_LABEL: Record<ProbeState, string> = {
+  idle: "Not checked",
+  checking: "Contacting edge",
+  ok: "Live",
+  opaque: "Reachable",
+  error: "Failed",
+};
+
 function getHeader(data: EchoResponse | undefined, name: string) {
   return data?.headers?.[name.toLowerCase()];
 }
@@ -30,27 +38,37 @@ function getCloudflareColo(cfRay: string | undefined) {
   return cfRay?.split("-").at(-1);
 }
 
-function formatDuration(durationMs: number | undefined) {
-  if (durationMs === undefined) return "";
+function formatDuration(durationMs: number) {
   return `${Math.round(durationMs)} ms`;
 }
 
 export function EchoLivenessCheck() {
   const [result, setResult] = useState<ProbeResult>({ state: "idle" });
+  const [elapsedMs, setElapsedMs] = useState(0);
 
-  const buttonLabel = useMemo(() => {
-    if (result.state === "checking") return "Checking...";
-    if (result.state === "ok" || result.state === "opaque") {
-      return "Run check again";
-    }
-    return "Check echo.wcygan.net";
-  }, [result.state]);
+  const isChecking = result.state === "checking";
+  const isOk = result.state === "ok" || result.state === "opaque";
+
+  // Tick a live elapsed-time counter while a request is in flight — this is
+  // the primary "something is happening right now" signal for the user.
+  useEffect(() => {
+    if (!isChecking) return;
+
+    const startedAt = performance.now();
+    let frame = requestAnimationFrame(function tick() {
+      setElapsedMs(performance.now() - startedAt);
+      frame = requestAnimationFrame(tick);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [isChecking]);
 
   async function runProbe() {
     const startedAt = performance.now();
     const probeUrl = new URL(ECHO_URL);
     probeUrl.searchParams.set("probe", Date.now().toString());
 
+    setElapsedMs(0);
     setResult({ state: "checking" });
 
     let response: Response;
@@ -115,36 +133,52 @@ export function EchoLivenessCheck() {
     }
   }
 
+  const buttonLabel = isChecking
+    ? "Checking"
+    : result.state === "idle"
+      ? "Check echo.wcygan.net"
+      : "Run check again";
+
+  const displayDurationMs = isChecking ? elapsedMs : result.durationMs;
+
   const cfRay = getHeader(result.data, "cf-ray");
   const cloudflareColo = getCloudflareColo(cfRay);
   const podHostname = result.data?.os?.hostname;
   const requestId = getHeader(result.data, "x-request-id");
-  const statusText =
-    result.state === "ok"
-      ? "Live"
-      : result.state === "opaque"
-        ? "Reachable"
-        : result.state === "error"
-          ? "Failed"
-          : "Not checked";
 
   return (
-    <section className="anton-probe" aria-labelledby="anton-probe-title">
+    <section
+      className="anton-probe"
+      data-state={result.state}
+      aria-labelledby="anton-probe-title"
+    >
       <div className="anton-probe-header">
         <div>
           <h3 id="anton-probe-title">Live edge check</h3>
           <p>
-            Checks <a href={ECHO_URL}>echo.wcygan.net</a> from this browser.
+            Pings <a href={ECHO_URL}>echo.wcygan.net</a> straight from this
+            browser.
           </p>
         </div>
         <button
           type="button"
           className="anton-probe-button"
           onClick={runProbe}
-          disabled={result.state === "checking"}
+          disabled={isChecking}
         >
+          {isChecking && (
+            <span className="anton-probe-spinner" aria-hidden="true" />
+          )}
           {buttonLabel}
         </button>
+      </div>
+
+      <div
+        className="anton-probe-track"
+        data-state={result.state}
+        aria-hidden="true"
+      >
+        <span className="anton-probe-track-fill" />
       </div>
 
       <div
@@ -153,10 +187,34 @@ export function EchoLivenessCheck() {
         role="status"
         aria-live="polite"
       >
-        <span aria-hidden="true" />
-        <strong>{statusText}</strong>
-        {result.durationMs !== undefined && (
-          <span>{formatDuration(result.durationMs)}</span>
+        <span className="anton-probe-dot" aria-hidden="true" />
+        <strong>{STATUS_LABEL[result.state]}</strong>
+        {displayDurationMs !== undefined && (
+          <span
+            key={result.state}
+            className="anton-probe-latency"
+            data-state={result.state}
+          >
+            {isOk && (
+              <svg
+                className="anton-probe-check"
+                viewBox="0 0 16 16"
+                width="13"
+                height="13"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3.5 8.5l3 3 6-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {formatDuration(displayDurationMs)}
+          </span>
         )}
       </div>
 
@@ -191,9 +249,13 @@ export function EchoLivenessCheck() {
         </dl>
       )}
 
-      {result.message && (
-        <p className="anton-probe-message">{result.message}</p>
-      )}
+      <p
+        className="anton-probe-message"
+        data-empty={result.message ? undefined : "true"}
+        aria-hidden={result.message ? undefined : true}
+      >
+        {result.message}
+      </p>
     </section>
   );
 }
