@@ -12,7 +12,22 @@ diagrams straight into a post. It's lazy-loaded and client-rendered, so the
 initial page stays light and I get an architecture sketch or state machine
 without leaving markdown.
 
-## Examples
+## Temperature by Day of Week
+
+<MermaidDiagram
+  height={360}
+  className="mermaid-featured-card mermaid-featured-temperature"
+  diagram={`xychart-beta
+	  accTitle: Weekly Temperature Chart
+	  accDescr: This chart shows high and low temperatures across a week, with bars for daily highs and a line for daily lows.
+	  title "Temperature by day of week"
+	  x-axis ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+	  y-axis "Degrees F" 70 --> 90
+	  bar [74, 76, 79, 83, 88, 90, 85]
+	  line [71, 72, 74, 76, 79, 78, 75]`}
+/>
+
+## More Examples
 
 ### Flow Chart
 
@@ -20,6 +35,7 @@ Here's a simple deployment flow:
 
 <MermaidDiagram
   height={300}
+  useLazyLoading
   diagram={`flowchart TD
 	  accTitle: CI/CD Deployment Pipeline
 	  accDescr: This flowchart shows a typical CI/CD deployment pipeline. It starts with a developer push, goes through a CI pipeline that either passes or fails tests. If tests pass, the system builds a Docker image, pushes it to a registry, deploys to Kubernetes, and updates the service. If tests fail, it notifies the developer.
@@ -37,6 +53,7 @@ API authentication flow:
 
 <MermaidDiagram
   height={500}
+  useLazyLoading
   diagram={`sequenceDiagram
 	  accTitle: OAuth2 Authentication Flow
 	  accDescr: This sequence diagram shows the OAuth2 authentication flow between a user, client app, authorization server, and resource server. The user initiates a login request, the client redirects to the auth server, the user provides credentials, the auth server validates and returns an authorization code, the client exchanges the code for an access token, and finally uses the token to access protected resources.
@@ -64,6 +81,7 @@ Order processing states:
 
 <MermaidDiagram
   height={350}
+  useLazyLoading
   diagram={`stateDiagram-v2
 	  accTitle: Order Processing State Machine
 	  accDescr: This state diagram shows the possible states and transitions in an order processing system. Orders start in a Pending state, can move to Processing when payment is confirmed or to Cancelled if they timeout. From Processing, orders can be Shipped when items are packed or Refunded upon customer request. Shipped orders become Delivered when the package is received. All final states (Delivered, Cancelled, Refunded) end the process.
@@ -78,10 +96,37 @@ Order processing states:
 	  Refunded --> [*]`}
 />
 
+### Task Priority Matrix
+
+Generic tasks sorted by impact and effort:
+
+<MermaidDiagram
+  height={420}
+  className="mermaid-featured-card mermaid-example-quadrant"
+  useLazyLoading
+  diagram={`quadrantChart
+	  accTitle: Task Priority Matrix
+	  accDescr: This quadrant chart organizes generic tasks by effort and impact, separating quick wins, big bets, fill-ins, and work to reconsider.
+	  title Task priority matrix
+	  x-axis Low effort --> High effort
+	  y-axis Low impact --> High impact
+	  quadrant-1 Big bets
+	  quadrant-2 Quick wins
+	  quadrant-3 Fill-ins
+	  quadrant-4 Reconsider
+	  Update docs: [0.22, 0.72]
+	  Prototype UI: [0.62, 0.78]
+	  Launch campaign: [0.82, 0.86]
+	  Clean inbox: [0.18, 0.32]
+	  Rename files: [0.34, 0.24]
+	  Rewrite module: [0.78, 0.44]`}
+/>
+
 ### Git Flow
 
 <MermaidDiagram
   height={350}
+  useLazyLoading
   diagram={`gitGraph
 	  accTitle: Git Flow Branching Model
 	  accDescr: This diagram shows a typical Git Flow workflow. The main branch (green) represents production code. A develop branch (sky blue) is created for ongoing development. A feature branch called feature/mermaid (orange) is created from develop for implementing the Mermaid.js feature. After two commits on the feature branch, it merges back into develop. Finally, develop merges into main for release, followed by a hotfix commit on main.
@@ -106,6 +151,7 @@ Database schema for a blog:
 
 <MermaidDiagram
   height={300}
+  useLazyLoading
   diagram={`erDiagram
 	  accTitle: Blog Database Schema
 	  accDescr: This entity relationship diagram shows the database schema for a blog system. Users can write many posts, posts can have many comments, and posts belong to one category. The diagram shows the relationships between USER, POST, COMMENT, and CATEGORY entities with their respective fields and data types.
@@ -145,6 +191,7 @@ Technology stack distribution:
 
 <MermaidDiagram
   height={300}
+  useLazyLoading
   diagram={`pie title Technology Stack
 	  accTitle: Technology Stack Distribution
 	  accDescr: This pie chart shows the rough distribution of technologies powering this site: TanStack Start 35%, TypeScript 25%, Tailwind CSS 20%, MDX with Shiki 15%, and Tooling 5%.

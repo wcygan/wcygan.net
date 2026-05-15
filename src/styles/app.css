@@ -502,6 +502,116 @@
     border: 1px solid rgb(222, 222, 222) !important; /* Light border */
   }
 
+  .post-content .mermaid-container.mermaid-featured-card {
+    background: rgb(251, 252, 254) !important;
+    border: 1px solid rgba(70, 110, 170, 0.22) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 10px 28px rgba(30, 70, 140, 0.08);
+  }
+
+  .post-content .mermaid-container.mermaid-example-quadrant {
+    background: rgb(253, 252, 249) !important;
+    border-color: rgba(213, 94, 0, 0.28) !important;
+  }
+
+  .mermaid-example-quadrant svg .border {
+    stroke: rgb(30, 70, 140) !important;
+    stroke-width: 2.5px !important;
+  }
+
+  .mermaid-example-quadrant svg .quadrants .quadrant:nth-child(1) rect {
+    fill: rgb(228, 246, 239) !important;
+  }
+
+  .mermaid-example-quadrant svg .quadrants .quadrant:nth-child(2) rect {
+    fill: rgb(230, 241, 255) !important;
+  }
+
+  .mermaid-example-quadrant svg .quadrants .quadrant:nth-child(3) rect {
+    fill: rgb(248, 248, 248) !important;
+  }
+
+  .mermaid-example-quadrant svg .quadrants .quadrant:nth-child(4) rect {
+    fill: rgb(255, 245, 224) !important;
+  }
+
+  .mermaid-example-quadrant svg .quadrant text,
+  .mermaid-example-quadrant svg .labels text {
+    fill: rgb(40, 40, 40) !important;
+    font-weight: 650;
+  }
+
+  .mermaid-example-quadrant svg .title text {
+    fill: rgb(30, 70, 140) !important;
+    font-weight: 700;
+  }
+
+  .mermaid-example-quadrant svg .data-point circle {
+    fill: rgb(30, 70, 140) !important;
+    stroke: rgb(255, 255, 255) !important;
+    stroke-width: 2px !important;
+  }
+
+  .mermaid-example-quadrant svg .data-point:nth-child(1) circle {
+    fill: rgb(0, 158, 115) !important;
+  }
+
+  .mermaid-example-quadrant svg .data-point:nth-child(2) circle {
+    fill: rgb(213, 94, 0) !important;
+  }
+
+  .mermaid-example-quadrant svg .data-point:nth-child(5) circle {
+    fill: rgb(70, 110, 170) !important;
+  }
+
+  .mermaid-example-quadrant svg .data-point text {
+    fill: rgb(0, 0, 0) !important;
+    font-weight: 650;
+  }
+
+  .post-content .mermaid-container.mermaid-featured-temperature {
+    background: rgb(255, 251, 244) !important;
+    border-color: rgba(213, 94, 0, 0.28) !important;
+  }
+
+  .mermaid-featured-temperature svg .background {
+    fill: rgb(255, 251, 244) !important;
+  }
+
+  .mermaid-featured-temperature svg .chart-title text,
+  .mermaid-featured-temperature svg .title text {
+    fill: rgb(30, 70, 140) !important;
+    font-weight: 700;
+  }
+
+  .mermaid-featured-temperature svg .bar-plot-0 rect {
+    fill: rgb(213, 94, 0) !important;
+    opacity: 0.7;
+  }
+
+  .mermaid-featured-temperature svg .line-plot-1 path {
+    stroke: rgb(70, 110, 170) !important;
+    stroke-width: 4px !important;
+  }
+
+  .mermaid-featured-temperature svg .line-plot-1 circle {
+    fill: rgb(70, 110, 170) !important;
+    stroke: rgb(255, 255, 255) !important;
+    stroke-width: 2px !important;
+  }
+
+  .mermaid-featured-temperature svg .axis-line path,
+  .mermaid-featured-temperature svg .axisl-line path,
+  .mermaid-featured-temperature svg .ticks line {
+    stroke: rgba(213, 94, 0, 0.3) !important;
+  }
+
+  .mermaid-featured-temperature svg .label text {
+    fill: rgb(65, 65, 65) !important;
+    font-weight: 600;
+  }
+
   .osm-map-frame {
     margin: 0 0 30px;
   }

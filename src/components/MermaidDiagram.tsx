@@ -7,6 +7,7 @@ interface Props {
   diagram?: string;
   useLazyLoading?: boolean;
   rootMargin?: string;
+  className?: string;
 }
 
 let mermaidInstance: typeof import("mermaid").default | null = null;
@@ -110,6 +111,7 @@ export function MermaidDiagram({
   diagram = "",
   useLazyLoading = false,
   rootMargin = "100px",
+  className,
 }: Props) {
   const outerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string | null>(null);
@@ -249,7 +251,12 @@ export function MermaidDiagram({
     <>
       <div
         ref={outerRef}
-        className="mermaid-container relative my-6 flex justify-center overflow-x-auto rounded-lg p-4"
+        className={[
+          "mermaid-container relative my-6 flex justify-center overflow-x-auto rounded-lg p-4",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
         style={{ minHeight: `${height}px` }}
       >
         {/* Loading state */}
