@@ -7,6 +7,10 @@ export interface PostModule {
   default?: { toString(): string };
 }
 
+export interface PostIndexOptions {
+  includeDrafts?: boolean;
+}
+
 const WORDS_PER_MINUTE = 200;
 
 function wordsInSource(source: string): number {
@@ -24,13 +28,15 @@ function readingTimeFor(post: PostModule): number {
 
 export function buildPostIndex(
   entries: Iterable<[string, PostModule]>,
+  options: PostIndexOptions = {},
 ): Post[] {
   return [...entries]
     .flatMap(([filepath, post]) => {
-      if (isDraftPostFile(filepath)) {
+      const isDraft = isDraftPostFile(filepath);
+      if (isDraft && !options.includeDrafts) {
         return [];
       }
-      if (!isPublicPost(post.frontmatter)) {
+      if (!isDraft && !isPublicPost(post.frontmatter)) {
         throw new Error(
           `${filepath} is marked private but is still matched by the public post glob. ` +
             `Rename it with a .draft.mdx suffix so it stays out of public assets.`,
@@ -44,6 +50,7 @@ export function buildPostIndex(
           date: post.frontmatter.date,
           description: post.frontmatter.description,
           tags: post.frontmatter.tags || [],
+          draft: isDraft || post.frontmatter.draft,
           readingTime: readingTimeFor(post),
         },
       ];

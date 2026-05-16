@@ -4,7 +4,7 @@ pre-commit:
   commands:
     format:
       glob: "*.{ts,tsx,js,jsx,css,md,mdx,json,yml,yaml}"
-      run: deno task --eval "prettier --write {staged_files}"
+      run: deno run --allow-run=git,deno scripts/format-staged.mjs
       stage_fixed: true
     typecheck:
       run: deno task typecheck

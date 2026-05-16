@@ -1,19 +1,23 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import type { PostMetadata } from "~/lib/types";
+import { draftPostModules } from "~/lib/services/draft-post-modules";
 import { getPostBySlug } from "~/lib/services/blog";
+import type { LazyMdxModule, MdxModule } from "~/lib/services/post-modules";
+import { slugFromPostFilepath } from "~/lib/services/post-paths";
 import { isStaticAssetSlug } from "~/lib/routing/static-asset-guard";
 import { toIsoDate } from "~/lib/utils/formatDate";
-
-interface MdxModule {
-  frontmatter: PostMetadata;
-  default: React.ComponentType;
-}
 
 const mdxModules = import.meta.glob<MdxModule>([
   "/src/posts/*.mdx",
   "!/src/posts/*.draft.mdx",
 ]);
+const postModules: Record<string, LazyMdxModule> = {
+  ...mdxModules,
+  ...draftPostModules,
+};
+const postModuleKeyBySlug = new Map(
+  Object.keys(postModules).map((key) => [slugFromPostFilepath(key), key]),
+);
 
 export const Route = createFileRoute("/$slug")({
   beforeLoad: ({ params }) => {
@@ -27,8 +31,8 @@ export const Route = createFileRoute("/$slug")({
     if (!post) {
       throw notFound();
     }
-    const hasModule = `/src/posts/${params.slug}.mdx` in mdxModules;
-    if (!hasModule) {
+    const moduleKey = postModuleKeyBySlug.get(params.slug);
+    if (!moduleKey) {
       throw notFound();
     }
     return {
@@ -39,6 +43,7 @@ export const Route = createFileRoute("/$slug")({
         tags: post.tags,
         readingTime: post.readingTime ?? 1,
       },
+      moduleKey,
       slug: params.slug,
     };
   },
@@ -55,18 +60,17 @@ export const Route = createFileRoute("/$slug")({
 });
 
 function BlogPostPage() {
-  const { meta, slug } = Route.useLoaderData();
+  const { meta, moduleKey, slug } = Route.useLoaderData();
   const [Content, setContent] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
-    const key = `/src/posts/${slug}.mdx`;
-    const loadModule = mdxModules[key];
+    const loadModule = postModules[moduleKey];
     if (loadModule) {
       loadModule().then((mod) => {
         setContent(() => mod.default);
       });
     }
-  }, [slug]);
+  }, [moduleKey]);
 
   return (
     <article className="blog-post h-entry">

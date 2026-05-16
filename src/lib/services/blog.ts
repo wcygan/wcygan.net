@@ -1,17 +1,22 @@
 import type { Post, PostMetadata } from "~/lib/types";
+import {
+  draftPostFiles,
+  includeDraftPosts,
+} from "~/lib/services/draft-post-modules";
 import { buildPostIndex, findPostBySlug } from "./post-index";
+import type { MdxModule } from "./post-modules";
 
-interface MdxModule {
-  frontmatter: PostMetadata;
-  default: React.ComponentType;
-}
+type BlogMdxModule = MdxModule & { frontmatter: PostMetadata };
 
-const postFiles = import.meta.glob<MdxModule>(
+const postFiles = import.meta.glob<BlogMdxModule>(
   ["/src/posts/*.mdx", "!/src/posts/*.draft.mdx"],
   { eager: true },
 );
 
-const posts: Post[] = buildPostIndex(Object.entries(postFiles));
+const posts: Post[] = buildPostIndex(
+  [...Object.entries(postFiles), ...Object.entries(draftPostFiles)],
+  { includeDrafts: includeDraftPosts },
+);
 
 export function getAllPosts(): Post[] {
   return posts;

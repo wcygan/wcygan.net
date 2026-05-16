@@ -13,7 +13,7 @@ import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHt
 
 installDenoWriteHeadHeaderPairsPatch();
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     host: process.env.HOST || "localhost",
@@ -95,6 +95,17 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
+      ...(command === "serve"
+        ? [
+            {
+              find: "~/lib/services/draft-post-modules",
+              replacement: new URL(
+                "./src/lib/services/draft-post-modules.dev.ts",
+                import.meta.url,
+              ).pathname,
+            },
+          ]
+        : []),
       { find: "~", replacement: new URL("./src", import.meta.url).pathname },
       { find: /^mermaid$/, replacement: "mermaid/dist/mermaid.esm.min.mjs" },
     ],
@@ -106,4 +117,4 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 600,
   },
-});
+}));

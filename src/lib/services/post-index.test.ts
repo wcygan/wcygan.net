@@ -35,7 +35,7 @@ describe("buildPostIndex", () => {
     expect(posts.map((post) => post.slug)).toEqual(["newer", "older"]);
   });
 
-  it("excludes drafts from list and direct slug lookup", () => {
+  it("excludes drafts from list and direct slug lookup by default", () => {
     const posts = buildPostIndex([
       [
         "/src/posts/public-post.mdx",
@@ -67,6 +67,37 @@ describe("buildPostIndex", () => {
     expect(posts.map((post) => post.slug)).toEqual(["public-post"]);
     expect(findPostBySlug(posts, "draft-post")).toBeUndefined();
     expect(findPostBySlug(posts, "unpublished-post")).toBeUndefined();
+  });
+
+  it("includes draft files when the dev server opts in", () => {
+    const posts = buildPostIndex(
+      [
+        [
+          "/src/posts/public-post.mdx",
+          postModule({
+            title: "Public Post",
+            date: "January 1, 2025",
+            description: "Visible",
+          }),
+        ],
+        [
+          "/src/posts/draft-post.draft.mdx",
+          postModule({
+            title: "Draft Post",
+            date: "January 2, 2025",
+            description: "Dev only",
+            draft: true,
+          }),
+        ],
+      ],
+      { includeDrafts: true },
+    );
+
+    expect(posts.map((post) => post.slug)).toEqual([
+      "draft-post",
+      "public-post",
+    ]);
+    expect(findPostBySlug(posts, "draft-post")?.draft).toBe(true);
   });
 
   it("rejects private frontmatter in files matched by the public glob", () => {
