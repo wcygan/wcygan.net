@@ -4,6 +4,7 @@ export interface PostMetadata {
   date: string;
   description: string;
   tags?: string[];
+  draft?: boolean;
   published?: boolean;
 }
 

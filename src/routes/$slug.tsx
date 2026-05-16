@@ -10,7 +10,10 @@ interface MdxModule {
   default: React.ComponentType;
 }
 
-const mdxModules = import.meta.glob<MdxModule>("/src/posts/*.mdx");
+const mdxModules = import.meta.glob<MdxModule>([
+  "/src/posts/*.mdx",
+  "!/src/posts/*.draft.mdx",
+]);
 
 export const Route = createFileRoute("/$slug")({
   beforeLoad: ({ params }) => {

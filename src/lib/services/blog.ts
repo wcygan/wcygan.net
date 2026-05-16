@@ -1,49 +1,24 @@
 import type { Post, PostMetadata } from "~/lib/types";
+import { buildPostIndex, findPostBySlug } from "./post-index";
 
 interface MdxModule {
   frontmatter: PostMetadata;
   default: React.ComponentType;
 }
 
-const postFiles = import.meta.glob<MdxModule>("/src/posts/*.mdx", {
-  eager: true,
-});
+const postFiles = import.meta.glob<MdxModule>(
+  ["/src/posts/*.mdx", "!/src/posts/*.draft.mdx"],
+  { eager: true },
+);
 
-const WORDS_PER_MINUTE = 200;
-
-function wordsInSource(source: string): number {
-  return source.split(/\s+/).filter((word) => word.length > 0).length;
-}
-
-const posts: Post[] = Object.entries(postFiles)
-  .map(([filepath, post]) => {
-    const slug = filepath.replace("/src/posts/", "").replace(".mdx", "");
-
-    let readingTime = 1;
-    try {
-      const words = wordsInSource(post.default?.toString() || "");
-      readingTime = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
-    } catch {
-      readingTime = 1;
-    }
-
-    return {
-      slug,
-      title: post.frontmatter.title,
-      date: post.frontmatter.date,
-      description: post.frontmatter.description,
-      tags: post.frontmatter.tags || [],
-      readingTime,
-    };
-  })
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+const posts: Post[] = buildPostIndex(Object.entries(postFiles));
 
 export function getAllPosts(): Post[] {
   return posts;
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
-  return posts.find((post) => post.slug === slug);
+  return findPostBySlug(posts, slug);
 }
 
 export interface AdjacentPost {

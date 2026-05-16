@@ -46,6 +46,23 @@ describe("parseFrontmatter", () => {
       date: "Jan 1, 2025",
     });
   });
+
+  it("parses boolean flags used for draft visibility", () => {
+    const raw = [
+      "---",
+      "title: Hidden Draft",
+      "date: Jan 1, 2025",
+      "draft: true",
+      "published: false",
+      "---",
+    ].join("\n");
+    expect(parseFrontmatter(raw)).toEqual({
+      title: "Hidden Draft",
+      date: "Jan 1, 2025",
+      draft: true,
+      published: false,
+    });
+  });
 });
 
 describe("frontmatterToPost", () => {
@@ -66,6 +83,23 @@ describe("frontmatterToPost", () => {
       description: "",
       tags: [],
     });
+  });
+
+  it("excludes draft posts from generated public metadata", () => {
+    expect(
+      frontmatterToPost("draft", {
+        title: "Draft",
+        date: "Jan 1, 2025",
+        draft: true,
+      }),
+    ).toBeNull();
+    expect(
+      frontmatterToPost("unpublished", {
+        title: "Unpublished",
+        date: "Jan 1, 2025",
+        published: false,
+      }),
+    ).toBeNull();
   });
 });
 

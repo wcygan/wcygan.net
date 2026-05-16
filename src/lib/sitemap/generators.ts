@@ -1,3 +1,5 @@
+import { isPublicPost } from "../services/post-publication";
+
 export const SITE_URL = "https://wcygan.net";
 export const SITE_TITLE = "Will Cygan";
 export const SITE_DESCRIPTION =
@@ -150,6 +152,10 @@ export function parseFrontmatter(raw: string): Record<string, unknown> | null {
       (trimmed.startsWith("'") && trimmed.endsWith("'"))
     ) {
       result[key] = trimmed.slice(1, -1);
+    } else if (trimmed.toLowerCase() === "true") {
+      result[key] = true;
+    } else if (trimmed.toLowerCase() === "false") {
+      result[key] = false;
     } else {
       result[key] = trimmed;
     }
@@ -161,6 +167,8 @@ export function frontmatterToPost(
   slug: string,
   fm: Record<string, unknown>,
 ): PostEntry | null {
+  if (!isPublicPost(fm)) return null;
+
   const title = typeof fm.title === "string" ? fm.title : null;
   const date = typeof fm.date === "string" ? fm.date : null;
   if (!title || !date) return null;

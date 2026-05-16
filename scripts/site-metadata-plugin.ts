@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
 import {
+  isDraftPostFile,
+  slugFromPostFilepath,
+} from "../src/lib/services/post-paths";
+import {
   buildSitemapEntries,
   deriveStaticPathsFromFilenames,
   frontmatterToPost,
@@ -20,15 +24,18 @@ interface PluginOptions {
   outputDir?: string;
 }
 
-function readPosts(postsDir: string): PostEntry[] {
+export function readPosts(postsDir: string): PostEntry[] {
   if (!fs.existsSync(postsDir)) return [];
   const files = fs.readdirSync(postsDir).filter((f) => f.endsWith(".mdx"));
   const posts: PostEntry[] = [];
   for (const file of files) {
-    const slug = file.replace(/\.mdx$/, "");
+    const slug = slugFromPostFilepath(file);
     const raw = fs.readFileSync(path.join(postsDir, file), "utf8");
     const fm = parseFrontmatter(raw);
     if (!fm) continue;
+    if (isDraftPostFile(file)) {
+      fm.draft = true;
+    }
     const post = frontmatterToPost(slug, fm);
     if (post) posts.push(post);
   }
