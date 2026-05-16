@@ -1,9 +1,28 @@
 ---
 title: Change Data Capture
 date: May 15, 2026
-description: Notes on moving data changes between systems.
+description: A small CDC demo from MySQL to Debezium, Kafka, OpenSearch, and a watching client.
 tags: [Data, Databases, Architecture]
 draft: true
 ---
 
-TODO: Draft this post.
+I want to show change data capture as a thing you can watch, not a diagram you have to believe.
+
+The source of truth is a MySQL `users` table. A row starts with one value, then the application updates it. Nothing calls OpenSearch directly. Nothing tells the search index to refresh. The only thing that changes is the database row.
+
+Debezium is watching MySQL's binlog. When the `users` row changes, Debezium turns that database update into an event and writes it to Kafka. Kafka becomes the handoff point: MySQL stays focused on transactions, Debezium stays focused on observing changes, and downstream consumers can decide what to do with the event.
+
+One of those consumers is an indexer process. It reads the Kafka message, translates the changed `users` record into the shape OpenSearch expects, and writes it into an index. The indexer is deliberately boring. It does not own the data. It just keeps the search view caught up with the database.
+
+On the other side, a client queries OpenSearch over time. At first it sees the old user value. After the MySQL update flows through Debezium, Kafka, and the indexer, the same query returns the new value.
+
+That delay is the point. CDC is not magic shared state. It is a pipeline with observable steps:
+
+1. MySQL commits the update.
+2. Debezium emits the change event.
+3. Kafka stores the event.
+4. The indexer consumes it.
+5. OpenSearch reflects the new document.
+6. The client sees the updated search result.
+
+The animation should make each handoff visible. A single user record changes once, then the update moves left to right through the system until the client sees the new value.
