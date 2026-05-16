@@ -1,14 +1,17 @@
 ---
 title: Change Data Capture
-date: May 15, 2026
+date: May 16, 2026
 description: A concrete CDC walkthrough showing a Postgres users update moving through Debezium, Kafka, an indexer, OpenSearch, and a client query.
 tags: [Data, Databases, Architecture]
 draft: true
 ---
 
 import { CdcPipelineDemo } from "~/components/CdcPipelineDemo";
+import { CdcStaleReadDemo } from "~/components/CdcStaleReadDemo";
 
 How to keep your derived data source (e.g., [OpenSearch](https://github.com/opensearch-project/opensearch), or some data lake) in sync with the source of truth (e.g., [Postgres](https://github.com/postgres/postgres))?
+
+<CdcStaleReadDemo />
 
 The answer: [Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture)
 

@@ -1,46 +1,134 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
-const STAGES = [
+const ISOLATION_STEPS = [
+  {
+    label: "Flow",
+    status: "Checkout events move through the hot path.",
+  },
+  {
+    label: "Fail",
+    status: "One checkout event repeatedly fails product enrichment.",
+  },
+  {
+    label: "Retry",
+    status: "The worker spends its retry budget on the same event.",
+  },
+  {
+    label: "Park",
+    status: "The failed event moves to the DLQ and the hot path keeps moving.",
+  },
+] as const;
+
+const TRACE_STEPS = [
   {
     id: "checkout",
     label: "Checkout",
-    detail: "page view starts",
-    status: "Checkout page loaded",
-  },
-  {
-    id: "producer",
-    label: "Producer",
-    detail: "event assembled",
-    status: "Analytics event emitted",
+    detail: "page viewed",
+    status: "The checkout page emits a page-view event.",
   },
   {
     id: "kafka",
     label: "Kafka",
-    detail: "message appended",
-    status: "Event is durable",
+    detail: "event stored",
+    status: "Kafka stores the event for independent consumers.",
   },
   {
-    id: "consumer",
-    label: "Consumer",
-    detail: "handler fails",
-    status: "Processing failed",
+    id: "worker",
+    label: "Worker",
+    detail: "event claimed",
+    status: "A recommendations worker claims the event.",
   },
   {
-    id: "retry",
-    label: "Retry",
-    detail: "attempt budget spent",
-    status: "Retries exhausted",
+    id: "failure",
+    label: "Failure",
+    detail: "catalog timeout",
+    status: "Product enrichment fails for productId=sku_978.",
   },
   {
     id: "dlq",
     label: "DLQ",
-    detail: "message isolated",
-    status: "Failure kept for inspection",
+    detail: "record written",
+    status: "The DLQ stores the original event and failure metadata.",
+  },
+  {
+    id: "replay",
+    label: "Replay",
+    detail: "ready later",
+    status:
+      "After the dependency recovers, the event has enough context to replay.",
   },
 ] as const;
 
-const LAST_STAGE = STAGES.length - 1;
-const STEP_MS = 1800;
+const CHECKOUT_EVENT_FIELDS = [
+  { key: "eventName", value: "checkout.page_viewed", visibleAt: 0 },
+  { key: "userId", value: "usr_42", visibleAt: 0 },
+  { key: "productId", value: "sku_978", visibleAt: 0 },
+  { key: "cartId", value: "cart_314", visibleAt: 0 },
+  { key: "sessionId", value: "sess_abc", visibleAt: 0 },
+  { key: "traceId", value: "trc_7f8", visibleAt: 1 },
+] as const;
+
+const FAILURE_METADATA = [
+  { key: "sourceTopic", value: "checkout.events", visibleAt: 1 },
+  { key: "sourceOffset", value: "000128", visibleAt: 1 },
+  { key: "consumer", value: "recommendations-worker", visibleAt: 2 },
+  { key: "errorClass", value: "ProductCatalogTimeout", visibleAt: 3 },
+  { key: "attempts", value: "3", visibleAt: 3 },
+  { key: "dlqTopic", value: "checkout.events.dlq", visibleAt: 4 },
+] as const;
+
+const ATTEMPTS = [
+  {
+    label: "try 1",
+    value: "timeout",
+    note: "catalog did not respond",
+    visibleAt: 2,
+  },
+  {
+    label: "try 2",
+    value: "timeout",
+    note: "same product lookup failed again",
+    visibleAt: 3,
+  },
+  {
+    label: "try 3",
+    value: "parked",
+    note: "retry budget exhausted",
+    visibleAt: 4,
+  },
+] as const;
+
+const ISOLATION_EVENTS = [
+  {
+    id: "000126",
+    title: "checkout.page_viewed",
+    subtitle: "usr_19 / sku_441",
+    poison: false,
+  },
+  {
+    id: "000127",
+    title: "checkout.page_viewed",
+    subtitle: "usr_20 / sku_225",
+    poison: false,
+  },
+  {
+    id: "000128",
+    title: "checkout.page_viewed",
+    subtitle: "usr_42 / sku_978",
+    poison: true,
+  },
+  {
+    id: "000129",
+    title: "checkout.page_viewed",
+    subtitle: "usr_61 / sku_144",
+    poison: false,
+  },
+] as const;
+
+const LAST_ISOLATION_STEP = ISOLATION_STEPS.length - 1;
+const LAST_TRACE_STEP = TRACE_STEPS.length - 1;
+const ISOLATION_STEP_MS = 1500;
+const TRACE_STEP_MS = 1650;
 
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -60,12 +148,263 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
-function nextStep(step: number) {
-  return step === LAST_STAGE ? 0 : step + 1;
+function nextStep(step: number, lastStep: number) {
+  return step === lastStep ? 0 : step + 1;
 }
 
 function formatStep(step: number) {
   return `0${step + 1}`.slice(-2);
+}
+
+interface DemoControlsProps {
+  isPlaying: boolean;
+  prefersReducedMotion: boolean;
+  onPlayToggle: () => void;
+  onStep: () => void;
+  onReset: () => void;
+}
+
+function DemoControls({
+  isPlaying,
+  prefersReducedMotion,
+  onPlayToggle,
+  onStep,
+  onReset,
+}: DemoControlsProps) {
+  return (
+    <div className="dlq-demo-controls" aria-label="Animation controls">
+      <button
+        type="button"
+        className="dlq-demo-button"
+        aria-pressed={isPlaying}
+        disabled={prefersReducedMotion}
+        onClick={onPlayToggle}
+      >
+        {isPlaying ? "Pause" : "Play"}
+      </button>
+      <button
+        type="button"
+        className="dlq-demo-button dlq-demo-button-secondary"
+        onClick={onStep}
+      >
+        Step
+      </button>
+      <button
+        type="button"
+        className="dlq-demo-button dlq-demo-button-secondary"
+        onClick={onReset}
+      >
+        Reset
+      </button>
+    </div>
+  );
+}
+
+function queueStateFor(event: (typeof ISOLATION_EVENTS)[number], step: number) {
+  if (!event.poison) {
+    if (step < 3 && event.id === "000129") return "blocked";
+    return "processed";
+  }
+
+  if (step === 0) return "waiting";
+  if (step === 1) return "failed";
+  if (step === 2) return "retrying";
+  return "parked";
+}
+
+export function DeadLetterQueueIsolationDemo() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [activeStep, setActiveStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setIsPlaying(false);
+      setActiveStep(LAST_ISOLATION_STEP);
+    }
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (!isPlaying || prefersReducedMotion) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveStep((step) => nextStep(step, LAST_ISOLATION_STEP));
+    }, ISOLATION_STEP_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [isPlaying, prefersReducedMotion]);
+
+  const active = ISOLATION_STEPS[activeStep];
+  const hasFailure = activeStep >= 1;
+  const retrying = activeStep >= 2;
+  const parked = activeStep >= 3;
+
+  return (
+    <section
+      className="dlq-demo dlq-isolation-demo"
+      aria-labelledby="dlq-isolation-title"
+      data-step={activeStep}
+    >
+      <div className="dlq-demo-header">
+        <div>
+          <p className="dlq-demo-kicker">Failure isolation</p>
+          <h3 id="dlq-isolation-title">
+            One bad event should not stop the line
+          </h3>
+          <p>
+            A DLQ protects the hot path by moving repeatedly failed work into a
+            separate place that can be inspected later.
+          </p>
+        </div>
+
+        <DemoControls
+          isPlaying={isPlaying}
+          prefersReducedMotion={prefersReducedMotion}
+          onPlayToggle={() => setIsPlaying((playing) => !playing)}
+          onStep={() => {
+            setIsPlaying(false);
+            setActiveStep((step) => nextStep(step, LAST_ISOLATION_STEP));
+          }}
+          onReset={() => {
+            setIsPlaying(false);
+            setActiveStep(0);
+          }}
+        />
+      </div>
+
+      <div className="dlq-demo-status" aria-live={isPlaying ? "off" : "polite"}>
+        <span>{active.label}</span>
+        <strong>{active.status}</strong>
+      </div>
+
+      <div className="dlq-isolation-board" aria-label="DLQ isolation flow">
+        <section
+          className="dlq-queue-panel"
+          aria-labelledby="dlq-hot-topic-title"
+        >
+          <div className="dlq-panel-heading">
+            <p>Hot topic</p>
+            <h4 id="dlq-hot-topic-title">checkout.events</h4>
+          </div>
+
+          <ol className="dlq-event-stack">
+            {ISOLATION_EVENTS.map((event) => {
+              const state = queueStateFor(event, activeStep);
+              return (
+                <li
+                  key={event.id}
+                  className="dlq-queue-item"
+                  data-state={state}
+                >
+                  <span>{event.id}</span>
+                  <strong>{event.title}</strong>
+                  <small>{event.subtitle}</small>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+
+        <section
+          className="dlq-worker-panel"
+          aria-labelledby="dlq-worker-title"
+          data-failed={hasFailure}
+          data-retrying={retrying}
+        >
+          <div className="dlq-panel-heading">
+            <p>Consumer</p>
+            <h4 id="dlq-worker-title">recommendations-worker</h4>
+          </div>
+
+          <div className="dlq-worker-core">
+            <span className="dlq-worker-icon" aria-hidden="true">
+              {parked ? "OK" : hasFailure ? "!" : "RUN"}
+            </span>
+            <strong>
+              {parked
+                ? "queue unblocked"
+                : retrying
+                  ? "retry budget burning"
+                  : hasFailure
+                    ? "handler failed"
+                    : "processing"}
+            </strong>
+            <small>
+              {hasFailure
+                ? "Product catalog timed out for sku_978."
+                : "Events leave the hot topic after successful processing."}
+            </small>
+          </div>
+
+          <div className="dlq-retry-meter" aria-label="Retry attempts">
+            {[0, 1, 2].map((attempt) => (
+              <span
+                key={attempt}
+                data-active={activeStep >= 2 && attempt <= activeStep - 2}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="dlq-quarantine-panel"
+          aria-labelledby="dlq-quarantine-title"
+          data-visible={parked}
+        >
+          <div className="dlq-panel-heading">
+            <p>Quarantine</p>
+            <h4 id="dlq-quarantine-title">checkout.events.dlq</h4>
+          </div>
+
+          <div className="dlq-quarantine-record">
+            <span>000128</span>
+            <strong>parked with failure context</strong>
+            <small>original payload + error + attempt count</small>
+          </div>
+        </section>
+      </div>
+    </section>
+  );
+}
+
+function mobilePayloadForStep(step: number) {
+  switch (step) {
+    case 0:
+      return {
+        label: "Payload",
+        value: "userId=usr_42, productId=sku_978",
+      };
+    case 1:
+      return {
+        label: "Topic",
+        value: "checkout.events @ offset 000128",
+      };
+    case 2:
+      return {
+        label: "Consumer",
+        value: "recommendations-worker claimed the event",
+      };
+    case 3:
+      return {
+        label: "Failure",
+        value: "ProductCatalogTimeout: sku_978",
+      };
+    case 4:
+      return {
+        label: "DLQ",
+        value: "checkout.events.dlq stores the envelope",
+      };
+    case 5:
+      return {
+        label: "Replay",
+        value: "safe to retry after catalog recovery",
+      };
+    default:
+      return {
+        label: "Trace",
+        value: "waiting",
+      };
+  }
 }
 
 export function DeadLetterQueueDemo() {
@@ -76,223 +415,211 @@ export function DeadLetterQueueDemo() {
   useEffect(() => {
     if (prefersReducedMotion) {
       setIsPlaying(false);
+      setActiveStep(LAST_TRACE_STEP);
     }
   }, [prefersReducedMotion]);
 
   useEffect(() => {
     if (!isPlaying || prefersReducedMotion) return;
 
-    const id = window.setInterval(() => {
-      setActiveStep((step) => nextStep(step));
-    }, STEP_MS);
+    const intervalId = window.setInterval(() => {
+      setActiveStep((step) => nextStep(step, LAST_TRACE_STEP));
+    }, TRACE_STEP_MS);
 
-    return () => window.clearInterval(id);
+    return () => window.clearInterval(intervalId);
   }, [isPlaying, prefersReducedMotion]);
 
-  const activeStage = STAGES[activeStep];
-  const progress = `${(activeStep / LAST_STAGE) * 100}%`;
+  const activeStage = TRACE_STEPS[activeStep];
+  const progressRatio = activeStep / LAST_TRACE_STEP;
 
-  const checkoutEvent = useMemo(
-    () => [
-      { field: "userId", value: "usr_42", reason: "who opened checkout" },
-      { field: "productId", value: "sku_978", reason: "what they may buy" },
-      { field: "cartId", value: "cart_314", reason: "checkout context" },
-      { field: "sessionId", value: "sess_abc", reason: "browser session" },
-      {
-        field: "occurredAt",
-        value: "2026-05-15T21:04:12Z",
-        reason: "event time",
-      },
-      { field: "traceId", value: "trc_7f8", reason: "debug path" },
-    ],
-    [],
+  const style = useMemo(
+    () => ({ "--dlq-progress-ratio": progressRatio }) as CSSProperties,
+    [progressRatio],
   );
-
-  const attempts = [
-    {
-      step: 3,
-      time: "try 1",
-      value: "timeout",
-      note: "product enrichment service did not respond",
-    },
-    {
-      step: 4,
-      time: "try 3",
-      value: "failed",
-      note: "same event still cannot be processed",
-    },
-    {
-      step: 5,
-      time: "DLQ",
-      value: "stored",
-      note: "original payload plus failure metadata is retained",
-    },
-  ].filter((attempt) => attempt.step <= activeStep);
 
   return (
     <section
-      className="cdc-demo dlq-demo"
+      className="dlq-demo dlq-trace-demo"
       aria-labelledby="dlq-demo-title"
-      style={{ "--cdc-progress": progress } as CSSProperties}
+      style={style}
     >
-      <div className="cdc-demo-header">
+      <div className="dlq-demo-header">
         <div>
-          <p className="cdc-demo-kicker">DLQ demo</p>
-          <h3 id="dlq-demo-title">One checkout event, one failed consumer</h3>
+          <p className="dlq-demo-kicker">Failure trace</p>
+          <h3 id="dlq-demo-title">
+            One checkout event, one recoverable failure
+          </h3>
           <p>
-            A page-view event is safe in Kafka, but the failed consumer still
-            needs a place to put work it cannot finish.
+            Follow the event from the Checkout page into Kafka, through a
+            failing consumer, and into the dead-letter record that makes replay
+            possible.
           </p>
         </div>
 
-        <div className="cdc-demo-controls" aria-label="Animation controls">
-          <button
-            type="button"
-            className="cdc-demo-button"
-            onClick={() => setIsPlaying((playing) => !playing)}
-          >
-            {isPlaying ? "Pause" : "Play"}
-          </button>
-          <button
-            type="button"
-            className="cdc-demo-button cdc-demo-button-secondary"
-            onClick={() => {
-              setIsPlaying(false);
-              setActiveStep((step) => nextStep(step));
-            }}
-          >
-            Step
-          </button>
-          <button
-            type="button"
-            className="cdc-demo-button cdc-demo-button-secondary"
-            onClick={() => {
-              setIsPlaying(false);
-              setActiveStep(0);
-            }}
-          >
-            Reset
-          </button>
-        </div>
+        <DemoControls
+          isPlaying={isPlaying}
+          prefersReducedMotion={prefersReducedMotion}
+          onPlayToggle={() => setIsPlaying((playing) => !playing)}
+          onStep={() => {
+            setIsPlaying(false);
+            setActiveStep((step) => nextStep(step, LAST_TRACE_STEP));
+          }}
+          onReset={() => {
+            setIsPlaying(false);
+            setActiveStep(0);
+          }}
+        />
       </div>
 
-      <div className="cdc-demo-stage-status" aria-live="polite">
+      <div className="dlq-demo-status" aria-live={isPlaying ? "off" : "polite"}>
         <span>Step {formatStep(activeStep)}</span>
         <strong>{activeStage.status}</strong>
       </div>
 
-      <div className="cdc-demo-rail" aria-label="Dead-letter queue stages">
-        <div className="cdc-demo-progress" aria-hidden="true" />
-        {STAGES.map((stage, index) => {
-          const isActive = index === activeStep;
-          const isComplete = index < activeStep;
+      <div className="dlq-trace-steps" aria-label="Dead-letter queue stages">
+        {TRACE_STEPS.map((stage, index) => {
+          const state =
+            index < activeStep
+              ? "complete"
+              : index === activeStep
+                ? "active"
+                : "waiting";
 
           return (
             <button
               key={stage.id}
               type="button"
-              className="cdc-demo-stage"
-              data-active={isActive}
-              data-complete={isComplete}
-              aria-current={isActive ? "step" : undefined}
+              className="dlq-trace-step"
+              data-state={state}
+              aria-current={state === "active" ? "step" : undefined}
               onClick={() => {
                 setIsPlaying(false);
                 setActiveStep(index);
               }}
             >
-              <span className="cdc-demo-stage-index">{formatStep(index)}</span>
-              <span>
-                <strong>{stage.label}</strong>
-                <small>{stage.detail}</small>
-              </span>
+              <span>{formatStep(index)}</span>
+              <strong>{stage.label}</strong>
+              <small>{stage.detail}</small>
             </button>
           );
         })}
       </div>
 
-      <div className="cdc-demo-panels">
-        <section className="cdc-demo-panel" aria-labelledby="dlq-event-title">
-          <div className="cdc-demo-panel-header">
-            <p>Checkout page</p>
-            <h4 id="dlq-event-title">event payload</h4>
-          </div>
-          <div
-            className="cdc-demo-table"
-            role="table"
-            aria-label="checkout page event fields"
-          >
-            <div role="row" className="cdc-demo-table-head">
-              <span role="columnheader">field</span>
-              <span role="columnheader">value</span>
-              <span role="columnheader">why</span>
-            </div>
-            {checkoutEvent.map((field) => (
-              <div
-                key={field.field}
-                role="row"
-                className="cdc-demo-table-row"
-                data-active={activeStep >= 1}
+      <ol className="dlq-mobile-trace" aria-label="Compact DLQ flow">
+        {TRACE_STEPS.map((stage, index) => {
+          const state =
+            index < activeStep
+              ? "complete"
+              : index === activeStep
+                ? "active"
+                : "waiting";
+          const payload = mobilePayloadForStep(index);
+
+          return (
+            <li key={stage.id} className="dlq-mobile-step" data-state={state}>
+              <button
+                type="button"
+                className="dlq-mobile-marker"
+                aria-label={`Jump to ${stage.label}`}
+                aria-current={state === "active" ? "step" : undefined}
+                onClick={() => {
+                  setIsPlaying(false);
+                  setActiveStep(index);
+                }}
               >
-                <span role="cell">{field.field}</span>
-                <span role="cell" className="cdc-demo-value">
-                  {field.value}
-                </span>
-                <span role="cell">{field.reason}</span>
+                {formatStep(index)}
+              </button>
+              <div className="dlq-mobile-copy">
+                <div>
+                  <strong>{stage.label}</strong>
+                  <small>{stage.detail}</small>
+                </div>
+                <p>
+                  <span>{payload.label}</span>
+                  <code>{payload.value}</code>
+                </p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="dlq-trace-board">
+        <section
+          className="dlq-payload-panel"
+          aria-labelledby="dlq-payload-title"
+        >
+          <div className="dlq-panel-heading">
+            <p>Checkout page</p>
+            <h4 id="dlq-payload-title">event payload</h4>
+          </div>
+
+          <dl className="dlq-field-list">
+            {CHECKOUT_EVENT_FIELDS.map((field) => (
+              <div key={field.key} data-visible={activeStep >= field.visibleAt}>
+                <dt>{field.key}</dt>
+                <dd>{field.value}</dd>
               </div>
             ))}
-          </div>
-        </section>
-
-        <section className="cdc-demo-panel" aria-labelledby="dlq-kafka-title">
-          <div className="cdc-demo-panel-header">
-            <p>Kafka</p>
-            <h4 id="dlq-kafka-title">checkout.page_viewed</h4>
-          </div>
-          <dl className="cdc-demo-event">
-            <div data-active={activeStep >= 1}>
-              <dt>topic</dt>
-              <dd>checkout.events</dd>
-            </div>
-            <div data-active={activeStep >= 1}>
-              <dt>key</dt>
-              <dd>userId=usr_42</dd>
-            </div>
-            <div data-active={activeStep >= 2}>
-              <dt>offset</dt>
-              <dd>000128 committed</dd>
-            </div>
-            <div data-active={activeStep >= 3}>
-              <dt>error</dt>
-              <dd>ProductCatalogTimeout: sku_978</dd>
-            </div>
-            <div data-active={activeStep >= 5}>
-              <dt>dlq</dt>
-              <dd>checkout.events.dlq</dd>
-            </div>
           </dl>
         </section>
 
-        <section className="cdc-demo-panel" aria-labelledby="dlq-state-title">
-          <div className="cdc-demo-panel-header">
-            <p>Consumer state</p>
-            <h4 id="dlq-state-title">failure trail</h4>
+        <section
+          className="dlq-processing-panel"
+          aria-labelledby="dlq-processing-title"
+        >
+          <div className="dlq-panel-heading">
+            <p>Consumer</p>
+            <h4 id="dlq-processing-title">processing attempts</h4>
           </div>
-          <div className="cdc-demo-search">
-            <div className="cdc-demo-document" data-updated={activeStep >= 5}>
-              <span>dead-letter topic</span>
-              <strong>
-                {activeStep >= 5 ? "1 failed event stored" : "0 failed events"}
-              </strong>
-            </div>
-            <ol className="cdc-demo-observations">
-              {attempts.map((attempt) => (
-                <li key={attempt.time}>
-                  <span>{attempt.time}</span>
-                  <strong>{attempt.value}</strong>
-                  <small>{attempt.note}</small>
-                </li>
-              ))}
-            </ol>
+
+          <div className="dlq-topic-card" data-active={activeStep >= 1}>
+            <span>checkout.events</span>
+            <strong>key=userId:usr_42</strong>
+            <small>offset 000128</small>
+          </div>
+
+          <ol className="dlq-attempt-list">
+            {ATTEMPTS.map((attempt) => (
+              <li
+                key={attempt.label}
+                data-visible={activeStep >= attempt.visibleAt}
+              >
+                <span>{attempt.label}</span>
+                <strong>{attempt.value}</strong>
+                <small>{attempt.note}</small>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section
+          className="dlq-record-panel"
+          aria-labelledby="dlq-record-title"
+        >
+          <div className="dlq-panel-heading">
+            <p>Dead-letter record</p>
+            <h4 id="dlq-record-title">replay envelope</h4>
+          </div>
+
+          <dl className="dlq-field-list dlq-envelope-list">
+            {FAILURE_METADATA.map((field) => (
+              <div key={field.key} data-visible={activeStep >= field.visibleAt}>
+                <dt>{field.key}</dt>
+                <dd>{field.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="dlq-replay-strip" data-ready={activeStep >= 5}>
+            <span>
+              {activeStep >= 5 ? "Replay ready" : "Waiting for DLQ record"}
+            </span>
+            <strong>
+              {activeStep >= 5
+                ? "retry checkout.page_viewed after catalog recovery"
+                : "preserve the original event before taking action"}
+            </strong>
           </div>
         </section>
       </div>

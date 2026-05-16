@@ -1,16 +1,21 @@
 ---
 title: Dead Letter Queue
 date: May 15, 2026
-description: A small dead-letter queue demo using a checkout page event, Kafka, a failing consumer, retries, and a parked failure.
+description: A concrete DLQ walkthrough showing a checkout page event, Kafka, a failing consumer, retry exhaustion, dead-letter metadata, and replay.
 tags: [Distributed Systems, Reliability, Kafka]
 draft: true
 ---
 
-import { DeadLetterQueueDemo } from "~/components/DeadLetterQueueDemo";
+import {
+  DeadLetterQueueDemo,
+  DeadLetterQueueIsolationDemo,
+} from "~/components/DeadLetterQueueDemo";
 
-I want to show a dead-letter queue as a pressure-release valve, not as a place where bad messages disappear.
+What should happen when one event cannot be processed, but every event behind it still matters?
 
-<DeadLetterQueueDemo />
+<DeadLetterQueueIsolationDemo />
+
+The answer: a dead-letter queue.
 
 The application is a small e-commerce site. When someone loads the Checkout page, the frontend does not directly call every downstream system that might care. It emits one event to Kafka:
 
@@ -33,6 +38,8 @@ Kafka is the handoff point. The page load is captured once, the event is made du
 The problem starts when one consumer cannot handle the event. Maybe it tries to enrich `productId` by calling the product catalog, and the catalog times out. Maybe the payload is missing a field the consumer now requires. Maybe a new schema made it through deployment before every consumer was ready.
 
 The wrong move is to drop the message. The other wrong move is to retry forever and block everything behind it. A dead-letter queue gives the system a third option: keep the original event, attach the failure metadata, and move it out of the hot path.
+
+<DeadLetterQueueDemo />
 
 The flow is deliberately small:
 
