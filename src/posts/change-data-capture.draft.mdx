@@ -1,22 +1,72 @@
 ---
 title: Change Data Capture
 date: May 15, 2026
-description: A small CDC demo from MySQL to Debezium, Kafka, OpenSearch, and a watching client.
+description: A concrete CDC walkthrough showing a MySQL users update moving through Debezium, Kafka, an indexer, OpenSearch, and a client query.
 tags: [Data, Databases, Architecture]
 draft: true
 ---
 
-I want to show change data capture as a thing you can watch, not a diagram you have to believe.
+import { CdcPipelineDemo } from "~/components/CdcPipelineDemo";
 
-The source of truth is a MySQL `users` table. A row starts with one value, then the application updates it. Nothing calls OpenSearch directly. Nothing tells the search index to refresh. The only thing that changes is the database row.
+Change data capture is easiest to understand when you stop drawing it as a
+box-and-arrow system and watch one row move through it.
 
-Debezium is watching MySQL's binlog. When the `users` row changes, Debezium turns that database update into an event and writes it to Kafka. Kafka becomes the handoff point: MySQL stays focused on transactions, Debezium stays focused on observing changes, and downstream consumers can decide what to do with the event.
+The scene is deliberately small. There is a MySQL table named `users`, a
+Debezium connector watching MySQL's binlog, a Kafka topic carrying row changes,
+an indexer process consuming that topic, an OpenSearch index, and a client that
+queries OpenSearch over time.
 
-One of those consumers is an indexer process. It reads the Kafka message, translates the changed `users` record into the shape OpenSearch expects, and writes it into an index. The indexer is deliberately boring. It does not own the data. It just keeps the search view caught up with the database.
+The whole demo turns on one write:
 
-On the other side, a client queries OpenSearch over time. At first it sees the old user value. After the MySQL update flows through Debezium, Kafka, and the indexer, the same query returns the new value.
+```sql
+update users
+set plan = 'pro'
+where id = 42;
+```
 
-That delay is the point. CDC is not magic shared state. It is a pipeline with observable steps:
+No part of the request path writes to OpenSearch. The application commits the
+database transaction and stops. Everything after that is downstream work caused
+by the database log.
+
+<CdcPipelineDemo />
+
+## The Chain Of Custody
+
+MySQL is the source of truth. Before the update, user `42` has `plan = 'free'`.
+After the update commits, MySQL has `plan = 'pro'`. That commit is the important
+boundary: before it, downstream systems should not see the change; after it, the
+change is durable enough to be observed.
+
+Debezium reads the committed update from the binlog and turns it into a change
+event. The event is not just "user changed." It carries the table, the key, the
+old value, the new value, and enough ordering information for consumers to know
+where they are in the stream.
+
+Kafka is the handoff point. It does not know how to index a user, and it does
+not care that OpenSearch exists. Kafka's job is to hold the event durably so
+consumers can read it at their own pace.
+
+The indexer is one of those consumers. It reads the Kafka message, maps the
+changed `users` record into the document shape OpenSearch expects, and upserts
+`users/_doc/42`. It does not own the data. It owns a projection of the data.
+
+## What The Client Sees
+
+A client querying OpenSearch sees the system from the far end of the pipeline.
+At first, the query still returns `plan = 'free'` because the index has not
+caught up. After Debezium emits the event, Kafka stores it, and the indexer
+writes the new document, the same query returns `plan = 'pro'`.
+
+That delay is not a bug in the demo. It is the thing CDC asks you to design
+around. The database can be correct before every read model is current. The
+pipeline gives you a reliable way to catch those read models up without putting
+every downstream write inside the original transaction.
+
+The useful question is not "is OpenSearch always exactly synchronized with
+MySQL?" It is "can I observe where the change is, replay it if a consumer falls
+behind, and make the lag acceptable for this user experience?"
+
+## What The Motion Should Explain
 
 1. MySQL commits the update.
 2. Debezium emits the change event.
@@ -25,4 +75,16 @@ That delay is the point. CDC is not magic shared state. It is a pipeline with ob
 5. OpenSearch reflects the new document.
 6. The client sees the updated search result.
 
-The animation should make each handoff visible. A single user record changes once, then the update moves left to right through the system until the client sees the new value.
+The animation is paced around causality, not around literal network timing. Each
+stage should make one question easier to answer:
+
+- where is the source of truth?
+- when does the committed row become an event?
+- where does the event wait durably?
+- what work does the indexer actually do?
+- when does OpenSearch stop showing the old value?
+- what does the client observe before and after the index catches up?
+
+That is the mental model I want from the page: CDC is a chain of custody for a
+committed database change. If you can see the handoffs, the architecture stops
+feeling like magic and starts feeling debuggable.

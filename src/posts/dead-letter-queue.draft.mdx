@@ -1,9 +1,48 @@
 ---
 title: Dead Letter Queue
 date: May 15, 2026
-description: Notes on isolating failed work without dropping it.
-tags: [Distributed Systems, Reliability]
+description: A small dead-letter queue demo using a checkout page event, Kafka, a failing consumer, retries, and a parked failure.
+tags: [Distributed Systems, Reliability, Kafka]
 draft: true
 ---
 
-TODO: Draft this post.
+import { DeadLetterQueueDemo } from "~/components/DeadLetterQueueDemo";
+
+I want to show a dead-letter queue as a pressure-release valve, not as a place where bad messages disappear.
+
+<DeadLetterQueueDemo />
+
+The application is a small e-commerce site. When someone loads the Checkout page, the frontend does not directly call every downstream system that might care. It emits one event to Kafka:
+
+```json
+{
+  "eventName": "checkout.page_viewed",
+  "userId": "usr_42",
+  "productId": "sku_978",
+  "cartId": "cart_314",
+  "sessionId": "sess_abc",
+  "occurredAt": "2026-05-15T21:04:12Z",
+  "traceId": "trc_7f8"
+}
+```
+
+That event is useful to a lot of consumers. Analytics can count checkout views. Product systems can look for abandoned carts. Marketing can build an audience for people who reached checkout but did not buy. None of those systems should be on the critical path for rendering the Checkout page.
+
+Kafka is the handoff point. The page load is captured once, the event is made durable, and each consumer gets its own chance to process it.
+
+The problem starts when one consumer cannot handle the event. Maybe it tries to enrich `productId` by calling the product catalog, and the catalog times out. Maybe the payload is missing a field the consumer now requires. Maybe a new schema made it through deployment before every consumer was ready.
+
+The wrong move is to drop the message. The other wrong move is to retry forever and block everything behind it. A dead-letter queue gives the system a third option: keep the original event, attach the failure metadata, and move it out of the hot path.
+
+The flow is deliberately small:
+
+1. The shopper loads the Checkout page.
+2. The application emits `checkout.page_viewed` to Kafka.
+3. A consumer reads the event.
+4. The consumer fails while processing `productId`.
+5. The retry policy spends its attempt budget.
+6. The message is written to `checkout.events.dlq`.
+
+The dead-letter message should preserve enough context for a human or replay tool to understand what happened. The original payload matters. The topic, partition, offset, error class, error message, attempt count, and last failure time matter too.
+
+A DLQ is not the fix. It is the evidence locker. The fix might be a code change, a schema migration, a product catalog recovery, or a replay after a dependency comes back. The queue just makes sure one bad event does not become either data loss or a stuck pipeline.
