@@ -43,6 +43,7 @@ export default defineConfig(({ command }) => ({
               "go",
               "java",
               "python",
+              "sql",
               "diff",
               "yaml",
             ],

@@ -2,16 +2,16 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 const STAGES = [
   {
-    id: "mysql",
-    label: "MySQL",
+    id: "postgres",
+    label: "Postgres",
     detail: "row committed",
-    status: "MySQL is the source of truth.",
+    status: "Postgres is the source of truth.",
   },
   {
     id: "debezium",
     label: "Debezium",
-    detail: "binlog read",
-    status: "Debezium turns the committed row change into an event.",
+    detail: "WAL change read",
+    status: "Debezium reads the committed row change from Postgres WAL.",
   },
   {
     id: "kafka",
@@ -43,7 +43,7 @@ const LAST_STAGE = STAGES.length - 1;
 const STEP_MS = 1650;
 
 const EVENT_FIELDS = [
-  { key: "topic", value: "mysql.users", visibleAt: 1 },
+  { key: "topic", value: "postgres.public.users", visibleAt: 1 },
   { key: "before", value: '{ "id": 42, "plan": "free" }', visibleAt: 1 },
   { key: "after", value: '{ "id": 42, "plan": "pro" }', visibleAt: 1 },
   { key: "offset", value: "000042 committed", visibleAt: 2 },
@@ -66,7 +66,7 @@ const OBSERVATIONS = [
   {
     time: "t+1400ms",
     value: "pro",
-    note: "the index catches up to MySQL",
+    note: "the index catches up to Postgres",
     visibleAt: 5,
   },
 ] as const;
@@ -75,7 +75,7 @@ function mobilePayloadForStep(step: number, activeStep: number) {
   switch (step) {
     case 0:
       return {
-        label: "MySQL row",
+        label: "Postgres row",
         value: "users[42].plan: free -> pro",
       };
     case 1:
@@ -86,7 +86,7 @@ function mobilePayloadForStep(step: number, activeStep: number) {
     case 2:
       return {
         label: "Kafka topic",
-        value: "mysql.users @ offset 000042",
+        value: "postgres.public.users @ offset 000042",
       };
     case 3:
       return {
@@ -309,10 +309,13 @@ export function CdcPipelineDemo() {
       </ol>
 
       <div className="cdc-demo-panels">
-        <section className="cdc-demo-panel" aria-labelledby="cdc-mysql-title">
+        <section
+          className="cdc-demo-panel"
+          aria-labelledby="cdc-postgres-title"
+        >
           <div className="cdc-demo-panel-header">
             <p>Source write</p>
-            <h4 id="cdc-mysql-title">
+            <h4 id="cdc-postgres-title">
               <code>users</code> row
             </h4>
           </div>

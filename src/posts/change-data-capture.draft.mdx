@@ -1,90 +1,27 @@
 ---
 title: Change Data Capture
 date: May 15, 2026
-description: A concrete CDC walkthrough showing a MySQL users update moving through Debezium, Kafka, an indexer, OpenSearch, and a client query.
+description: A concrete CDC walkthrough showing a Postgres users update moving through Debezium, Kafka, an indexer, OpenSearch, and a client query.
 tags: [Data, Databases, Architecture]
 draft: true
 ---
 
 import { CdcPipelineDemo } from "~/components/CdcPipelineDemo";
 
-Change data capture is easiest to understand when you stop drawing it as a
-box-and-arrow system and watch one row move through it.
+How to keep your derived data source (e.g., [OpenSearch](https://github.com/opensearch-project/opensearch), or some data lake) in sync with the source of truth (e.g., [Postgres](https://github.com/postgres/postgres))?
 
-The scene is deliberately small. There is a MySQL table named `users`, a
-Debezium connector watching MySQL's binlog, a Kafka topic carrying row changes,
-an indexer process consuming that topic, an OpenSearch index, and a client that
-queries OpenSearch over time.
-
-The whole demo turns on one write:
+The answer: [Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture)
 
 ```sql
-update users
-set plan = 'pro'
-where id = 42;
+UPDATE users
+SET plan = 'pro'
+WHERE id = 42;
 ```
 
-No part of the request path writes to OpenSearch. The application commits the
-database transaction and stops. Everything after that is downstream work caused
-by the database log.
+Once the row is [committed](https://www.postgresql.org/docs/current/sql-commit.html), a new
+[WAL entry](https://www.postgresql.org/docs/current/wal-intro.html) exists in
+Postgres. [Debezium](https://github.com/debezium/debezium) [reads that entry](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-events) and [publishes the change to Kafka](https://kafka.apache.org/42/getting-started/introduction/#what-is-event-streaming). Next, a [Kafka Consumer](https://www.baeldung.com/java-kafka-consumer-api-read#2-consuming-messages) (the _indexer_) reads & processes each message and [updates the document in OpenSearch](https://docs.opensearch.org/latest/api-reference/document-apis/update-document/).
+
+Finally, the next client to [fetch the document from OpenSearch](https://docs.opensearch.org/latest/api-reference/document-apis/get-documents/) reads the correct value (`Plan = Pro`)
 
 <CdcPipelineDemo />
-
-## The Chain Of Custody
-
-MySQL is the source of truth. Before the update, user `42` has `plan = 'free'`.
-After the update commits, MySQL has `plan = 'pro'`. That commit is the important
-boundary: before it, downstream systems should not see the change; after it, the
-change is durable enough to be observed.
-
-Debezium reads the committed update from the binlog and turns it into a change
-event. The event is not just "user changed." It carries the table, the key, the
-old value, the new value, and enough ordering information for consumers to know
-where they are in the stream.
-
-Kafka is the handoff point. It does not know how to index a user, and it does
-not care that OpenSearch exists. Kafka's job is to hold the event durably so
-consumers can read it at their own pace.
-
-The indexer is one of those consumers. It reads the Kafka message, maps the
-changed `users` record into the document shape OpenSearch expects, and upserts
-`users/_doc/42`. It does not own the data. It owns a projection of the data.
-
-## What The Client Sees
-
-A client querying OpenSearch sees the system from the far end of the pipeline.
-At first, the query still returns `plan = 'free'` because the index has not
-caught up. After Debezium emits the event, Kafka stores it, and the indexer
-writes the new document, the same query returns `plan = 'pro'`.
-
-That delay is not a bug in the demo. It is the thing CDC asks you to design
-around. The database can be correct before every read model is current. The
-pipeline gives you a reliable way to catch those read models up without putting
-every downstream write inside the original transaction.
-
-The useful question is not "is OpenSearch always exactly synchronized with
-MySQL?" It is "can I observe where the change is, replay it if a consumer falls
-behind, and make the lag acceptable for this user experience?"
-
-## What The Motion Should Explain
-
-1. MySQL commits the update.
-2. Debezium emits the change event.
-3. Kafka stores the event.
-4. The indexer consumes it.
-5. OpenSearch reflects the new document.
-6. The client sees the updated search result.
-
-The animation is paced around causality, not around literal network timing. Each
-stage should make one question easier to answer:
-
-- where is the source of truth?
-- when does the committed row become an event?
-- where does the event wait durably?
-- what work does the indexer actually do?
-- when does OpenSearch stop showing the old value?
-- what does the client observe before and after the index catches up?
-
-That is the mental model I want from the page: CDC is a chain of custody for a
-committed database change. If you can see the handoffs, the architecture stops
-feeling like magic and starts feeling debuggable.

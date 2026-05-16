@@ -2232,7 +2232,7 @@ th {
   }
 
   .cdc-demo-stage-status::after {
-    content: "Debezium turns the committed row change into an event.";
+    content: "Debezium reads the committed row change from Postgres WAL.";
     grid-column: 2;
     grid-row: 1;
     visibility: hidden;
