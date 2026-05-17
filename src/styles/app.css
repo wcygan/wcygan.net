@@ -1152,7 +1152,9 @@
   }
 
   .cdc-demo-stage-status {
-    display: flex;
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 10px;
     gap: 10px;
     align-items: center;
     margin-top: 16px;
@@ -1166,7 +1168,8 @@
   }
 
   .cdc-demo-stage-status span {
-    flex: 0 0 auto;
+    grid-column: 1;
+    grid-row: 1;
     color: var(--cdc-demo-blue);
     font-family: var(--font-mono);
     font-size: 13px;
@@ -1174,7 +1177,14 @@
   }
 
   .cdc-demo-stage-status strong {
+    grid-column: 2;
+    grid-row: 1;
     color: rgb(0, 0, 0);
+  }
+
+  .cdc-demo-stage-status-sizer {
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .cdc-demo-rail {

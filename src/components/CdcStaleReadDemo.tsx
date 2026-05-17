@@ -22,6 +22,12 @@ const STEPS = [
 
 const LAST_STEP = STEPS.length - 1;
 const STEP_MS = 1550;
+const WIDEST_STEP_LABEL = STEPS.reduce((widest, step) =>
+  step.label.length > widest.label.length ? step : widest,
+).label;
+const WIDEST_STEP_STATUS = STEPS.reduce((widest, step) =>
+  step.status.length > widest.status.length ? step : widest,
+).status;
 
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -80,7 +86,7 @@ export function CdcStaleReadDemo() {
     >
       <div className="cdc-demo-header">
         <div>
-          <h3 id="cdc-stale-title">Inconsistent Reads</h3>
+          <h3 id="cdc-stale-title">Stale Reads</h3>
           <p>
             After an update, clients can read different values depending on
             which system they read from.
@@ -126,6 +132,12 @@ export function CdcStaleReadDemo() {
       >
         <span>{active.label}</span>
         <strong>{active.status}</strong>
+        <span className="cdc-demo-stage-status-sizer" aria-hidden="true">
+          {WIDEST_STEP_LABEL}
+        </span>
+        <strong className="cdc-demo-stage-status-sizer" aria-hidden="true">
+          {WIDEST_STEP_STATUS}
+        </strong>
       </div>
 
       <div

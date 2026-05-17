@@ -28,7 +28,7 @@ const STAGES = [
   {
     id: "opensearch",
     label: "OpenSearch",
-    detail: "document upserted",
+    detail: "document updated",
     status: "OpenSearch now has the updated user document.",
   },
   {
@@ -43,10 +43,12 @@ const LAST_STAGE = STAGES.length - 1;
 const STEP_MS = 1650;
 
 const EVENT_FIELDS = [
-  { key: "topic", value: "postgres.public.users", visibleAt: 1 },
+  { key: "topic", value: "app.public.users", visibleAt: 1 },
+  { key: "key", value: '{ "id": 42 }', visibleAt: 1 },
   { key: "before", value: '{ "id": 42, "plan": "free" }', visibleAt: 1 },
   { key: "after", value: '{ "id": 42, "plan": "pro" }', visibleAt: 1 },
-  { key: "offset", value: "000042 committed", visibleAt: 2 },
+  { key: "op", value: '"u"', visibleAt: 1 },
+  { key: "lsn", value: "24023128", visibleAt: 2 },
   { key: "consumer", value: "users-search-indexer", visibleAt: 3 },
 ] as const;
 
@@ -86,7 +88,7 @@ function mobilePayloadForStep(step: number, activeStep: number) {
     case 2:
       return {
         label: "Kafka topic",
-        value: "postgres.public.users @ offset 000042",
+        value: "app.public.users @ LSN 24023128",
       };
     case 3:
       return {
@@ -179,7 +181,6 @@ export function CdcPipelineDemo() {
     >
       <div className="cdc-demo-header">
         <div>
-          <p className="cdc-demo-kicker">Animated trace</p>
           <h3 id="cdc-demo-title">One user row, one downstream view</h3>
           <p>
             Follow a single <code>users</code> update as it becomes a durable
