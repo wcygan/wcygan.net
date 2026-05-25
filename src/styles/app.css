@@ -500,8 +500,7 @@
   .post-content pre {
     padding: 16px 14px 16px 4px;
     background: rgb(252, 252, 252);
-    border-block: 1px solid rgb(206, 206, 206);
-    border-inline: 1px dashed rgb(206, 206, 206);
+    border: 1px solid rgb(206, 206, 206);
     overflow-x: auto;
     margin: 24px 0;
   }
@@ -2977,8 +2976,7 @@
   margin: 24px 0;
   padding: 16px 14px 16px 4px;
   background: #fcfcfc !important;
-  border-block: 1px solid #cecece;
-  border-inline: 1px dashed #cecece;
+  border: 1px solid #cecece;
   border-radius: 0;
   overflow-x: auto;
   position: relative;
@@ -3094,8 +3092,7 @@ pre:not(.shiki) {
   margin: 24px 0;
   padding: 16px 14px 16px 4px;
   background: #fcfcfc;
-  border-block: 1px solid #cecece;
-  border-inline: 1px dashed #cecece;
+  border: 1px solid #cecece;
   border-radius: 0;
   overflow-x: auto;
   font-family: var(--font-mono);
@@ -3140,6 +3137,7 @@ pre:not(.shiki) code {
   margin: 0;
   padding: 0;
   background: transparent;
+  border: 0;
   border-radius: 0;
   color: #0a0806;
   -webkit-font-smoothing: antialiased;

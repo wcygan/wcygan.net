@@ -108,6 +108,12 @@ public/                # Static assets (images, resume PDF, rss.xml)
 
 **Accessibility**: WCAG AA contrast, semantic HTML, visible focus rings, ARIA labels
 
+**Code and ASCII blocks**:
+
+- Code block borders should use one consistent style on all sides. Avoid mixing solid and dashed borders on the same block unless the visual design explicitly calls for it.
+- The global `pre:not(.shiki)` fallback applies outside blog code snippets too. ASCII animation components such as `RotatingPenguin` and `RotatingHotdog` should explicitly reset inherited `pre` chrome (`border`, `padding`, `background`, and margins) when they own their own presentation.
+- For code block or ASCII art styling changes, verify both a rendered blog post and the homepage in the browser. Computed styles are useful for regressions: Shiki blocks should report a single border style, while homepage ASCII art should report no border.
+
 ## Blog System
 
 - Posts are `.mdx` files in `src/posts/` with YAML frontmatter (`title`, `date`, `description`, `tags`)

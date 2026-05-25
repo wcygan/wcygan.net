@@ -367,8 +367,7 @@ text-decoration: underline;
 pre {
   padding: 16px 14px 16px 4px;
   background: rgb(252, 252, 252);
-  border-block: 1px solid rgb(206, 206, 206);
-  border-inline: 1px dashed rgb(206, 206, 206);
+  border: 1px solid rgb(206, 206, 206);
   font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1.35;
