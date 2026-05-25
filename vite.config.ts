@@ -10,6 +10,7 @@ import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
 import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHttp";
+import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
 
 installDenoWriteHeadHeaderPairsPatch();
 
@@ -28,7 +29,7 @@ export default defineConfig(({ command }) => ({
         [
           rehypeShiki,
           {
-            theme: "github-light",
+            theme: idleToesTheme,
             langs: [
               "javascript",
               "typescript",

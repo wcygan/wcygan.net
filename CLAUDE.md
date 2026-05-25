@@ -46,7 +46,7 @@ The `agent-browser` skill auto-loads on browser-automation requests; prefer it o
 - **React 19** with hooks for state management
 - **Tailwind CSS 3** with Typography plugin for consistent styling
 - **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component imports
-- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (github-light theme)
+- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (custom Idle Toes theme)
 - **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage cached)
 - **TypeScript** with strict mode for type safety
 - **Nitro** with `deno-server` preset for prerendering
@@ -118,12 +118,20 @@ Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and browser-c
 
 **Typography**: Atkinson Hyperlegible for body/prose, Inter for headings/UI, Lilex for code/ASCII
 
+**Code block palette**: Idle Toes from Cmux Themes. Keep this palette encoded in both `src/lib/syntax/idle-toes-theme.ts` and `src/styles/app.css`:
+
+- Foreground `#ffffff`, background `#323232`, cursor `#d6d6d6`
+- ANSI 0-7: black `#323232`, red `#d25252`, green `#7fe173`, yellow `#ffc66d`, blue `#4099ff`, magenta `#f680ff`, cyan `#bed6ff`, white `#eeeeec`
+- ANSI 8-15: bright black `#606060`, bright red `#f07070`, bright green `#9dff91`, bright yellow `#ffe48b`, bright blue `#5eb7f7`, bright magenta `#ff9dff`, bright cyan `#dcf4ff`, bright white `#ffffff`
+
 **Layout**: 800px max-width container, 8pt grid system
 
 **Accessibility**: WCAG AA contrast, semantic HTML, visible focus rings, ARIA labels
 
 **Code and ASCII blocks**:
 
+- MDX code fences are Shiki-rendered with the custom Idle Toes theme from `src/lib/syntax/idle-toes-theme.ts`.
+- Keep code block chrome dark: background `#323232`, `Lilex` mono, line numbers, and a continuous vertical separator between line numbers and code.
 - Use one consistent border style on all sides of code blocks unless a specific visual design calls for mixed borders.
 - Keep the global `pre:not(.shiki)` fallback in mind for blog snippets and non-blog `pre` blocks. ASCII animation components such as `RotatingPenguin` and `RotatingHotdog` reset inherited `pre` chrome (`border`, `padding`, `background`, and margins`) when they own their own presentation.
 - For code block or ASCII art styling changes, verify both a rendered blog post and the homepage in the browser. Computed styles are useful for regressions: Shiki blocks should report a single border style, while homepage ASCII art should report no border.

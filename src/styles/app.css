@@ -35,6 +35,28 @@
     --color-link: #1e468c;
     --color-link-hover: #1e468c;
 
+    /* Idle Toes code block palette */
+    --code-bg: #323232;
+    --code-panel: #262626;
+    --code-fg: #ffffff;
+    --code-cursor: #d6d6d6;
+    --code-black: #323232;
+    --code-red: #d25252;
+    --code-green: #7fe173;
+    --code-yellow: #ffc66d;
+    --code-blue: #4099ff;
+    --code-magenta: #f680ff;
+    --code-cyan: #bed6ff;
+    --code-white: #eeeeec;
+    --code-bright-black: #606060;
+    --code-bright-red: #f07070;
+    --code-bright-green: #9dff91;
+    --code-bright-yellow: #ffe48b;
+    --code-bright-blue: #5eb7f7;
+    --code-bright-magenta: #ff9dff;
+    --code-bright-cyan: #dcf4ff;
+    --code-bright-white: #ffffff;
+
     /* Spacing - simplified */
     --spacing-section: 2rem;
 
@@ -522,8 +544,10 @@
 
   .post-content pre {
     padding: 16px 14px 16px 4px;
-    background: rgb(252, 252, 252);
-    border: 1px solid rgb(206, 206, 206);
+    background: var(--code-bg);
+    border: 1px solid var(--code-bright-black);
+    border-radius: 4px;
+    color: var(--code-fg);
     overflow-x: auto;
     margin: 24px 0;
   }
@@ -2999,12 +3023,13 @@
 .shiki {
   margin: 24px 0;
   padding: 16px 14px 16px 4px;
-  background: #fcfcfc !important;
-  border: 1px solid #cecece;
-  border-radius: 0;
+  background: var(--code-bg) !important;
+  border: 1px solid var(--code-bright-black);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   overflow-x: auto;
   position: relative;
-  color: #24292e;
+  color: var(--code-fg);
   font-family: var(--font-mono);
   font-feature-settings:
     "liga" 1,
@@ -3016,6 +3041,7 @@
 }
 
 .shiki code {
+  position: relative;
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -3026,10 +3052,20 @@
   min-width: max-content;
 }
 
+.shiki code::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3.6ch;
+  width: 1px;
+  background: var(--code-bright-black);
+}
+
 .shiki .line {
   display: block;
   min-height: 1.35em;
-  padding-left: 4.4375ch;
+  padding-left: 4.9ch;
   position: relative;
 }
 
@@ -3039,8 +3075,9 @@
   left: 0;
   top: 0;
   width: 2.75ch;
-  color: #8d8d8d;
+  color: var(--code-cursor);
   font-variant-numeric: tabular-nums;
+  opacity: 0.78;
   text-align: right;
   user-select: none;
 }
@@ -3050,11 +3087,11 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: rgba(252, 252, 252, 0.94);
-  border: 1px solid #cecece;
+  background: rgba(38, 38, 38, 0.94);
+  border: 1px solid var(--code-bright-black);
   border-radius: 3px;
   padding: 4px 7px;
-  color: #666;
+  color: var(--code-cursor);
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 12px;
@@ -3087,8 +3124,8 @@
 }
 
 .shiki button:hover {
-  color: #333;
-  border-color: #999;
+  color: var(--code-bright-white);
+  border-color: var(--code-cursor);
 }
 
 .shiki button.copied::after {
@@ -3096,9 +3133,9 @@
 }
 
 .shiki button.copied {
-  color: rgb(70, 110, 170);
-  border-color: rgb(70, 110, 170);
-  background: rgba(70, 110, 170, 0.1);
+  color: var(--code-bright-green);
+  border-color: var(--code-green);
+  background: rgba(127, 225, 115, 0.12);
 }
 
 /* Inline code styling */
@@ -3115,9 +3152,10 @@ code:not(.shiki code) {
 pre:not(.shiki) {
   margin: 24px 0;
   padding: 16px 14px 16px 4px;
-  background: #fcfcfc;
-  border: 1px solid #cecece;
-  border-radius: 0;
+  background: var(--code-bg);
+  border: 1px solid var(--code-bright-black);
+  border-radius: 4px;
+  color: var(--code-fg);
   overflow-x: auto;
   font-family: var(--font-mono);
   font-feature-settings:

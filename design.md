@@ -31,7 +31,7 @@ All colors follow a consistent design system for perfect visual consistency:
 /* Background Colors */
 --color-bg-primary: rgb(255, 255, 255); /* #ffffff - Page background */
 --color-bg-banner: rgb(70, 110, 170); /* #466eaa - Bio highlight banner */
---color-bg-code: rgb(249, 249, 249); /* #f9f9f9 - Code blocks */
+--color-bg-code: rgb(50, 50, 50); /* #323232 - Idle Toes code blocks */
 
 /* Border Colors */
 --color-border-light: rgb(
@@ -40,6 +40,32 @@ All colors follow a consistent design system for perfect visual consistency:
   222
 ); /* #dedede - Table borders, code blocks */
 --color-border-accent: rgb(70, 110, 170); /* #466eaa - Header border */
+```
+
+### Code Block Palette
+
+Code blocks use the Idle Toes dark palette:
+
+```css
+--code-bg: #323232;
+--code-fg: #ffffff;
+--code-cursor: #d6d6d6;
+--code-black: #323232;
+--code-red: #d25252;
+--code-green: #7fe173;
+--code-yellow: #ffc66d;
+--code-blue: #4099ff;
+--code-magenta: #f680ff;
+--code-cyan: #bed6ff;
+--code-white: #eeeeec;
+--code-bright-black: #606060;
+--code-bright-red: #f07070;
+--code-bright-green: #9dff91;
+--code-bright-yellow: #ffe48b;
+--code-bright-blue: #5eb7f7;
+--code-bright-magenta: #ff9dff;
+--code-bright-cyan: #dcf4ff;
+--code-bright-white: #ffffff;
 ```
 
 ### Color Usage Guidelines
@@ -372,8 +398,10 @@ text-decoration: underline;
 ```css
 pre {
   padding: 16px 14px 16px 4px;
-  background: rgb(252, 252, 252);
-  border: 1px solid rgb(206, 206, 206);
+  background: var(--code-bg);
+  border: 1px solid var(--code-bright-black);
+  border-radius: 4px;
+  color: var(--code-fg);
   font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1.35;
@@ -382,8 +410,18 @@ pre {
 }
 
 .shiki .line {
-  padding-left: 4.4375ch;
+  padding-left: 4.9ch;
   position: relative;
+}
+
+.shiki code::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3.6ch;
+  width: 1px;
+  background: var(--code-bright-black);
 }
 
 .shiki .line::before {
@@ -391,7 +429,7 @@ pre {
   position: absolute;
   left: 0;
   width: 2.75ch;
-  color: rgb(141, 141, 141);
+  color: var(--code-cursor);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
