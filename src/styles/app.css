@@ -38,10 +38,14 @@
     /* Spacing - simplified */
     --spacing-section: 2rem;
 
-    /* Typography - Match modern minimal design system fonts */
-    --font-base:
-      system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande",
-      sans-serif;
+    /* Typography - readable prose, crisp UI, distinct code */
+    --font-body:
+      "Atkinson Hyperlegible", system, -apple-system, "system-ui",
+      "Helvetica Neue", "Lucida Grande", sans-serif;
+    --font-ui:
+      "Inter", system, -apple-system, "system-ui", "Helvetica Neue",
+      "Lucida Grande", sans-serif;
+    --font-base: var(--font-body);
     --font-mono:
       "Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
@@ -54,10 +58,23 @@
 
   body {
     @apply bg-white text-black;
-    font-family: var(--font-base);
+    font-family: var(--font-body);
     font-size: 19px;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  button,
+  input,
+  select,
+  textarea {
+    font-family: var(--font-ui);
   }
 
   /* Typography hierarchy - match modern minimal design exactly */
@@ -114,6 +131,7 @@
 
   /* Header styling - match modern minimal design exactly */
   .site-header {
+    font-family: var(--font-ui);
     margin: 8px 12px 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid rgb(70, 110, 170);
@@ -172,6 +190,7 @@
   }
 
   .site-footer {
+    font-family: var(--font-ui);
     margin: 40px 12px 16px;
     padding-top: 16px;
     border-top: 1px solid rgb(222, 222, 222);
@@ -237,6 +256,7 @@
   }
 
   .bio-interest-chip {
+    font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 500;
     padding: 3px 10px;
@@ -280,6 +300,7 @@
 
   .post-title a {
     color: rgb(70, 110, 170); /* Cornflower-blue post-title link */
+    font-family: var(--font-ui);
     text-decoration: underline;
     font-weight: normal;
     font-size: 18px; /* Match body text size like modern minimal design */
@@ -291,6 +312,7 @@
 
   .post-date {
     color: rgb(102, 102, 102);
+    font-family: var(--font-ui);
     font-size: 13px;
     letter-spacing: 0.02em;
     margin-left: 16px;
@@ -326,6 +348,7 @@
   /* Conroy-style footnote: 14px, italic, muted-grey date under the title */
   .post-footnote {
     color: rgb(170, 170, 170);
+    font-family: var(--font-ui);
     font-size: 14px;
     font-style: italic;
     margin: 0 0 20px;
@@ -2939,11 +2962,12 @@
   }
 
   .post-content figcaption {
-    font-size: 14px;
     color: rgb(102, 102, 102);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-style: italic;
     letter-spacing: 0.03em;
     margin-top: 8px;
-    font-style: italic;
   }
 
   /* Refined <hr> — short, centered, cornflower blue */
@@ -3032,7 +3056,7 @@
   padding: 4px 7px;
   color: #666;
   cursor: pointer;
-  font-family: var(--font-base);
+  font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.2;
   opacity: 0;

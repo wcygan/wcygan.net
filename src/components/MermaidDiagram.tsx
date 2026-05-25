@@ -94,7 +94,7 @@ const MERMAID_THEME = {
     errorBkgColor: "#f9f9f9",
     errorTextColor: "#D55E00",
     fontFamily:
-      'system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif',
+      '"Inter", system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande", sans-serif',
     fontSize: "16px",
   },
 };

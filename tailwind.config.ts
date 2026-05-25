@@ -6,7 +6,26 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        body: [
+          '"Atkinson Hyperlegible"',
+          "system",
+          "-apple-system",
+          "system-ui",
+          '"Helvetica Neue"',
+          '"Lucida Grande"',
+          "sans-serif",
+        ],
         sans: [
+          '"Atkinson Hyperlegible"',
+          "system",
+          "-apple-system",
+          "system-ui",
+          '"Helvetica Neue"',
+          '"Lucida Grande"',
+          "sans-serif",
+        ],
+        ui: [
+          '"Inter"',
           "system",
           "-apple-system",
           "system-ui",

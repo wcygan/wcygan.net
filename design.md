@@ -8,7 +8,7 @@ This document defines the complete design system for wcygan.net, featuring a cle
 
 **Accessibility**: WCAG AA compliance with proper contrast ratios, semantic HTML, and screen reader support.
 
-**Performance**: Lightweight styling with system fonts and optimized CSS for fast loading.
+**Performance**: Optimized CSS with one readable body font, one UI font, and the existing local code font.
 
 **Consistency**: Unified visual language across all pages and components.
 
@@ -77,20 +77,26 @@ All colors follow a consistent design system for perfect visual consistency:
 ### Font System
 
 ```css
-/* Primary Font Stack (System Fonts) */
-font-family:
-  system,
-  -apple-system,
-  "system-ui",
-  "Helvetica Neue",
-  "Lucida Grande",
-  sans-serif;
+/* Body / Long-Form Prose */
+--font-body:
+  "Atkinson Hyperlegible", system, -apple-system, "system-ui", "Helvetica Neue",
+  "Lucida Grande", sans-serif;
 
-/* Monospace Font Stack */
-font-family:
+/* Headings / Navigation / UI */
+--font-ui:
+  "Inter", system, -apple-system, "system-ui", "Helvetica Neue",
+  "Lucida Grande", sans-serif;
+
+/* Code / Terminals / ASCII Art */
+--font-mono:
   "Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
   "Liberation Mono", "Courier New", monospace;
 ```
+
+Use Atkinson Hyperlegible for body copy and long-form reading. Use Inter for
+headings, navigation, post metadata, buttons, controls, and compact UI labels.
+Keep code samples, inline code, terminals, and ASCII animation frames on the
+Lilex mono stack.
 
 ### Typography Hierarchy
 

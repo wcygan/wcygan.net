@@ -95,7 +95,19 @@ public/                # Static assets (images, resume PDF, rss.xml)
 
 5. **MDX frontmatter uses `frontmatter`** (not `metadata`). The `remark-mdx-frontmatter` plugin exports under that key.
 
-## Design System
+## DESIGN.md
+
+Goal: Keep the rendered site and `design.md` aligned around a readable software-blog typography system.
+
+Success means:
+
+- Body and long-form prose use `Atkinson Hyperlegible` with `system-ui` fallbacks.
+- Headings, navigation, metadata, buttons, and compact UI labels use `Inter` with `system-ui` fallbacks.
+- Code samples, terminals, inline code, and ASCII animation blocks use the existing `Lilex` mono stack.
+
+Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and browser-computed styles agree on those three roles.
+
+### Design System
 
 **Color Palette** (Light theme):
 
@@ -104,14 +116,16 @@ public/                # Static assets (images, resume PDF, rss.xml)
 - Text primary: `rgb(0, 0, 0)` — body text
 - Text secondary: `rgb(102, 102, 102)` — dates, metadata
 
-**Layout**: 800px max-width container, 8pt grid system, system font stack
+**Typography**: Atkinson Hyperlegible for body/prose, Inter for headings/UI, Lilex for code/ASCII
+
+**Layout**: 800px max-width container, 8pt grid system
 
 **Accessibility**: WCAG AA contrast, semantic HTML, visible focus rings, ARIA labels
 
 **Code and ASCII blocks**:
 
-- Code block borders should use one consistent style on all sides. Avoid mixing solid and dashed borders on the same block unless the visual design explicitly calls for it.
-- The global `pre:not(.shiki)` fallback applies outside blog code snippets too. ASCII animation components such as `RotatingPenguin` and `RotatingHotdog` should explicitly reset inherited `pre` chrome (`border`, `padding`, `background`, and margins) when they own their own presentation.
+- Use one consistent border style on all sides of code blocks unless a specific visual design calls for mixed borders.
+- Keep the global `pre:not(.shiki)` fallback in mind for blog snippets and non-blog `pre` blocks. ASCII animation components such as `RotatingPenguin` and `RotatingHotdog` reset inherited `pre` chrome (`border`, `padding`, `background`, and margins`) when they own their own presentation.
 - For code block or ASCII art styling changes, verify both a rendered blog post and the homepage in the browser. Computed styles are useful for regressions: Shiki blocks should report a single border style, while homepage ASCII art should report no border.
 
 ## Blog System
