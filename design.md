@@ -87,7 +87,9 @@ font-family:
   sans-serif;
 
 /* Monospace Font Stack */
-font-family: "Courier New", monospace;
+font-family:
+  "Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+  "Liberation Mono", "Courier New", monospace;
 ```
 
 ### Typography Hierarchy
@@ -363,16 +365,34 @@ text-decoration: underline;
 
 ```css
 pre {
-  padding: 18px 30px;
-  background: rgb(249, 249, 249);
-  border: 1px solid rgb(222, 222, 222);
+  padding: 16px 14px 16px 4px;
+  background: rgb(252, 252, 252);
+  border-block: 1px solid rgb(206, 206, 206);
+  border-inline: 1px dashed rgb(206, 206, 206);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.35;
   overflow-x: auto;
-  margin-bottom: 30px;
+  margin: 24px 0;
+}
+
+.shiki .line {
+  padding-left: 4.4375ch;
+  position: relative;
+}
+
+.shiki .line::before {
+  content: attr(data-line);
+  position: absolute;
+  left: 0;
+  width: 2.75ch;
+  color: rgb(141, 141, 141);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 code {
-  font-family: "Courier New", monospace;
-  font-size: 16px;
+  font-family: var(--font-mono);
 }
 ```
 

@@ -3,6 +3,22 @@
 @import "tailwindcss/utilities";
 @import "leaflet/dist/leaflet.css";
 
+@font-face {
+  font-family: "Lilex";
+  src: url("/fonts/lilex-variable.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100 700;
+}
+
+@font-face {
+  font-family: "Lilex";
+  src: url("/fonts/lilex-italic-variable.woff2") format("woff2");
+  font-display: swap;
+  font-style: italic;
+  font-weight: 100 700;
+}
+
 /* Design System - Light Theme inspired by modern minimal design */
 @layer base {
   :root {
@@ -26,7 +42,9 @@
     --font-base:
       system, -apple-system, "system-ui", "Helvetica Neue", "Lucida Grande",
       sans-serif;
-    --font-mono: "Courier New", monospace;
+    --font-mono:
+      "Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
   }
 
   /* Base elements - clean and minimal */
@@ -480,15 +498,16 @@
   }
 
   .post-content pre {
-    padding: 18px 30px;
-    background: rgb(249, 249, 249);
-    border: 1px solid rgb(222, 222, 222);
+    padding: 16px 14px 16px 4px;
+    background: rgb(252, 252, 252);
+    border-block: 1px solid rgb(206, 206, 206);
+    border-inline: 1px dashed rgb(206, 206, 206);
     overflow-x: auto;
-    margin: 16px 0;
+    margin: 24px 0;
   }
 
   .post-content code {
-    font-family: "Courier New", monospace;
+    font-family: var(--font-mono);
     font-size: 16px;
   }
 
@@ -845,7 +864,7 @@
     border-radius: 999px;
     background: rgb(238, 238, 238);
     color: rgb(102, 102, 102);
-    font-family: "Courier New", monospace;
+    font-family: var(--font-mono);
     font-size: 13px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -2955,18 +2974,23 @@
 
 /* Code blocks - Shiki integration */
 .shiki {
-  margin: 16px 0;
-  padding: 12px 16px;
-  background: #f5f5f5 !important;
-  border: 1px solid #dedede;
-  border-radius: 3px;
+  margin: 24px 0;
+  padding: 16px 14px 16px 4px;
+  background: #fcfcfc !important;
+  border-block: 1px solid #cecece;
+  border-inline: 1px dashed #cecece;
+  border-radius: 0;
   overflow-x: auto;
   position: relative;
-  font-family:
-    Consolas, Menlo, "Deja Vu Sans Mono", "Bitstream Vera Sans Mono",
-    "Courier New", Courier, monospace;
-  font-size: 14px;
-  line-height: 14px;
+  color: #24292e;
+  font-family: var(--font-mono);
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
+  font-size: 15px;
+  font-variant-ligatures: contextual common-ligatures;
+  line-height: 1.35;
+  tab-size: 2;
 }
 
 .shiki code {
@@ -2975,14 +2999,16 @@
   line-height: inherit;
   background: transparent !important;
   padding: 0;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-width: max-content;
 }
 
 .shiki .line {
   display: block;
-  min-height: 14px;
+  min-height: 1.35em;
+  padding-left: 4.4375ch;
   position: relative;
-  padding-left: 2em;
 }
 
 .shiki .line::before {
@@ -2990,32 +3016,36 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 1em;
+  width: 2.75ch;
+  color: #8d8d8d;
+  font-variant-numeric: tabular-nums;
   text-align: right;
-  color: #999;
   user-select: none;
-  padding-right: 0.5em;
 }
 
 /* Copy button styling with icon */
 .shiki button {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 11px;
+  top: 10px;
+  right: 10px;
+  background: rgba(252, 252, 252, 0.94);
+  border: 1px solid #cecece;
+  border-radius: 3px;
+  padding: 4px 7px;
   color: #666;
   cursor: pointer;
+  font-family: var(--font-base);
+  font-size: 12px;
+  line-height: 1.2;
   opacity: 0;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
   z-index: 10;
   display: flex;
   align-items: center;
   gap: 4px;
-  backdrop-filter: blur(4px);
 }
 
 .shiki button > span {
@@ -3030,16 +3060,13 @@
   opacity: 1;
 }
 
-.shiki button:hover {
-  background: rgba(245, 245, 245, 0.95);
-  color: #333;
-  border-color: #999;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.shiki button:focus-visible {
+  opacity: 1;
 }
 
-.shiki button:active {
-  transform: translateY(0);
+.shiki button:hover {
+  color: #333;
+  border-color: #999;
 }
 
 .shiki button.copied::after {
@@ -3054,19 +3081,37 @@
 
 /* Inline code styling */
 code:not(.shiki code) {
-  @apply rounded bg-gray-100 px-1 py-0.5;
-  font-family: "Courier New", monospace;
+  background: rgba(70, 110, 170, 0.1);
+  border-radius: 3px;
+  color: #16181d;
+  font-family: var(--font-mono);
   font-size: 0.9em;
+  padding: 0.1em 0.3em;
 }
 
 /* Fallback for non-Shiki pre blocks */
 pre:not(.shiki) {
-  @apply my-4 overflow-x-auto rounded bg-gray-100 p-4;
-  font-family: "Courier New", monospace;
+  margin: 24px 0;
+  padding: 16px 14px 16px 4px;
+  background: #fcfcfc;
+  border-block: 1px solid #cecece;
+  border-inline: 1px dashed #cecece;
+  border-radius: 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1;
+  font-size: 15px;
+  font-variant-ligatures: contextual common-ligatures;
+  line-height: 1.35;
+  tab-size: 2;
 }
 
 pre:not(.shiki) code {
-  @apply bg-transparent p-0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
 }
 
 /* Rotating ASCII penguin — copied 1:1 from rotating-animations.localhost.
