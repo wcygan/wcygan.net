@@ -1,12 +1,26 @@
 import { useEffect, useRef } from "react";
 
 const LOOP_MS = 5200;
+const WRITE_START_PHASE = 0.04;
+const WRITE_COMMIT_PHASE = 0.14;
+const WRITE_SETTLE_PHASE = 0.06;
 const EVENT_START_PHASE = 0.2;
 const EVENT_TRAVEL_PHASE = 0.38;
 const RESET_PHASE = 0.92;
 
+type Rgb = readonly [number, number, number];
+
+const DATABASE_FREE_FILL: Rgb = [241, 241, 241];
+const DATABASE_PRO_FILL: Rgb = [70, 110, 170];
+const DATABASE_FREE_STROKE: Rgb = [208, 208, 208];
+const DATABASE_PRO_STROKE: Rgb = [30, 70, 140];
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
+}
+
+function easeOut(value: number) {
+  return 1 - Math.pow(1 - value, 3);
 }
 
 function easeInOut(value: number) {
@@ -34,6 +48,14 @@ function roundedRect(
 
 function mix(start: number, end: number, amount: number) {
   return start + (end - start) * amount;
+}
+
+function mixColor(from: Rgb, to: Rgb, amount: number) {
+  const progress = clamp(amount, 0, 1);
+  const red = Math.round(mix(from[0], to[0], progress));
+  const green = Math.round(mix(from[1], to[1], progress));
+  const blue = Math.round(mix(from[2], to[2], progress));
+  return `rgb(${red}, ${green}, ${blue})`;
 }
 
 function drawPipe(
@@ -67,10 +89,11 @@ function drawDatabaseNode(
   y: number,
   width: number,
   height: number,
-  active: boolean,
+  activeAmount: number,
 ) {
-  const fill = active ? "#466eaa" : "#f1f1f1";
-  const stroke = active ? "#1e468c" : "#d0d0d0";
+  const active = clamp(activeAmount, 0, 1);
+  const fill = mixColor(DATABASE_FREE_FILL, DATABASE_PRO_FILL, active);
+  const stroke = mixColor(DATABASE_FREE_STROKE, DATABASE_PRO_STROKE, active);
   const ellipseHeight = clamp(height * 0.24, 14, 20);
   const left = x - width / 2;
   const right = x + width / 2;
@@ -108,12 +131,61 @@ function drawDatabaseNode(
     '700 13px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(active ? "pro" : "free", x, y);
+  ctx.save();
+  ctx.globalAlpha = 1 - active;
+  ctx.fillStyle = "#333333";
+  ctx.fillText("free", x, y);
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = active;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("pro", x, y);
+  ctx.restore();
 
   ctx.fillStyle = "#666666";
   ctx.font =
     '700 12px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.fillText(label, x, y + height / 2 + 18);
+}
+
+function drawWriteCommand(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  opacity: number,
+) {
+  const left = x - width / 2;
+  const top = y - height / 2;
+
+  ctx.save();
+  ctx.globalAlpha = clamp(opacity, 0, 1);
+  ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 3;
+  roundedRect(ctx, left, top, width, height, 7);
+  ctx.fillStyle = "#323232";
+  ctx.fill();
+
+  ctx.shadowColor = "transparent";
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#606060";
+  ctx.stroke();
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.font = '700 9px "Lilex", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.fillStyle = "#4099ff";
+  ctx.fillText("UPDATE", left + 10, top + 8);
+  ctx.fillStyle = "#eeeeec";
+  ctx.fillText("plan =", left + 10, top + 20);
+  ctx.fillStyle = "#7fe173";
+  ctx.fillText("'pro'", left + 48, top + 20);
+  ctx.fillStyle = "#ffc66d";
+  ctx.fillText("id = 42", left + 10, top + 32);
+
+  ctx.restore();
 }
 
 function drawCdcPipe(
@@ -159,7 +231,22 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
 
   const phase = (now % LOOP_MS) / LOOP_MS;
   const hasReset = phase >= RESET_PHASE;
-  const postgresActive = phase >= 0.14 && !hasReset;
+  const writeTravelProgress = easeOut(
+    clamp(
+      (phase - WRITE_START_PHASE) / (WRITE_COMMIT_PHASE - WRITE_START_PHASE),
+      0,
+      1,
+    ),
+  );
+  const writeFadeProgress = easeOut(
+    clamp((phase - WRITE_COMMIT_PHASE) / WRITE_SETTLE_PHASE, 0, 1),
+  );
+  const writeVisible =
+    phase >= WRITE_START_PHASE && phase < EVENT_START_PHASE && !hasReset;
+  const postgresActivation = hasReset
+    ? 0
+    : easeOut(clamp((phase - WRITE_COMMIT_PHASE) / WRITE_SETTLE_PHASE, 0, 1));
+  const postgresActive = postgresActivation > 0;
   const eventProgress = easeInOut(
     hasReset
       ? 0
@@ -180,6 +267,21 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   const databaseHeight = clamp(radius * 1.8, 60, 86);
   const cdcPipeWidth = clamp(radius * 2.75, 92, 132);
   const cdcPipeHeight = clamp(radius * 0.78, 28, 34);
+  const writeCardWidth = clamp(width * 0.27, 88, 116);
+  const writeCardHeight = 46;
+  const writeStartX = Math.max(
+    writeCardWidth / 2 + 8,
+    leftX - databaseWidth * 0.55,
+  );
+  const writeEndX = leftX;
+  const writeStartY = Math.max(
+    writeCardHeight / 2 + 8,
+    centerY - databaseHeight * 1.18,
+  );
+  const writeEndY = centerY - databaseHeight * 0.52;
+  const writeX = mix(writeStartX, writeEndX, writeTravelProgress);
+  const writeY = mix(writeStartY, writeEndY, writeTravelProgress);
+  const writeOpacity = phase < WRITE_COMMIT_PHASE ? 1 : 1 - writeFadeProgress;
   const cdcLeftEdge = middleX - cdcPipeWidth / 2;
   const cdcRightEdge = middleX + cdcPipeWidth / 2;
   const leftPipeStart = leftX + databaseWidth / 2;
@@ -211,7 +313,7 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     centerY,
     databaseWidth,
     databaseHeight,
-    postgresActive,
+    postgresActivation,
   );
   drawCdcPipe(ctx, middleX, centerY, cdcPipeWidth, cdcPipeHeight, cdcActive);
   drawDatabaseNode(
@@ -221,8 +323,19 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     centerY,
     databaseWidth,
     databaseHeight,
-    redisActive,
+    redisActive ? 1 : 0,
   );
+
+  if (writeVisible) {
+    drawWriteCommand(
+      ctx,
+      writeX,
+      writeY,
+      writeCardWidth,
+      writeCardHeight,
+      writeOpacity,
+    );
+  }
 
   if (eventVisible) {
     ctx.beginPath();
