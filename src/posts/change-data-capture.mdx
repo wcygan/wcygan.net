@@ -6,6 +6,7 @@ tags: [Data, Databases, Architecture]
 ---
 
 import { CdcPropagationAnimation } from "~/components/CdcPropagationAnimation";
+import { CdcWalKafkaDemo } from "~/components/CdcWalKafkaDemo";
 
 Someone subscribes to your website, so the application executes this SQL against the database:
 
@@ -25,7 +26,9 @@ CDC has a few steps:
 
 1. Postgres [commits](https://www.postgresql.org/docs/current/sql-commit.html) an [UPDATE](https://www.postgresql.org/docs/current/sql-update.html), recording it in the [write-ahead log](https://www.postgresql.org/docs/current/wal-intro.html).
 2. [Debezium](https://debezium.io/documentation/reference/stable/connectors/postgresql.html) reads the logical-decoding stream and writes a change record to a table-specific [Kafka topic](https://kafka.apache.org/intro/).
-3. A consumer applies the record to a derived store, such as a Redis key or an [OpenSearch document](https://docs.opensearch.org/latest/api-reference/document-apis/update-document/).
+3. A consumer applies the record to a derived data store.
+
+<CdcWalKafkaDemo />
 
 A simplified Debezium-style update record might look like this:
 
