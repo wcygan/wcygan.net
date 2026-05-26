@@ -10,10 +10,31 @@ const RESET_PHASE = 0.92;
 
 type Rgb = readonly [number, number, number];
 
-const DATABASE_FREE_FILL: Rgb = [241, 241, 241];
-const DATABASE_PRO_FILL: Rgb = [70, 110, 170];
-const DATABASE_FREE_STROKE: Rgb = [208, 208, 208];
-const DATABASE_PRO_STROKE: Rgb = [30, 70, 140];
+const COLORS = {
+  ink: "#172033",
+  muted: "#5c667a",
+  line: "#d9deea",
+  canvas: "#ffffff",
+  blue: "#2f69f0",
+  gold: "#d59b24",
+  green: "#1d8b65",
+  goldSoft: "rgba(213, 155, 36, 0.24)",
+  shadow: "rgba(23, 32, 51, 0.12)",
+};
+
+const IDLE_TOES = {
+  background: "#323232",
+  brightBlack: "#606060",
+  foreground: "#eeeeec",
+  blue: "#4099ff",
+  green: "#7fe173",
+  yellow: "#ffc66d",
+};
+
+const DATABASE_FREE_FILL: Rgb = [255, 255, 255];
+const DATABASE_PRO_FILL: Rgb = [29, 139, 101];
+const DATABASE_FREE_STROKE: Rgb = [217, 222, 234];
+const DATABASE_PRO_STROKE: Rgb = [29, 139, 101];
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -67,7 +88,7 @@ function drawPipe(
 ) {
   ctx.lineCap = "round";
   ctx.lineWidth = 5;
-  ctx.strokeStyle = "#dedede";
+  ctx.strokeStyle = COLORS.line;
   ctx.beginPath();
   ctx.moveTo(startX, y);
   ctx.lineTo(endX, y);
@@ -75,7 +96,7 @@ function drawPipe(
 
   if (activeAmount <= 0) return;
 
-  ctx.strokeStyle = "#466eaa";
+  ctx.strokeStyle = COLORS.blue;
   ctx.beginPath();
   ctx.moveTo(startX, y);
   ctx.lineTo(mix(startX, endX, clamp(activeAmount, 0, 1)), y);
@@ -126,23 +147,23 @@ function drawDatabaseNode(
   ctx.ellipse(x, bottomY, width / 2, ellipseHeight / 2, 0, 0, Math.PI);
   ctx.stroke();
 
-  ctx.fillStyle = active ? "#ffffff" : "#333333";
+  ctx.fillStyle = active ? COLORS.canvas : COLORS.ink;
   ctx.font =
     '700 13px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.save();
   ctx.globalAlpha = 1 - active;
-  ctx.fillStyle = "#333333";
+  ctx.fillStyle = COLORS.ink;
   ctx.fillText("free", x, y);
   ctx.restore();
   ctx.save();
   ctx.globalAlpha = active;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = COLORS.canvas;
   ctx.fillText("pro", x, y);
   ctx.restore();
 
-  ctx.fillStyle = "#666666";
+  ctx.fillStyle = COLORS.muted;
   ctx.font =
     '700 12px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.fillText(label, x, y + height / 2 + 18);
@@ -161,28 +182,28 @@ function drawWriteCommand(
 
   ctx.save();
   ctx.globalAlpha = clamp(opacity, 0, 1);
-  ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetY = 3;
-  roundedRect(ctx, left, top, width, height, 7);
-  ctx.fillStyle = "#323232";
+  ctx.shadowColor = COLORS.shadow;
+  ctx.shadowBlur = 16;
+  ctx.shadowOffsetY = 6;
+  roundedRect(ctx, left, top, width, height, 8);
+  ctx.fillStyle = IDLE_TOES.background;
   ctx.fill();
 
   ctx.shadowColor = "transparent";
   ctx.lineWidth = 1;
-  ctx.strokeStyle = "#606060";
+  ctx.strokeStyle = IDLE_TOES.brightBlack;
   ctx.stroke();
 
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.font = '700 9px "Lilex", ui-monospace, SFMono-Regular, Menlo, monospace';
-  ctx.fillStyle = "#4099ff";
+  ctx.fillStyle = IDLE_TOES.blue;
   ctx.fillText("UPDATE", left + 10, top + 8);
-  ctx.fillStyle = "#eeeeec";
+  ctx.fillStyle = IDLE_TOES.foreground;
   ctx.fillText("plan =", left + 10, top + 20);
-  ctx.fillStyle = "#7fe173";
+  ctx.fillStyle = IDLE_TOES.green;
   ctx.fillText("'pro'", left + 48, top + 20);
-  ctx.fillStyle = "#ffc66d";
+  ctx.fillStyle = IDLE_TOES.yellow;
   ctx.fillText("id = 42", left + 10, top + 32);
 
   ctx.restore();
@@ -196,8 +217,8 @@ function drawCdcPipe(
   height: number,
   active: boolean,
 ) {
-  const fill = active ? "#466eaa" : "#f1f1f1";
-  const stroke = active ? "#1e468c" : "#d0d0d0";
+  const fill = active ? COLORS.blue : COLORS.canvas;
+  const stroke = active ? COLORS.blue : COLORS.line;
   const left = x - width / 2;
   const top = y - height / 2;
 
@@ -208,7 +229,7 @@ function drawCdcPipe(
   ctx.strokeStyle = stroke;
   ctx.stroke();
 
-  ctx.fillStyle = active ? "#ffffff" : "#333333";
+  ctx.fillStyle = active ? COLORS.canvas : COLORS.ink;
   ctx.font =
     '700 12px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
   ctx.textAlign = "center";
@@ -258,7 +279,7 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     !hasReset;
 
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = "#fafaf9";
+  ctx.fillStyle = COLORS.canvas;
   ctx.fillRect(0, 0, width, height);
 
   const centerY = height * 0.48;
@@ -343,11 +364,11 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   if (eventVisible) {
     ctx.beginPath();
     ctx.arc(eventX, centerY, eventRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "#1e468c";
+    ctx.fillStyle = COLORS.gold;
     ctx.fill();
     ctx.beginPath();
     ctx.arc(eventX, centerY, radius * 0.36, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(30, 70, 140, 0.24)";
+    ctx.strokeStyle = COLORS.goldSoft;
     ctx.lineWidth = 4;
     ctx.stroke();
   }
@@ -396,6 +417,23 @@ export function CdcPropagationAnimation() {
         className="cdc-animation-canvas"
         aria-label="Looping animation of a Postgres update flowing through CDC into Redis"
       />
+      <figcaption
+        className="cdc-animation-caption"
+        aria-label="CDC propagation color legend"
+      >
+        <span>
+          <i data-tone="path" />
+          propagation path
+        </span>
+        <span>
+          <i data-tone="event" />
+          active event
+        </span>
+        <span>
+          <i data-tone="success" />
+          updated state
+        </span>
+      </figcaption>
     </figure>
   );
 }

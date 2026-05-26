@@ -19,11 +19,10 @@ export function CdcWalKafkaDemo() {
   return (
     <figure className="cdc-wal-kafka-demo">
       <div className="cdc-wal-kafka-header">
-        <p className="cdc-wal-kafka-eyebrow">WAL to Kafka</p>
-        <h2>Debezium reads committed WAL entries in order</h2>
+        <h2>Debezium reads the WAL in order</h2>
         <p>
-          Three committed row changes enter the Postgres WAL. Debezium advances
-          its cursor over each LSN and emits the matching event to Kafka.
+          Postgres writes three row changes to the WAL. Debezium reads them one
+          by one and sends each event to Kafka.
         </p>
       </div>
 

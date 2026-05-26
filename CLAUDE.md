@@ -15,7 +15,10 @@ deno task test        # Run Vitest unit tests
 
 ### Local dev URL: `https://wcygan.localhost`
 
-`just dev` runs Vite under [portless](https://github.com/vercel-labs/portless), which gives a stable HTTPS URL backed by a local CA. Configured via `portless.json` (`{ "name": "wcygan" }`); the justfile also `open`s the URL after a 2s delay.
+`just dev` runs Vite under [portless](https://github.com/vercel-labs/portless),
+which gives a stable HTTPS URL backed by a local CA. Configured via
+`portless.json` (`{ "name": "wcygan" }`); the justfile also `open`s the URL
+after a 2s delay.
 
 ## Technology Stack
 
@@ -23,23 +26,52 @@ deno task test        # Run Vitest unit tests
 - **Deno** runtime and package manager
 - **React 19** with hooks for state management
 - **Tailwind CSS 3** with Typography plugin for consistent styling
-- **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component imports
-- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (custom Idle Toes theme)
-- **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage cached)
+- **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component
+  imports
+- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (custom Idle
+  Toes theme)
+- **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage
+  cached)
 - **TypeScript** with strict mode for type safety
 - **Nitro** with `deno-server` preset for prerendering
 
+## Interactive Graphics Demos
+
+For article-embedded interactive graphics, prefer the
+`interactive-graphics-demos` Codex skill over older repo-local animation
+patterns. Upstream source:
+[wcygan/dotfiles interactive-graphics-demos](https://github.com/wcygan/dotfiles/tree/main/config/codex/skills/interactive-graphics-demos).
+
+Use that workflow for new demos and meaningful revisions to existing demos:
+define the concept in one sentence, name the invariant, choose the visual form
+that makes the model easiest to inspect, then pick the renderer. Keep React as
+the MDX/lifecycle shell, put reusable model/render/input logic under
+`src/demos/...` when the demo has real behavior, and verify Canvas/SVG/WebGL
+work in browser at desktop and mobile widths.
+
+Existing site typography, color, MDX, and prerender constraints still apply.
+Treat existing CDC components and old demo shells as precedent to understand,
+then choose the figure shape from the concept: inline sketch, full-width canvas,
+small multiples, timeline, log, state table, direct-manipulation control, or a
+custom layout. Reuse a prior framed shell only when that shell is the clearest
+way to teach the invariant.
+
 ## DESIGN.md
 
-Goal: Keep the rendered site and `design.md` aligned around a readable software-blog typography system.
+Goal: Keep the rendered site and `design.md` aligned around a readable
+software-blog typography system.
 
 Success means:
 
-- Body and long-form prose use `Atkinson Hyperlegible` with `system-ui` fallbacks.
-- Headings, navigation, metadata, buttons, and compact UI labels use `Inter` with `system-ui` fallbacks.
-- Code samples, terminals, inline code, and ASCII animation blocks use the existing `Lilex` mono stack.
+- Body and long-form prose use `Atkinson Hyperlegible` with `system-ui`
+  fallbacks.
+- Headings, navigation, metadata, buttons, and compact UI labels use `Inter`
+  with `system-ui` fallbacks.
+- Code samples, terminals, inline code, and ASCII animation blocks use the
+  existing `Lilex` mono stack.
 
-Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and browser-computed styles agree on those three roles.
+Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and
+browser-computed styles agree on those three roles.
 
 ### Design System
 
@@ -50,12 +82,17 @@ Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and browser-c
 - Text primary: `rgb(0, 0, 0)` — body text
 - Text secondary: `rgb(102, 102, 102)` — dates, metadata
 
-**Typography**: Atkinson Hyperlegible for body/prose, Inter for headings/UI, Lilex for code/ASCII
+**Typography**: Atkinson Hyperlegible for body/prose, Inter for headings/UI,
+Lilex for code/ASCII
 
-**Code block palette**: Idle Toes from Cmux Themes. Keep this palette encoded in both `src/lib/syntax/idle-toes-theme.ts` and `src/styles/app.css`:
+**Code block palette**: Idle Toes from Cmux Themes. Keep this palette encoded in
+both `src/lib/syntax/idle-toes-theme.ts` and `src/styles/app.css`:
 
 - Foreground `#ffffff`, background `#323232`, cursor `#d6d6d6`
-- ANSI 0-7: black `#323232`, red `#d25252`, green `#7fe173`, yellow `#ffc66d`, blue `#4099ff`, magenta `#f680ff`, cyan `#bed6ff`, white `#eeeeec`
-- ANSI 8-15: bright black `#606060`, bright red `#f07070`, bright green `#9dff91`, bright yellow `#ffe48b`, bright blue `#5eb7f7`, bright magenta `#ff9dff`, bright cyan `#dcf4ff`, bright white `#ffffff`
+- ANSI 0-7: black `#323232`, red `#d25252`, green `#7fe173`, yellow `#ffc66d`,
+  blue `#4099ff`, magenta `#f680ff`, cyan `#bed6ff`, white `#eeeeec`
+- ANSI 8-15: bright black `#606060`, bright red `#f07070`, bright green
+  `#9dff91`, bright yellow `#ffe48b`, bright blue `#5eb7f7`, bright magenta
+  `#ff9dff`, bright cyan `#dcf4ff`, bright white `#ffffff`
 
 **Layout**: 800px max-width container, 8pt grid system

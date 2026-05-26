@@ -572,25 +572,74 @@
 
   /* CDC canvas animation */
   .cdc-animation-demo {
+    --demo-ink: #172033;
+    --demo-muted: #5c667a;
+    --demo-line: #d9deea;
+    --demo-shell: #eef1f7;
+    --demo-canvas: #ffffff;
+    --demo-blue: #2f69f0;
+    --demo-gold: #d59b24;
+    --demo-green: #1d8b65;
     margin: 28px 0 36px;
-    padding: 10px;
-    border: 1px solid rgb(222, 222, 222);
-    border-radius: 6px;
-    background: rgb(250, 250, 249);
+    padding: 16px;
+    border: 1px solid var(--demo-line);
+    border-radius: 8px;
+    background: var(--demo-shell);
+    box-shadow: 0 12px 34px rgb(23 32 51 / 8%);
   }
 
   .cdc-animation-canvas {
     display: block;
     width: 100%;
     aspect-ratio: 16 / 5.8;
-    border: 1px solid rgb(222, 222, 222);
-    border-radius: 4px;
-    background: rgb(250, 250, 249);
+    border: 1px solid var(--demo-line);
+    border-radius: 8px;
+    background: var(--demo-canvas);
+  }
+
+  .cdc-animation-caption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    color: var(--demo-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .cdc-animation-caption span {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .cdc-animation-caption i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+
+  .cdc-animation-caption i[data-tone="path"] {
+    background: var(--demo-blue);
+  }
+
+  .cdc-animation-caption i[data-tone="event"] {
+    background: var(--demo-gold);
+  }
+
+  .cdc-animation-caption i[data-tone="success"] {
+    background: var(--demo-green);
   }
 
   @media (max-width: 768px) {
     .cdc-animation-demo {
-      padding: 8px;
+      padding: 12px;
     }
 
     .cdc-animation-canvas {
@@ -2190,12 +2239,12 @@
      don't inherit body's 19px / 32px line-height and overflow the boxes
      Mermaid sized using its own font measurements. Covers both the inline
      container and the mobile fullscreen dialog, which lives outside it. */
-  .mermaid-container foreignObject p,
-  .mermaid-container foreignObject div,
-  .mermaid-container foreignObject span,
-  .mermaid-fullscreen-dialog foreignObject p,
-  .mermaid-fullscreen-dialog foreignObject div,
-  .mermaid-fullscreen-dialog foreignObject span {
+  .mermaid-container foreignobject p,
+  .mermaid-container foreignobject div,
+  .mermaid-container foreignobject span,
+  .mermaid-fullscreen-dialog foreignobject p,
+  .mermaid-fullscreen-dialog foreignobject div,
+  .mermaid-fullscreen-dialog foreignobject span {
     font-size: 16px;
     line-height: normal;
     margin: 0;

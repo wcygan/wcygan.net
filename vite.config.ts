@@ -57,6 +57,21 @@ export default defineConfig(({ command }) => ({
                 },
               },
               addCopyButton({ toggle: 2000 }),
+              {
+                name: "strip-copy-button-inline-handler",
+                pre(node: any) {
+                  for (const child of node.children ?? []) {
+                    if (
+                      child.type === "element" &&
+                      child.tagName === "button" &&
+                      child.properties
+                    ) {
+                      delete child.properties.onclick;
+                      delete child.properties.onClick;
+                    }
+                  }
+                },
+              },
             ],
           },
         ],
