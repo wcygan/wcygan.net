@@ -5,9 +5,6 @@ description: A concrete CDC walkthrough showing a Postgres users update moving t
 tags: [Data, Databases, Architecture]
 ---
 
-import { CdcPipelineDemo } from "~/components/CdcPipelineDemo";
-import { CdcStaleReadDemo } from "~/components/CdcStaleReadDemo";
-
 Someone subscribes to your website, so the application executes this SQL against the database:
 
 ```sql
@@ -19,8 +16,6 @@ WHERE id = 42;
 Now your derived data stores (such as [Redis](https://en.wikipedia.org/wiki/Redis) or [OpenSearch](<https://en.wikipedia.org/wiki/OpenSearch_(software)>)) may be out of sync, showing `free` instead of `pro`.
 
 [Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture) ("CDC") is a pattern that you can use to reconcile the differences in near-real time.
-
-<CdcStaleReadDemo />
 
 CDC has a few steps:
 
@@ -54,8 +49,6 @@ A simplified Debezium-style update record might look like this:
   }
 }
 ```
-
-<CdcPipelineDemo />
 
 ## Try it yourself
 

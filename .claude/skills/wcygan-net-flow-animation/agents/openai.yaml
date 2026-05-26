@@ -1,4 +1,0 @@
-interface:
-  display_name: "Flow Animations"
-  short_description: "Step-wise blog animation patterns"
-  default_prompt: "Use $wcygan-net-flow-animation to design a step-wise animation for a wcygan.net post."
