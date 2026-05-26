@@ -60,33 +60,49 @@ function drawPipe(
   ctx.stroke();
 }
 
-function drawNode(
+function drawDatabaseNode(
   ctx: CanvasRenderingContext2D,
   label: string,
   x: number,
   y: number,
-  radius: number,
+  width: number,
+  height: number,
   active: boolean,
   stale: boolean,
 ) {
   const fill = active ? "#466eaa" : "#f1f1f1";
   const stroke = stale ? "#ae5c00" : active ? "#1e468c" : "#d0d0d0";
+  const ellipseHeight = clamp(height * 0.24, 14, 20);
+  const left = x - width / 2;
+  const right = x + width / 2;
+  const topY = y - height / 2 + ellipseHeight / 2;
+  const bottomY = y + height / 2 - ellipseHeight / 2;
 
-  ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = fill;
+  ctx.fillRect(left, topY, width, bottomY - topY);
+  ctx.beginPath();
+  ctx.ellipse(x, topY, width / 2, ellipseHeight / 2, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(x, bottomY, width / 2, ellipseHeight / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.lineWidth = stale ? 4 : 2;
   ctx.strokeStyle = stroke;
+  ctx.beginPath();
+  ctx.ellipse(x, topY, width / 2, ellipseHeight / 2, 0, 0, Math.PI * 2);
   ctx.stroke();
 
-  if (stale) {
-    ctx.beginPath();
-    ctx.arc(x, y, radius + 7, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(174, 92, 0, 0.22)";
-    ctx.lineWidth = 5;
-    ctx.stroke();
-  }
+  ctx.beginPath();
+  ctx.moveTo(left, topY);
+  ctx.lineTo(left, bottomY);
+  ctx.moveTo(right, topY);
+  ctx.lineTo(right, bottomY);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(x, bottomY, width / 2, ellipseHeight / 2, 0, 0, Math.PI);
+  ctx.stroke();
 
   ctx.fillStyle = active ? "#ffffff" : "#333333";
   ctx.font =
@@ -98,7 +114,35 @@ function drawNode(
   ctx.fillStyle = "#666666";
   ctx.font =
     '700 12px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
-  ctx.fillText(label, x, y + radius + 22);
+  ctx.fillText(label, x, y + height / 2 + 18);
+}
+
+function drawCdcPipe(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  active: boolean,
+) {
+  const fill = active ? "#466eaa" : "#f1f1f1";
+  const stroke = active ? "#1e468c" : "#d0d0d0";
+  const left = x - width / 2;
+  const top = y - height / 2;
+
+  roundedRect(ctx, left, top, width, height, height / 2);
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = stroke;
+  ctx.stroke();
+
+  ctx.fillStyle = active ? "#ffffff" : "#333333";
+  ctx.font =
+    '700 12px "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("CDC Pipeline", x, y);
 }
 
 function drawFrame(canvas: HTMLCanvasElement, now: number) {
@@ -133,42 +177,58 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   const leftX = width * 0.18;
   const middleX = width * 0.5;
   const rightX = width * 0.82;
-  const cdcRadius = radius * 0.86;
-  const leftPipeStart = leftX + radius;
-  const leftPipeEnd = middleX;
-  const rightPipeStart = middleX;
-  const rightPipeEnd = rightX - radius;
+  const databaseWidth = clamp(radius * 1.7, 58, 82);
+  const databaseHeight = clamp(radius * 1.8, 60, 86);
+  const cdcPipeWidth = clamp(radius * 2.75, 92, 132);
+  const cdcPipeHeight = clamp(radius * 0.78, 28, 34);
+  const cdcLeftEdge = middleX - cdcPipeWidth / 2;
+  const cdcRightEdge = middleX + cdcPipeWidth / 2;
+  const leftPipeStart = leftX + databaseWidth / 2;
+  const leftPipeEnd = cdcLeftEdge;
+  const rightPipeStart = cdcRightEdge;
+  const rightPipeEnd = rightX - databaseWidth / 2;
   const leftPipeDistance = leftPipeEnd - leftPipeStart;
   const rightPipeDistance = rightPipeEnd - rightPipeStart;
-  const totalEventDistance = leftPipeDistance + rightPipeDistance;
+  const totalEventDistance = rightPipeEnd - leftPipeStart;
   const eventDistance = eventProgress * totalEventDistance;
+  const eventX = leftPipeStart + eventDistance;
   const eventRadius = radius * 0.22;
   const firstPipeProgress = clamp(eventDistance / leftPipeDistance, 0, 1);
   const secondPipeProgress = clamp(
-    (eventDistance - leftPipeDistance) / rightPipeDistance,
+    (eventX - rightPipeStart) / rightPipeDistance,
     0,
     1,
   );
-  const cdcActive =
-    postgresActive &&
-    eventDistance >= leftPipeDistance - cdcRadius - eventRadius;
-  const redisContactDistance = totalEventDistance - eventRadius;
-  const redisActive = postgresActive && eventDistance >= redisContactDistance;
+  const cdcActive = postgresActive && eventX + eventRadius >= cdcLeftEdge;
+  const redisActive = postgresActive && eventX + eventRadius >= rightPipeEnd;
   const staleWindow = postgresActive && !redisActive;
 
   drawPipe(ctx, leftPipeStart, centerY, leftPipeEnd, firstPipeProgress);
   drawPipe(ctx, rightPipeStart, centerY, rightPipeEnd, secondPipeProgress);
 
-  drawNode(ctx, "Postgres", leftX, centerY, radius, postgresActive, false);
-  drawNode(ctx, "CDC", middleX, centerY, cdcRadius, cdcActive, false);
-  drawNode(ctx, "Redis", rightX, centerY, radius, redisActive, staleWindow);
+  drawDatabaseNode(
+    ctx,
+    "Postgres",
+    leftX,
+    centerY,
+    databaseWidth,
+    databaseHeight,
+    postgresActive,
+    false,
+  );
+  drawCdcPipe(ctx, middleX, centerY, cdcPipeWidth, cdcPipeHeight, cdcActive);
+  drawDatabaseNode(
+    ctx,
+    "Redis",
+    rightX,
+    centerY,
+    databaseWidth,
+    databaseHeight,
+    redisActive,
+    staleWindow,
+  );
 
   if (eventVisible) {
-    const eventX =
-      eventDistance <= leftPipeDistance
-        ? mix(leftPipeStart, leftPipeEnd, firstPipeProgress)
-        : mix(rightPipeStart, rightPipeEnd, secondPipeProgress);
-
     ctx.beginPath();
     ctx.arc(eventX, centerY, eventRadius, 0, Math.PI * 2);
     ctx.fillStyle = "#1e468c";
