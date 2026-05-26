@@ -35,6 +35,7 @@ const UI_FONT =
   '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';
 const MONO_FONT =
   '"Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
+const COMPACT_LAYOUT_MAX_WIDTH = 600;
 
 export function drawWalKafkaDemo(
   ctx: CanvasRenderingContext2D,
@@ -46,7 +47,7 @@ export function drawWalKafkaDemo(
   ctx.fillStyle = COLORS.shell;
   ctx.fillRect(0, 0, viewport.cssWidth, viewport.cssHeight);
 
-  if (viewport.cssWidth < 560) {
+  if (viewport.cssWidth <= COMPACT_LAYOUT_MAX_WIDTH) {
     drawCompact(ctx, snapshot, viewport.cssWidth, viewport.cssHeight);
     return;
   }
@@ -61,20 +62,22 @@ function drawWide(
   height: number,
 ) {
   const padding = 18;
-  const gap = 16;
-  const centerWidth = 154;
-  const walWidth = Math.min(260, width * 0.34);
-  const kafkaWidth = width - padding * 2 - gap * 2 - centerWidth - walWidth;
+  const pipelineGap = clampDimension(width * 0.06, 36, 54);
+  const centerWidth = width < 700 ? 142 : 154;
+  const availablePanelWidth =
+    width - padding * 2 - pipelineGap * 2 - centerWidth;
+  const walWidth = Math.min(260, Math.max(176, availablePanelWidth * 0.48));
+  const kafkaWidth = availablePanelWidth - walWidth;
   const panelHeight = height - padding * 2;
   const walPanel = rect(padding, padding, walWidth, panelHeight);
   const debezium = rect(
-    walPanel.x + walPanel.width + gap,
+    walPanel.x + walPanel.width + pipelineGap,
     height / 2 - 50,
     centerWidth,
     100,
   );
   const kafkaPanel = rect(
-    debezium.x + debezium.width + gap,
+    debezium.x + debezium.width + pipelineGap,
     padding,
     kafkaWidth,
     panelHeight,
@@ -84,6 +87,7 @@ function drawWide(
   const kafkaRows = drawKafkaPanel(ctx, kafkaPanel, snapshot.updates);
   const activeWalRow = walRows[snapshot.activeIndex];
   const activeKafkaRow = kafkaRows[snapshot.activeIndex];
+  const showPacketLabel = pipelineGap >= 52;
 
   drawPassiveArrow(ctx, rightPort(activeWalRow), leftPort(debezium));
   drawPassiveArrow(ctx, rightPort(debezium), leftPort(activeKafkaRow));
@@ -94,6 +98,7 @@ function drawWide(
     "wal-to-debezium",
     rightPort(activeWalRow),
     leftPort(debezium),
+    showPacketLabel,
   );
   drawPacket(
     ctx,
@@ -101,6 +106,7 @@ function drawWide(
     "debezium-to-kafka",
     rightPort(debezium),
     leftPort(activeKafkaRow),
+    showPacketLabel,
   );
 }
 
@@ -111,10 +117,11 @@ function drawCompact(
   height: number,
 ) {
   const padding = width < 360 ? 12 : 14;
-  const gap = width < 360 ? 16 : 18;
+  const pipelineGap = width < 360 ? 34 : 40;
   const panelWidth = width - padding * 2;
   const debeziumHeight = width < 360 ? 84 : 88;
-  const availableHeight = height - padding * 2 - gap * 2 - debeziumHeight;
+  const availableHeight =
+    height - padding * 2 - pipelineGap * 2 - debeziumHeight;
   const minimumKafkaHeight = 214;
   const walHeight = Math.max(
     206,
@@ -124,13 +131,13 @@ function drawCompact(
   const walPanel = rect(padding, padding, panelWidth, walHeight);
   const debezium = rect(
     padding + panelWidth * 0.1,
-    walPanel.y + walPanel.height + gap,
+    walPanel.y + walPanel.height + pipelineGap,
     panelWidth * 0.8,
     debeziumHeight,
   );
   const kafkaPanel = rect(
     padding,
-    debezium.y + debezium.height + gap,
+    debezium.y + debezium.height + pipelineGap,
     panelWidth,
     kafkaHeight,
   );
@@ -510,6 +517,10 @@ function roundedRect(
 
 function rect(x: number, y: number, width: number, height: number): Rect {
   return { x, y, width, height };
+}
+
+function clampDimension(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function interpolate(start: Point, end: Point, progress: number): Point {

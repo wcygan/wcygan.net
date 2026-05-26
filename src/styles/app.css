@@ -772,9 +772,9 @@
     }
   }
 
-  @container (max-width: 560px) {
+  @container (max-width: 600px) {
     .cdc-wal-kafka-canvas {
-      height: clamp(590px, 155vw, 650px);
+      height: clamp(610px, 118vw, 680px);
       min-height: 0;
       aspect-ratio: auto;
     }

@@ -6,7 +6,7 @@ import {
 import { drawWalKafkaDemo } from "./render-canvas";
 import { resizeCanvas } from "./viewport";
 
-const LOOP_MS = 6400;
+const LOOP_MS = 9600;
 
 export type CdcWalKafkaDemoEngine = {
   start(): void;

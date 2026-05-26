@@ -34,7 +34,7 @@ const IDLE_TOES = {
 const DATABASE_FREE_FILL: Rgb = [255, 255, 255];
 const DATABASE_PRO_FILL: Rgb = [29, 139, 101];
 const DATABASE_FREE_STROKE: Rgb = [217, 222, 234];
-const DATABASE_PRO_STROKE: Rgb = [29, 139, 101];
+const DATABASE_PRO_STROKE: Rgb = [15, 95, 68];
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
