@@ -19,10 +19,8 @@ function HomePage() {
         <img className="u-photo" src="/wcygan.jpg" alt="Will Cygan" />
         <div className="bio-text">
           <p>
-            <a className="p-name u-url" href="https://wcygan.net/">
-              Will Cygan
-            </a>
-            {" — "}
+            <data className="p-name" value="Will Cygan" />
+            <data className="u-url" value="https://wcygan.net/" />
             <span className="p-note">
               Senior Software Engineer at{" "}
               <a

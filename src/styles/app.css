@@ -265,6 +265,9 @@
 
   .bio-highlight .p-name {
     font-weight: 600;
+    text-decoration-skip-ink: none;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.08em;
   }
 
   .bio-highlight .bio-interests {
