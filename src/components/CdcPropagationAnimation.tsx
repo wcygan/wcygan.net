@@ -1,6 +1,9 @@
 import { useEffect, useRef } from "react";
 
 const LOOP_MS = 5200;
+const EVENT_START_PHASE = 0.2;
+const EVENT_TRAVEL_PHASE = 0.38;
+const RESET_PHASE = 0.92;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
@@ -112,12 +115,14 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const phase = (now % LOOP_MS) / LOOP_MS;
-  const postgresActive = phase >= 0.14 && phase < 0.92;
-  const redisActive = phase >= 0.62 && phase < 0.92;
-  const staleWindow = postgresActive && !redisActive;
-  const eventProgress = easeInOut(clamp((phase - 0.2) / 0.38, 0, 1));
-  const eventVisible = phase >= 0.2 && phase < 0.62;
-  const catchupPulse = clamp(1 - Math.abs(phase - 0.62) / 0.08, 0, 1);
+  const hasReset = phase >= RESET_PHASE;
+  const postgresActive = phase >= 0.14 && !hasReset;
+  const eventProgress = easeInOut(
+    hasReset
+      ? 0
+      : clamp((phase - EVENT_START_PHASE) / EVENT_TRAVEL_PHASE, 0, 1),
+  );
+  const eventVisible = phase >= EVENT_START_PHASE && phase < 0.62 && !hasReset;
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#fafaf9";
@@ -129,25 +134,33 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   const middleX = width * 0.5;
   const rightX = width * 0.82;
   const cdcRadius = radius * 0.86;
-  const leftPipeStart = leftX + radius + 10;
+  const leftPipeStart = leftX + radius;
   const leftPipeEnd = middleX;
   const rightPipeStart = middleX;
-  const rightPipeEnd = rightX - radius - 10;
+  const rightPipeEnd = rightX - radius;
   const leftPipeDistance = leftPipeEnd - leftPipeStart;
   const rightPipeDistance = rightPipeEnd - rightPipeStart;
-  const eventDistance = eventProgress * (leftPipeDistance + rightPipeDistance);
+  const totalEventDistance = leftPipeDistance + rightPipeDistance;
+  const eventDistance = eventProgress * totalEventDistance;
+  const eventRadius = radius * 0.22;
   const firstPipeProgress = clamp(eventDistance / leftPipeDistance, 0, 1);
   const secondPipeProgress = clamp(
     (eventDistance - leftPipeDistance) / rightPipeDistance,
     0,
     1,
   );
+  const cdcActive =
+    postgresActive &&
+    eventDistance >= leftPipeDistance - cdcRadius - eventRadius;
+  const redisContactDistance = totalEventDistance - eventRadius;
+  const redisActive = postgresActive && eventDistance >= redisContactDistance;
+  const staleWindow = postgresActive && !redisActive;
 
   drawPipe(ctx, leftPipeStart, centerY, leftPipeEnd, firstPipeProgress);
   drawPipe(ctx, rightPipeStart, centerY, rightPipeEnd, secondPipeProgress);
 
   drawNode(ctx, "Postgres", leftX, centerY, radius, postgresActive, false);
-  drawNode(ctx, "CDC", middleX, centerY, cdcRadius, eventVisible, false);
+  drawNode(ctx, "CDC", middleX, centerY, cdcRadius, cdcActive, false);
   drawNode(ctx, "Redis", rightX, centerY, radius, redisActive, staleWindow);
 
   if (eventVisible) {
@@ -157,21 +170,13 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
         : mix(rightPipeStart, rightPipeEnd, secondPipeProgress);
 
     ctx.beginPath();
-    ctx.arc(eventX, centerY, radius * 0.22, 0, Math.PI * 2);
+    ctx.arc(eventX, centerY, eventRadius, 0, Math.PI * 2);
     ctx.fillStyle = "#1e468c";
     ctx.fill();
     ctx.beginPath();
     ctx.arc(eventX, centerY, radius * 0.36, 0, Math.PI * 2);
     ctx.strokeStyle = "rgba(30, 70, 140, 0.24)";
     ctx.lineWidth = 4;
-    ctx.stroke();
-  }
-
-  if (catchupPulse > 0) {
-    ctx.beginPath();
-    ctx.arc(rightX, centerY, radius + catchupPulse * 18, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0, 128, 96, ${0.28 * catchupPulse})`;
-    ctx.lineWidth = 5;
     ctx.stroke();
   }
 }
