@@ -208,7 +208,7 @@ print(httpx.get("https://example.com").status_code)
   <p>just is a handy way to save and run project-specific commands.</p>
 </aside>
 
-I use `just` for task orchestration across every project — it's a `make` replacement that doesn't pretend to be a build system. Recipes are readable, arguments are first-class, and a `justfile` at the repo root becomes the one obvious place to find "how do I run this thing."
+I use `just` for task orchestration across my projects (similar to `make`). For example, I would have commands like `just up`, `just down`, `just test`, etc...
 
 ## jj (experimental)
 
@@ -222,4 +222,4 @@ I use `just` for task orchestration across every project — it's a `make` repla
   </p>
 </aside>
 
-I'm currently testing `jj` as a replacement for `git`. It's git-compatible at the wire level — my coworkers don't need to know — but local history rewriting, rebasing, and conflict handling feel dramatically better. Still early days for me, but the ergonomics of `jj split`, `jj squash`, and first-class conflict objects are hard to go back from.
+Seems like a nice successor to git. But I don't think there is a TUI as nice as LazyGit yet, so I stay on git.
