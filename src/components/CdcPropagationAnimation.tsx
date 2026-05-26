@@ -128,31 +128,33 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   const leftX = width * 0.18;
   const middleX = width * 0.5;
   const rightX = width * 0.82;
+  const cdcRadius = radius * 0.86;
+  const leftPipeStart = leftX + radius + 10;
+  const leftPipeEnd = middleX;
+  const rightPipeStart = middleX;
+  const rightPipeEnd = rightX - radius - 10;
+  const leftPipeDistance = leftPipeEnd - leftPipeStart;
+  const rightPipeDistance = rightPipeEnd - rightPipeStart;
+  const eventDistance = eventProgress * (leftPipeDistance + rightPipeDistance);
+  const firstPipeProgress = clamp(eventDistance / leftPipeDistance, 0, 1);
+  const secondPipeProgress = clamp(
+    (eventDistance - leftPipeDistance) / rightPipeDistance,
+    0,
+    1,
+  );
 
-  drawPipe(
-    ctx,
-    leftX + radius + 10,
-    centerY,
-    middleX - radius - 10,
-    eventProgress,
-  );
-  drawPipe(
-    ctx,
-    middleX + radius + 10,
-    centerY,
-    rightX - radius - 10,
-    clamp((eventProgress - 0.46) / 0.54, 0, 1),
-  );
+  drawPipe(ctx, leftPipeStart, centerY, leftPipeEnd, firstPipeProgress);
+  drawPipe(ctx, rightPipeStart, centerY, rightPipeEnd, secondPipeProgress);
 
   drawNode(ctx, "Postgres", leftX, centerY, radius, postgresActive, false);
-  drawNode(ctx, "CDC", middleX, centerY, radius * 0.86, eventVisible, false);
+  drawNode(ctx, "CDC", middleX, centerY, cdcRadius, eventVisible, false);
   drawNode(ctx, "Redis", rightX, centerY, radius, redisActive, staleWindow);
 
   if (eventVisible) {
     const eventX =
-      eventProgress < 0.5
-        ? mix(leftX + radius + 10, middleX, eventProgress / 0.5)
-        : mix(middleX, rightX - radius - 10, (eventProgress - 0.5) / 0.5);
+      eventDistance <= leftPipeDistance
+        ? mix(leftPipeStart, leftPipeEnd, firstPipeProgress)
+        : mix(rightPipeStart, rightPipeEnd, secondPipeProgress);
 
     ctx.beginPath();
     ctx.arc(eventX, centerY, radius * 0.22, 0, Math.PI * 2);
