@@ -2537,6 +2537,8 @@ pre:not(.shiki) code {
   border: 0;
   border-radius: 0;
   color: #0a0806;
+  overflow: hidden;
+  overflow: clip;
   -webkit-font-smoothing: antialiased;
 }
 
