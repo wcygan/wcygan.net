@@ -1,9 +1,11 @@
 ---
 title: Change Data Capture
 date: May 16, 2026
-description: A concrete CDC walkthrough showing a Postgres users update moving through Debezium, Kafka, an indexer, OpenSearch, and a client query.
+description: A concrete CDC walkthrough showing a Postgres users update moving through a CDC pipeline into derived stores like Redis and OpenSearch.
 tags: [Data, Databases, Architecture]
 ---
+
+import { CdcPropagationAnimation } from "~/components/CdcPropagationAnimation";
 
 Someone subscribes to your website, so the application executes this SQL against the database:
 
@@ -17,11 +19,13 @@ Now your derived data stores (such as [Redis](https://en.wikipedia.org/wiki/Redi
 
 [Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture) ("CDC") is a pattern that you can use to reconcile the differences in near-real time.
 
+<CdcPropagationAnimation />
+
 CDC has a few steps:
 
 1. Postgres [commits](https://www.postgresql.org/docs/current/sql-commit.html) an [UPDATE](https://www.postgresql.org/docs/current/sql-update.html), recording it in the [write-ahead log](https://www.postgresql.org/docs/current/wal-intro.html).
 2. [Debezium](https://debezium.io/documentation/reference/stable/connectors/postgresql.html) reads the logical-decoding stream and writes a change record to a table-specific [Kafka topic](https://kafka.apache.org/intro/).
-3. An indexer consumes the record and updates the [OpenSearch document](https://docs.opensearch.org/latest/api-reference/document-apis/update-document/).
+3. A consumer applies the record to a derived store, such as a Redis key or an [OpenSearch document](https://docs.opensearch.org/latest/api-reference/document-apis/update-document/).
 
 A simplified Debezium-style update record might look like this:
 
