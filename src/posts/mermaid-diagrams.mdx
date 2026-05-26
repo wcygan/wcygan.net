@@ -7,10 +7,8 @@ tags: [Mermaid, Visualization, Diagrams]
 
 import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-I wired [Mermaid.js](https://mermaid.js.org/) into this blog so I can drop
-diagrams straight into a post. It's lazy-loaded and client-rendered, so the
-initial page stays light and I get an architecture sketch or state machine
-without leaving markdown.
+[Mermaid.js](https://mermaid.js.org/) is used to render
+diagrams this blog. Below are a few examples of what you can do.
 
 ## Temperature by Day of Week
 
@@ -206,12 +204,14 @@ Technology stack distribution:
 
 In a blog post, I can use Mermaid like this:
 
-```markdown
-import { MermaidDiagram } from '~/components/MermaidDiagram'
+```javascript
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 
-<MermaidDiagram height={300}
-diagram={`flowchart LR
-	  Start --> Process --> End`} />
+<MermaidDiagram
+  height={300}
+  diagram={`flowchart LR
+	  Start --> Process --> End`}
+/>;
 ```
 
 ## Bonus: Code Blocks with Shiki
