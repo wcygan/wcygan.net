@@ -68,10 +68,9 @@ function drawDatabaseNode(
   width: number,
   height: number,
   active: boolean,
-  stale: boolean,
 ) {
   const fill = active ? "#466eaa" : "#f1f1f1";
-  const stroke = stale ? "#ae5c00" : active ? "#1e468c" : "#d0d0d0";
+  const stroke = active ? "#1e468c" : "#d0d0d0";
   const ellipseHeight = clamp(height * 0.24, 14, 20);
   const left = x - width / 2;
   const right = x + width / 2;
@@ -87,7 +86,7 @@ function drawDatabaseNode(
   ctx.ellipse(x, bottomY, width / 2, ellipseHeight / 2, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.lineWidth = stale ? 4 : 2;
+  ctx.lineWidth = 2;
   ctx.strokeStyle = stroke;
   ctx.beginPath();
   ctx.ellipse(x, topY, width / 2, ellipseHeight / 2, 0, 0, Math.PI * 2);
@@ -201,7 +200,6 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
   );
   const cdcActive = postgresActive && eventX + eventRadius >= cdcLeftEdge;
   const redisActive = postgresActive && eventX + eventRadius >= rightPipeEnd;
-  const staleWindow = postgresActive && !redisActive;
 
   drawPipe(ctx, leftPipeStart, centerY, leftPipeEnd, firstPipeProgress);
   drawPipe(ctx, rightPipeStart, centerY, rightPipeEnd, secondPipeProgress);
@@ -214,7 +212,6 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     databaseWidth,
     databaseHeight,
     postgresActive,
-    false,
   );
   drawCdcPipe(ctx, middleX, centerY, cdcPipeWidth, cdcPipeHeight, cdcActive);
   drawDatabaseNode(
@@ -225,7 +222,6 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     databaseWidth,
     databaseHeight,
     redisActive,
-    staleWindow,
   );
 
   if (eventVisible) {
