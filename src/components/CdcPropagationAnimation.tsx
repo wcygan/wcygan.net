@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 
 const LOOP_MS = 5200;
 const WRITE_START_PHASE = 0.04;
-const WRITE_COMMIT_PHASE = 0.14;
-const WRITE_SETTLE_PHASE = 0.06;
-const EVENT_START_PHASE = 0.2;
+const WRITE_COMMIT_PHASE = 0.265;
+const WRITE_SETTLE_PHASE = 0.14;
+const EVENT_START_PHASE = 0.455;
 const EVENT_TRAVEL_PHASE = 0.38;
 const RESET_PHASE = 0.92;
 
@@ -231,7 +231,7 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
 
   const phase = (now % LOOP_MS) / LOOP_MS;
   const hasReset = phase >= RESET_PHASE;
-  const writeTravelProgress = easeOut(
+  const writeTravelProgress = easeInOut(
     clamp(
       (phase - WRITE_START_PHASE) / (WRITE_COMMIT_PHASE - WRITE_START_PHASE),
       0,
@@ -245,14 +245,17 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     phase >= WRITE_START_PHASE && phase < EVENT_START_PHASE && !hasReset;
   const postgresActivation = hasReset
     ? 0
-    : easeOut(clamp((phase - WRITE_COMMIT_PHASE) / WRITE_SETTLE_PHASE, 0, 1));
+    : easeInOut(clamp((phase - WRITE_COMMIT_PHASE) / WRITE_SETTLE_PHASE, 0, 1));
   const postgresActive = postgresActivation > 0;
   const eventProgress = easeInOut(
     hasReset
       ? 0
       : clamp((phase - EVENT_START_PHASE) / EVENT_TRAVEL_PHASE, 0, 1),
   );
-  const eventVisible = phase >= EVENT_START_PHASE && phase < 0.62 && !hasReset;
+  const eventVisible =
+    phase >= EVENT_START_PHASE &&
+    phase < EVENT_START_PHASE + EVENT_TRAVEL_PHASE + 0.04 &&
+    !hasReset;
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#fafaf9";

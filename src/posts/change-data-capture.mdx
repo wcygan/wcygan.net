@@ -17,7 +17,7 @@ WHERE id = 42;
 
 Now your derived data stores (such as [Redis](https://en.wikipedia.org/wiki/Redis) or [OpenSearch](<https://en.wikipedia.org/wiki/OpenSearch_(software)>)) may be out of sync, showing `free` instead of `pro`.
 
-[Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture) ("CDC") is a pattern that you can use to reconcile the differences in near-real time.
+[Change Data Capture](https://en.wikipedia.org/wiki/Change_data_capture) ("CDC") is a pattern that you can use to reconcile the differences in near-real time by propagating database changes to downstream systems in a reliable way when eventual consistency is tolerable.
 
 <CdcPropagationAnimation />
 
