@@ -780,6 +780,199 @@
     }
   }
 
+  /* WAL write-path canvas demo */
+  .wal-write-path-demo {
+    --wal-write-path-ink: #172033;
+    --wal-write-path-muted: #5c667a;
+    --wal-write-path-line: #d9deea;
+    --wal-write-path-shell: #eef1f7;
+    --wal-write-path-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--wal-write-path-line);
+    border-radius: 8px;
+    background: var(--wal-write-path-shell);
+    box-shadow: var(--wal-write-path-shadow);
+  }
+
+  .wal-write-path-demo p,
+  .wal-write-path-demo h2 {
+    margin: 0;
+  }
+
+  .wal-write-path-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .wal-write-path-header h2 {
+    margin: 0;
+    color: var(--wal-write-path-ink);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .wal-write-path-header p {
+    color: var(--wal-write-path-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .wal-write-path-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 8.5;
+    min-height: 380px;
+    border: 1px solid var(--wal-write-path-line);
+    border-radius: 8px;
+    background: var(--wal-write-path-shell);
+  }
+
+  .wal-write-path-footer {
+    display: block;
+  }
+
+  .wal-write-path-status {
+    min-width: 0;
+    color: var(--wal-write-path-muted);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 720px) {
+    .wal-write-path-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .wal-write-path-header h2 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .wal-write-path-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .wal-write-path-status {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  @container (max-width: 620px) {
+    .wal-write-path-canvas {
+      height: clamp(500px, 136vw, 620px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
+  /* WAL replay canvas demo */
+  .wal-replay-demo {
+    --wal-replay-ink: #172033;
+    --wal-replay-muted: #5c667a;
+    --wal-replay-line: #d9deea;
+    --wal-replay-shell: #eef1f7;
+    --wal-replay-panel: #ffffff;
+    --wal-replay-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--wal-replay-line);
+    border-radius: 8px;
+    background: var(--wal-replay-shell);
+    box-shadow: var(--wal-replay-shadow);
+  }
+
+  .wal-replay-demo p,
+  .wal-replay-demo h2 {
+    margin: 0;
+  }
+
+  .wal-replay-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .wal-replay-header h2 {
+    margin: 0;
+    color: var(--wal-replay-ink);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .wal-replay-header p {
+    color: var(--wal-replay-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .wal-replay-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    min-height: 420px;
+    border: 1px solid var(--wal-replay-line);
+    border-radius: 8px;
+    background: var(--wal-replay-shell);
+  }
+
+  .wal-replay-footer {
+    display: block;
+  }
+
+  .wal-replay-status {
+    min-width: 0;
+    color: var(--wal-replay-muted);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 720px) {
+    .wal-replay-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .wal-replay-header h2 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .wal-replay-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .wal-replay-status {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  @container (max-width: 620px) {
+    .wal-replay-canvas {
+      height: clamp(660px, 168vw, 760px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
   .anton-hero {
     display: grid;
     grid-template-areas:
