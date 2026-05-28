@@ -23,7 +23,7 @@ WHERE id = 42;
 COMMIT;
 ```
 
-After a crash, [InnoDB recovery](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html) applies redo during initialization before accepting connections. The demo stays high level: each card is a logical stand-in for InnoDB's lower-level page redo records. The point is the ordering rule. Recovery starts from a checkpoint and replays durable redo in increasing Log Sequence Number (LSN) order to bring data files forward. Transactions that had not committed are rolled back as part of recovery, and that rollback can continue after the server is available.
+After a crash, [InnoDB recovery](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html) applies redo during initialization before accepting connections. Recovery starts from a checkpoint and replays durable redo in increasing Log Sequence Number (LSN) order to bring data files forward. Transactions that had not committed are rolled back as part of recovery, and that rollback can continue after the server is available.
 
 <MySqlRedoReplayDemo />
 
