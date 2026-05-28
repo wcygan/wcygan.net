@@ -4,7 +4,7 @@ import type {
   RecordKey,
   ReplayLogRecord,
   ReplaySnapshot,
-} from "./model";
+} from "./replay-model";
 import type { CanvasViewport } from "./viewport";
 
 type Point = {
@@ -40,7 +40,7 @@ const MONO_FONT =
   '"Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
 const COMPACT_LAYOUT_MAX_WIDTH = 620;
 
-export function drawWalReplayDemo(
+export function drawMySqlRedoReplayDemo(
   ctx: CanvasRenderingContext2D,
   snapshot: ReplaySnapshot,
   viewport: CanvasViewport,
@@ -107,7 +107,12 @@ function drawLogPanel(
   snapshot: ReplaySnapshot,
   layout: "wide" | "compact",
 ) {
-  drawPanel(ctx, panel, "Log records on disk", "recovery reads these in order");
+  drawPanel(
+    ctx,
+    panel,
+    "High-level durable redo records",
+    "after checkpoint: LSN 101 -> 106",
+  );
 
   const cards = new Map<number, Rect>();
   const columns = layout === "compact" ? 2 : 4;
@@ -140,7 +145,12 @@ function drawDatabasePanel(
   snapshot: ReplaySnapshot,
   layout: "wide" | "compact",
 ) {
-  drawPanel(ctx, panel, "In-memory DB", "rebuilt by replaying the log");
+  drawPanel(
+    ctx,
+    panel,
+    "Recovered InnoDB state",
+    "checkpointed files brought forward in order",
+  );
 
   const cards = new Map<RecordKey, Rect>();
   const gap = layout === "compact" ? 9 : 12;
@@ -186,16 +196,28 @@ function drawLogRecord(
   ctx.stroke();
 
   const operationColor = operationTextColor(record.operation);
-  drawText(ctx, record.summary, card.x + 10, card.y + (compact ? 17 : 18), {
-    color: operationColor,
-    font: `700 ${compact ? 10 : 12}px ${MONO_FONT}`,
-    maxWidth: card.width - 20,
-  });
-  drawText(ctx, record.detail, card.x + 10, card.y + (compact ? 34 : 36), {
-    color: COLORS.muted,
-    font: `${compact ? 10 : 12}px ${UI_FONT}`,
-    maxWidth: card.width - 20,
-  });
+  drawText(
+    ctx,
+    `LSN ${record.sequence} ${record.operation} ${record.recordKey}`,
+    card.x + 10,
+    card.y + (compact ? 17 : 18),
+    {
+      color: operationColor,
+      font: `700 ${compact ? 10 : 12}px ${MONO_FONT}`,
+      maxWidth: card.width - 20,
+    },
+  );
+  drawText(
+    ctx,
+    `durable ${record.detail}`,
+    card.x + 10,
+    card.y + (compact ? 34 : 36),
+    {
+      color: operationColor,
+      font: `${compact ? 10 : 12}px ${UI_FONT}`,
+      maxWidth: card.width - 20,
+    },
+  );
 }
 
 function drawMemoryRecord(
@@ -309,9 +331,10 @@ function operationTextColor(operation: Operation) {
 }
 
 function recordStatusLabel(record: MemoryRecord) {
-  if (record.status === "missing") return "not loaded yet";
-  if (record.status === "deleted") return "deleted";
-  return `${record.lastOperation?.toLowerCase() ?? "loaded"} record`;
+  if (record.status === "missing") return "not in checkpoint";
+  if (record.status === "deleted") return "replayed delete";
+  if (!record.lastOperation) return "from checkpoint";
+  return `replayed ${record.lastOperation.toLowerCase()}`;
 }
 
 function drawPacketDot(ctx: CanvasRenderingContext2D, point: Point) {

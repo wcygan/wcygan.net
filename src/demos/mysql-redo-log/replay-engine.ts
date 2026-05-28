@@ -5,22 +5,24 @@ import {
   INITIAL_REPLAY_STATE,
   nextAppliedCount,
   REDUCED_MOTION_REPLAY_STATE,
-} from "./model";
-import { drawWalReplayDemo } from "./render-canvas";
+} from "./replay-model";
+import { drawMySqlRedoReplayDemo } from "./replay-render-canvas";
 import { resizeCanvas } from "./viewport";
 
-const STEP_MS = 1700;
+const BASE_STEP_MS = 1700;
+const REPLAY_SPEED_MULTIPLIER = 1.56;
+const STEP_MS = BASE_STEP_MS / REPLAY_SPEED_MULTIPLIER;
 
-export type WalReplayDemoEngine = {
+export type MySqlRedoReplayDemoEngine = {
   start(): void;
   destroy(): void;
   snapshot(): ReplaySnapshot;
 };
 
-export function createWalReplayDemo(
+export function createMySqlRedoReplayDemo(
   canvas: HTMLCanvasElement,
   onSnapshot?: (snapshot: ReplaySnapshot) => void,
-): WalReplayDemoEngine {
+): MySqlRedoReplayDemoEngine {
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -43,7 +45,7 @@ export function createWalReplayDemo(
 
     const viewport = resizeCanvas(canvas);
     const snapshot = currentSnapshot();
-    drawWalReplayDemo(ctx, snapshot, viewport);
+    drawMySqlRedoReplayDemo(ctx, snapshot, viewport);
     onSnapshot?.(snapshot);
   }
 

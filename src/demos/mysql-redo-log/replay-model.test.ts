@@ -3,42 +3,26 @@ import {
   deriveReplaySnapshot,
   nextAppliedCount,
   REPLAY_LOG_RECORDS,
-} from "./model";
+} from "./replay-model";
 
 describe("deriveReplaySnapshot", () => {
-  it("starts with eight log records and three in-memory records", () => {
+  it("starts with checkpointed data files and six redo records", () => {
     const snapshot = deriveReplaySnapshot({
       appliedCount: 0,
       stepProgress: 0,
     });
 
-    expect(REPLAY_LOG_RECORDS).toHaveLength(8);
-    expect(snapshot.database.map((record) => record.key)).toEqual([
-      "A",
-      "B",
-      "C",
-    ]);
-    expect(
-      snapshot.database.every((record) => record.status === "missing"),
-    ).toBe(true);
-  });
-
-  it("applies the first three INSERT records", () => {
-    const snapshot = deriveReplaySnapshot({
-      appliedCount: 3,
-      stepProgress: 1,
-    });
-
+    expect(REPLAY_LOG_RECORDS).toHaveLength(6);
     expect(snapshot.database).toMatchObject([
       { key: "A", status: "present", balance: 900 },
       { key: "B", status: "present", balance: 250 },
-      { key: "C", status: "present", balance: 1200 },
+      { key: "C", status: "missing" },
     ]);
   });
 
-  it("updates Account A when its UPDATE record is replayed", () => {
+  it("applies the first redo record after the checkpoint", () => {
     const snapshot = deriveReplaySnapshot({
-      appliedCount: 4,
+      appliedCount: 1,
       stepProgress: 1,
     });
 
@@ -51,9 +35,24 @@ describe("deriveReplaySnapshot", () => {
     });
   });
 
+  it("inserts Account C when its INSERT record is replayed", () => {
+    const snapshot = deriveReplaySnapshot({
+      appliedCount: 2,
+      stepProgress: 1,
+    });
+
+    expect(
+      snapshot.database.find((record) => record.key === "C"),
+    ).toMatchObject({
+      status: "present",
+      balance: 1200,
+      lastOperation: "INSERT",
+    });
+  });
+
   it("deletes Account C when its DELETE record is replayed", () => {
     const snapshot = deriveReplaySnapshot({
-      appliedCount: 7,
+      appliedCount: 5,
       stepProgress: 1,
     });
 
@@ -68,7 +67,7 @@ describe("deriveReplaySnapshot", () => {
 
   it("finishes with the latest values for all replayed records", () => {
     const snapshot = deriveReplaySnapshot({
-      appliedCount: 8,
+      appliedCount: 6,
       stepProgress: 1,
     });
 
@@ -80,7 +79,7 @@ describe("deriveReplaySnapshot", () => {
     expect(snapshot.activeRecord).toBeUndefined();
   });
 
-  it("loops from the complete replay state back to an empty in-memory DB", () => {
+  it("loops from the complete replay state back to the checkpoint", () => {
     const nextCount = nextAppliedCount(REPLAY_LOG_RECORDS.length);
     const snapshot = deriveReplaySnapshot({
       appliedCount: nextCount,
@@ -96,8 +95,8 @@ describe("deriveReplaySnapshot", () => {
         balance: record.balance,
       })),
     ).toEqual([
-      { key: "A", status: "missing", balance: undefined },
-      { key: "B", status: "missing", balance: undefined },
+      { key: "A", status: "present", balance: 900 },
+      { key: "B", status: "present", balance: 250 },
       { key: "C", status: "missing", balance: undefined },
     ]);
   });

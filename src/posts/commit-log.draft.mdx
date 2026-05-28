@@ -1,0 +1,36 @@
+---
+title: The Commit Log
+date: May 27, 2026
+description: A concrete walkthrough of the durable, ordered record that lets databases commit before every data page reaches disk.
+tags: [Data, Databases, Storage]
+draft: true
+---
+
+import { MySqlRedoReplayDemo } from "~/components/MySqlRedoReplayDemo";
+
+[The Log: What every software engineer should know about real-time data's unifying abstraction](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying) explains why logs matter: they give systems a durable record and an order for replay.
+
+In MySQL, [InnoDB's redo log](https://dev.mysql.com/doc/refman/8.4/en/innodb-redo-log.html) stores redo log records for changes that may not have reached the data files yet. With MySQL's default full-ACID setting, [`innodb_flush_log_at_trx_commit=1`](https://dev.mysql.com/doc/refman/8.4/en/innodb-parameters.html#sysvar_innodb_flush_log_at_trx_commit), InnoDB writes the transaction's redo log records and flushes the redo log at commit.
+
+```sql
+START TRANSACTION;
+
+-- Generate redo records
+UPDATE users
+SET plan = 'pro'
+WHERE id = 42;
+
+-- Flush the log
+COMMIT;
+```
+
+After a crash, [InnoDB recovery](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html) applies redo during initialization before accepting connections. The demo stays high level: each card is a logical stand-in for InnoDB's lower-level page redo records. The point is the ordering rule. Recovery starts from a checkpoint and replays durable redo in increasing Log Sequence Number (LSN) order to bring data files forward. Transactions that had not committed are rolled back as part of recovery, and that rollback can continue after the server is available.
+
+<MySqlRedoReplayDemo />
+
+## References
+
+- [MySQL: InnoDB Redo Log](https://dev.mysql.com/doc/refman/8.4/en/innodb-redo-log.html)
+- [MySQL: InnoDB Recovery](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html)
+- [MySQL: InnoDB Log Buffer](https://dev.mysql.com/doc/refman/8.4/en/innodb-redo-log-buffer.html)
+- [MySQL: `innodb_flush_log_at_trx_commit`](https://dev.mysql.com/doc/refman/8.4/en/innodb-parameters.html#sysvar_innodb_flush_log_at_trx_commit)

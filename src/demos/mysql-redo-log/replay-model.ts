@@ -50,36 +50,29 @@ export const RECORD_LABELS: Record<RecordKey, string> = {
   C: "Account C",
 };
 
-export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
+const CHECKPOINT_RECORDS: readonly MemoryRecord[] = [
   {
-    sequence: 1,
-    operation: "INSERT",
-    recordKey: "A",
-    recordLabel: RECORD_LABELS.A,
-    summary: "INSERT Account A",
-    detail: "balance 900",
+    key: "A",
+    label: RECORD_LABELS.A,
+    status: "present",
     balance: 900,
   },
   {
-    sequence: 2,
-    operation: "INSERT",
-    recordKey: "B",
-    recordLabel: RECORD_LABELS.B,
-    summary: "INSERT Account B",
-    detail: "balance 250",
+    key: "B",
+    label: RECORD_LABELS.B,
+    status: "present",
     balance: 250,
   },
   {
-    sequence: 3,
-    operation: "INSERT",
-    recordKey: "C",
-    recordLabel: RECORD_LABELS.C,
-    summary: "INSERT Account C",
-    detail: "balance 1200",
-    balance: 1200,
+    key: "C",
+    label: RECORD_LABELS.C,
+    status: "missing",
   },
+];
+
+export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
   {
-    sequence: 4,
+    sequence: 101,
     operation: "UPDATE",
     recordKey: "A",
     recordLabel: RECORD_LABELS.A,
@@ -88,7 +81,16 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     balance: 800,
   },
   {
-    sequence: 5,
+    sequence: 102,
+    operation: "INSERT",
+    recordKey: "C",
+    recordLabel: RECORD_LABELS.C,
+    summary: "INSERT Account C",
+    detail: "balance 1200",
+    balance: 1200,
+  },
+  {
+    sequence: 103,
     operation: "UPDATE",
     recordKey: "B",
     recordLabel: RECORD_LABELS.B,
@@ -97,7 +99,7 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     balance: 300,
   },
   {
-    sequence: 6,
+    sequence: 104,
     operation: "UPDATE",
     recordKey: "A",
     recordLabel: RECORD_LABELS.A,
@@ -106,7 +108,7 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     balance: 725,
   },
   {
-    sequence: 7,
+    sequence: 105,
     operation: "DELETE",
     recordKey: "C",
     recordLabel: RECORD_LABELS.C,
@@ -114,7 +116,7 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     detail: "remove record",
   },
   {
-    sequence: 8,
+    sequence: 106,
     operation: "UPDATE",
     recordKey: "B",
     recordLabel: RECORD_LABELS.B,
@@ -181,13 +183,7 @@ function recordStatus(index: number, appliedCount: number): LogRecordStatus {
 }
 
 function applyLogRecords(records: readonly LogRecord[]): MemoryRecord[] {
-  const database = (Object.keys(RECORD_LABELS) as RecordKey[]).map(
-    (key): MemoryRecord => ({
-      key,
-      label: RECORD_LABELS[key],
-      status: "missing",
-    }),
-  );
+  const database = CHECKPOINT_RECORDS.map((record) => ({ ...record }));
 
   for (const record of records) {
     const existing = database.find((row) => row.key === record.recordKey);
@@ -218,14 +214,14 @@ function phaseLabel(
   lastAppliedRecord: ReplayLogRecord | undefined,
 ) {
   if (appliedCount === 0) {
-    return "Recovery starts with an empty in-memory database.";
+    return "Checkpointed data files are on disk; recovery starts at LSN 101.";
   }
 
   if (appliedCount >= REPLAY_LOG_RECORDS.length) {
-    return "Replay complete; memory now reflects every record in the log.";
+    return "Ordered replay complete; recovered state includes every durable redo record after the checkpoint.";
   }
 
-  if (!lastAppliedRecord) return "Recovery is ready to replay the log.";
+  if (!lastAppliedRecord) return "InnoDB recovery is ready to replay LSN 101.";
 
-  return `Applied ${lastAppliedRecord.operation} to ${lastAppliedRecord.recordLabel}.`;
+  return `Replayed LSN ${lastAppliedRecord.sequence}: ${lastAppliedRecord.operation} ${lastAppliedRecord.recordLabel}.`;
 }
