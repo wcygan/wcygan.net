@@ -25,6 +25,8 @@ COMMIT;
 
 After a crash, [InnoDB recovery](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html) applies redo during initialization before accepting connections. Recovery starts from a checkpoint and replays durable redo in increasing Log Sequence Number (LSN) order to bring data files forward. Transactions that had not committed are rolled back as part of recovery, and that rollback can continue after the server is available.
 
+In the demo below, Account A and Account B already exist because their earlier insert records happened before the checkpoint and their pages made it into the data files. Recovery starts from that checkpointed data-file image, so the visible redo log only shows records newer than the checkpoint.
+
 <MySqlRedoReplayDemo />
 
 ## References

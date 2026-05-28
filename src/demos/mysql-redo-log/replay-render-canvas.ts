@@ -149,7 +149,7 @@ function drawDatabasePanel(
     ctx,
     panel,
     "Recovered InnoDB state",
-    "checkpointed files brought forward in order",
+    "checkpoint already contains Account A and Account B",
   );
 
   const cards = new Map<RecordKey, Rect>();
