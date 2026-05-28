@@ -1093,6 +1093,85 @@
     }
   }
 
+  .post-content .optimistic-locking-sql-trace {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 26px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post-content .optimistic-locking-sql-trace li {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid rgb(217, 222, 234);
+    border-left: 4px solid rgb(29, 139, 101);
+    border-radius: 6px;
+    background: rgb(249, 249, 249);
+    color: rgb(23, 32, 51);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .post-content .optimistic-locking-sql-trace li[data-result="conflict"] {
+    border-left-color: rgb(190, 64, 58);
+  }
+
+  .post-content .optimistic-locking-sql-trace-worker {
+    color: rgb(30, 70, 140);
+    font-weight: 800;
+  }
+
+  .post-content .optimistic-locking-sql-trace strong {
+    font-weight: 800;
+  }
+
+  .post-content .optimistic-locking-sql-trace code {
+    white-space: nowrap;
+  }
+
+  .post-content .optimistic-locking-sql-transcript {
+    margin: 22px 0 32px;
+    border: 1px solid rgb(217, 222, 234);
+    border-radius: 6px;
+    background: rgb(249, 249, 249);
+    overflow: clip;
+  }
+
+  .post-content .optimistic-locking-sql-transcript > summary {
+    padding: 12px 14px;
+    color: rgb(30, 70, 140);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .post-content .optimistic-locking-sql-transcript > summary::marker {
+    color: rgb(102, 102, 102);
+  }
+
+  .post-content .optimistic-locking-sql-transcript[open] > summary {
+    border-bottom: 1px solid rgb(217, 222, 234);
+  }
+
+  @media (max-width: 720px) {
+    .post-content .optimistic-locking-sql-trace {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .post-content .optimistic-locking-sql-trace li {
+      padding: 11px;
+      font-size: 13px;
+    }
+  }
+
   .anton-hero {
     display: grid;
     grid-template-areas:
@@ -2784,6 +2863,12 @@
   color: var(--code-bright-green);
   border-color: var(--code-green);
   background: rgba(127, 225, 115, 0.12);
+}
+
+.optimistic-locking-sql-transcript .shiki {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 6px 6px;
 }
 
 /* Inline code styling */

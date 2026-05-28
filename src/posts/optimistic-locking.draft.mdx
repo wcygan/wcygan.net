@@ -15,6 +15,80 @@ affects one row, the worker saved fresh state; if it affects zero rows, another
 worker changed the row first and the application should reread the latest row
 before retrying.
 
+<OptimisticLockingRaceDemo />
+
+The `UPDATE` SQL carries the row version you read into the `WHERE` clause.
+This makes the `UPDATE` behave like a [compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap) on one row:
+
+```sql
+UPDATE inventory_items
+SET
+  available = available - 1,
+  version = version + 1
+WHERE sku = 'SKU-42'
+  AND available > 0
+  AND version = :version;
+
+SELECT ROW_COUNT();
+```
+
+<ol
+  className="optimistic-locking-sql-trace"
+  aria-label="Optimistic locking SQL outcomes"
+>
+  <li data-result="success">
+    <span className="optimistic-locking-sql-trace-worker">Worker A</span>
+    <span>
+      read <code>v7</code>
+    </span>
+    <span>
+      expected <code>v7</code>
+    </span>
+    <strong>
+      <code>ROW_COUNT() = 1</code>
+    </strong>
+    <span>reservation saved</span>
+  </li>
+  <li data-result="conflict">
+    <span className="optimistic-locking-sql-trace-worker">Worker B</span>
+    <span>
+      also read <code>v7</code>
+    </span>
+    <span>
+      expected <code>v7</code>
+    </span>
+    <strong>
+      <code>ROW_COUNT() = 0</code>
+    </strong>
+    <span>stale write rejected</span>
+  </li>
+  <li data-result="success">
+    <span className="optimistic-locking-sql-trace-worker">Worker B</span>
+    <span>
+      reread <code>v8</code>
+    </span>
+    <span>
+      expected <code>v8</code>
+    </span>
+    <strong>
+      <code>ROW_COUNT() = 1</code>
+    </strong>
+    <span>retry saved</span>
+  </li>
+</ol>
+
+It is "optimistic" because each worker proceeds as if the row will stay
+unchanged, then uses the version check to detect when that bet was wrong.
+
+With pessimistic row locking (`SELECT ... FOR UPDATE`), Worker A would lock the inventory row before
+thinking about the reservation. Worker B would wait for A to commit or roll
+back, then read the newer `available` and `version` values before deciding
+whether to reserve anything. That avoids the stale-write retry path, but it
+keeps a database lock open while application work happens.
+
+<details className="optimistic-locking-sql-transcript">
+  <summary>Full SQL transcript</summary>
+
 ```sql
 -- Worker A read v7.
 -- available 2.
@@ -56,4 +130,4 @@ SELECT ROW_COUNT();
 -- 1 row
 ```
 
-<OptimisticLockingRaceDemo />
+</details>
