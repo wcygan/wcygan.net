@@ -1,0 +1,31 @@
+---
+title: Optimistic Locking
+date: May 28, 2026
+description: A concrete optimistic locking walkthrough showing how a version column prevents stale writes from silently overwriting newer data.
+tags: [Data, Databases, Concurrency]
+draft: true
+---
+
+Optimistic locking prevents a stale write from silently overwriting a newer
+value by storing a version beside the row, reading that version with the data,
+and requiring the version to still match when the write commits. If the update
+affects one row, the writer saved fresh state; if it affects zero rows, another
+writer changed the row first and the application should treat that as a
+concurrency conflict.
+
+```sql
+START TRANSACTION;
+
+-- Only update if the row still has the version we read.
+UPDATE users
+SET
+  plan = 'pro',
+  version = version + 1
+WHERE id = 42
+  AND version = 7;
+
+-- 1 row means committed; 0 rows means stale write.
+SELECT ROW_COUNT() AS rows_affected;
+
+COMMIT;
+```
