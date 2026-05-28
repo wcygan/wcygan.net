@@ -546,6 +546,9 @@
   }
 
   .post-content pre {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
     padding: 16px 14px 16px 4px;
     background: var(--code-bg);
     border: 1px solid var(--code-bright-black);
@@ -874,6 +877,219 @@
       height: clamp(660px, 168vw, 760px);
       min-height: 0;
       aspect-ratio: auto;
+    }
+  }
+
+  /* Optimistic locking race canvas demo */
+  .optimistic-locking-race-demo {
+    --optimistic-locking-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --optimistic-locking-ink: #172033;
+    --optimistic-locking-muted: #5c667a;
+    --optimistic-locking-line: #d9deea;
+    --optimistic-locking-shell: #eef1f7;
+    --optimistic-locking-blue: rgb(30, 70, 140);
+    --optimistic-locking-blue-soft: rgb(30 70 140 / 8%);
+    --optimistic-locking-green: rgb(29, 139, 101);
+    --optimistic-locking-green-soft: rgb(29 139 101 / 10%);
+    --optimistic-locking-red: rgb(190, 64, 58);
+    --optimistic-locking-red-soft: rgb(190 64 58 / 9%);
+    --optimistic-locking-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--optimistic-locking-line);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 56%), transparent 54%),
+      var(--optimistic-locking-shell);
+    box-shadow: var(--optimistic-locking-shadow);
+  }
+
+  .optimistic-locking-race-demo p,
+  .optimistic-locking-race-demo figcaption,
+  .optimistic-locking-race-demo h2 {
+    margin: 0;
+  }
+
+  .optimistic-locking-race-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .optimistic-locking-race-header h2 {
+    margin: 0;
+    color: var(--optimistic-locking-ink);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .optimistic-locking-race-header p {
+    color: var(--optimistic-locking-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .optimistic-locking-race-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 8.25;
+    min-height: 420px;
+    border: 1px solid var(--optimistic-locking-line);
+    border-radius: 8px;
+    background: var(--optimistic-locking-shell);
+    contain: layout paint;
+    touch-action: pan-y;
+  }
+
+  .optimistic-locking-race-steps {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .optimistic-locking-race-steps li {
+    min-width: 0;
+    margin: 0 !important;
+    padding: 8px 9px !important;
+    border: 1px solid var(--optimistic-locking-line);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 72%);
+    color: var(--optimistic-locking-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    opacity: 0.72;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease,
+      opacity 180ms ease,
+      transform 180ms var(--optimistic-locking-ease-out);
+  }
+
+  .optimistic-locking-race-steps span {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .optimistic-locking-race-steps li[data-state="complete"] {
+    border-color: rgb(29 139 101 / 34%);
+    background: var(--optimistic-locking-green-soft);
+    color: var(--optimistic-locking-green);
+    opacity: 0.9;
+  }
+
+  .optimistic-locking-race-steps li[data-state="active"] {
+    border-color: rgb(30 70 140 / 34%);
+    background: rgb(255 255 255 / 94%);
+    color: var(--optimistic-locking-blue);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .optimistic-locking-race-status {
+    position: relative;
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid rgb(30 70 140 / 18%);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 76%);
+    color: var(--optimistic-locking-muted);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+
+  .optimistic-locking-race-status::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: var(--optimistic-locking-blue);
+    box-shadow: 0 0 0 4px var(--optimistic-locking-blue-soft);
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .optimistic-locking-race-demo[data-phase="worker-a-commit"]
+    .optimistic-locking-race-status::before,
+  .optimistic-locking-race-demo[data-phase="worker-b-reread"]
+    .optimistic-locking-race-status::before,
+  .optimistic-locking-race-demo[data-phase="worker-b-retry"]
+    .optimistic-locking-race-status::before {
+    background: var(--optimistic-locking-green);
+    box-shadow: 0 0 0 4px var(--optimistic-locking-green-soft);
+  }
+
+  .optimistic-locking-race-demo[data-phase="worker-b-conflict"]
+    .optimistic-locking-race-status::before {
+    background: var(--optimistic-locking-red);
+    box-shadow: 0 0 0 4px var(--optimistic-locking-red-soft);
+  }
+
+  @media (max-width: 720px) {
+    .optimistic-locking-race-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .optimistic-locking-race-header h2 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .optimistic-locking-race-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .optimistic-locking-race-status {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  @container (max-width: 620px) {
+    .optimistic-locking-race-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .optimistic-locking-race-canvas {
+      height: clamp(610px, 154vw, 720px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .optimistic-locking-race-steps li,
+    .optimistic-locking-race-status,
+    .optimistic-locking-race-status::before {
+      transition-duration: 0.01ms;
+    }
+
+    .optimistic-locking-race-steps li[data-state="active"] {
+      transform: none;
     }
   }
 

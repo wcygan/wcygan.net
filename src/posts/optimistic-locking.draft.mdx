@@ -1,31 +1,59 @@
 ---
 title: Optimistic Locking
 date: May 28, 2026
-description: A concrete optimistic locking walkthrough showing how a version column prevents stale writes from silently overwriting newer data.
+description: A concrete optimistic locking walkthrough showing how checkout workers retry inventory reservations from the latest row version.
 tags: [Data, Databases, Concurrency]
 draft: true
 ---
 
-Optimistic locking prevents a stale write from silently overwriting a newer
-value by storing a version beside the row, reading that version with the data,
-and requiring the version to still match when the write commits. If the update
-affects one row, the writer saved fresh state; if it affects zero rows, another
-writer changed the row first and the application should treat that as a
-concurrency conflict.
+import { OptimisticLockingRaceDemo } from "~/components/OptimisticLockingRaceDemo";
+
+Optimistic locking prevents a stale write from silently overwriting newer state
+by storing a version beside the row, reading that version with the data, and
+requiring the version to still match when the write commits. If the update
+affects one row, the worker saved fresh state; if it affects zero rows, another
+worker changed the row first and the application should reread the latest row
+before retrying.
 
 ```sql
-START TRANSACTION;
-
--- Only update if the row still has the version we read.
-UPDATE users
+-- Worker A read v7.
+-- available 2.
+UPDATE inventory_items
 SET
-  plan = 'pro',
+  available = available - 1,
   version = version + 1
-WHERE id = 42
+WHERE sku = 'SKU-42'
+  AND available > 0
   AND version = 7;
 
--- 1 row means committed; 0 rows means stale write.
-SELECT ROW_COUNT() AS rows_affected;
+SELECT ROW_COUNT();
+-- 1 row
 
-COMMIT;
+-- Worker B also read v7.
+-- Its stale write is rejected.
+UPDATE inventory_items
+SET
+  available = available - 1,
+  version = version + 1
+WHERE sku = 'SKU-42'
+  AND available > 0
+  AND version = 7;
+
+SELECT ROW_COUNT();
+-- 0 rows
+
+-- Worker B rereads v8.
+-- It recomputes and retries.
+UPDATE inventory_items
+SET
+  available = available - 1,
+  version = version + 1
+WHERE sku = 'SKU-42'
+  AND available > 0
+  AND version = 8;
+
+SELECT ROW_COUNT();
+-- 1 row
 ```
+
+<OptimisticLockingRaceDemo />
