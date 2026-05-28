@@ -37,24 +37,16 @@ after a 2s delay.
 
 ## Interactive Graphics Demos
 
-For article-embedded interactive graphics, prefer the
-`interactive-graphics-demos` Codex skill over older repo-local animation
-patterns. Upstream source:
-[wcygan/dotfiles interactive-graphics-demos](https://github.com/wcygan/dotfiles/tree/main/config/codex/skills/interactive-graphics-demos).
+It's encouraged to embed interactive graphics with the
+`interactive-graphics-demos` Codex skill.
 
-Use that workflow for new demos and meaningful revisions to existing demos:
-define the concept in one sentence, name the invariant, choose the visual form
-that makes the model easiest to inspect, then pick the renderer. Keep React as
-the MDX/lifecycle shell, put reusable model/render/input logic under
-`src/demos/...` when the demo has real behavior, and verify Canvas/SVG/WebGL
-work in browser at desktop and mobile widths.
+## Mobile Support
 
-Existing site typography, color, MDX, and prerender constraints still apply.
-Treat existing CDC components and old demo shells as precedent to understand,
-then choose the figure shape from the concept: inline sketch, full-width canvas,
-small multiples, timeline, log, state table, direct-manipulation control, or a
-custom layout. Reuse a prior framed shell only when that shell is the clearest
-way to teach the invariant.
+Assume most readers will view the site from a phone. Treat mobile styling as a
+first-class acceptance criterion for pages, posts, and demos: text must stay
+readable, controls must remain usable, and layouts must avoid horizontal
+overflow at common phone widths. When a change affects rendered UI, verify the
+real page in a mobile viewport as well as desktop before calling it done.
 
 ## DESIGN.md
 
