@@ -12,21 +12,24 @@ const RACE_STEPS = [
   { phase: "worker-a-commit", label: "A reserves" },
   { phase: "worker-b-conflict", label: "B conflicts" },
   { phase: "worker-b-reread", label: "B rereads v8" },
-  { phase: "worker-b-retry", label: "B retries v9" },
+  { phase: "worker-b-retry", label: "B retries v8" },
 ] as const satisfies readonly { phase: RacePhase; label: string }[];
 
 const INITIAL_SNAPSHOT = deriveRaceSnapshot({ progress: 0, playing: true });
 
-type VisibleRaceState = Pick<RaceSnapshot, "phase" | "phaseLabel">;
+type VisibleRaceState = Pick<RaceSnapshot, "phase" | "phaseLabel"> & {
+  workerBStatus: RaceSnapshot["workers"]["workerB"]["status"];
+};
 
 export function OptimisticLockingRaceDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const statusKeyRef = useRef(
-    `${INITIAL_SNAPSHOT.phase}:${INITIAL_SNAPSHOT.phaseLabel}`,
+    `${INITIAL_SNAPSHOT.phase}:${INITIAL_SNAPSHOT.phaseLabel}:${INITIAL_SNAPSHOT.workers.workerB.status}`,
   );
   const [visibleState, setVisibleState] = useState<VisibleRaceState>({
     phase: INITIAL_SNAPSHOT.phase,
     phaseLabel: INITIAL_SNAPSHOT.phaseLabel,
+    workerBStatus: INITIAL_SNAPSHOT.workers.workerB.status,
   });
 
   useEffect(() => {
@@ -34,13 +37,14 @@ export function OptimisticLockingRaceDemo() {
     if (!canvas) return;
 
     const engine = createOptimisticLockingRaceDemo(canvas, (snapshot) => {
-      const statusKey = `${snapshot.phase}:${snapshot.phaseLabel}`;
+      const statusKey = `${snapshot.phase}:${snapshot.phaseLabel}:${snapshot.workers.workerB.status}`;
       if (statusKey === statusKeyRef.current) return;
 
       statusKeyRef.current = statusKey;
       setVisibleState({
         phase: snapshot.phase,
         phaseLabel: snapshot.phaseLabel,
+        workerBStatus: snapshot.workers.workerB.status,
       });
     });
     engine.start();
@@ -60,7 +64,8 @@ export function OptimisticLockingRaceDemo() {
         <p>
           Two checkout workers read the same available counter at version 7. One
           decrement commits first; the stale worker rereads version 8 and
-          retries the same decrement at version 9.
+          retries against version 8. If it commits, the row advances to version
+          9.
         </p>
       </div>
 
@@ -78,7 +83,11 @@ export function OptimisticLockingRaceDemo() {
         {RACE_STEPS.map((step, index) => (
           <li
             key={step.phase}
-            data-state={stepState(visibleState.phase, index)}
+            data-state={stepState(
+              visibleState.phase,
+              visibleState.workerBStatus === "committed",
+              index,
+            )}
           >
             <span>{step.label}</span>
           </li>
@@ -92,12 +101,23 @@ export function OptimisticLockingRaceDemo() {
   );
 }
 
-function stepState(currentPhase: RacePhase, index: number) {
+function stepState(
+  currentPhase: RacePhase,
+  workerBRetryCommitted: boolean,
+  index: number,
+) {
   const currentIndex = RACE_STEPS.findIndex(
     (step) => step.phase === currentPhase,
   );
 
   if (index < currentIndex) return "complete";
+  if (
+    index === currentIndex &&
+    currentPhase === "worker-b-retry" &&
+    workerBRetryCommitted
+  ) {
+    return "complete";
+  }
   if (index === currentIndex) return "active";
   return "pending";
 }

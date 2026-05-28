@@ -8,7 +8,7 @@ draft: true
 
 import { OptimisticLockingRaceDemo } from "~/components/OptimisticLockingRaceDemo";
 
-Optimistic locking prevents a stale write from silently overwriting newer state
+[Optimistic Locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control) prevents a stale write from silently overwriting newer state
 by storing a version beside the row, reading that version with the data, and
 requiring the version to still match when the write commits. If the update
 affects one row, the worker saved fresh state; if it affects zero rows, another
@@ -31,6 +31,11 @@ WHERE sku = 'SKU-42'
 
 SELECT ROW_COUNT();
 ```
+
+In this example, <code>ROW_COUNT() = 0</code> means the version guard missed.
+Because <code>available &gt; 0</code> is also part of the guard, production code
+should reread the row before deciding whether the failed update was a stale
+version, no remaining stock, or a missing SKU.
 
 <ol
   className="optimistic-locking-sql-trace"
@@ -131,3 +136,10 @@ SELECT ROW_COUNT();
 ```
 
 </details>
+
+## References
+
+- [MySQL: `ROW_COUNT()`](https://dev.mysql.com/doc/refman/8.4/en/information-functions.html#function_row-count)
+- [MySQL: InnoDB Locking Reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html)
+- [MySQL: InnoDB Transaction Isolation Levels](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html)
+- [Martin Fowler: Optimistic Offline Lock](https://martinfowler.com/eaaCatalog/optimisticOfflineLock.html)
