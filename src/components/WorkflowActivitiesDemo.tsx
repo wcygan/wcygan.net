@@ -1,3 +1,13 @@
+// Animated explainer for the durable-execution blog post.
+//
+// It depicts a trip-booking workflow (bookTrip) that runs four activities in
+// sequence: reserveSeat, chargeCard, confirmSeat, sendItinerary. The payment
+// activity (chargeCard) fails on its first attempt and succeeds on the second.
+//
+// The goal is to show, at a high level, what a workflow execution looks like —
+// an orchestrator dispatching activities one at a time — and that it keeps
+// making forward progress despite faults, by retrying the failed activity until
+// it succeeds. The model and rendering live in ~/demos/workflow-activities.
 import { useEffect, useRef, useState } from "react";
 import { createWorkflowActivitiesDemo } from "~/demos/workflow-activities/engine";
 import {
@@ -7,13 +17,22 @@ import {
 } from "~/demos/workflow-activities/model";
 
 const WORKFLOW_STEPS = [
-  { phase: "dispatch-charge", label: "schedule chargeCard" },
-  { phase: "run-charge", label: "chargeCard done" },
   { phase: "dispatch-reserve", label: "schedule reserveSeat" },
   { phase: "run-reserve", label: "reserveSeat done" },
+  { phase: "dispatch-charge", label: "schedule chargeCard" },
+  { phase: "run-charge", label: "chargeCard attempt 1", fault: true },
+  { phase: "fail-charge", label: "attempt 1 fails", fault: true },
+  { phase: "retry-charge", label: "retry chargeCard" },
+  { phase: "run-charge-retry", label: "attempt 2 succeeds" },
+  { phase: "dispatch-confirm", label: "schedule confirmSeat" },
+  { phase: "run-confirm", label: "confirmSeat done" },
   { phase: "dispatch-send", label: "schedule sendItinerary" },
   { phase: "run-send", label: "sendItinerary done" },
-] as const satisfies readonly { phase: WorkflowPhase; label: string }[];
+] as const satisfies readonly {
+  phase: WorkflowPhase;
+  label: string;
+  fault?: boolean;
+}[];
 
 const INITIAL_SNAPSHOT = deriveActivitiesSnapshot({
   progress: 0,
@@ -63,12 +82,14 @@ export function WorkflowActivitiesDemo() {
       data-phase={visibleState.phase}
     >
       <div className="workflow-activities-header">
-        <h2>bookTrip() orchestrates three activities</h2>
+        <h2>Trip Booking Workflow</h2>
         <p>
           The bookTrip() workflow does no real work itself. It holds the state
-          and dispatches activities in order: chargeCard, reserveSeat, then
-          sendItinerary. Each activity performs one unit of work and returns a
-          result before the next one starts.
+          and dispatches activities in order: reserveSeat, chargeCard,
+          confirmSeat, then sendItinerary. Each fills its progress ring to 100%
+          and returns a result before the next one starts. chargeCard fails on
+          its first attempt, so Temporal retries it after a backoff and the
+          second attempt succeeds.
         </p>
       </div>
 
@@ -76,7 +97,7 @@ export function WorkflowActivitiesDemo() {
         ref={canvasRef}
         className="workflow-activities-canvas"
         role="img"
-        aria-label="Animated diagram of a bookTrip workflow on the left orchestrating three activities on the right. The workflow sends a schedule command to chargeCard, which works and returns charged $480, then to reserveSeat which returns seat 14C, then to sendItinerary which returns email sent. Only one activity is active at a time and the workflow ends complete."
+        aria-label="Animated diagram of a bookTrip workflow on the left orchestrating four activities on the right. The workflow sends a schedule command to reserveSeat, which fills a circular progress ring to 100% and returns seat 14C, then to chargeCard, whose first attempt fails at 50% and shows a red cross; Temporal retries chargeCard after a backoff and the second attempt fills to 100% and returns charged $480. Then confirmSeat returns seat confirmed and sendItinerary returns email sent. Only one activity is active at a time and the workflow ends complete."
       />
 
       <ol
@@ -90,6 +111,8 @@ export function WorkflowActivitiesDemo() {
               visibleState.phase,
               visibleState.workflowComplete,
               index,
+              step.phase,
+              "fault" in step && step.fault === true,
             )}
           >
             <span>{step.label}</span>
@@ -108,13 +131,21 @@ function stepState(
   currentPhase: WorkflowPhase,
   workflowComplete: boolean,
   index: number,
+  stepPhase: WorkflowPhase,
+  fault: boolean,
 ) {
   const currentIndex = WORKFLOW_STEPS.findIndex(
     (step) => step.phase === currentPhase,
   );
 
-  if (workflowComplete) return "complete";
-  if (index < currentIndex) return "complete";
-  if (index === currentIndex) return "active";
+  // A failure step stays red once reached: the failed attempt is part of the
+  // history even after the retry succeeds and the workflow completes.
+  const reached = workflowComplete || index < currentIndex;
+  if (reached) return fault ? "failed" : "complete";
+
+  if (index === currentIndex) {
+    // The backoff phase is the moment the failure is on screen; show it red.
+    return stepPhase === "fail-charge" ? "failed" : "active";
+  }
   return "pending";
 }

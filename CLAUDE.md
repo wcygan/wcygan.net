@@ -16,7 +16,9 @@ deno task test        # Run Vitest unit tests
 ### Local dev URL: `https://wcygan.localhost`
 
 `just dev` runs Vite under [portless](https://github.com/vercel-labs/portless),
-which gives a stable HTTPS URL backed by a local CA. Configured via
+which gives a stable HTTPS URL backed by a local CA. The dev task first runs
+`scripts/ensure-portless-443.sh`, which keeps the proxy on privileged port 443
+and repairs root-owned Portless state after sudo startup. Configured via
 `portless.json` (`{ "name": "wcygan" }`); the justfile also `open`s the URL
 after a 2s delay.
 

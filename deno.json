@@ -4,7 +4,7 @@
     "~/": "./src/"
   },
   "tasks": {
-    "dev": "PORTLESS_STATE_DIR=$HOME/.portless portless run deno task dev-vite",
+    "dev": "PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 scripts/ensure-portless-443.sh && PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 portless run deno task dev-vite",
     "dev-vite": "vite dev",
     "build": "deno run -A scripts/build.mjs",
     "preview": "vite preview",

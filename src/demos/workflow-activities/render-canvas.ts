@@ -42,8 +42,9 @@ const MONO_FONT =
 const COMPACT_LAYOUT_MAX_WIDTH = 620;
 
 const ACTIVITY_ORDER: ActivityKey[] = [
-  "chargeCard",
   "reserveSeat",
+  "chargeCard",
+  "confirmSeat",
   "sendItinerary",
 ];
 
@@ -83,8 +84,10 @@ function drawWide(
   );
 
   const columnX = padding + workflowWidth + gap;
-  const cardGap = 16;
-  const cardHeight = (height - padding * 2 - cardGap * 2) / 3;
+  const cardGap = 14;
+  const cardCount = ACTIVITY_ORDER.length;
+  const cardHeight =
+    (height - padding * 2 - cardGap * (cardCount - 1)) / cardCount;
   const cards = ACTIVITY_ORDER.map((key, index) =>
     rect(
       columnX,
@@ -135,7 +138,9 @@ function drawCompact(
 
   const stackTop = workflowCard.y + workflowCard.height + 44;
   const cardGap = 12;
-  const cardHeight = (height - stackTop - padding - cardGap * 2) / 3;
+  const cardCount = ACTIVITY_ORDER.length;
+  const cardHeight =
+    (height - stackTop - padding - cardGap * (cardCount - 1)) / cardCount;
   const cards = ACTIVITY_ORDER.map((key, index) =>
     rect(
       padding,
@@ -211,7 +216,9 @@ function drawWorkflowCard(
     ctx,
     card.x + 16,
     card.y + card.height - (compact ? 26 : 24),
-    complete ? "complete" : `${workflow.completedCount}/3 done`,
+    complete
+      ? "complete"
+      : `${workflow.completedCount}/${ACTIVITY_ORDER.length} done`,
     {
       fill,
       stroke,
@@ -229,7 +236,7 @@ function drawProgressDots(
   activeColor: string,
   activeFill: string,
 ) {
-  for (let index = 0; index < 3; index += 1) {
+  for (let index = 0; index < ACTIVITY_ORDER.length; index += 1) {
     const filled = index < completed;
     ctx.beginPath();
     ctx.arc(x + 7 + index * 20, y, 6, 0, Math.PI * 2);
@@ -248,6 +255,7 @@ function drawActivityCard(
   compact: boolean,
 ) {
   const palette = activityPalette(activity);
+  const ring = ringMetrics(card, compact);
 
   if (activity.status === "working" && activity.pulse > 0) {
     const glow = 0.5 + activity.pulse * 0.5;
@@ -263,6 +271,8 @@ function drawActivityCard(
   drawRoundedRect(ctx, card, 9, COLORS.panel, palette.stroke, 1.5);
 
   const muted = activity.status === "pending";
+  // Leave the ring its own column so text never runs underneath it.
+  const textMaxWidth = ring.left - card.x - 28;
 
   ctx.save();
   ctx.globalAlpha = muted ? 0.6 : 1;
@@ -270,22 +280,131 @@ function drawActivityCard(
   drawText(ctx, "Activity", card.x + 14, card.y + 22, {
     color: palette.stroke,
     font: `800 ${compact ? 10 : 11}px ${UI_FONT}`,
-    maxWidth: card.width - 110,
+    maxWidth: textMaxWidth,
   });
   drawText(ctx, activity.label, card.x + 14, card.y + (compact ? 42 : 44), {
     color: COLORS.ink,
     font: `800 ${compact ? 15 : 17}px ${MONO_FONT}`,
-    maxWidth: card.width - 28,
+    maxWidth: textMaxWidth,
   });
   drawText(ctx, activity.job, card.x + 14, card.y + (compact ? 60 : 64), {
     color: COLORS.muted,
     font: `600 ${compact ? 11 : 12}px ${UI_FONT}`,
-    maxWidth: card.width - 28,
+    maxWidth: textMaxWidth,
   });
 
   ctx.restore();
 
-  drawStatusPill(ctx, card, activity, palette);
+  drawWorkRing(ctx, ring, activity, palette);
+  drawStatusPill(ctx, card, activity, palette, ring.left);
+}
+
+type RingMetrics = { cx: number; cy: number; radius: number; left: number };
+
+function ringMetrics(card: Rect, compact: boolean): RingMetrics {
+  const radius = compact ? 19 : 18;
+  const cx = card.x + card.width - radius - 16;
+  const cy = card.y + card.height / 2;
+  return { cx, cy, radius, left: cx - radius };
+}
+
+// Circular completion meter: a track plus a gold arc that fills 0..100% while
+// the activity works, then settles to a full green ring with a check when done.
+function drawWorkRing(
+  ctx: CanvasRenderingContext2D,
+  ring: RingMetrics,
+  activity: ActivitySnapshot,
+  palette: { stroke: string; fill: string },
+) {
+  if (activity.status === "pending") return;
+
+  const { cx, cy, radius } = ring;
+  const thickness = 4;
+
+  // A failed attempt reads as a solid red circle with a cross, not a meter.
+  if (activity.status === "failed") {
+    ctx.save();
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = palette.stroke;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    drawCross(ctx, cx, cy, radius * 0.42, palette.stroke);
+    return;
+  }
+
+  ctx.save();
+  ctx.lineWidth = thickness;
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = COLORS.line;
+  ctx.stroke();
+
+  const start = -Math.PI / 2;
+  const sweep = Math.PI * 2 * clamp(activity.progress, 0, 1);
+  if (sweep > 0) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, start, start + sweep);
+    ctx.strokeStyle = palette.stroke;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  if (activity.status === "done") {
+    drawCheck(ctx, cx, cy, radius * 0.5, palette.stroke);
+    return;
+  }
+
+  const percent = `${Math.round(clamp(activity.progress, 0, 1) * 100)}%`;
+  drawText(ctx, percent, cx, cy + 4, {
+    align: "center",
+    color: palette.stroke,
+    font: `800 11px ${UI_FONT}`,
+  });
+}
+
+function drawCross(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - size, cy - size);
+  ctx.lineTo(cx + size, cy + size);
+  ctx.moveTo(cx + size, cy - size);
+  ctx.lineTo(cx - size, cy + size);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCheck(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - size * 0.55, cy + size * 0.05);
+  ctx.lineTo(cx - size * 0.1, cy + size * 0.5);
+  ctx.lineTo(cx + size * 0.62, cy - size * 0.45);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawStatusPill(
@@ -293,6 +412,7 @@ function drawStatusPill(
   card: Rect,
   activity: ActivitySnapshot,
   palette: { stroke: string; fill: string },
+  ringLeft: number,
 ) {
   const label = activity.resultLabel ?? activity.statusLabel;
   const font = activity.resultLabel
@@ -300,7 +420,8 @@ function drawStatusPill(
     : `800 10px ${UI_FONT}`;
   ctx.font = font;
   const measured = ctx.measureText(label).width + 18;
-  const maxWidth = card.width - 28;
+  // Stop short of the ring column so the pill never tucks under the meter.
+  const maxWidth = ringLeft - card.x - 26;
   const width = Math.min(measured, maxWidth);
   const pill = rect(card.x + 14, card.y + card.height - 32, width, 22);
 
@@ -338,9 +459,15 @@ function drawPacket(
   compact: boolean,
 ) {
   const toActivity = packet.direction === "to-activity";
-  const stroke = toActivity ? COLORS.blue : COLORS.green;
-  const fill = toActivity ? COLORS.blueSoft : COLORS.greenSoft;
-  const font = `800 ${compact ? 9 : 10}px ${toActivity ? UI_FONT : MONO_FONT}`;
+  const isError = packet.tone === "error";
+  const stroke = isError ? COLORS.red : toActivity ? COLORS.blue : COLORS.green;
+  const fill = isError
+    ? COLORS.redSoft
+    : toActivity
+      ? COLORS.blueSoft
+      : COLORS.greenSoft;
+  const useMono = !isError && !toActivity;
+  const font = `800 ${compact ? 9 : 10}px ${useMono ? MONO_FONT : UI_FONT}`;
 
   ctx.font = font;
   const width = Math.min(ctx.measureText(packet.label).width + 22, 132);
@@ -384,8 +511,16 @@ function activityPalette(activity: ActivitySnapshot): {
   if (activity.status === "done") {
     return { stroke: COLORS.green, fill: COLORS.greenSoft };
   }
-  if (activity.status === "working" || activity.status === "scheduled") {
+  if (activity.status === "failed") {
+    return { stroke: COLORS.red, fill: COLORS.redSoft };
+  }
+  if (activity.status === "working") {
     return { stroke: COLORS.gold, fill: COLORS.goldSoft };
+  }
+  // Scheduled: the request is still in flight, so the card reads as "incoming"
+  // (blue, matching the schedule packet) rather than already working (gold).
+  if (activity.status === "scheduled") {
+    return { stroke: COLORS.blue, fill: COLORS.blueSoft };
   }
   return { stroke: COLORS.line, fill: COLORS.shell };
 }

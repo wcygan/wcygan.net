@@ -1106,6 +1106,8 @@
     --workflow-activities-green-soft: rgb(29 139 101 / 11%);
     --workflow-activities-gold: rgb(213, 155, 36);
     --workflow-activities-gold-soft: rgb(213 155 36 / 14%);
+    --workflow-activities-red: rgb(190, 64, 58);
+    --workflow-activities-red-soft: rgb(190 64 58 / 12%);
     --workflow-activities-shadow: 0 12px 34px rgb(23 32 51 / 8%);
     container-type: inline-size;
     display: grid;
@@ -1147,8 +1149,8 @@
   .workflow-activities-canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 8.25;
-    min-height: 420px;
+    aspect-ratio: 16 / 10.6;
+    min-height: 520px;
     border: 1px solid var(--workflow-activities-line);
     border-radius: 8px;
     background: var(--workflow-activities-shell);
@@ -1158,7 +1160,7 @@
 
   .workflow-activities-steps {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
     margin: 0 !important;
     padding: 0 !important;
@@ -1206,6 +1208,13 @@
     transform: translateY(-1px);
   }
 
+  .workflow-activities-steps li[data-state="failed"] {
+    border-color: rgb(190 64 58 / 45%);
+    background: var(--workflow-activities-red-soft);
+    color: var(--workflow-activities-red);
+    opacity: 1;
+  }
+
   .workflow-activities-status {
     position: relative;
     display: flex;
@@ -1243,12 +1252,22 @@
 
   .workflow-activities-demo[data-phase="run-charge"]
     .workflow-activities-status::before,
+  .workflow-activities-demo[data-phase="run-charge-retry"]
+    .workflow-activities-status::before,
   .workflow-activities-demo[data-phase="run-reserve"]
+    .workflow-activities-status::before,
+  .workflow-activities-demo[data-phase="run-confirm"]
     .workflow-activities-status::before,
   .workflow-activities-demo[data-phase="run-send"]
     .workflow-activities-status::before {
     background: var(--workflow-activities-gold);
     box-shadow: 0 0 0 4px var(--workflow-activities-gold-soft);
+  }
+
+  .workflow-activities-demo[data-phase="fail-charge"]
+    .workflow-activities-status::before {
+    background: var(--workflow-activities-red);
+    box-shadow: 0 0 0 4px var(--workflow-activities-red-soft);
   }
 
   @media (max-width: 720px) {
@@ -1282,7 +1301,7 @@
     }
 
     .workflow-activities-canvas {
-      height: clamp(600px, 150vw, 720px);
+      height: clamp(720px, 185vw, 880px);
       min-height: 0;
       aspect-ratio: auto;
     }
