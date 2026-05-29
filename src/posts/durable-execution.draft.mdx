@@ -6,6 +6,11 @@ tags: [Data, Distributed Systems, Temporal]
 draft: true
 ---
 
+import { WorkflowActivitiesDemo } from "~/components/WorkflowActivitiesDemo";
+import { DurableTaskLoopDemo } from "~/components/DurableTaskLoopDemo";
+import { WorkerCrashModesDemo } from "~/components/WorkerCrashModesDemo";
+import { RetryIdempotencyDemo } from "~/components/RetryIdempotencyDemo";
+
 A workflow engine like [Temporal](https://temporal.io/) (or [DBOS](https://www.dbos.dev/), [Conductor](https://conductor-oss.org/), [Restate](https://www.restate.dev/)) keeps long-running work alive across crashes, restarts, and partial failures.
 
 Temporal does that by running a [Workflow Execution](https://docs.temporal.io/workflow-execution) and persisting an [Event History](https://docs.temporal.io/workflow-execution/event#event-history), an append-only record similar to a [Commit Log](/commit-log). The Event History records durable facts: the workflow started, an Activity was scheduled, an Activity completed with this result, a timer fired, a signal arrived.
@@ -16,17 +21,25 @@ Temporal does that by running a [Workflow Execution](https://docs.temporal.io/wo
 
 → An **Activity** executes a single, well-defined unit of work, such as: a single database write operation, calling another service, or sending an email message.
 
+<WorkflowActivitiesDemo />
+
 ## The durable task loop
 
 The [Temporal Service](https://docs.temporal.io/temporal-service) stores history, schedules tasks, and coordinates state transitions, but it does not run your application code. [Worker](https://docs.temporal.io/workers#worker) processes poll [Task Queues](https://docs.temporal.io/task-queue), execute Workflow and Activity code, and report results back to the service. When a Worker needs to resume the Workflow, [it re-runs the Workflow code against those recorded facts](https://docs.temporal.io/workflows#resuming-a-workflow) instead of starting the business process from scratch.
+
+<DurableTaskLoopDemo />
 
 ## Worker crash mechanics
 
 If a Worker dies during a [Workflow Task](https://docs.temporal.io/tasks#workflow-task), another Worker can replay the Event History and continue the workflow execution from the same point. If it dies during an [Activity](https://docs.temporal.io/activities), Temporal cannot know whether the external side effect happened; it waits for a [timeout](https://docs.temporal.io/encyclopedia/detecting-activity-failures#start-to-close-timeout), then retries if the Activity's policy allows it.
 
+<WorkerCrashModesDemo />
+
 ## Retries and idempotency
 
 Durable execution records progress, but it does not make side effects exactly once. If a Worker sends an email and then crashes before completion is recorded, a retry may run that code again. That is why [Activities should be idempotent](https://docs.temporal.io/activity-definition#idempotency): use idempotency keys, unique constraints, guarded updates, or similar techniques to avoid performing a side effect more than once. By default, Temporal [retries Activities](https://docs.temporal.io/encyclopedia/retry-policies#activity-execution), not whole Workflows, so a flaky step can retry while the durable business process stays intact.
+
+<RetryIdempotencyDemo />
 
 ## References
 
