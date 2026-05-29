@@ -108,6 +108,7 @@ function drawWide(
       ctx,
       card,
       snapshot.activities[ACTIVITY_ORDER[index]],
+      index + 1,
       false,
     );
   });
@@ -161,6 +162,7 @@ function drawCompact(
       ctx,
       card,
       snapshot.activities[ACTIVITY_ORDER[index]],
+      index + 1,
       true,
     );
   });
@@ -182,7 +184,6 @@ function drawWorkflowCard(
 ) {
   const complete = workflow.status === "complete";
   const stroke = complete ? COLORS.green : COLORS.blue;
-  const fill = complete ? COLORS.greenSoft : COLORS.blueSoft;
 
   drawShadow(ctx, card, 12);
   drawRoundedRect(ctx, card, 10, COLORS.panel, stroke, 1.6);
@@ -203,48 +204,69 @@ function drawWorkflowCard(
     maxWidth: card.width - 32,
   });
 
-  drawProgressDots(
+  drawWorkflowProgress(
     ctx,
     card.x + 16,
-    card.y + card.height - (compact ? 30 : 38),
+    card.y + card.height - (compact ? 28 : 32),
+    card.width - 32,
     workflow.completedCount,
-    stroke,
-    fill,
-  );
-
-  drawBadge(
-    ctx,
-    card.x + 16,
-    card.y + card.height - (compact ? 26 : 24),
-    complete
-      ? "complete"
-      : `${workflow.completedCount}/${ACTIVITY_ORDER.length} done`,
-    {
-      fill,
-      stroke,
-      color: stroke,
-      maxWidth: card.width - 32,
-    },
+    complete,
+    compact,
   );
 }
 
-function drawProgressDots(
+// Numbered progress track: four nodes on a connector line, each transitioning
+// from gray (not yet done) to green (done) so the workflow's advance is legible
+// without a separate counter.
+function drawWorkflowProgress(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
+  width: number,
   completed: number,
-  activeColor: string,
-  activeFill: string,
+  complete: boolean,
+  compact: boolean,
 ) {
-  for (let index = 0; index < ACTIVITY_ORDER.length; index += 1) {
-    const filled = index < completed;
+  const count = ACTIVITY_ORDER.length;
+  const radius = compact ? 12 : 13;
+  const first = x + radius;
+  const last = x + width - radius;
+  const span = (last - first) / (count - 1);
+  const doneCount = complete ? count : completed;
+
+  // Connector segments live only in the gaps between nodes so the line never
+  // crosses a numbered circle. A gap is green once both nodes it joins are done.
+  ctx.save();
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  const gapPad = radius + 3;
+  for (let index = 0; index < count - 1; index += 1) {
+    const segStart = first + span * index + gapPad;
+    const segEnd = first + span * (index + 1) - gapPad;
+    ctx.strokeStyle = index + 1 < doneCount ? COLORS.green : COLORS.line;
     ctx.beginPath();
-    ctx.arc(x + 7 + index * 20, y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = filled ? activeFill : COLORS.shell;
-    ctx.fill();
-    ctx.strokeStyle = filled ? activeColor : COLORS.line;
-    ctx.lineWidth = 1.6;
+    ctx.moveTo(segStart, y);
+    ctx.lineTo(segEnd, y);
     ctx.stroke();
+  }
+  ctx.restore();
+
+  for (let index = 0; index < count; index += 1) {
+    const done = index < doneCount;
+    const cx = first + span * index;
+    ctx.beginPath();
+    ctx.arc(cx, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = done ? COLORS.greenSoft : COLORS.shell;
+    ctx.fill();
+    ctx.strokeStyle = done ? COLORS.green : COLORS.line;
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    drawText(ctx, String(index + 1), cx, y + 4, {
+      align: "center",
+      color: done ? COLORS.green : COLORS.muted,
+      font: `800 ${compact ? 12 : 13}px ${UI_FONT}`,
+    });
   }
 }
 
@@ -252,10 +274,12 @@ function drawActivityCard(
   ctx: CanvasRenderingContext2D,
   card: Rect,
   activity: ActivitySnapshot,
+  step: number,
   compact: boolean,
 ) {
   const palette = activityPalette(activity);
   const ring = ringMetrics(card, compact);
+  const midY = card.y + card.height / 2;
 
   if (activity.status === "working" && activity.pulse > 0) {
     const glow = 0.5 + activity.pulse * 0.5;
@@ -271,23 +295,32 @@ function drawActivityCard(
   drawRoundedRect(ctx, card, 9, COLORS.panel, palette.stroke, 1.5);
 
   const muted = activity.status === "pending";
-  // Leave the ring its own column so text never runs underneath it.
-  const textMaxWidth = ring.left - card.x - 28;
+
+  // Three rails across the width: ordinal marker (left), identity (center),
+  // live status pill (right), and the progress ring (far right). Spreading
+  // them fills the wide card instead of bunching everything top-left.
+  const stepRadius = compact ? 14 : 16;
+  const stepCx = card.x + 16 + stepRadius;
+  drawStepNumber(ctx, stepCx, midY, stepRadius, step, muted);
+
+  const textLeft = stepCx + stepRadius + (compact ? 12 : 16);
+  const pill = statusPillRect(ctx, activity, ring.left, midY, compact);
 
   ctx.save();
   ctx.globalAlpha = muted ? 0.6 : 1;
 
-  drawText(ctx, "Activity", card.x + 14, card.y + 22, {
+  const textMaxWidth = pill.x - textLeft - 12;
+  drawText(ctx, "Activity", textLeft, midY - (compact ? 16 : 18), {
     color: palette.stroke,
     font: `800 ${compact ? 10 : 11}px ${UI_FONT}`,
     maxWidth: textMaxWidth,
   });
-  drawText(ctx, activity.label, card.x + 14, card.y + (compact ? 42 : 44), {
+  drawText(ctx, activity.label, textLeft, midY + (compact ? 4 : 5), {
     color: COLORS.ink,
     font: `800 ${compact ? 15 : 17}px ${MONO_FONT}`,
     maxWidth: textMaxWidth,
   });
-  drawText(ctx, activity.job, card.x + 14, card.y + (compact ? 60 : 64), {
+  drawText(ctx, activity.job, textLeft, midY + (compact ? 22 : 24), {
     color: COLORS.muted,
     font: `600 ${compact ? 11 : 12}px ${UI_FONT}`,
     maxWidth: textMaxWidth,
@@ -295,8 +328,36 @@ function drawActivityCard(
 
   ctx.restore();
 
+  drawStatusPill(ctx, pill, activity, palette);
   drawWorkRing(ctx, ring, activity, palette);
-  drawStatusPill(ctx, card, activity, palette, ring.left);
+}
+
+// Sequence marker (1..4) showing the order activities run. It stays neutral so
+// it reads as ordinal identity; the ring on the right carries live status.
+function drawStepNumber(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  radius: number,
+  step: number,
+  muted: boolean,
+) {
+  ctx.save();
+  ctx.globalAlpha = muted ? 0.6 : 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.shell;
+  ctx.fill();
+  ctx.strokeStyle = COLORS.line;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.restore();
+
+  drawText(ctx, String(step), cx, cy + (radius > 14 ? 5 : 4), {
+    align: "center",
+    color: COLORS.muted,
+    font: `800 ${radius > 14 ? 15 : 13}px ${UI_FONT}`,
+  });
 }
 
 type RingMetrics = { cx: number; cy: number; radius: number; left: number };
@@ -407,29 +468,45 @@ function drawCheck(
   ctx.restore();
 }
 
-function drawStatusPill(
-  ctx: CanvasRenderingContext2D,
-  card: Rect,
-  activity: ActivitySnapshot,
-  palette: { stroke: string; fill: string },
-  ringLeft: number,
-) {
+function statusPillLabel(activity: ActivitySnapshot): {
+  label: string;
+  font: string;
+} {
   const label = activity.resultLabel ?? activity.statusLabel;
   const font = activity.resultLabel
     ? `800 11px ${MONO_FONT}`
     : `800 10px ${UI_FONT}`;
+  return { label, font };
+}
+
+// The pill hugs the ring's left edge, vertically centered, so result text sits
+// in the wide gap between the activity label and the meter.
+function statusPillRect(
+  ctx: CanvasRenderingContext2D,
+  activity: ActivitySnapshot,
+  ringLeft: number,
+  midY: number,
+  compact: boolean,
+): Rect {
+  const { label, font } = statusPillLabel(activity);
   ctx.font = font;
   const measured = ctx.measureText(label).width + 18;
-  // Stop short of the ring column so the pill never tucks under the meter.
-  const maxWidth = ringLeft - card.x - 26;
-  const width = Math.min(measured, maxWidth);
-  const pill = rect(card.x + 14, card.y + card.height - 32, width, 22);
+  const width = Math.min(measured, compact ? 120 : 170);
+  return rect(ringLeft - (compact ? 12 : 16) - width, midY - 11, width, 22);
+}
 
+function drawStatusPill(
+  ctx: CanvasRenderingContext2D,
+  pill: Rect,
+  activity: ActivitySnapshot,
+  palette: { stroke: string; fill: string },
+) {
+  const { label, font } = statusPillLabel(activity);
   drawRoundedRect(ctx, pill, 999, palette.fill, palette.stroke, 1);
   drawText(ctx, label, pill.x + 9, pill.y + 15, {
     color: palette.stroke,
     font,
-    maxWidth: width - 18,
+    maxWidth: pill.width - 18,
   });
 }
 
@@ -523,30 +600,6 @@ function activityPalette(activity: ActivitySnapshot): {
     return { stroke: COLORS.blue, fill: COLORS.blueSoft };
   }
   return { stroke: COLORS.line, fill: COLORS.shell };
-}
-
-function drawBadge(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  label: string,
-  options: {
-    fill: string;
-    stroke: string;
-    color: string;
-    maxWidth?: number;
-  },
-) {
-  ctx.font = `800 10px ${UI_FONT}`;
-  const measured = ctx.measureText(label).width + 18;
-  const width = Math.min(options.maxWidth ?? measured, measured);
-  const badge = rect(x, y, width, 22);
-  drawRoundedRect(ctx, badge, 999, options.fill, options.stroke, 1);
-  drawText(ctx, label, x + 9, y + 15, {
-    color: options.color,
-    font: `800 10px ${UI_FONT}`,
-    maxWidth: width - 18,
-  });
 }
 
 function drawShadow(ctx: CanvasRenderingContext2D, box: Rect, blur: number) {
