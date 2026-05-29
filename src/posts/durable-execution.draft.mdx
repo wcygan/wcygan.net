@@ -1,0 +1,47 @@
+---
+title: Durable Execution
+date: May 29, 2026
+description: How durable execution allows long-running work to survive failures.
+tags: [Data, Distributed Systems, Temporal]
+draft: true
+---
+
+A workflow engine like [Temporal](https://temporal.io/) (or [DBOS](https://www.dbos.dev/), [Conductor](https://conductor-oss.org/), [Restate](https://www.restate.dev/)) keeps long-running work alive across crashes, restarts, and partial failures.
+
+Temporal does that by running a [Workflow Execution](https://docs.temporal.io/workflow-execution) and persisting an [Event History](https://docs.temporal.io/workflow-execution/event#event-history), an append-only record similar to a [Commit Log](/commit-log). The Event History records durable facts: the workflow started, an Activity was scheduled, an Activity completed with this result, a timer fired, a signal arrived.
+
+## Workflows vs Activities
+
+→ A **Workflow** [defines](https://docs.temporal.io/workflow-definition) the overall flow of the application by organizing a series of [activities](https://docs.temporal.io/activities) and are carried out by running that code, which results in an [execution](https://docs.temporal.io/workflow-execution).
+
+→ An **Activity** executes a single, well-defined unit of work, such as: a single database write operation, calling another service, or sending an email message. Activities should be [idempotent](https://docs.temporal.io/activity-definition#idempotency).
+
+## The durable task loop
+
+The [Temporal Service](https://docs.temporal.io/temporal-service) stores history, schedules tasks, and coordinates state transitions, but it does not run your application code. [Worker](https://docs.temporal.io/workers#worker) processes poll [Task Queues](https://docs.temporal.io/task-queue), execute Workflow and Activity code, and report results back to the service. When a Worker needs to resume the Workflow, [it re-runs the Workflow code against those recorded facts](https://docs.temporal.io/workflows#resuming-a-workflow) instead of starting the business process from scratch.
+
+## Worker crash mechanics
+
+If a Workflow Worker dies while replaying or making a decision, another Worker can replay the same Event History and produce the next command. If an Activity Worker dies before reporting completion, Temporal does not assume the side effect finished. The Activity attempt eventually times out, then the Activity Execution can be retried according to its Retry Policy.
+
+This is why Temporal feels different from a normal background job queue. A job queue can persist "run this job." Temporal persists the history of a long-running execution and uses Workers as replaceable compute for the next step.
+
+## Retries and idempotency
+
+Durable execution records progress, but it does not make side effects magically happen exactly once. If a Worker calls a payment API, writes to a database, sends an email, and then crashes before reporting Activity completion back to Temporal, the next Activity attempt may run that code again.
+
+That is why Activities need idempotency keys, unique constraints, guarded updates, or another application-level way to turn "try this again" into "safe to observe more than once." Temporal can remember that `authorizePayment` completed. It cannot make a non-idempotent payment provider forget that it received the first request.
+
+By default, Temporal retries Activities, not entire Workflow Executions. That matches the design: retry the flaky external step, keep the durable business process intact, and let the Workflow move forward once the Activity eventually succeeds or fails in a way the Workflow should handle.
+
+## References
+
+- [Temporal: What is Temporal?](https://docs.temporal.io/temporal)
+- [Temporal: Workflows](https://docs.temporal.io/workflows)
+- [Temporal: Workflow Execution](https://docs.temporal.io/workflow-execution)
+- [Temporal: Events and Event History](https://docs.temporal.io/workflow-execution/event)
+- [Temporal: Activities](https://docs.temporal.io/activities)
+- [Temporal: Workers](https://docs.temporal.io/workers)
+- [Temporal: Task Queues](https://docs.temporal.io/task-queue)
+- [Temporal: Retry Policies](https://docs.temporal.io/encyclopedia/retry-policies)
+- [Temporal: Failures](https://docs.temporal.io/references/failures)
