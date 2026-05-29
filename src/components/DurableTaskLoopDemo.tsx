@@ -1,50 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+// Animated explainer for the durable-execution blog post.
+//
+// It depicts the Temporal task loop as a queue the Worker drains to empty: a
+// completed Workflow Task scheduled activity tasks, the Service queues them
+// (drawn as a row of slots — capped at four for the visual, not a real Task
+// Queue limit), and the Worker polls and runs one activity at a time (a filling
+// progress ring), reporting each outcome so the Service can append a durable
+// event. Activities — not Workflow Tasks — are the unit that does real work and
+// can fail, so three run per loop: the middle one fails its first attempt, backs
+// off, and retries to success, so the ring resolves to a green check
+// (ActivityTaskCompleted) or a red cross (ActivityTaskFailed). The Worker keeps
+// going until the queue is empty and every activity is complete. Model and
+// rendering live in ~/demos/durable-task-loop.
+import { useEffect, useRef } from "react";
 import { createDurableTaskLoopDemo } from "~/demos/durable-task-loop/engine";
-import {
-  deriveDurableTaskLoopSnapshot,
-  type DurableTaskLoopSnapshot,
-  type LoopPhase,
-} from "~/demos/durable-task-loop/model";
-
-const LOOP_STEPS = [
-  { phase: "enqueue", label: "Service enqueues" },
-  { phase: "poll", label: "Worker polls" },
-  { phase: "execute", label: "Worker executes" },
-  { phase: "report", label: "Worker reports" },
-  { phase: "append", label: "History appends" },
-] as const satisfies readonly { phase: LoopPhase; label: string }[];
-
-const INITIAL_SNAPSHOT = deriveDurableTaskLoopSnapshot({
-  progress: 0,
-  playing: true,
-});
-
-type VisibleLoopState = Pick<DurableTaskLoopSnapshot, "phase" | "phaseLabel">;
 
 export function DurableTaskLoopDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const statusKeyRef = useRef(
-    `${INITIAL_SNAPSHOT.phase}:${INITIAL_SNAPSHOT.phaseLabel}`,
-  );
-  const [visibleState, setVisibleState] = useState<VisibleLoopState>({
-    phase: INITIAL_SNAPSHOT.phase,
-    phaseLabel: INITIAL_SNAPSHOT.phaseLabel,
-  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = createDurableTaskLoopDemo(canvas, (snapshot) => {
-      const statusKey = `${snapshot.phase}:${snapshot.phaseLabel}`;
-      if (statusKey === statusKeyRef.current) return;
-
-      statusKeyRef.current = statusKey;
-      setVisibleState({
-        phase: snapshot.phase,
-        phaseLabel: snapshot.phaseLabel,
-      });
-    });
+    const engine = createDurableTaskLoopDemo(canvas);
     engine.start();
 
     return () => {
@@ -53,14 +30,13 @@ export function DurableTaskLoopDemo() {
   }, []);
 
   return (
-    <figure className="durable-task-loop-demo" data-phase={visibleState.phase}>
+    <figure className="durable-task-loop-demo">
       <div className="durable-task-loop-header">
-        <h2>One cycle through the task loop</h2>
+        <h2>The durable task loop</h2>
         <p>
-          The Temporal Service stores history and schedules tasks, but it never
-          runs your code. A Worker polls the Task Queue, executes the workflow,
-          and reports back. Each cycle appends one event to the durable Event
-          History.
+          The Temporal Service queues pending activity tasks; a Worker drains
+          the queue to empty, running each activity and reporting every outcome
+          to the durable Event History.
         </p>
       </div>
 
@@ -68,36 +44,8 @@ export function DurableTaskLoopDemo() {
         ref={canvasRef}
         className="durable-task-loop-canvas"
         role="img"
-        aria-label="Animated loop showing the Temporal Service placing a workflow task on a Task Queue, a Worker polling and taking the task, the Worker executing workflow code, the Worker reporting commands back to the Service, and the Service appending a new event to the append-only Event History"
+        aria-label="Animated diagram of a durable task loop. After a Workflow Task schedules the work, the Temporal Service places activity tasks into a Task Queue, shown as a row of slots that fill with pending tasks. A Worker polls the queue and runs one activity at a time while a circular progress ring fills from 0 to 100 percent. The first activity completes with a green check; the second fails partway with a red cross, then Temporal waits out a backoff and retries it to success; the third completes too. The Worker keeps draining the queue until it is empty and every activity is complete. After each result the Service appends a new event to a durable, append-only Event History panel that opens with the workflow bootstrap events and then interleaves ActivityTaskScheduled, ActivityTaskStarted, ActivityTaskFailed, and ActivityTaskCompleted as the log grows over time."
       />
-
-      <ol
-        className="durable-task-loop-steps"
-        aria-label="Durable task loop timeline"
-      >
-        {LOOP_STEPS.map((step, index) => (
-          <li
-            key={step.phase}
-            data-state={stepState(visibleState.phase, index)}
-          >
-            <span>{step.label}</span>
-          </li>
-        ))}
-      </ol>
-
-      <figcaption className="durable-task-loop-status">
-        {visibleState.phaseLabel}
-      </figcaption>
     </figure>
   );
-}
-
-function stepState(currentPhase: LoopPhase, index: number) {
-  const currentIndex = LOOP_STEPS.findIndex(
-    (step) => step.phase === currentPhase,
-  );
-
-  if (index < currentIndex) return "complete";
-  if (index === currentIndex) return "active";
-  return "pending";
 }

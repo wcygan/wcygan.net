@@ -7,7 +7,7 @@ import {
 import { drawDurableTaskLoopDemo } from "./render-canvas";
 import { resizeCanvas } from "./viewport";
 
-const LOOP_MS = 15000;
+const LOOP_MS = 20000;
 
 export type DurableTaskLoopDemoEngine = {
   start(): void;

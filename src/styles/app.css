@@ -1203,7 +1203,6 @@
   }
 
   .durable-task-loop-demo p,
-  .durable-task-loop-demo figcaption,
   .durable-task-loop-demo h2 {
     margin: 0;
   }
@@ -1229,112 +1228,13 @@
   .durable-task-loop-canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 8.25;
-    min-height: 420px;
+    aspect-ratio: 16 / 8.5;
+    min-height: 440px;
     border: 1px solid var(--durable-task-loop-line);
     border-radius: 8px;
     background: var(--durable-task-loop-shell);
     contain: layout paint;
     touch-action: pan-y;
-  }
-
-  .durable-task-loop-steps {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-  }
-
-  .durable-task-loop-steps li {
-    min-width: 0;
-    margin: 0 !important;
-    padding: 8px 9px !important;
-    border: 1px solid var(--durable-task-loop-line);
-    border-radius: 6px;
-    background: rgb(255 255 255 / 72%);
-    color: var(--durable-task-loop-muted);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1.2;
-    opacity: 0.72;
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease,
-      opacity 180ms ease,
-      transform 180ms var(--durable-task-loop-ease-out);
-  }
-
-  .durable-task-loop-steps span {
-    display: block;
-    overflow-wrap: anywhere;
-  }
-
-  .durable-task-loop-steps li[data-state="complete"] {
-    border-color: rgb(29 139 101 / 34%);
-    background: var(--durable-task-loop-green-soft);
-    color: var(--durable-task-loop-green);
-    opacity: 0.9;
-  }
-
-  .durable-task-loop-steps li[data-state="active"] {
-    border-color: rgb(30 70 140 / 34%);
-    background: rgb(255 255 255 / 94%);
-    color: var(--durable-task-loop-blue);
-    opacity: 1;
-    transform: translateY(-1px);
-  }
-
-  .durable-task-loop-status {
-    position: relative;
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
-    min-height: 44px;
-    padding: 10px 12px;
-    border: 1px solid rgb(30 70 140 / 18%);
-    border-radius: 6px;
-    background: rgb(255 255 255 / 76%);
-    color: var(--durable-task-loop-muted);
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.35;
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease;
-  }
-
-  .durable-task-loop-status::before {
-    content: "";
-    flex: 0 0 auto;
-    width: 9px;
-    height: 9px;
-    margin-top: 4px;
-    border-radius: 999px;
-    background: var(--durable-task-loop-blue);
-    box-shadow: 0 0 0 4px var(--durable-task-loop-blue-soft);
-    transition:
-      background-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .durable-task-loop-demo[data-phase="execute"]
-    .durable-task-loop-status::before,
-  .durable-task-loop-demo[data-phase="report"]
-    .durable-task-loop-status::before {
-    background: var(--durable-task-loop-gold);
-    box-shadow: 0 0 0 4px var(--durable-task-loop-gold-soft);
-  }
-
-  .durable-task-loop-demo[data-phase="append"]
-    .durable-task-loop-status::before {
-    background: var(--durable-task-loop-green);
-    box-shadow: 0 0 0 4px var(--durable-task-loop-green-soft);
   }
 
   @media (max-width: 720px) {
@@ -1354,35 +1254,13 @@
       font-size: 14px;
       line-height: 21px;
     }
-
-    .durable-task-loop-status {
-      font-size: 12px;
-      line-height: 1.35;
-    }
   }
 
   @container (max-width: 620px) {
-    .durable-task-loop-steps {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-    }
-
     .durable-task-loop-canvas {
-      height: clamp(640px, 162vw, 760px);
+      height: clamp(660px, 168vw, 800px);
       min-height: 0;
       aspect-ratio: auto;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .durable-task-loop-steps li,
-    .durable-task-loop-status,
-    .durable-task-loop-status::before {
-      transition-duration: 0.01ms;
-    }
-
-    .durable-task-loop-steps li[data-state="active"] {
-      transform: none;
     }
   }
 

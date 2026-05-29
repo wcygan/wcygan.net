@@ -2,8 +2,11 @@ import {
   clamp,
   type DurableTaskLoopSnapshot,
   type HistoryRow,
-  type NodeSnapshot,
   type PacketSnapshot,
+  type QueueSnapshot,
+  type ServiceSnapshot,
+  type SlotSnapshot,
+  type WorkerSnapshot,
 } from "./model";
 import type { CanvasViewport } from "./viewport";
 
@@ -15,6 +18,14 @@ type Point = {
 type Rect = Point & {
   width: number;
   height: number;
+};
+
+type Lane = { from: Point; to: Point };
+
+type Ports = {
+  serviceToQueue: Lane;
+  queueToWorker: Lane;
+  workerToService: Lane;
 };
 
 const COLORS = {
@@ -39,6 +50,7 @@ const UI_FONT =
 const MONO_FONT =
   '"Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace';
 const COMPACT_LAYOUT_MAX_WIDTH = 620;
+const TAU = Math.PI * 2;
 
 export function drawDurableTaskLoopDemo(
   ctx: CanvasRenderingContext2D,
@@ -66,38 +78,34 @@ function drawWide(
 ) {
   const padding = 18;
   const gap = 20;
-  const historyWidth = clampDimension(width * 0.3, 232, 290);
+  const historyWidth = clampDimension(width * 0.31, 236, 300);
   const triangleWidth = width - padding * 2 - historyWidth - gap;
-  const nodeWidth = clampDimension(triangleWidth * 0.42, 184, 224);
-  const nodeHeight = 96;
+  const nodeWidth = clampDimension(triangleWidth * 0.46, 188, 232);
+  const serviceHeight = 88;
+  const ioHeight = clampDimension(height * 0.4, 150, 180);
 
-  const triangleLeft = padding;
   const serviceBox = rect(
-    triangleLeft + (triangleWidth - nodeWidth) / 2,
-    36,
+    padding + (triangleWidth - nodeWidth) / 2,
+    22,
     nodeWidth,
-    nodeHeight,
+    serviceHeight,
   );
-  const queueBox = rect(
-    triangleLeft,
-    height - 36 - nodeHeight,
-    nodeWidth,
-    nodeHeight,
-  );
+  const ioTop = height - 22 - ioHeight;
+  const queueBox = rect(padding, ioTop, nodeWidth, ioHeight);
   const workerBox = rect(
-    triangleLeft + triangleWidth - nodeWidth,
-    height - 36 - nodeHeight,
+    padding + triangleWidth - nodeWidth,
+    ioTop,
     nodeWidth,
-    nodeHeight,
+    ioHeight,
   );
   const history = rect(
     padding + triangleWidth + gap,
-    30,
+    18,
     historyWidth,
-    height - 60,
+    height - 36,
   );
 
-  const ports = {
+  const ports: Ports = {
     serviceToQueue: { from: bottomLeftPort(serviceBox), to: topPort(queueBox) },
     queueToWorker: { from: rightPort(queueBox), to: leftPort(workerBox) },
     workerToService: {
@@ -106,29 +114,13 @@ function drawWide(
     },
   };
 
-  drawArrowLane(
-    ctx,
-    ports.serviceToQueue.from,
-    ports.serviceToQueue.to,
-    "places task",
-  );
-  drawArrowLane(
-    ctx,
-    ports.queueToWorker.from,
-    ports.queueToWorker.to,
-    "polls + takes",
-  );
-  drawArrowLane(
-    ctx,
-    ports.workerToService.from,
-    ports.workerToService.to,
-    "reports result",
-  );
+  drawArrowLane(ctx, ports.serviceToQueue, "enqueues");
+  drawArrowLane(ctx, ports.queueToWorker, "polls");
+  drawArrowLane(ctx, ports.workerToService, "reports");
 
-  drawNodeCard(ctx, serviceBox, snapshot.nodes.service, snapshot);
-  drawQueueCard(ctx, queueBox, snapshot);
-  drawNodeCard(ctx, workerBox, snapshot.nodes.worker, snapshot);
-
+  drawServiceCard(ctx, serviceBox, snapshot.service, false);
+  drawQueueCard(ctx, queueBox, snapshot.queue, false);
+  drawWorkerCard(ctx, workerBox, snapshot.worker, snapshot.progress, false);
   drawHistoryPanel(ctx, history, snapshot, false);
   drawPackets(ctx, snapshot.packets, ports, false);
 }
@@ -142,23 +134,15 @@ function drawCompact(
   const padding = width < 360 ? 12 : 14;
   const gap = 12;
   const nodeWidth = (width - padding * 2 - gap) / 2;
-  const nodeHeight = width < 360 ? 90 : 96;
+  const serviceHeight = 92;
+  const ioHeight = 168;
 
-  const serviceBox = rect(padding, padding, width - padding * 2, nodeHeight);
-  const queueBox = rect(
-    padding,
-    padding + nodeHeight + gap,
-    nodeWidth,
-    nodeHeight,
-  );
-  const workerBox = rect(
-    padding + nodeWidth + gap,
-    padding + nodeHeight + gap,
-    nodeWidth,
-    nodeHeight,
-  );
+  const serviceBox = rect(padding, padding, width - padding * 2, serviceHeight);
+  const ioTop = padding + serviceHeight + 16;
+  const queueBox = rect(padding, ioTop, nodeWidth, ioHeight);
+  const workerBox = rect(padding + nodeWidth + gap, ioTop, nodeWidth, ioHeight);
 
-  const historyY = padding + nodeHeight * 2 + gap * 2;
+  const historyY = ioTop + ioHeight + 16;
   const history = rect(
     padding,
     historyY,
@@ -166,7 +150,7 @@ function drawCompact(
     height - historyY - padding,
   );
 
-  const ports = {
+  const ports: Ports = {
     serviceToQueue: {
       from: bottomPortAt(serviceBox, 0.28),
       to: topPort(queueBox),
@@ -174,39 +158,30 @@ function drawCompact(
     queueToWorker: { from: rightPort(queueBox), to: leftPort(workerBox) },
     workerToService: {
       from: topPort(workerBox),
-      to: bottomPortAt(serviceBox, 0.74),
+      to: bottomPortAt(serviceBox, 0.72),
     },
   };
 
-  drawArrowLane(
-    ctx,
-    ports.serviceToQueue.from,
-    ports.serviceToQueue.to,
-    "places",
-  );
-  drawArrowLane(ctx, ports.queueToWorker.from, ports.queueToWorker.to, "polls");
-  drawArrowLane(
-    ctx,
-    ports.workerToService.from,
-    ports.workerToService.to,
-    "reports",
-  );
+  // The card gaps are too tight for lane labels on narrow screens; the moving
+  // packets and arrowheads carry the direction instead.
+  drawArrowLane(ctx, ports.serviceToQueue, "");
+  drawArrowLane(ctx, ports.queueToWorker, "");
+  drawArrowLane(ctx, ports.workerToService, "");
 
-  drawNodeCard(ctx, serviceBox, snapshot.nodes.service, snapshot);
-  drawQueueCard(ctx, queueBox, snapshot);
-  drawNodeCard(ctx, workerBox, snapshot.nodes.worker, snapshot);
-
+  drawServiceCard(ctx, serviceBox, snapshot.service, true);
+  drawQueueCard(ctx, queueBox, snapshot.queue, true);
+  drawWorkerCard(ctx, workerBox, snapshot.worker, snapshot.progress, true);
   drawHistoryPanel(ctx, history, snapshot, true);
   drawPackets(ctx, snapshot.packets, ports, true);
 }
 
-function drawNodeCard(
+function drawServiceCard(
   ctx: CanvasRenderingContext2D,
   card: Rect,
-  node: NodeSnapshot,
-  snapshot: DurableTaskLoopSnapshot,
+  service: ServiceSnapshot,
+  compact: boolean,
 ) {
-  const palette = nodePalette(node, snapshot);
+  const palette = servicePalette(service);
   drawShadow(ctx, card, 10);
   drawRoundedRect(
     ctx,
@@ -214,21 +189,21 @@ function drawNodeCard(
     9,
     COLORS.panel,
     palette.stroke,
-    node.active ? 1.8 : 1.2,
+    service.active ? 1.8 : 1.2,
   );
 
-  drawText(ctx, node.label, card.x + 14, card.y + 26, {
+  drawText(ctx, "Temporal Service", card.x + 14, card.y + 26, {
     color: COLORS.ink,
-    font: `800 16px ${UI_FONT}`,
+    font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
-  drawText(ctx, node.role, card.x + 14, card.y + 46, {
+  drawText(ctx, "stores history, schedules tasks", card.x + 14, card.y + 46, {
     color: COLORS.muted,
     font: `600 11px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
 
-  drawBadge(ctx, card.x + 14, card.y + card.height - 30, node.statusLabel, {
+  drawBadge(ctx, card.x + 14, card.y + card.height - 30, service.statusLabel, {
     fill: palette.fill,
     stroke: palette.stroke,
     color: palette.stroke,
@@ -239,10 +214,115 @@ function drawNodeCard(
 function drawQueueCard(
   ctx: CanvasRenderingContext2D,
   card: Rect,
-  snapshot: DurableTaskLoopSnapshot,
+  queue: QueueSnapshot,
+  compact: boolean,
 ) {
-  const node = snapshot.nodes.queue;
-  const palette = nodePalette(node, snapshot);
+  const active = queue.level > 0;
+  drawShadow(ctx, card, 10);
+  drawRoundedRect(
+    ctx,
+    card,
+    9,
+    COLORS.panel,
+    active ? COLORS.blue : COLORS.line,
+    active ? 1.8 : 1.2,
+  );
+
+  drawText(ctx, "Task Queue", card.x + 14, card.y + 26, {
+    color: COLORS.ink,
+    font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
+    maxWidth: card.width - 28,
+  });
+  drawText(ctx, "holds pending activity tasks", card.x + 14, card.y + 46, {
+    color: COLORS.muted,
+    font: `600 11px ${UI_FONT}`,
+    maxWidth: card.width - 28,
+  });
+
+  drawQueueBuffer(ctx, card, queue, compact);
+
+  drawText(ctx, queue.label, card.x + 14, card.y + card.height - 12, {
+    color: active ? COLORS.blue : COLORS.muted,
+    font: `800 11px ${UI_FONT}`,
+    maxWidth: card.width - 28,
+  });
+}
+
+// The "work queue buffer": an outer rectangle holding four slots that fill
+// left to right with pending tasks and empty as the Worker takes them.
+function drawQueueBuffer(
+  ctx: CanvasRenderingContext2D,
+  card: Rect,
+  queue: QueueSnapshot,
+  compact: boolean,
+) {
+  const top = card.y + 56;
+  const bottom = card.y + card.height - 30;
+  const buffer = rect(card.x + 14, top, card.width - 28, bottom - top);
+  drawRoundedRect(ctx, buffer, 8, COLORS.shell, COLORS.line, 1);
+
+  const inset = 8;
+  const slotGap = compact ? 6 : 7;
+  const count = queue.capacity;
+  const slotWidth = (buffer.width - inset * 2 - slotGap * (count - 1)) / count;
+  const slotHeight = buffer.height - inset * 2;
+
+  for (let index = 0; index < count; index += 1) {
+    const slot = rect(
+      buffer.x + inset + index * (slotWidth + slotGap),
+      buffer.y + inset,
+      slotWidth,
+      slotHeight,
+    );
+    drawQueueSlot(ctx, slot, queue.slots[index]);
+  }
+}
+
+function drawQueueSlot(
+  ctx: CanvasRenderingContext2D,
+  slot: Rect,
+  state: SlotSnapshot,
+) {
+  if (!state.filled) {
+    drawDashedRect(ctx, slot, 5);
+    return;
+  }
+
+  if (state.flash > 0) {
+    ctx.save();
+    ctx.globalAlpha = 0.16 + state.flash * 0.3;
+    roundedPath(ctx, expand(slot, 2 + state.flash * 3), 6);
+    ctx.fillStyle = COLORS.blue;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  drawRoundedRect(ctx, slot, 5, COLORS.blueSoft, COLORS.blue, 1.4);
+
+  // A solid token inside the slot reads as a unit of buffered work.
+  const token = expand(slot, -Math.min(slot.width, slot.height) * 0.28);
+  drawRoundedRect(ctx, token, 3, COLORS.blue, COLORS.blue, 1);
+}
+
+function drawWorkerCard(
+  ctx: CanvasRenderingContext2D,
+  card: Rect,
+  worker: WorkerSnapshot,
+  progress: number,
+  compact: boolean,
+) {
+  const palette = workerPalette(worker);
+  const executing = worker.phase === "executing";
+
+  if (executing) {
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    roundedPath(ctx, expand(card, 4), 12);
+    ctx.fillStyle = COLORS.gold;
+    ctx.fill();
+    ctx.restore();
+  }
+
   drawShadow(ctx, card, 10);
   drawRoundedRect(
     ctx,
@@ -250,41 +330,107 @@ function drawQueueCard(
     9,
     COLORS.panel,
     palette.stroke,
-    node.active ? 1.8 : 1.2,
+    worker.phase === "polling" ? 1.2 : 1.8,
   );
 
-  drawText(ctx, node.label, card.x + 14, card.y + 26, {
+  drawText(ctx, "Worker", card.x + 14, card.y + 26, {
     color: COLORS.ink,
-    font: `800 16px ${UI_FONT}`,
+    font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
-  drawText(ctx, node.role, card.x + 14, card.y + 46, {
+  drawText(ctx, "polls queue, runs activities", card.x + 14, card.y + 46, {
     color: COLORS.muted,
     font: `600 11px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
 
-  const slot = rect(
-    card.x + 14,
-    card.y + card.height - 32,
-    card.width - 28,
-    22,
-  );
-  if (snapshot.queue.hasTask) {
-    drawRoundedRect(ctx, slot, 6, COLORS.blueSoft, COLORS.blue, 1.2);
-    drawText(ctx, snapshot.queue.label, slot.x + 9, slot.y + 15, {
-      color: COLORS.blue,
-      font: `800 11px ${MONO_FONT}`,
-      maxWidth: slot.width - 18,
-    });
-  } else {
-    drawDashedRect(ctx, slot, 6);
-    drawText(ctx, snapshot.queue.label, slot.x + 9, slot.y + 15, {
-      color: COLORS.muted,
-      font: `700 11px ${UI_FONT}`,
-      maxWidth: slot.width - 18,
-    });
+  const ringRadius = compact ? 28 : 30;
+  const ringCenter = {
+    x: card.x + card.width / 2,
+    y: card.y + 52 + (card.height - 52 - 22) / 2,
+  };
+  drawWorkerRing(ctx, ringCenter, ringRadius, worker, progress, palette);
+
+  drawText(ctx, worker.statusLabel, ringCenter.x, card.y + card.height - 12, {
+    align: "center",
+    color: palette.stroke,
+    font: `800 11px ${UI_FONT}`,
+    maxWidth: card.width - 28,
+  });
+}
+
+// Circular completion meter mirroring the gold-standard activity ring: a track,
+// a gold arc that fills while the Worker executes, a green check on success, a
+// red cross on failure, and an orbiting dot while it polls for the next task.
+function drawWorkerRing(
+  ctx: CanvasRenderingContext2D,
+  center: Point,
+  radius: number,
+  worker: WorkerSnapshot,
+  progress: number,
+  palette: { stroke: string; fill: string },
+) {
+  const { x: cx, y: cy } = center;
+  const thickness = 5;
+
+  ctx.save();
+  ctx.lineWidth = thickness;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, TAU);
+  ctx.strokeStyle = COLORS.line;
+  ctx.stroke();
+  ctx.restore();
+
+  if (worker.phase === "polling" || worker.phase === "taking") {
+    // A dot orbits the track to show the Worker actively polling the queue.
+    const angle = -Math.PI / 2 + progress * TAU * 3;
+    const dot = {
+      x: cx + Math.cos(angle) * radius,
+      y: cy + Math.sin(angle) * radius,
+    };
+    ctx.beginPath();
+    ctx.fillStyle = COLORS.gold;
+    ctx.arc(dot.x, dot.y, thickness / 1.6, 0, TAU);
+    ctx.fill();
+    return;
   }
+
+  if (worker.outcome === "failure") {
+    ctx.save();
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = COLORS.red;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, TAU);
+    ctx.stroke();
+    ctx.restore();
+    drawCross(ctx, cx, cy, radius * 0.42, COLORS.red);
+    return;
+  }
+
+  const start = -Math.PI / 2;
+  const sweep = TAU * clamp(worker.ringProgress, 0, 1);
+  if (sweep > 0) {
+    ctx.save();
+    ctx.lineWidth = thickness;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = palette.stroke;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, start, start + sweep);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (worker.outcome === "success") {
+    drawCheck(ctx, cx, cy, radius * 0.5, COLORS.green);
+    return;
+  }
+
+  const percent = `${Math.round(clamp(worker.ringProgress, 0, 1) * 100)}%`;
+  drawText(ctx, percent, cx, cy + 4, {
+    align: "center",
+    color: COLORS.gold,
+    font: `800 12px ${UI_FONT}`,
+  });
 }
 
 function drawHistoryPanel(
@@ -309,15 +455,17 @@ function drawHistoryPanel(
 
   const listTop = panel.y + 60;
   const listBottom = panel.y + panel.height - 14;
-  const rowGap = 8;
-  const maxRows = 5;
-  const rowHeight = Math.min(
-    52,
-    (listBottom - listTop - rowGap * (maxRows - 1)) / maxRows,
+  const rowGap = 7;
+  const rowHeight = compact ? 30 : 34;
+  const capacity = Math.max(
+    1,
+    Math.floor((listBottom - listTop + rowGap) / (rowHeight + rowGap)),
   );
 
-  for (let index = 0; index < snapshot.history.length; index += 1) {
-    const row = snapshot.history[index];
+  // The log keeps growing; show the most recent rows so the panel reads as a
+  // window scrolling forward in time rather than a fixed list.
+  const rows = snapshot.history.slice(-capacity);
+  rows.forEach((row, index) => {
     const box = rect(
       panel.x + 14,
       listTop + index * (rowHeight + rowGap),
@@ -325,7 +473,7 @@ function drawHistoryPanel(
       rowHeight,
     );
     drawHistoryRow(ctx, box, row, snapshot.historyFlash, compact);
-  }
+  });
 }
 
 function drawHistoryRow(
@@ -335,34 +483,56 @@ function drawHistoryRow(
   flash: number,
   compact: boolean,
 ) {
-  const flashAlpha = row.newest ? 0.1 + flash * 0.22 : 0;
-  const fill = row.newest ? `rgb(29 139 101 / ${flashAlpha})` : "#f8fafc";
-  const stroke = row.newest ? COLORS.green : COLORS.line;
-  drawRoundedRect(ctx, box, 7, fill, stroke, row.newest ? 1.5 : 1);
+  const accent = historyAccent(row.tone);
+  const flashAlpha = row.newest ? flash * 0.18 : 0;
+  const fill = historyFill(row, flashAlpha);
+  const stroke =
+    row.tone === "neutral" ? (row.newest ? COLORS.blue : COLORS.line) : accent;
+  drawRoundedRect(ctx, box, 7, fill, stroke, row.newest ? 1.6 : 1);
 
-  drawText(ctx, String(row.id), box.x + 11, box.y + box.height / 2 + 4, {
-    color: row.newest ? COLORS.green : COLORS.muted,
+  const midY = box.y + box.height / 2 + 4;
+  drawText(ctx, String(row.id), box.x + 11, midY, {
+    color: accent,
     font: `800 12px ${MONO_FONT}`,
   });
-  drawText(ctx, row.type, box.x + 32, box.y + box.height / 2 + 4, {
+  drawText(ctx, row.type, box.x + 32, midY, {
     color: COLORS.ink,
-    font: `700 ${compact ? 11 : 12}px ${MONO_FONT}`,
-    maxWidth: box.width - 44 - (row.newest ? 14 : 0),
+    font: `700 ${compact ? 10 : 11}px ${MONO_FONT}`,
+    maxWidth: box.width - 44 - (row.tone === "neutral" ? 0 : 14),
   });
 
-  if (row.newest) {
-    const dotX = box.x + box.width - 12;
+  if (row.tone !== "neutral") {
+    const dotX = box.x + box.width - 13;
     ctx.beginPath();
-    ctx.fillStyle = COLORS.green;
-    ctx.arc(dotX, box.y + box.height / 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = accent;
+    ctx.arc(dotX, box.y + box.height / 2, 4, 0, TAU);
     ctx.fill();
   }
+}
+
+function historyAccent(tone: HistoryRow["tone"]) {
+  if (tone === "success") return COLORS.green;
+  if (tone === "failure") return COLORS.red;
+  return COLORS.muted;
+}
+
+function historyFill(row: HistoryRow, flashAlpha: number): string {
+  if (row.tone === "success") {
+    return `rgb(29 139 101 / ${0.08 + flashAlpha})`;
+  }
+  if (row.tone === "failure") {
+    return `rgb(190 64 58 / ${0.08 + flashAlpha})`;
+  }
+  if (row.newest) {
+    return `rgb(30 70 140 / ${0.05 + flashAlpha})`;
+  }
+  return "#f8fafc";
 }
 
 function drawPackets(
   ctx: CanvasRenderingContext2D,
   packets: readonly PacketSnapshot[],
-  ports: Record<string, { from: Point; to: Point }>,
+  ports: Ports,
   compact: boolean,
 ) {
   for (const packet of packets) {
@@ -372,10 +542,7 @@ function drawPackets(
   }
 }
 
-function packetLane(
-  packet: PacketSnapshot,
-  ports: Record<string, { from: Point; to: Point }>,
-) {
+function packetLane(packet: PacketSnapshot, ports: Ports): Lane {
   if (packet.route === "service-to-queue") return ports.serviceToQueue;
   if (packet.route === "queue-to-worker") return ports.queueToWorker;
   return ports.workerToService;
@@ -387,11 +554,14 @@ function drawPacket(
   point: Point,
   compact: boolean,
 ) {
-  const label = compact ? compactPacketLabel(packet) : packet.label;
-  ctx.font = `800 ${compact ? 9 : 10}px ${UI_FONT}`;
-  const width = Math.min(compact ? 96 : 150, ctx.measureText(label).width + 22);
-  const height = compact ? 22 : 26;
   const palette = packetPalette(packet);
+  const label = compact ? compactPacketLabel(packet) : packet.label;
+  const useMono = packet.kind === "result" && packet.tone !== "error";
+  const font = `800 ${compact ? 9 : 10}px ${useMono ? MONO_FONT : UI_FONT}`;
+
+  ctx.font = font;
+  const width = Math.min(compact ? 92 : 132, ctx.measureText(label).width + 22);
+  const height = compact ? 22 : 26;
 
   ctx.save();
   ctx.translate(point.x, point.y);
@@ -407,7 +577,7 @@ function drawPacket(
   drawText(ctx, label, 0, -height / 2 + (compact ? 15 : 17), {
     align: "center",
     color: palette.stroke,
-    font: `800 ${compact ? 9 : 10}px ${UI_FONT}`,
+    font,
     maxWidth: width - 14,
   });
   ctx.restore();
@@ -415,22 +585,23 @@ function drawPacket(
 
 function drawArrowLane(
   ctx: CanvasRenderingContext2D,
-  start: Point,
-  end: Point,
+  lane: Lane,
   label: string,
 ) {
   ctx.strokeStyle = COLORS.line;
   ctx.lineWidth = 2;
   ctx.setLineDash([5, 7]);
   ctx.beginPath();
-  ctx.moveTo(start.x, start.y);
-  ctx.lineTo(end.x, end.y);
+  ctx.moveTo(lane.from.x, lane.from.y);
+  ctx.lineTo(lane.to.x, lane.to.y);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  drawArrowHead(ctx, start, end);
+  drawArrowHead(ctx, lane.from, lane.to);
 
-  const mid = interpolate(start, end, 0.5);
+  if (!label) return;
+
+  const mid = interpolate(lane.from, lane.to, 0.5);
   drawText(ctx, label, mid.x, mid.y - 6, {
     align: "center",
     color: COLORS.muted,
@@ -460,22 +631,37 @@ function drawArrowHead(
   ctx.fill();
 }
 
-function nodePalette(node: NodeSnapshot, snapshot: DurableTaskLoopSnapshot) {
-  if (node.key === "service" && snapshot.phase === "append") {
+function servicePalette(service: ServiceSnapshot) {
+  if (service.status === "storing") {
     return { fill: COLORS.greenSoft, stroke: COLORS.green };
   }
-  if (node.key === "worker" && node.status === "running") {
-    return { fill: COLORS.goldSoft, stroke: COLORS.gold };
-  }
-  if (node.active) {
+  if (service.status === "scheduling") {
     return { fill: COLORS.blueSoft, stroke: COLORS.blue };
   }
   return { fill: "#f1f4fa", stroke: COLORS.line };
 }
 
+function workerPalette(worker: WorkerSnapshot) {
+  if (worker.outcome === "success") {
+    return { fill: COLORS.greenSoft, stroke: COLORS.green };
+  }
+  if (worker.outcome === "failure") {
+    return { fill: COLORS.redSoft, stroke: COLORS.red };
+  }
+  if (worker.phase === "executing") {
+    return { fill: COLORS.goldSoft, stroke: COLORS.gold };
+  }
+  if (worker.phase === "taking") {
+    return { fill: COLORS.blueSoft, stroke: COLORS.blue };
+  }
+  return { fill: "#f1f4fa", stroke: COLORS.muted };
+}
+
 function packetPalette(packet: PacketSnapshot) {
   if (packet.kind === "result") {
-    return { fill: COLORS.greenSoft, stroke: COLORS.green };
+    return packet.tone === "error"
+      ? { fill: COLORS.redSoft, stroke: COLORS.red }
+      : { fill: COLORS.greenSoft, stroke: COLORS.green };
   }
   if (packet.kind === "poll") {
     return { fill: COLORS.goldSoft, stroke: COLORS.gold };
@@ -484,9 +670,49 @@ function packetPalette(packet: PacketSnapshot) {
 }
 
 function compactPacketLabel(packet: PacketSnapshot) {
-  if (packet.kind === "task") return "task";
+  if (packet.kind === "enqueue") return "task";
   if (packet.kind === "poll") return "take";
-  return "result";
+  return packet.tone === "error" ? "fail" : "ok";
+}
+
+function drawCross(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.6;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - size, cy - size);
+  ctx.lineTo(cx + size, cy + size);
+  ctx.moveTo(cx + size, cy - size);
+  ctx.lineTo(cx - size, cy + size);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawCheck(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string,
+) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.6;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx - size * 0.55, cy + size * 0.05);
+  ctx.lineTo(cx - size * 0.1, cy + size * 0.5);
+  ctx.lineTo(cx + size * 0.62, cy - size * 0.45);
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawBadge(
@@ -611,6 +837,15 @@ function interpolate(start: Point, end: Point, progress: number): Point {
 
 function rect(x: number, y: number, width: number, height: number): Rect {
   return { x, y, width, height };
+}
+
+function expand(box: Rect, amount: number): Rect {
+  return {
+    x: box.x - amount,
+    y: box.y - amount,
+    width: box.width + amount * 2,
+    height: box.height + amount * 2,
+  };
 }
 
 function leftPort(box: Rect): Point {
