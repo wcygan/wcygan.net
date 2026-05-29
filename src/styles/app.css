@@ -1266,7 +1266,6 @@
 
   /* Worker crash modes canvas demo */
   .worker-crash-modes-demo {
-    --worker-crash-modes-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     --worker-crash-modes-ink: #172033;
     --worker-crash-modes-muted: #5c667a;
     --worker-crash-modes-line: #d9deea;
@@ -1294,7 +1293,6 @@
   }
 
   .worker-crash-modes-demo p,
-  .worker-crash-modes-demo figcaption,
   .worker-crash-modes-demo h2 {
     margin: 0;
   }
@@ -1320,116 +1318,13 @@
   .worker-crash-modes-canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 8.25;
-    min-height: 420px;
+    aspect-ratio: 16 / 9.5;
+    min-height: 470px;
     border: 1px solid var(--worker-crash-modes-line);
     border-radius: 8px;
     background: var(--worker-crash-modes-shell);
     contain: layout paint;
     touch-action: pan-y;
-  }
-
-  .worker-crash-modes-steps {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-    margin: 0 !important;
-    padding: 0 !important;
-    list-style: none !important;
-  }
-
-  .worker-crash-modes-steps li {
-    min-width: 0;
-    margin: 0 !important;
-    padding: 8px 9px !important;
-    border: 1px solid var(--worker-crash-modes-line);
-    border-radius: 6px;
-    background: rgb(255 255 255 / 72%);
-    color: var(--worker-crash-modes-muted);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1.2;
-    opacity: 0.72;
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease,
-      opacity 180ms ease,
-      transform 180ms var(--worker-crash-modes-ease-out);
-  }
-
-  .worker-crash-modes-steps span {
-    display: block;
-    overflow-wrap: anywhere;
-  }
-
-  .worker-crash-modes-steps li[data-state="complete"] {
-    border-color: rgb(29 139 101 / 34%);
-    background: var(--worker-crash-modes-green-soft);
-    color: var(--worker-crash-modes-green);
-    opacity: 0.9;
-  }
-
-  .worker-crash-modes-steps li[data-state="active"] {
-    border-color: rgb(30 70 140 / 34%);
-    background: rgb(255 255 255 / 94%);
-    color: var(--worker-crash-modes-blue);
-    opacity: 1;
-    transform: translateY(-1px);
-  }
-
-  .worker-crash-modes-status {
-    position: relative;
-    display: flex;
-    gap: 9px;
-    align-items: flex-start;
-    min-height: 44px;
-    padding: 10px 12px;
-    border: 1px solid rgb(30 70 140 / 18%);
-    border-radius: 6px;
-    background: rgb(255 255 255 / 76%);
-    color: var(--worker-crash-modes-muted);
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.35;
-    transition:
-      border-color 180ms ease,
-      background-color 180ms ease,
-      color 180ms ease;
-  }
-
-  .worker-crash-modes-status::before {
-    content: "";
-    flex: 0 0 auto;
-    width: 9px;
-    height: 9px;
-    margin-top: 4px;
-    border-radius: 999px;
-    background: var(--worker-crash-modes-blue);
-    box-shadow: 0 0 0 4px var(--worker-crash-modes-blue-soft);
-    transition:
-      background-color 180ms ease,
-      box-shadow 180ms ease;
-  }
-
-  .worker-crash-modes-demo[data-phase="crash"]
-    .worker-crash-modes-status::before {
-    background: var(--worker-crash-modes-red);
-    box-shadow: 0 0 0 4px var(--worker-crash-modes-red-soft);
-  }
-
-  .worker-crash-modes-demo[data-phase="recover-1"]
-    .worker-crash-modes-status::before {
-    background: var(--worker-crash-modes-gold);
-    box-shadow: 0 0 0 4px var(--worker-crash-modes-gold-soft);
-  }
-
-  .worker-crash-modes-demo[data-phase="recover-2"]
-    .worker-crash-modes-status::before {
-    background: var(--worker-crash-modes-green);
-    box-shadow: 0 0 0 4px var(--worker-crash-modes-green-soft);
   }
 
   @media (max-width: 720px) {
@@ -1449,35 +1344,14 @@
       font-size: 14px;
       line-height: 21px;
     }
-
-    .worker-crash-modes-status {
-      font-size: 12px;
-      line-height: 1.35;
-    }
   }
 
+  /* Stack the two logs vertically once they cannot sit comfortably side by side. */
   @container (max-width: 620px) {
-    .worker-crash-modes-steps {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-    }
-
     .worker-crash-modes-canvas {
-      height: clamp(540px, 132vw, 660px);
+      height: clamp(780px, 188vw, 920px);
       min-height: 0;
       aspect-ratio: auto;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .worker-crash-modes-steps li,
-    .worker-crash-modes-status,
-    .worker-crash-modes-status::before {
-      transition-duration: 0.01ms;
-    }
-
-    .worker-crash-modes-steps li[data-state="active"] {
-      transform: none;
     }
   }
 

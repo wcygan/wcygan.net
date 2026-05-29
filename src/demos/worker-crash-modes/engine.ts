@@ -7,7 +7,11 @@ import {
 import { drawWorkerCrashModesDemo } from "./render-canvas";
 import { resizeCanvas } from "./viewport";
 
-const LOOP_MS = 15000;
+// Two full acts play per loop, then the completed comparison holds long enough
+// for the Activity Task's terminal rows to be read before the animation resets.
+const ANIMATION_MS = 19000;
+const FINAL_HOLD_MS = 2000;
+const LOOP_MS = ANIMATION_MS + FINAL_HOLD_MS;
 
 export type WorkerCrashModesDemoEngine = {
   start(): void;
@@ -27,6 +31,7 @@ export function createWorkerCrashModesDemo(
   };
   let frameId: number | undefined;
   let lastTime = 0;
+  let loopTime = state.progress * ANIMATION_MS;
   let resizeObserver: ResizeObserver | undefined;
   let intersectionObserver: IntersectionObserver | undefined;
   let inViewport = true;
@@ -52,7 +57,11 @@ export function createWorkerCrashModesDemo(
 
     const dt = lastTime === 0 ? 0 : Math.min(now - lastTime, 80);
     lastTime = now;
-    state.progress = (state.progress + dt / LOOP_MS) % 1;
+    loopTime = (loopTime + dt) % LOOP_MS;
+    state.progress =
+      loopTime >= ANIMATION_MS
+        ? REDUCED_MOTION_PROGRESS
+        : loopTime / ANIMATION_MS;
     render();
     frameId = requestAnimationFrame(loop);
   }
@@ -89,6 +98,7 @@ export function createWorkerCrashModesDemo(
   function handleMotionPreferenceChange() {
     state.playing = !motionQuery.matches;
     state.progress = motionQuery.matches ? REDUCED_MOTION_PROGRESS : 0;
+    loopTime = state.progress * ANIMATION_MS;
     syncPlayback();
     render();
   }

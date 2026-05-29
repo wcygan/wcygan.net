@@ -31,7 +31,7 @@ The [Temporal Service](https://docs.temporal.io/temporal-service) stores history
 
 ## Worker crash mechanics
 
-If a Worker dies during a [Workflow Task](https://docs.temporal.io/tasks#workflow-task), another Worker can replay the Event History and continue the workflow execution from the same point. If it dies during an [Activity](https://docs.temporal.io/activities), Temporal cannot know whether the external side effect happened; it waits for a [timeout](https://docs.temporal.io/encyclopedia/detecting-activity-failures#start-to-close-timeout), then retries if the Activity's policy allows it.
+If a Worker dies during a [Workflow Task](https://docs.temporal.io/tasks#workflow-task), another Worker can replay the Event History and continue the workflow execution from the same point. If it dies during an [Activity Task](https://docs.temporal.io/tasks#activity-task), Temporal cannot know whether the external side effect happened; it waits for a [timeout](https://docs.temporal.io/encyclopedia/detecting-activity-failures#start-to-close-timeout), then retries if the Activity's policy allows it.
 
 <WorkerCrashModesDemo />
 

@@ -1,53 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+// Animated explainer for the durable-execution blog post.
+//
+// One Worker crash, told as two acts whose Event Histories look OPPOSITE. Act 1
+// crashes during a Workflow Task: the task times out (WorkflowTaskTimedOut is
+// recorded), is rescheduled, and another Worker replays the durable history and
+// completes it — every recovery step is a row. Act 2 crashes during an Activity
+// Task: per docs.temporal.io/workflow-execution/event, ActivityTaskScheduled is the
+// only Activity event while it retries, so the crash, the start-to-close
+// timeout, and the silent retry write nothing; ActivityTaskStarted lands only
+// with the terminal ActivityTaskCompleted. The charge may have run twice and
+// history will not show it, which is why the Activity must be idempotent. Model
+// and rendering live in ~/demos/worker-crash-modes.
+import { useEffect, useRef } from "react";
 import { createWorkerCrashModesDemo } from "~/demos/worker-crash-modes/engine";
-import {
-  type CrashPhase,
-  type CrashSnapshot,
-  deriveCrashSnapshot,
-} from "~/demos/worker-crash-modes/model";
-
-const CRASH_STEPS = [
-  { phase: "running", label: "Both running" },
-  { phase: "crash", label: "Same crash beat" },
-  { phase: "recover-1", label: "Replay vs timeout" },
-  { phase: "recover-2", label: "Resume vs retry" },
-] as const satisfies readonly { phase: CrashPhase; label: string }[];
-
-const INITIAL_SNAPSHOT = deriveCrashSnapshot({ progress: 0, playing: true });
-
-type VisibleCrashState = Pick<CrashSnapshot, "phase" | "phaseLabel"> & {
-  taskStatus: CrashSnapshot["task"]["status"];
-  activityStatus: CrashSnapshot["activity"]["status"];
-};
 
 export function WorkerCrashModesDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const statusKeyRef = useRef(
-    `${INITIAL_SNAPSHOT.phase}:${INITIAL_SNAPSHOT.phaseLabel}:${INITIAL_SNAPSHOT.task.status}:${INITIAL_SNAPSHOT.activity.status}`,
-  );
-  const [visibleState, setVisibleState] = useState<VisibleCrashState>({
-    phase: INITIAL_SNAPSHOT.phase,
-    phaseLabel: INITIAL_SNAPSHOT.phaseLabel,
-    taskStatus: INITIAL_SNAPSHOT.task.status,
-    activityStatus: INITIAL_SNAPSHOT.activity.status,
-  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = createWorkerCrashModesDemo(canvas, (snapshot) => {
-      const statusKey = `${snapshot.phase}:${snapshot.phaseLabel}:${snapshot.task.status}:${snapshot.activity.status}`;
-      if (statusKey === statusKeyRef.current) return;
-
-      statusKeyRef.current = statusKey;
-      setVisibleState({
-        phase: snapshot.phase,
-        phaseLabel: snapshot.phaseLabel,
-        taskStatus: snapshot.task.status,
-        activityStatus: snapshot.activity.status,
-      });
-    });
+    const engine = createWorkerCrashModesDemo(canvas);
     engine.start();
 
     return () => {
@@ -56,15 +29,13 @@ export function WorkerCrashModesDemo() {
   }, []);
 
   return (
-    <figure className="worker-crash-modes-demo" data-phase={visibleState.phase}>
+    <figure className="worker-crash-modes-demo">
       <div className="worker-crash-modes-header">
-        <h2>Two crashes, two recoveries</h2>
+        <h2>Two crashes, two histories</h2>
         <p>
-          Two Workers crash on the same beat. The one driving a Workflow Task is
-          rebuilt from durable Event History, so another Worker replays and
-          resumes with no data loss. The one running an Activity left an
-          external side effect whose outcome cannot be observed, so Temporal
-          waits out the start-to-close timeout and then retries.
+          A Worker dies mid-task in both logs. The Workflow Task records its
+          whole recovery in Event History; the Activity retry leaves no trace at
+          all, which is exactly why it has to be idempotent.
         </p>
       </div>
 
@@ -72,52 +43,8 @@ export function WorkerCrashModesDemo() {
         ref={canvasRef}
         className="worker-crash-modes-canvas"
         role="img"
-        aria-label="Animated demo of two stacked Temporal tracks sharing one timeline. Both Workers start healthy, then crash on the same beat. The top Workflow Task track recovers cleanly as Worker B replays the durable Event History and resumes from the same point. The bottom Activity track cannot observe whether its external side effect happened, so Temporal drains a start-to-close timeout countdown and then retries the Activity as a fresh attempt."
+        aria-label="Two side-by-side Event History logs that end up looking opposite. In the left log, a Workflow Task is scheduled and started by Worker A, which crashes; the Workflow Task Timeout elapses and is recorded as WorkflowTaskTimedOut, the task is rescheduled, and Worker B replays the durable history and resumes with WorkflowTaskCompleted — every recovery step is a durable row. In the right log, a completed Workflow Task schedules the chargeCard Activity, ActivityTaskScheduled is written, and a Worker runs attempt 1, but no ActivityTaskStarted is recorded yet. The Worker crashes; the start-to-close timeout fires and Temporal silently retries as attempt 2, writing no new events — ActivityTaskScheduled stays the only Activity event. Only when the retry succeeds do ActivityTaskStarted and ActivityTaskCompleted land. The Workflow Task history is long and shows the recovery; the Activity history is short and hides it, so the side effect may have run twice and the Activity must be idempotent."
       />
-
-      <ol
-        className="worker-crash-modes-steps"
-        aria-label="Worker crash recovery timeline"
-      >
-        {CRASH_STEPS.map((step, index) => (
-          <li
-            key={step.phase}
-            data-state={stepState(
-              visibleState.phase,
-              visibleState.taskStatus === "resumed" &&
-                visibleState.activityStatus === "retrying",
-              index,
-            )}
-          >
-            <span>{step.label}</span>
-          </li>
-        ))}
-      </ol>
-
-      <figcaption className="worker-crash-modes-status">
-        {visibleState.phaseLabel}
-      </figcaption>
     </figure>
   );
-}
-
-function stepState(
-  currentPhase: CrashPhase,
-  recoveryComplete: boolean,
-  index: number,
-) {
-  const currentIndex = CRASH_STEPS.findIndex(
-    (step) => step.phase === currentPhase,
-  );
-
-  if (index < currentIndex) return "complete";
-  if (
-    index === currentIndex &&
-    currentPhase === "recover-2" &&
-    recoveryComplete
-  ) {
-    return "complete";
-  }
-  if (index === currentIndex) return "active";
-  return "pending";
 }
