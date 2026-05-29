@@ -296,40 +296,87 @@ function drawActivityCard(
 
   const muted = activity.status === "pending";
 
-  // Three rails across the width: ordinal marker (left), identity (center),
-  // live status pill (right), and the progress ring (far right). Spreading
-  // them fills the wide card instead of bunching everything top-left.
   const stepRadius = compact ? 14 : 16;
   const stepCx = card.x + 16 + stepRadius;
   drawStepNumber(ctx, stepCx, midY, stepRadius, step, muted);
 
-  const textLeft = stepCx + stepRadius + (compact ? 12 : 16);
-  const pill = statusPillRect(ctx, activity, ring.left, midY, compact);
+  const textLeft = stepCx + stepRadius + (compact ? 14 : 16);
 
+  // Two layouts. Wide cards are short, so identity sits centered between the
+  // marker and ring with the status pill on the right rail. Narrow cards are
+  // tall, so identity stacks from the top with the pill on its own row below —
+  // this gives the label the full width and stops it from being squished into
+  // the gap between the pill and the ring.
+  if (compact) {
+    drawActivityIdentity(ctx, activity, palette, muted, {
+      left: textLeft,
+      maxWidth: ring.left - textLeft - 14,
+      eyebrowY: card.y + 26,
+      labelY: card.y + 48,
+      jobY: card.y + 68,
+      labelSize: 16,
+    });
+    const pill = statusPillRectLeft(
+      ctx,
+      activity,
+      textLeft,
+      card.y + card.height - 32,
+      ring.left - textLeft - 14,
+    );
+    drawStatusPill(ctx, pill, activity, palette);
+  } else {
+    const pill = statusPillRect(ctx, activity, ring.left, midY);
+    drawActivityIdentity(ctx, activity, palette, muted, {
+      left: textLeft,
+      maxWidth: pill.x - textLeft - 12,
+      eyebrowY: midY - 18,
+      labelY: midY + 5,
+      jobY: midY + 24,
+      labelSize: 17,
+    });
+    drawStatusPill(ctx, pill, activity, palette);
+  }
+
+  drawWorkRing(ctx, ring, activity, palette);
+}
+
+// Eyebrow, label, and job lines for an activity card. Callers supply the
+// baselines so the same identity block serves both the centered wide layout and
+// the top-stacked compact layout.
+function drawActivityIdentity(
+  ctx: CanvasRenderingContext2D,
+  activity: ActivitySnapshot,
+  palette: { stroke: string; fill: string },
+  muted: boolean,
+  layout: {
+    left: number;
+    maxWidth: number;
+    eyebrowY: number;
+    labelY: number;
+    jobY: number;
+    labelSize: number;
+  },
+) {
   ctx.save();
   ctx.globalAlpha = muted ? 0.6 : 1;
 
-  const textMaxWidth = pill.x - textLeft - 12;
-  drawText(ctx, "Activity", textLeft, midY - (compact ? 16 : 18), {
+  drawText(ctx, "Activity", layout.left, layout.eyebrowY, {
     color: palette.stroke,
-    font: `800 ${compact ? 10 : 11}px ${UI_FONT}`,
-    maxWidth: textMaxWidth,
+    font: `800 ${layout.labelSize >= 17 ? 11 : 10}px ${UI_FONT}`,
+    maxWidth: layout.maxWidth,
   });
-  drawText(ctx, activity.label, textLeft, midY + (compact ? 4 : 5), {
+  drawText(ctx, activity.label, layout.left, layout.labelY, {
     color: COLORS.ink,
-    font: `800 ${compact ? 15 : 17}px ${MONO_FONT}`,
-    maxWidth: textMaxWidth,
+    font: `800 ${layout.labelSize}px ${MONO_FONT}`,
+    maxWidth: layout.maxWidth,
   });
-  drawText(ctx, activity.job, textLeft, midY + (compact ? 22 : 24), {
+  drawText(ctx, activity.job, layout.left, layout.jobY, {
     color: COLORS.muted,
-    font: `600 ${compact ? 11 : 12}px ${UI_FONT}`,
-    maxWidth: textMaxWidth,
+    font: `600 12px ${UI_FONT}`,
+    maxWidth: layout.maxWidth,
   });
 
   ctx.restore();
-
-  drawStatusPill(ctx, pill, activity, palette);
-  drawWorkRing(ctx, ring, activity, palette);
 }
 
 // Sequence marker (1..4) showing the order activities run. It stays neutral so
@@ -479,20 +526,34 @@ function statusPillLabel(activity: ActivitySnapshot): {
   return { label, font };
 }
 
-// The pill hugs the ring's left edge, vertically centered, so result text sits
-// in the wide gap between the activity label and the meter.
+// Wide layout: the pill hugs the ring's left edge, vertically centered, so
+// result text sits in the gap between the activity label and the meter.
 function statusPillRect(
   ctx: CanvasRenderingContext2D,
   activity: ActivitySnapshot,
   ringLeft: number,
   midY: number,
-  compact: boolean,
 ): Rect {
   const { label, font } = statusPillLabel(activity);
   ctx.font = font;
   const measured = ctx.measureText(label).width + 18;
-  const width = Math.min(measured, compact ? 120 : 170);
-  return rect(ringLeft - (compact ? 12 : 16) - width, midY - 11, width, 22);
+  const width = Math.min(measured, 170);
+  return rect(ringLeft - 16 - width, midY - 11, width, 22);
+}
+
+// Compact layout: the pill anchors to the left under the stacked identity text.
+function statusPillRectLeft(
+  ctx: CanvasRenderingContext2D,
+  activity: ActivitySnapshot,
+  x: number,
+  y: number,
+  maxWidth: number,
+): Rect {
+  const { label, font } = statusPillLabel(activity);
+  ctx.font = font;
+  const measured = ctx.measureText(label).width + 18;
+  const width = Math.min(measured, maxWidth);
+  return rect(x, y, width, 22);
 }
 
 function drawStatusPill(
