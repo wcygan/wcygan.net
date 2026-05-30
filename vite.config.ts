@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
+import { recmaPostToc, remarkPostToc } from "./scripts/remark-post-toc";
 import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHttp";
 import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
 
@@ -24,7 +25,13 @@ export default defineConfig(({ command }) => ({
   },
   plugins: [
     mdx({
-      remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm],
+      remarkPlugins: [
+        remarkFrontmatter,
+        remarkMdxFrontmatter,
+        remarkGfm,
+        remarkPostToc,
+      ],
+      recmaPlugins: [recmaPostToc],
       rehypePlugins: [
         [
           rehypeShiki,

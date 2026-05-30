@@ -30,6 +30,8 @@ CDC has a few steps:
 
 <CdcWalKafkaDemo />
 
+A key insight is that downstream systems do not need to poll source tables directly; they consume an ordered stream of committed changes and track their position in that stream. In this example, clients can consume from the `app.public.users` topic while keeping track of their [offset](https://kafka.apache.org/43/design/design/#consumer-position) in the stream of events.
+
 A simplified Debezium-style update record might look like this:
 
 ```json
@@ -56,6 +58,81 @@ A simplified Debezium-style update record might look like this:
   }
 }
 ```
+
+### Example: Data Purge
+
+Let's say you needed to implement a reliable data purge system to comply with [GDPR](https://gdpr-info.eu/art-17-gdpr/). One approach is to [choreograph](https://learn.microsoft.com/en-us/azure/architecture/patterns/choreography) the operations across microservices, letting each service know when their parent entity has been deleted (indicating that they should now delete their own entities). For example, when a customer is deleted, the order service should delete all orders for that customer.
+
+Instead of implementing a [transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) in each microservice to reliably publish "Purge Events", you can instead have a [Flink](https://flink.apache.org/) job the listens for change streams and publishes purge events to a unified [Kafka](https://kafka.apache.org/) topic.
+
+```json
+{
+  "topic": "app.customers",
+  "key": {
+    "id": 42
+  },
+  "value": {
+    "before": {
+      "id": 42
+    },
+    "after": null,
+    "op": "d",
+    "ts_ms": 1780182319000
+  }
+}
+```
+
+```json
+<-- Data Purge Event-->
+{
+  "entity_id": "123",
+  "entity_type": "Customer",
+  "deleted_ts": 1780182319000
+}
+```
+
+```json
+{
+  "topic": "app.orders",
+  "key": {
+    "id": 42
+  },
+  "value": {
+    "before": {
+      "id": 42
+    },
+    "after": null,
+    "op": "d",
+    "ts_ms": 1780182319000
+  }
+}
+```
+
+```json
+<-- Data Purge Event-->
+{
+  "entity_id": "123",
+  "entity_type": "Order",
+  "deleted_ts": 1780182319000
+}
+```
+
+## At LinkedIn
+
+Change Data Capture at LinkedIn is powered by [Brooklin](https://www.linkedin.com/blog/engineering/open-source/brooklin-open-source), which helps stream database updates with low latency. A major benefit of this system is isolation between applications and online databases. Applications can scale independently from the database, which avoids the risk of bringing down the database.
+
+### Incremental ETL
+
+For questions such as...
+
+- "What were the top 5 products purchased by English-speaking customers this week?"
+- "Which marketing campaigns drove paid upgrades from customers who first signed up on a mobile device?"
+
+... you typically need to join tables that are not located in the same database (e.g., `users`, `orders`, `product_catalog`)
+
+To decouple analytical queries from transaction processing, companies typically maintain a data lake. The data lake helps avoid resource contention with the online databases that are performing work on behalf of a customer.
+
+At LinkedIn, we store our offline data in [HDFS](https://apache.github.io/hadoop/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html#Introduction). We use [Trino](https://trino.io/), [Opal](https://www.linkedin.com/blog/engineering/data-management/opal-building-a-mutable-dataset-in-data-lake), and [OpenHouse](https://www.linkedin.com/blog/engineering/open-source/open-sourcing-openhouse) to query and manage the datasets. The datasets are initialized based on a snapshot of the database (such as [mysqldump](https://dev.mysql.com/doc/refman/9.7/en/mysqldump.html)) and kept in sync through change streams with [Brooklin](https://www.linkedin.com/blog/engineering/data-streaming-processing/streaming-data-pipelines-with-brooklin), [Kafka](https://kafka.apache.org/), and [Gobblin](https://gobblin.apache.org/docs/).
 
 ## Try it yourself
 
