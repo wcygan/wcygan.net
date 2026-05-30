@@ -1,5 +1,4 @@
 import {
-  clamp,
   type ActSnapshot,
   type CrashSnapshot,
   type EventRow,
@@ -38,6 +37,66 @@ const MONO_FONT =
 const COMPACT_LAYOUT_MAX_WIDTH = 620;
 const TAU = Math.PI * 2;
 
+// Layout is content-driven: each panel is sized to its own history length and
+// the canvas height is the sum of what the panels and caption actually need, so
+// there is no proportion-dependent dead space. measureCrashDemoHeight() and the
+// draw functions share these constants to stay in lockstep.
+const WIDE = {
+  padding: 18,
+  colGap: 16,
+  caption: 48,
+  capGap: 10,
+  rowH: 32,
+  footer: 32,
+};
+const COMPACT = {
+  paddingNarrow: 12,
+  paddingWide: 14,
+  panelGap: 12,
+  caption: 64,
+  capGap: 8,
+  rowH: 30,
+  footer: 30,
+};
+const PANEL_TOP = 38; // panel title baseline to the first event row
+const ROW_GAP = 6;
+const ROWS_FOOTER_GAP = 8; // last row to the footer band
+
+// Natural pixel height of a panel holding rowCount event rows at the layout's
+// fixed row height. Both panels share the row height so the two logs stay aligned.
+function panelHeight(rowCount: number, compact: boolean): number {
+  const rowH = compact ? COMPACT.rowH : WIDE.rowH;
+  const footer = compact ? COMPACT.footer : WIDE.footer;
+  const rowsBlock = rowCount * rowH + Math.max(0, rowCount - 1) * ROW_GAP;
+  return PANEL_TOP + rowsBlock + ROWS_FOOTER_GAP + footer;
+}
+
+// The canvas height the demo needs at a given CSS width. The engine sets this on
+// the canvas so the element never reserves more vertical space than the content
+// fills. Must mirror drawWide/drawCompact exactly.
+export function measureCrashDemoHeight(
+  width: number,
+  workflowRows: number,
+  activityRows: number,
+): number {
+  if (width <= COMPACT_LAYOUT_MAX_WIDTH) {
+    const padding = width < 360 ? COMPACT.paddingNarrow : COMPACT.paddingWide;
+    return Math.round(
+      padding * 2 +
+        panelHeight(workflowRows, true) +
+        COMPACT.panelGap +
+        panelHeight(activityRows, true) +
+        COMPACT.capGap +
+        COMPACT.caption,
+    );
+  }
+  const tallest = Math.max(
+    panelHeight(workflowRows, false),
+    panelHeight(activityRows, false),
+  );
+  return Math.round(WIDE.padding * 2 + tallest + WIDE.capGap + WIDE.caption);
+}
+
 export function drawWorkerCrashModesDemo(
   ctx: CanvasRenderingContext2D,
   snapshot: CrashSnapshot,
@@ -50,47 +109,45 @@ export function drawWorkerCrashModesDemo(
 
   const compact = viewport.cssWidth <= COMPACT_LAYOUT_MAX_WIDTH;
   if (compact) {
-    drawCompact(ctx, snapshot, viewport.cssWidth, viewport.cssHeight);
+    drawCompact(ctx, snapshot, viewport.cssWidth);
   } else {
-    drawWide(ctx, snapshot, viewport.cssWidth, viewport.cssHeight);
+    drawWide(ctx, snapshot, viewport.cssWidth);
   }
 }
 
+// Side-by-side logs, each sized to its own history. The Activity panel is
+// genuinely shorter than the Workflow panel — that shorter card IS the point.
 function drawWide(
   ctx: CanvasRenderingContext2D,
   snapshot: CrashSnapshot,
   width: number,
-  height: number,
 ) {
-  const padding = 18;
-  const gap = 16;
-  const captionBand = 48;
-  const colWidth = (width - padding * 2 - gap) / 2;
-  const colHeight = height - padding * 2 - captionBand;
+  const { padding, colGap, caption, capGap, rowH } = WIDE;
+  const workflowHeight = panelHeight(snapshot.workflowTask.maxRows, false);
+  const activityHeight = panelHeight(snapshot.activity.maxRows, false);
+  const tallest = Math.max(workflowHeight, activityHeight);
+  const colWidth = (width - padding * 2 - colGap) / 2;
 
   drawActPanel(
     ctx,
-    rect(padding, padding, colWidth, colHeight),
+    rect(padding, padding, colWidth, workflowHeight),
     snapshot.workflowTask,
     snapshot.activeAct === "workflow-task",
     false,
+    rowH,
   );
   drawActPanel(
     ctx,
-    rect(padding + colWidth + gap, padding, colWidth, colHeight),
+    rect(padding + colWidth + colGap, padding, colWidth, activityHeight),
     snapshot.activity,
     snapshot.activeAct === "activity",
     false,
+    rowH,
   );
 
   drawCaption(
     ctx,
-    rect(
-      padding,
-      padding + colHeight + 10,
-      width - padding * 2,
-      captionBand - 10,
-    ),
+    rect(padding, padding + tallest + capGap, width - padding * 2, caption),
     snapshot,
     false,
   );
@@ -100,42 +157,34 @@ function drawCompact(
   ctx: CanvasRenderingContext2D,
   snapshot: CrashSnapshot,
   width: number,
-  height: number,
 ) {
-  const padding = width < 360 ? 12 : 14;
-  const gap = 12;
-  const captionBand = 64;
-  const panelArea = height - padding * 2 - captionBand - gap;
-  const panelHeight = panelArea / 2;
+  const padding = width < 360 ? COMPACT.paddingNarrow : COMPACT.paddingWide;
+  const { panelGap, caption, capGap, rowH } = COMPACT;
+  const colWidth = width - padding * 2;
+  const workflowHeight = panelHeight(snapshot.workflowTask.maxRows, true);
+  const activityHeight = panelHeight(snapshot.activity.maxRows, true);
+  const activityTop = padding + workflowHeight + panelGap;
 
   drawActPanel(
     ctx,
-    rect(padding, padding, width - padding * 2, panelHeight),
+    rect(padding, padding, colWidth, workflowHeight),
     snapshot.workflowTask,
     snapshot.activeAct === "workflow-task",
     true,
+    rowH,
   );
   drawActPanel(
     ctx,
-    rect(
-      padding,
-      padding + panelHeight + gap,
-      width - padding * 2,
-      panelHeight,
-    ),
+    rect(padding, activityTop, colWidth, activityHeight),
     snapshot.activity,
     snapshot.activeAct === "activity",
     true,
+    rowH,
   );
 
   drawCaption(
     ctx,
-    rect(
-      padding,
-      padding + panelHeight * 2 + gap + 8,
-      width - padding * 2,
-      captionBand - 8,
-    ),
+    rect(padding, activityTop + activityHeight + capGap, colWidth, caption),
     snapshot,
     true,
   );
@@ -147,6 +196,7 @@ function drawActPanel(
   act: ActSnapshot,
   active: boolean,
   compact: boolean,
+  rowH: number,
 ) {
   const idle = act.phase === "idle";
   const accent = actAccent(act);
@@ -194,10 +244,10 @@ function drawActPanel(
     return;
   }
 
-  const rowsTop = box.y + 38;
-  const footerTop = box.y + box.height - (compact ? 30 : 32);
-  const rowsBottom = footerTop - 8;
-  drawEventLog(ctx, box, rowsTop, rowsBottom, act, compact);
+  const rowsTop = box.y + PANEL_TOP;
+  const footerTop =
+    box.y + box.height - (compact ? COMPACT.footer : WIDE.footer);
+  drawEventLog(ctx, box, rowsTop, act, rowH, compact);
   drawFooter(
     ctx,
     rect(
@@ -213,29 +263,23 @@ function drawActPanel(
   ctx.restore();
 }
 
-// The log pins every event to its sequence position so rows append in place
-// (row 3 stays put as later rows arrive) and the Worker chip slides down it.
+// The log pins every event to its sequence position at a fixed row height so
+// rows append in place (row 3 stays put as later rows arrive), both panels share
+// one row height, and the Worker chip slides down it.
 function drawEventLog(
   ctx: CanvasRenderingContext2D,
   box: Rect,
   top: number,
-  bottom: number,
   act: ActSnapshot,
+  rowHeight: number,
   compact: boolean,
 ) {
-  const slots = 7;
-  const rowGap = 6;
-  const rowHeight = clamp(
-    (bottom - top - rowGap * (slots - 1)) / slots,
-    20,
-    compact ? 30 : 32,
-  );
   const workerSeq = act.worker?.rowSeq ?? -1;
 
   for (const row of act.rows) {
     const rowBox = rect(
       box.x + 14,
-      top + (row.seq - 1) * (rowHeight + rowGap),
+      top + (row.seq - 1) * (rowHeight + ROW_GAP),
       box.width - 28,
       rowHeight,
     );
@@ -245,7 +289,7 @@ function drawEventLog(
   if (act.worker) {
     const rowBox = rect(
       box.x + 14,
-      top + (act.worker.rowSeq - 1) * (rowHeight + rowGap),
+      top + (act.worker.rowSeq - 1) * (rowHeight + ROW_GAP),
       box.width - 28,
       rowHeight,
     );

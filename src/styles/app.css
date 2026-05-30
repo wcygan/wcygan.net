@@ -1318,8 +1318,9 @@
   .worker-crash-modes-canvas {
     display: block;
     width: 100%;
-    aspect-ratio: 16 / 9.5;
-    min-height: 470px;
+    /* First-paint fallback only; the engine sets an exact content-fit height
+       inline on mount (see measureCrashDemoHeight). */
+    height: 432px;
     border: 1px solid var(--worker-crash-modes-line);
     border-radius: 8px;
     background: var(--worker-crash-modes-shell);
@@ -1346,12 +1347,12 @@
     }
   }
 
-  /* Stack the two logs vertically once they cannot sit comfortably side by side. */
+  /* Stack the two logs vertically once they cannot sit comfortably side by side.
+     First-paint fallback only; the engine refines this inline to the exact
+     stacked content height on mount. */
   @container (max-width: 620px) {
     .worker-crash-modes-canvas {
-      height: clamp(780px, 188vw, 920px);
-      min-height: 0;
-      aspect-ratio: auto;
+      height: 648px;
     }
   }
 

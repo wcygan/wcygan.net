@@ -102,6 +102,9 @@ export type ActSnapshot = {
   footerProgress: FooterProgress | null;
   footnote: string;
   showFootnote: boolean;
+  // The act's final row count, fixed across the animation so the panel can be
+  // sized to its own history length instead of a shared worst-case slot grid.
+  maxRows: number;
 };
 
 export type CrashDemoState = {
@@ -259,6 +262,7 @@ function deriveWorkflowAct(local: number): ActSnapshot {
     title: "Crash during a Workflow Task",
     tag: "Workflow Task",
     footnote: "Recovery is written to history: timeout, reschedule, replay.",
+    maxRows: WORKFLOW_TASK_PLAN.length,
   };
 
   if (phase === "idle") return idleAct(meta, "task timeout");
@@ -299,6 +303,7 @@ function deriveActivityAct(local: number): ActSnapshot {
     title: "Crash during an Activity Task",
     tag: "Activity Task",
     footnote: "The retry leaves no trace, so the Activity must be idempotent.",
+    maxRows: ACTIVITY_PLAN.length,
   };
 
   if (phase === "idle") return idleAct(meta, "start-to-close timeout");
@@ -344,7 +349,7 @@ function deriveActivityAct(local: number): ActSnapshot {
 }
 
 function idleAct(
-  meta: Pick<ActSnapshot, "kind" | "title" | "tag" | "footnote">,
+  meta: Pick<ActSnapshot, "kind" | "title" | "tag" | "footnote" | "maxRows">,
   timeoutLabel: string,
 ): ActSnapshot {
   return {

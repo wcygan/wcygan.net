@@ -4,7 +4,10 @@ import {
   type CrashDemoState,
   type CrashSnapshot,
 } from "./model";
-import { drawWorkerCrashModesDemo } from "./render-canvas";
+import {
+  drawWorkerCrashModesDemo,
+  measureCrashDemoHeight,
+} from "./render-canvas";
 import { resizeCanvas } from "./viewport";
 
 // Two full acts play per loop, then the completed comparison holds long enough
@@ -43,8 +46,23 @@ export function createWorkerCrashModesDemo(
   function render() {
     if (!ctx) return;
 
-    const viewport = resizeCanvas(canvas);
     const snapshot = currentSnapshot();
+
+    // Size the canvas to the content before drawing, so the element never
+    // reserves proportion-driven whitespace below the logs. The guard keeps the
+    // ResizeObserver from looping on a height it just settled.
+    const layoutWidth = canvas.getBoundingClientRect().width || 1;
+    const targetHeight = measureCrashDemoHeight(
+      layoutWidth,
+      snapshot.workflowTask.maxRows,
+      snapshot.activity.maxRows,
+    );
+    const heightPx = `${targetHeight}px`;
+    if (canvas.style.height !== heightPx) {
+      canvas.style.height = heightPx;
+    }
+
+    const viewport = resizeCanvas(canvas);
     drawWorkerCrashModesDemo(ctx, snapshot, viewport);
     onSnapshot?.(snapshot);
   }

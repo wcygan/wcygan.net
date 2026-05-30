@@ -31,11 +31,11 @@ export function WorkerCrashModesDemo() {
   return (
     <figure className="worker-crash-modes-demo">
       <div className="worker-crash-modes-header">
-        <h2>Two crashes, two histories</h2>
+        <h2>Worker Failure</h2>
         <p>
-          A Worker dies mid-task in both logs. The Workflow Task records its
-          whole recovery in Event History; the Activity retry leaves no trace at
-          all, which is exactly why it has to be idempotent.
+          When a Worker dies mid-task, a Workflow Task records its whole
+          recovery in Event History, but an Activity leaves no trace at all,
+          which is why it has to be idempotent.
         </p>
       </div>
 
