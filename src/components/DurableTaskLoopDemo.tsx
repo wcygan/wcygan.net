@@ -32,11 +32,11 @@ export function DurableTaskLoopDemo() {
   return (
     <figure className="durable-task-loop-demo">
       <div className="durable-task-loop-header">
-        <h2>The durable task loop</h2>
+        <h2>The coordination loop</h2>
         <p>
-          The Temporal Service queues pending activity tasks; a Worker drains
-          the queue to empty, running each activity and reporting every outcome
-          to the durable Event History.
+          The Temporal Service queues pending tasks; a Worker processes the
+          queue, running each activity and reporting every outcome to the Event
+          History.
         </p>
       </div>
 

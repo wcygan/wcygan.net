@@ -29,7 +29,7 @@ export function WorkflowActivitiesDemo() {
   return (
     <figure className="workflow-activities-demo">
       <div className="workflow-activities-header">
-        <h2>Trip Booking Workflow</h2>
+        <h2>Booking Workflow</h2>
         <p>An example workflow that retries when the payment activity fails</p>
       </div>
 
