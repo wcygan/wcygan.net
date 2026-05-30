@@ -1,26 +1,27 @@
 // Model for the retry & idempotency explainer.
 //
-// One sendEmail Activity runs on two tracks. Each POSTs to an email provider
-// with an Idempotency-Key, the provider delivers one email and records the key,
-// then the Worker crashes before completion is recorded. Temporal retries and
-// reruns the Activity. The hero is the provider's dedup ledger: the provider —
-// not the Worker — decides whether a retry sends a second email.
+// One sendEmail Activity runs on two tracks. Each POSTs to an email provider,
+// the provider delivers one email, then the Worker crashes before completion is
+// recorded. Temporal retries and reruns the Activity. The hero is the provider's
+// dedup ledger: the provider, not the Worker, decides whether a retry sends a
+// second email, and it can only dedupe on an Idempotency-Key it was given.
 //
-// The contrast is the key itself. The stable track derives its key from
-// runId + activityId, so the retry recomputes the SAME key and the provider
-// dedupes it. The fresh track regenerates a uuid() each attempt, so the retry
-// arrives with a NEW key the provider has never seen, and a duplicate goes out.
+// The contrast is whether the client sends a key at all. The stable track
+// derives its key from runId + activityId, so the retry recomputes the SAME key
+// and the provider dedupes it. The blind track sends NO key, so the provider has
+// nothing to match on and ships a fresh email on every attempt, a duplicate.
 
-export type TrackKey = "stable" | "fresh";
+export type TrackKey = "stable" | "blind";
 
 export type RetryPhase = "send" | "crash" | "retry" | "resolve";
 
 export type ProviderAction =
-  | "idle" // no key on file yet
+  | "idle" // no request yet
   | "recorded" // first key recorded, one email delivered
   | "checking" // retry arrived, provider is looking the key up
   | "dedupe-hit" // key already on file, returns the cached message
-  | "duplicate-send"; // key is new, a second email goes out
+  | "blind-send" // no key to record, the email just goes out
+  | "duplicate-send"; // no key to match, a second email goes out
 
 export type TrackOutcome = "pending" | "exactly-once" | "duplicate";
 
@@ -76,9 +77,8 @@ export type RetrySnapshot = {
 
 // Stable key is recomputed identically on every attempt.
 const STABLE_KEY = "run-7f3#act-2";
-// Fresh key is a new uuid() each attempt, so the retry looks brand new.
-const FRESH_KEY_1 = "k-a91c4e";
-const FRESH_KEY_2 = "k-e4d017";
+// The blind track never sends a key at all.
+const NO_KEY = "(none)";
 
 const MESSAGE_1 = "msg_01";
 const MESSAGE_2 = "msg_02";
@@ -114,7 +114,7 @@ export function deriveRetrySnapshot(state: RetryDemoState): RetrySnapshot {
     phase,
     tracks: {
       stable: trackSnapshot("stable", progress),
-      fresh: trackSnapshot("fresh", progress),
+      blind: trackSnapshot("blind", progress),
     },
   };
 }
@@ -145,16 +145,12 @@ function derivePhase(progress: number): RetryPhase {
 function trackSnapshot(key: TrackKey, progress: number): TrackSnapshot {
   const isStable = key === "stable";
   const attempt: 1 | 2 = progress < RETRY_AT ? 1 : 2;
-  const attemptKey = isStable
-    ? STABLE_KEY
-    : attempt === 1
-      ? FRESH_KEY_1
-      : FRESH_KEY_2;
+  const attemptKey = isStable ? STABLE_KEY : NO_KEY;
 
   return {
     key,
-    title: isStable ? "Stable key" : "Regenerated key",
-    strategyLabel: isStable ? "runId + activityId" : "uuid() per attempt",
+    title: isStable ? "Stable key" : "No idempotency key",
+    strategyLabel: isStable ? "runId + activityId" : "(omitted)",
     attempt,
     attemptKey,
     workerStatus: workerStatus(isStable, progress),
@@ -170,19 +166,21 @@ function trackSnapshot(key: TrackKey, progress: number): TrackSnapshot {
 }
 
 function workerStatus(isStable: boolean, progress: number): string {
-  if (progress < RECORD_1_AT) return "POST /send with key";
+  if (progress < RECORD_1_AT) {
+    return isStable ? "POST /send with key" : "POST /send, no key";
+  }
   if (progress < SEND_END) return "provider returned 200";
   if (progress < CRASH_END) return "crashed before ack";
   if (progress < RETRY_END) {
-    return isStable ? "retry recomputes same key" : "retry generates new key";
+    return isStable ? "retry recomputes same key" : "retry resends, no key";
   }
   return isStable ? "done, no resend" : "done, email resent";
 }
 
 function deriveDelivered(isStable: boolean, progress: number): 0 | 1 | 2 {
   const first = progress >= RECORD_1_AT ? 1 : 0;
-  // Only the fresh track ever delivers a second email — its retry carries a key
-  // the provider has not seen, so dedup does not apply.
+  // Only the blind track ever delivers a second email: its retry carries no key,
+  // so the provider has nothing to dedupe on and resends.
   const second = !isStable && progress >= APPLY_2_AT ? 1 : 0;
   return (first + second) as 0 | 1 | 2;
 }
@@ -195,13 +193,15 @@ function deriveDeliveredFlash(isStable: boolean, progress: number): number {
 }
 
 function deriveLedger(isStable: boolean, progress: number): LedgerEntry[] {
+  // The blind track never sends a key, so the provider's dedup ledger stays
+  // empty even as it ships two emails: nothing was ever recorded to match on.
+  if (!isStable) return [];
   if (progress < RECORD_1_AT) return [];
 
-  const firstKey = isStable ? STABLE_KEY : FRESH_KEY_1;
   // The stable retry matches the existing row, so it lights up as a hit.
-  const matched = isStable && progress >= CHECK_AT;
+  const matched = progress >= CHECK_AT;
   const first: LedgerEntry = {
-    key: firstKey,
+    key: STABLE_KEY,
     messageId: MESSAGE_1,
     flash: Math.max(
       flashAround(progress, RECORD_1_AT, PACKET_FLASH),
@@ -209,17 +209,7 @@ function deriveLedger(isStable: boolean, progress: number): LedgerEntry[] {
     ),
     hit: matched,
   };
-
-  if (isStable || progress < APPLY_2_AT) return [first];
-
-  // The fresh retry's new key gets written as a second, distinct row.
-  const second: LedgerEntry = {
-    key: FRESH_KEY_2,
-    messageId: MESSAGE_2,
-    flash: flashAround(progress, APPLY_2_AT, PACKET_FLASH),
-    hit: false,
-  };
-  return [first, second];
+  return [first];
 }
 
 function deriveProviderAction(
@@ -227,9 +217,13 @@ function deriveProviderAction(
   progress: number,
 ): ProviderAction {
   if (progress < RECORD_1_AT) return "idle";
-  if (progress < CHECK_AT) return "recorded";
-  if (progress < APPLY_2_AT) return "checking";
-  return isStable ? "dedupe-hit" : "duplicate-send";
+  if (isStable) {
+    if (progress < CHECK_AT) return "recorded";
+    if (progress < APPLY_2_AT) return "checking";
+    return "dedupe-hit";
+  }
+  // Blind track: no key to record or look up, so the provider just keeps sending.
+  return progress < APPLY_2_AT ? "blind-send" : "duplicate-send";
 }
 
 function deriveOutcome(isStable: boolean, progress: number): TrackOutcome {
@@ -238,8 +232,11 @@ function deriveOutcome(isStable: boolean, progress: number): TrackOutcome {
 }
 
 function outcomeLabel(isStable: boolean, progress: number): string {
-  if (progress < RECORD_1_AT) return "no key on file";
-  if (progress < APPLY_2_AT) return "1 email delivered";
+  if (progress < RECORD_1_AT)
+    return isStable ? "no key on file" : "no key sent";
+  if (progress < APPLY_2_AT) {
+    return isStable ? "1 email delivered" : "1 email · no key";
+  }
   return isStable ? "1 email · deduped" : "2 emails · duplicate";
 }
 
@@ -247,19 +244,16 @@ function derivePacket(
   isStable: boolean,
   progress: number,
 ): RequestPacket | null {
-  const attemptKey = isStable
-    ? STABLE_KEY
-    : progress < RETRY_AT
-      ? FRESH_KEY_1
-      : FRESH_KEY_2;
+  // The stable request carries its key; the blind request carries no key at all.
+  const requestLabel = isStable ? STABLE_KEY : "POST · no key";
 
-  // Attempt 1: the key flies out, the 200 flies back.
+  // Attempt 1: the request flies out, the 200 flies back.
   const request1 = packetIn(progress, REQUEST_1);
   if (request1 !== null) {
     return {
       direction: "request",
       progress: request1,
-      label: attemptKey,
+      label: requestLabel,
       tone: "send",
     };
   }
@@ -273,13 +267,13 @@ function derivePacket(
     };
   }
 
-  // Attempt 2 (the retry): the key flies out again, tinted gold.
+  // Attempt 2 (the retry): the request flies out again, tinted gold.
   const request2 = packetIn(progress, REQUEST_2);
   if (request2 !== null) {
     return {
       direction: "request",
       progress: request2,
-      label: attemptKey,
+      label: requestLabel,
       tone: "retry",
     };
   }

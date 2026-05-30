@@ -59,7 +59,7 @@ export function drawRetryIdempotencyDemo(
   const trackHeight = usableHeight / 2;
 
   const stableTrack = rect(padding, top, trackWidth, trackHeight);
-  const freshTrack = rect(
+  const blindTrack = rect(
     padding,
     top + trackHeight + trackGap,
     trackWidth,
@@ -67,7 +67,7 @@ export function drawRetryIdempotencyDemo(
   );
 
   drawTrack(ctx, stableTrack, snapshot.tracks.stable, compact);
-  drawTrack(ctx, freshTrack, snapshot.tracks.fresh, compact);
+  drawTrack(ctx, blindTrack, snapshot.tracks.blind, compact);
 }
 
 function drawTrack(
@@ -178,7 +178,7 @@ function drawWorker(
   );
 
   // The Idempotency-Key the attempt carries. On the stable track this string is
-  // identical across attempts; on the fresh track it changes.
+  // identical across attempts; on the blind track it reads "(none)".
   drawText(ctx, "Idempotency-Key", box.x + pad, box.y + (compact ? 51 : 40), {
     color: COLORS.muted,
     font: `700 ${compact ? 8 : 9}px ${UI_FONT}`,
@@ -413,8 +413,10 @@ function providerActionNote(action: ProviderAction): string {
       return "looking the key up…";
     case "dedupe-hit":
       return "key seen → cached, no resend";
+    case "blind-send":
+      return "no key → can't dedupe";
     case "duplicate-send":
-      return "new key → second email sent";
+      return "no key → second email sent";
   }
 }
 
