@@ -31,7 +31,7 @@ A Temporal application orchestrates many components. The [Temporal Service](http
 
 ## Retries and idempotency
 
-Durable execution records progress, but it does not make side effects exactly once. If a Worker sends an email and then crashes before completion is recorded, a retry may run that code again. That is why [Activities should be idempotent](https://docs.temporal.io/activity-definition#idempotency): use idempotency keys, unique constraints, guarded updates, or similar techniques to avoid performing a side effect more than once. By default Temporal [retries Activities](https://docs.temporal.io/encyclopedia/retry-policies#activity-execution) so a flaky step can retry while the durable business process stays intact.
+Durable execution records progress, but it does not make side effects exactly once. If a Worker sends an email and then crashes before completion is recorded, a retry may run that code again. Temporal [retries Activities](https://docs.temporal.io/encyclopedia/retry-policies#activity-execution) by default. It's recommended that [Activities are idempotent](https://docs.temporal.io/activity-definition#idempotency): use idempotency keys, unique constraints, guarded updates, or similar techniques to avoid performing a side effect more than once.
 
 <RetryIdempotencyDemo />
 

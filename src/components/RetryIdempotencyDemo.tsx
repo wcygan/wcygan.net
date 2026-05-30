@@ -58,7 +58,7 @@ export function RetryIdempotencyDemo() {
   return (
     <figure className="retry-idempotency-demo">
       <div className="retry-idempotency-header">
-        <h2>The provider decides, not the Worker</h2>
+        <h2>Design for Idempotency</h2>
         <p>
           One sendEmail Activity POSTs to an email provider with an
           Idempotency-Key, then the Worker crashes before completion is recorded
