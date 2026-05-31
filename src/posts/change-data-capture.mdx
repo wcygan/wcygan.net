@@ -59,21 +59,21 @@ A simplified Debezium-style update record might look like this:
 }
 ```
 
-### Example: Data Purge
+### Example: Data Retention
 
-Let's say you needed to implement a reliable data purge system to comply with [GDPR](https://gdpr-info.eu/art-17-gdpr/). One approach is to [choreograph](https://learn.microsoft.com/en-us/azure/architecture/patterns/choreography) the operations across microservices, letting each service know when their parent entity has been deleted (indicating that they should now delete their own entities). For example, when a customer is deleted, the order service should delete all orders for that customer.
+Let's say you need a data retention pipeline: whenever a parent entity is deleted, every service holding related data should purge its own copy. This is useful to enforce retention policies and tenant offboarding. One approach is to [choreograph](https://learn.microsoft.com/en-us/azure/architecture/patterns/choreography) the operations across microservices, letting each service know when a parent entity has been deleted so it can delete the entities it owns. For example, when a customer is deleted, the order service should delete all orders for that customer.
 
-Instead of implementing a [transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) in each microservice to reliably publish "Purge Events", you can instead have a [Flink](https://flink.apache.org/) job the listens for change streams and publishes purge events to a unified [Kafka](https://kafka.apache.org/) topic.
+Instead of implementing a [transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) in each microservice to reliably publish "Purge Events", you can let the deletion itself be the event. A [Flink](https://flink.apache.org/) job listens to the change streams, and for every delete (`op: "d"`) it publishes a purge event to a unified [Kafka](https://kafka.apache.org/) topic. Each service subscribes to that topic and deletes any related data on its end. Because those deletes produce their own change records, the cascade is self-propagating: deleting a customer emits a purge event, the order service deletes its orders, and those order deletes flow back through CDC as the next round of purge events.
 
 ```json
 {
   "topic": "app.customers",
   "key": {
-    "id": 42
+    "id": 91
   },
   "value": {
     "before": {
-      "id": 42
+      "id": 91
     },
     "after": null,
     "op": "d",
@@ -85,7 +85,7 @@ Instead of implementing a [transactional outbox](https://microservices.io/patter
 ```json
 <-- Data Purge Event-->
 {
-  "entity_id": "123",
+  "entity_id": "91",
   "entity_type": "Customer",
   "deleted_ts": 1780182319000
 }
@@ -95,11 +95,12 @@ Instead of implementing a [transactional outbox](https://microservices.io/patter
 {
   "topic": "app.orders",
   "key": {
-    "id": 42
+    "id": 7012
   },
   "value": {
     "before": {
-      "id": 42
+      "id": 7012,
+      "customer_id": 91
     },
     "after": null,
     "op": "d",
@@ -111,7 +112,7 @@ Instead of implementing a [transactional outbox](https://microservices.io/patter
 ```json
 <-- Data Purge Event-->
 {
-  "entity_id": "123",
+  "entity_id": "7012",
   "entity_type": "Order",
   "deleted_ts": 1780182319000
 }
