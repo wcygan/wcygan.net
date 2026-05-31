@@ -1042,6 +1042,126 @@
     }
   }
 
+  /* Incremental ETL pipeline canvas demo */
+  .etl-flow-demo {
+    --etl-ink: #172033;
+    --etl-muted: #5c667a;
+    --etl-line: #d9deea;
+    --etl-shell: #eef1f7;
+    --etl-blue: #2f69f0;
+    --etl-gold: #d59b24;
+    --etl-green: #1d8b65;
+    --etl-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--etl-line);
+    border-radius: 8px;
+    background: var(--etl-shell);
+    box-shadow: var(--etl-shadow);
+  }
+
+  .etl-flow-demo p,
+  .etl-flow-demo h2 {
+    margin: 0;
+  }
+
+  .etl-flow-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .etl-flow-header h2 {
+    margin: 0;
+    color: var(--etl-ink);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .etl-flow-header p {
+    color: var(--etl-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .etl-flow-header code {
+    font-size: 0.92em;
+  }
+
+  /* Always a vertical portrait column, centered in the figure on wide screens. */
+  .etl-flow-canvas {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    height: 640px;
+    margin-inline: auto;
+    border: 1px solid var(--etl-line);
+    border-radius: 8px;
+    background: var(--etl-shell);
+  }
+
+  .etl-flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    color: var(--etl-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .etl-flow-legend span {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .etl-flow-legend i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+
+  .etl-flow-legend i[data-tone="path"] {
+    background: var(--etl-blue);
+  }
+
+  .etl-flow-legend i[data-tone="event"] {
+    background: var(--etl-gold);
+  }
+
+  .etl-flow-legend i[data-tone="updated"] {
+    background: var(--etl-green);
+  }
+
+  @media (max-width: 720px) {
+    .etl-flow-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .etl-flow-header h2 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .etl-flow-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .etl-flow-legend {
+      gap: 7px 10px;
+      font-size: 11px;
+    }
+  }
+
   /* MySQL redo replay canvas demo */
   .mysql-redo-replay-demo {
     --mysql-redo-replay-ink: #172033;

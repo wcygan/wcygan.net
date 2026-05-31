@@ -8,6 +8,7 @@ tags: [Data, Databases, Architecture]
 import { CdcPropagationAnimation } from "~/components/CdcPropagationAnimation";
 import { CdcWalKafkaDemo } from "~/components/CdcWalKafkaDemo";
 import { DataRetentionCascadeDemo } from "~/components/DataRetentionCascadeDemo";
+import { IncrementalEtlFlowDemo } from "~/components/IncrementalEtlFlowDemo";
 
 Someone subscribes to your website, so the application executes this SQL against the database:
 
@@ -83,7 +84,9 @@ For questions such as...
 
 To decouple analytical queries from transaction processing, companies typically maintain a data lake. The data lake helps avoid resource contention with the online databases that are performing work on behalf of a customer.
 
-At LinkedIn, we store our offline data in [HDFS](https://apache.github.io/hadoop/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html#Introduction). We use [Trino](https://trino.io/), [Opal](https://www.linkedin.com/blog/engineering/data-management/opal-building-a-mutable-dataset-in-data-lake), and [OpenHouse](https://www.linkedin.com/blog/engineering/open-source/open-sourcing-openhouse) to query and manage the datasets. The datasets are initialized based on a snapshot of the database (such as [mysqldump](https://dev.mysql.com/doc/refman/9.7/en/mysqldump.html)) and kept in sync through change streams with [Brooklin](https://www.linkedin.com/blog/engineering/data-streaming-processing/streaming-data-pipelines-with-brooklin), [Kafka](https://kafka.apache.org/), and [Gobblin](https://gobblin.apache.org/docs/).
+At LinkedIn, we store offline data in [HDFS](https://apache.github.io/hadoop/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html#Introduction). We use [Trino](https://trino.io/), [Opal](https://www.linkedin.com/blog/engineering/data-management/opal-building-a-mutable-dataset-in-data-lake), and [OpenHouse](https://www.linkedin.com/blog/engineering/open-source/open-sourcing-openhouse) to query and manage the datasets. The datasets are initialized based on a snapshot of the database (such as [mysqldump](https://dev.mysql.com/doc/refman/9.7/en/mysqldump.html)) and kept in sync through change streams with [Brooklin](https://www.linkedin.com/blog/engineering/data-streaming-processing/streaming-data-pipelines-with-brooklin), [Kafka](https://kafka.apache.org/), and [Gobblin](https://gobblin.apache.org/docs/).
+
+<IncrementalEtlFlowDemo />
 
 ## Try it yourself
 

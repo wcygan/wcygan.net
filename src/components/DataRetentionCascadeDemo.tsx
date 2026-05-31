@@ -494,7 +494,7 @@ export function DataRetentionCascadeDemo() {
   return (
     <figure className="data-retention-demo">
       <div className="data-retention-header">
-        <h2>A delete cascades through CDC</h2>
+        <h2>Event-Based Delete Cascade</h2>
         <p>
           Deleting customer #91 emits a purge event. The order service deletes
           its orders, and those deletes flow back through CDC as the next round
