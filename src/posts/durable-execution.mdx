@@ -40,6 +40,12 @@ If a Worker dies during a [Workflow Task](https://docs.temporal.io/tasks#workflo
 
 <WorkerCrashModesDemo />
 
+## At LinkedIn
+
+My team, [LBP Checkout & Ordering](https://www.linkedin.com/blog/engineering/platform-platformization/evolving-the-linkedin-business-platform), uses [Temporal](https://temporal.io/) to orchestrate Order placement from the checkout page. When someone clicks the `Place Order` button, we start a workflow that waits for payment to succed, then proceed to fulfill their order by provisioning a subscription.
+
+Temporal is useful here because of [its ability to survive failures](https://temporal.io/blog/what-is-durable-execution#1-durable-execution-virtualizes-execution); steps in the workflow can fail, but will eventually succeed. For example, the provisioning service may be down temporarily due to an incident. When it is available again, the workflow can proceed and fulfill a customer's order, allowing them access to the subscription they purchased.
+
 ## References
 
 - [Temporal: What is Temporal?](https://docs.temporal.io/temporal)
