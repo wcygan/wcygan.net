@@ -919,6 +919,129 @@
     }
   }
 
+  /* Data retention cascade canvas demo */
+  .data-retention-demo {
+    --retention-ink: #172033;
+    --retention-muted: #5c667a;
+    --retention-line: #d9deea;
+    --retention-shell: #eef1f7;
+    --retention-blue: #2f69f0;
+    --retention-gold: #d59b24;
+    --retention-red: #d24a44;
+    --retention-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--retention-line);
+    border-radius: 8px;
+    background: var(--retention-shell);
+    box-shadow: var(--retention-shadow);
+  }
+
+  .data-retention-demo p,
+  .data-retention-demo h2 {
+    margin: 0;
+  }
+
+  .data-retention-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .data-retention-header h2 {
+    margin: 0;
+    color: var(--retention-ink);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .data-retention-header p {
+    color: var(--retention-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .data-retention-canvas {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    min-height: 340px;
+    border: 1px solid var(--retention-line);
+    border-radius: 8px;
+    background: var(--retention-shell);
+  }
+
+  .data-retention-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    align-items: center;
+    color: var(--retention-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .data-retention-legend span {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .data-retention-legend i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+  }
+
+  .data-retention-legend i[data-tone="path"] {
+    background: var(--retention-blue);
+  }
+
+  .data-retention-legend i[data-tone="event"] {
+    background: var(--retention-gold);
+  }
+
+  .data-retention-legend i[data-tone="tombstoned"] {
+    background: var(--retention-red);
+  }
+
+  @media (max-width: 720px) {
+    .data-retention-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .data-retention-header h2 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .data-retention-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .data-retention-legend {
+      gap: 7px 10px;
+      font-size: 11px;
+    }
+  }
+
+  @container (max-width: 600px) {
+    .data-retention-canvas {
+      height: clamp(440px, 104vw, 520px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
   /* MySQL redo replay canvas demo */
   .mysql-redo-replay-demo {
     --mysql-redo-replay-ink: #172033;
