@@ -7,6 +7,8 @@ draft: true
 ---
 
 import { MultiRegionDataMap } from "~/components/MultiRegionDataMap";
+import { HomeRegionRoutingDemo } from "~/components/HomeRegionRoutingDemo";
+import { ReplicationLagDemo } from "~/components/ReplicationLagDemo";
 
 LinkedIn has data centers in three US locations:
 
@@ -51,6 +53,8 @@ For example, an account can have a home region. Requests can enter through any h
 
 This is where the application model and the data model need to line up. If accounts have a home region, tables, partitions, caches, queues, and background workers should understand that boundary. If the same account can write actively in two regions at once, adding replicas does not choose a winner; the system needs conflict handling.
 
+<HomeRegionRoutingDemo />
+
 ## Replication, Consistency, and Failover
 
 Once writes have a home, replication decides what happens when that home region is unhealthy. It is what makes a regional failure survivable, and it is also where the tradeoff becomes visible.
@@ -60,6 +64,8 @@ A write is not safe just because one data center accepted it. The system has to 
 Strong consistency keeps the product easier to reason about, but it usually requires more coordination. Asynchronous replication can keep regions fast and independent, but failover can expose stale reads, missing writes, or conflicts the application must resolve.
 
 Failover should be treated like a product flow, not just an infrastructure feature. The important question is not only "can another region take traffic?" It is also "what do users see, what data can they trust, and which operations need to be retried?"
+
+<ReplicationLagDemo />
 
 ## At LinkedIn
 

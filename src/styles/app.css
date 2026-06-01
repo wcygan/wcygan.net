@@ -3574,6 +3574,262 @@
     color: rgb(132, 90, 18);
   }
 
+  /* Multi-region data canvas demos */
+  .home-region-routing-demo,
+  .replication-lag-demo {
+    --multi-region-demo-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --multi-region-demo-ink: #172033;
+    --multi-region-demo-muted: #5c667a;
+    --multi-region-demo-line: #d9deea;
+    --multi-region-demo-shell: #eef1f7;
+    --multi-region-demo-blue: #2f69f0;
+    --multi-region-demo-blue-soft: rgb(47 105 240 / 10%);
+    --multi-region-demo-green: #1d8b65;
+    --multi-region-demo-green-soft: rgb(29 139 101 / 10%);
+    --multi-region-demo-red: #d24a44;
+    --multi-region-demo-red-soft: rgb(210 74 68 / 10%);
+    --multi-region-demo-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--multi-region-demo-line);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 56%), transparent 54%),
+      var(--multi-region-demo-shell);
+    box-shadow: var(--multi-region-demo-shadow);
+  }
+
+  .home-region-routing-demo p,
+  .home-region-routing-demo figcaption,
+  .home-region-routing-demo h3,
+  .replication-lag-demo p,
+  .replication-lag-demo figcaption,
+  .replication-lag-demo h3 {
+    margin: 0;
+  }
+
+  .home-region-routing-header,
+  .replication-lag-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .home-region-routing-header h3,
+  .post-content .replication-lag-header h3 {
+    margin: 0;
+    color: var(--multi-region-demo-ink);
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .home-region-routing-header p,
+  .replication-lag-header p {
+    color: var(--multi-region-demo-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .home-region-routing-canvas,
+  .replication-lag-canvas {
+    display: block;
+    width: 100%;
+    min-height: 380px;
+    border: 1px solid var(--multi-region-demo-line);
+    border-radius: 8px;
+    background: var(--multi-region-demo-shell);
+    contain: layout paint;
+    touch-action: pan-y;
+  }
+
+  .home-region-routing-canvas {
+    aspect-ratio: 16 / 8.3;
+  }
+
+  .replication-lag-canvas {
+    aspect-ratio: 16 / 8;
+  }
+
+  .home-region-routing-steps,
+  .replication-lag-steps {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+  }
+
+  .home-region-routing-steps li,
+  .replication-lag-steps li {
+    min-width: 0;
+    margin: 0 !important;
+    padding: 8px 9px !important;
+    border: 1px solid var(--multi-region-demo-line);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 72%);
+    color: var(--multi-region-demo-muted);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.2;
+    opacity: 0.72;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease,
+      opacity 180ms ease,
+      transform 180ms var(--multi-region-demo-ease-out);
+  }
+
+  .home-region-routing-steps span,
+  .replication-lag-steps span {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+
+  .home-region-routing-steps li[data-state="complete"],
+  .replication-lag-steps li[data-state="complete"] {
+    border-color: rgb(29 139 101 / 34%);
+    background: var(--multi-region-demo-green-soft);
+    color: var(--multi-region-demo-green);
+    opacity: 0.9;
+  }
+
+  .home-region-routing-steps li[data-state="active"],
+  .replication-lag-steps li[data-state="active"] {
+    border-color: rgb(47 105 240 / 34%);
+    background: rgb(255 255 255 / 94%);
+    color: var(--multi-region-demo-blue);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .home-region-routing-status,
+  .replication-lag-status {
+    position: relative;
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid rgb(47 105 240 / 18%);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 76%);
+    color: var(--multi-region-demo-muted);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+
+  .home-region-routing-status::before,
+  .replication-lag-status::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: var(--multi-region-demo-blue);
+    box-shadow: 0 0 0 4px var(--multi-region-demo-blue-soft);
+    transition:
+      background-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .home-region-routing-demo[data-phase="commit-home"]
+    .home-region-routing-status::before,
+  .home-region-routing-demo[data-phase="replicate"]
+    .home-region-routing-status::before,
+  .home-region-routing-demo[data-phase="complete"]
+    .home-region-routing-status::before,
+  .replication-lag-demo[data-phase="texas-catches-up"]
+    .replication-lag-status::before,
+  .replication-lag-demo[data-phase="repair"] .replication-lag-status::before,
+  .replication-lag-demo[data-phase="resolved"] .replication-lag-status::before {
+    background: var(--multi-region-demo-green);
+    box-shadow: 0 0 0 4px var(--multi-region-demo-green-soft);
+  }
+
+  .replication-lag-demo[data-phase="virginia-fails"]
+    .replication-lag-status::before,
+  .replication-lag-demo[data-phase="stale-window"]
+    .replication-lag-status::before {
+    background: var(--multi-region-demo-red);
+    box-shadow: 0 0 0 4px var(--multi-region-demo-red-soft);
+  }
+
+  @media (max-width: 720px) {
+    .home-region-routing-demo,
+    .replication-lag-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .home-region-routing-header h3,
+    .post-content .replication-lag-header h3 {
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .home-region-routing-header p,
+    .replication-lag-header p {
+      font-size: 14px;
+      line-height: 21px;
+    }
+
+    .home-region-routing-status,
+    .replication-lag-status {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  @container (max-width: 620px) {
+    .home-region-routing-steps,
+    .replication-lag-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .home-region-routing-canvas {
+      height: clamp(610px, 150vw, 720px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+
+    .replication-lag-canvas {
+      height: clamp(610px, 146vw, 700px);
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-region-routing-steps li,
+    .home-region-routing-status,
+    .home-region-routing-status::before,
+    .replication-lag-steps li,
+    .replication-lag-status,
+    .replication-lag-status::before {
+      transition-duration: 0.01ms;
+    }
+
+    .home-region-routing-steps li[data-state="active"],
+    .replication-lag-steps li[data-state="active"] {
+      transform: none;
+    }
+  }
+
   /* Reset site typography inside Mermaid's foreignObject labels so they
      don't inherit body's 19px / 32px line-height and overflow the boxes
      Mermaid sized using its own font measurements. Covers both the inline
