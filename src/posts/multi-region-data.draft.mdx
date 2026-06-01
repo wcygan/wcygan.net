@@ -1,0 +1,91 @@
+---
+title: Multi-Region Data
+date: May 31, 2026
+description: A high-level look at routing, placement, consistency, and failover for multi-region data.
+tags: [Data, Databases, Architecture]
+draft: true
+---
+
+import { MultiRegionDataMap } from "~/components/MultiRegionDataMap";
+
+LinkedIn has data centers in three US locations:
+
+- Ashburn, Virginia
+- Richardson, Texas
+- Hillsboro, Oregon
+
+A topology like this has an easy promise: keep the app near users, and keep another region ready when one fails. If Virginia is unavailable, traffic can move to Texas or Oregon instead of turning into an outage.
+
+<MultiRegionDataMap />
+
+The hard part is making those regions feel invisible. Requests can land in different places, sessions may need to survive [failover](https://en.wikipedia.org/wiki/Failover), and replicated data still needs a clear answer for which version is current.
+
+That turns into a few practical questions:
+
+- Which region should each user hit?
+- What happens to a session when traffic moves?
+- How do we fail over when failures occur?
+- How do we replicate data without stale reads, split brain, or lost writes?
+
+## The Topology
+
+Everything starts with the write topology: one logical database across three locations, or one regional database per location.
+
+One logical database gives the application a single consistency boundary, but writes may need to coordinate across distance. A regional database in each location keeps local work more independent, but now the application needs a clear story for replication, ownership, and conflict handling.
+
+This choice sets the rest of the design. It decides who can accept writes, where ordering is assigned, which failures the system can survive, and how much complexity leaks into the application.
+
+## Routing Users
+
+Once the topology exists, the application still needs to decide where each request enters. A user in Seattle should usually land near Oregon, a user in New York should usually land near Virginia, and everyone needs a fallback when the closest region is unhealthy.
+
+This starts as a load-balancing problem and quickly becomes a product problem. Login state, caches, sticky sessions, background jobs, and in-flight writes all need to behave as if there is one application, not three separate copies.
+
+Routing users to the closest healthy region is the easy sentence. The harder questions are when a user should stay pinned, when they can move, and what happens if their region disappears halfway through an operation.
+
+## Giving Data a Home
+
+After traffic can enter anywhere, the next problem is ownership. A multi-region app stays understandable only when every important entity has a clear place where writes belong.
+
+For example, an account can have a home region. Requests can enter through any healthy edge, but writes for that account route to the region that owns it. This gives the product a simple rule: there is one current version of the account, even if the application runs in three places.
+
+This is where the application model and the data model need to line up. If accounts have a home region, tables, partitions, caches, queues, and background workers should understand that boundary. If the same account can write actively in two regions at once, adding replicas does not choose a winner; the system needs conflict handling.
+
+## Replication, Consistency, and Failover
+
+Once writes have a home, replication decides what happens when that home region is unhealthy. It is what makes a regional failure survivable, and it is also where the tradeoff becomes visible.
+
+A write is not safe just because one data center accepted it. The system has to define when a write is committed, which replicas must have it, and what readers are allowed to see during failover.
+
+Strong consistency keeps the product easier to reason about, but it usually requires more coordination. Asynchronous replication can keep regions fast and independent, but failover can expose stale reads, missing writes, or conflicts the application must resolve.
+
+Failover should be treated like a product flow, not just an infrastructure feature. The important question is not only "can another region take traffic?" It is also "what do users see, what data can they trust, and which operations need to be retried?"
+
+## At LinkedIn
+
+At LinkedIn, this is not abstract. We are currently migrating parts of our database architecture from [MySQL](https://www.mysql.com/) to [TiDB](https://github.com/pingcap/tidb).
+
+The motivation is not just replacing one database with another. It is getting better primitives for building an application across regions, plus more room to scale beyond a single MySQL instance.
+
+TiDB separates the database into pieces that map well onto the problems above. [TiDB servers](https://docs.pingcap.com/tidb/stable/tidb-architecture/#tidb-server) provide a stateless SQL layer, [PD](https://docs.pingcap.com/tidb/stable/tidb-architecture/#placement-driver-pd-server) manages placement and scheduling, and [TiKV](https://docs.pingcap.com/tidb/stable/tidb-architecture/#tikv-server) stores data in replicated key ranges called Regions. [TiProxy](https://docs.pingcap.com/tidb/stable/tiproxy-overview/) can help route database connections to healthy TiDB servers, including with [location-based load balancing](https://docs.pingcap.com/tidb/stable/tiproxy-load-balance/).
+
+For data ownership, TiDB has [Placement Rules in SQL](https://docs.pingcap.com/tidb/stable/placement-rules-in-sql/) and [topology labels](https://docs.pingcap.com/tidb/stable/schedule-replicas-by-topology-labels/) so the database can understand where replicas and leaders should live. For consistency, TiKV uses [Raft](https://docs.pingcap.com/tidb/stable/multi-data-centers-in-one-city-deployment/#raft-protocol), and PD provides the [timestamp oracle](https://docs.pingcap.com/tidb/stable/tso/) used by distributed transactions.
+
+For read-heavy paths, [Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/) can prefer local follower replicas while preserving strong consistency. For regional copies or disaster recovery, [TiCDC](https://docs.pingcap.com/tidb/stable/ticdc-overview/) can replicate incremental changes between clusters and provide eventual consistency for primary-secondary setups.
+
+[Bidirectional replication](https://docs.pingcap.com/tidb/stable/ticdc-bidirectional-replication/) is possible too, but it does not detect write conflicts. The application still has to avoid conflicting writes or define how to resolve them.
+
+Those features help, but they do not remove the application decisions. We still have to decide which region owns an account, how sessions behave when traffic moves, and what consistency guarantees users should expect. TiDB gives us better database machinery for multi-region data, but the topology only works when the application and the data model agree on the rules.
+
+### References
+
+- [TiDB Architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+- [TiProxy Overview](https://docs.pingcap.com/tidb/stable/tiproxy-overview/)
+- [TiProxy Load Balancing Policies](https://docs.pingcap.com/tidb/stable/tiproxy-load-balance/)
+- [Placement Rules in SQL](https://docs.pingcap.com/tidb/stable/placement-rules-in-sql/)
+- [Schedule Replicas by Topology Labels](https://docs.pingcap.com/tidb/stable/schedule-replicas-by-topology-labels/)
+- [TimeStamp Oracle in TiDB](https://docs.pingcap.com/tidb/stable/tso/)
+- [Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/)
+- [TiCDC Overview](https://docs.pingcap.com/tidb/stable/ticdc-overview/)
+- [Bidirectional Replication](https://docs.pingcap.com/tidb/stable/ticdc-bidirectional-replication/)
+- [Multiple Availability Zones in One Region Deployment](https://docs.pingcap.com/tidb/stable/multi-data-centers-in-one-city-deployment/)

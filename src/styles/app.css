@@ -3402,7 +3402,17 @@
     margin: 0 0 30px;
   }
 
+  .multi-region-map-frame {
+    margin: 0 0 30px;
+  }
+
   .osm-map-shell {
+    position: relative;
+    border: 1px solid rgb(222, 222, 222);
+    background: rgb(249, 249, 249);
+  }
+
+  .multi-region-map-shell {
     position: relative;
     border: 1px solid rgb(222, 222, 222);
     background: rgb(249, 249, 249);
@@ -3411,6 +3421,12 @@
   .osm-map {
     width: 100%;
     height: var(--osm-map-height, 420px);
+    min-height: 320px;
+  }
+
+  .multi-region-map {
+    width: 100%;
+    height: var(--multi-region-map-height, 420px);
     min-height: 320px;
   }
 
@@ -3429,11 +3445,36 @@
     z-index: 500;
   }
 
+  .multi-region-map-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    background: rgba(249, 249, 249, 0.92);
+    color: rgb(102, 102, 102);
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: center;
+    z-index: 500;
+  }
+
   .osm-map .leaflet-control-attribution {
     font-size: 11px;
   }
 
+  .multi-region-map .leaflet-control-attribution {
+    font-size: 11px;
+  }
+
   .osm-map .leaflet-control-zoom a {
+    color: rgb(30, 70, 140);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .multi-region-map .leaflet-control-zoom a {
     color: rgb(30, 70, 140);
     font-weight: 700;
     text-decoration: none;
@@ -3454,6 +3495,83 @@
     box-shadow:
       0 0 0 2px rgba(30, 70, 140, 0.45),
       0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  .multi-region-map-marker {
+    background: transparent;
+    border: 0;
+  }
+
+  .multi-region-map-marker-pin {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 3px solid rgb(255, 255, 255);
+    border-radius: 14px 14px 14px 4px;
+    background: rgb(70, 110, 170);
+    box-shadow:
+      0 0 0 2px rgba(30, 70, 140, 0.4),
+      0 10px 18px rgba(0, 0, 0, 0.24);
+    transform: rotate(-45deg);
+  }
+
+  .multi-region-map-marker-icon,
+  .multi-region-map-marker-code {
+    grid-area: 1 / 1;
+    transform: rotate(45deg);
+  }
+
+  .multi-region-map-marker-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    color: rgba(255, 255, 255, 0.98);
+  }
+
+  .multi-region-map-marker-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: rgba(255, 255, 255, 0.14);
+    stroke: currentColor;
+    stroke-width: 1.9;
+    transform: translate(calc(-10% - 2px), -2px);
+  }
+
+  .multi-region-map-marker-code {
+    margin-top: 34px;
+    padding: 1px 5px;
+    border-radius: 999px;
+    background: rgb(255, 255, 255);
+    color: rgb(30, 70, 140);
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  }
+
+  .multi-region-map-marker-texas .multi-region-map-marker-pin {
+    background: rgb(29, 139, 101);
+  }
+
+  .multi-region-map-marker-oregon .multi-region-map-marker-pin {
+    background: rgb(213, 155, 36);
+  }
+
+  .multi-region-map-marker-virginia .multi-region-map-marker-code {
+    color: rgb(30, 70, 140);
+  }
+
+  .multi-region-map-marker-texas .multi-region-map-marker-code {
+    color: rgb(15, 95, 68);
+  }
+
+  .multi-region-map-marker-oregon .multi-region-map-marker-code {
+    color: rgb(132, 90, 18);
   }
 
   /* Reset site typography inside Mermaid's foreignObject labels so they
