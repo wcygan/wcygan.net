@@ -49,7 +49,7 @@ Every application is just a view on some data. You can imagine a simplified vers
       class browser,app topologyCenteredNode`}
 />
 
-In this model, the application is stateless and talks to one database. To read a user's subscription, it joins `users` and `subscriptions`.
+In this model, the application is stateless and talks to one database. Since the `users` and `subscriptions` tables aren't in separate databases (as the ["Database per Service" pattern](https://microservices.io/patterns/data/database-per-service.html) describes), you can simply join them in a single query:
 
 ```sql
 SELECT u.id, u.name, s.plan
@@ -59,9 +59,19 @@ WHERE u.id = $1
   AND s.status = 'ACTIVE'
 ```
 
+---
+
+Some downsides of the single-region approach include:
+
+1. Single-points of failure across the stack (one issue can take the entire application down)
+2. Distant users have high latency
+3. There is nothing to failover to
+4. Maintenance is harder to hide
+5. The entire application relies on one region's capacity; scaling limits are easier to reach
+
 ### Multi-Region
 
-Next, we introduce two additional regions to match the architecture of [linkedin.com](https://www.linkedin.com/) in the United States.
+Next, we introduce two additional regions to match the architecture of [linkedin.com](https://www.linkedin.com/) in the United States:
 
 <MermaidDiagram
   height={420}
@@ -70,7 +80,7 @@ Next, we introduce two additional regions to match the architecture of [linkedin
       accTitle: Browser to regional application path behind DNS
       accDescr: A browser reaches DNS, and DNS sends traffic to Oregon, Texas, or Virginia. Each regional application sends SQL queries to its regional database.
       browser["Browser"]
-      dns["DNS"]
+      dns["DNS Server"]
       browser --> dns
 
       subgraph oregon["Oregon"]
@@ -99,17 +109,23 @@ Next, we introduce two additional regions to match the architecture of [linkedin
 
 />
 
+The first thing that you should ask yourself is _"what decides where the user is routed to?"_. The answer is [DNS](https://www.cloudflare.com/learning/dns/what-is-dns/), but we will take a deeper look at that in the [Routing Users](multi-region-data#routing-users) section.
+
 ---
 
 Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/) to help explain the remainder of the post. TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
 
 ## Routing Users
 
-Once the topology exists, the application still needs to decide where each request enters. A user in Seattle should usually land near Oregon, a user in New York should usually land near Virginia, and everyone needs a fallback when the closest region is unhealthy.
+Once upon a time, I had a system design interview at [Adyen](https://www.adyen.com/) and I couldn't clearly articulate the mechanism which determines which routes users between regions.
 
-This starts as a load-balancing problem and quickly becomes a product problem. Login state, caches, sticky sessions, background jobs, and in-flight writes all need to behave as if there is one application, not three separate copies.
+It turns out there are a few ways to answer this, for example [Cloudflare](https://developers.cloudflare.com/load-balancing/understand-basics/traffic-steering/steering-policies/) and [AWS](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html) list a few methods which enable their DNS servers to act like load balancers:
 
-Routing users to the closest healthy region is the easy sentence. The harder questions are when a user should stay pinned, when they can move, and what happens if their region disappears halfway through an operation.
+1. Simple Routing — always route to the same region
+2. Failover Routing — route to a backup region when the primary region is unhealthy
+3. Geo Routing — route to the nearest region
+
+I think the answer they were looking for was a primitive like [GeoDNS](https://en.wikipedia.org/wiki/GeoDNS), which would enable a user in Seattle to usually land near Oregon, a user in New York to usually land near Virginia, etc.
 
 ## Giving Data a Home
 
