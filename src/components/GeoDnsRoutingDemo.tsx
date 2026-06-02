@@ -40,7 +40,7 @@ const REGION_NODES: Record<RegionCode, RegionNode> = {
     code: "TX",
     label: "Texas",
     x: 320,
-    y: 306,
+    y: 284,
     color: "#1d8b65",
   },
   VA: {

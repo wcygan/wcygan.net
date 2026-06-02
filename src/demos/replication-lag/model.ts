@@ -59,25 +59,33 @@ export const LAG_STEPS = [
   { phase: "resolved", label: "All v19" },
 ] as const satisfies readonly { phase: LagPhase; label: string }[];
 
+export const LAG_REGION_ORDER = [
+  "VA",
+  "TX",
+  "OR",
+] as const satisfies readonly RegionCode[];
+
 const COMMIT_AT = 0.18;
 const TEXAS_APPLY_AT = 0.4;
 const VIRGINIA_FAIL_AT = 0.52;
 const STALE_READ_START = 0.62;
-const STALE_RESPONSE_START = 0.68;
-const REPAIR_START = 0.78;
-const OREGON_APPLY_AT = 0.84;
-const RESOLVED_AT = 0.86;
+const STALE_RESPONSE_START = 0.72;
+const REPAIR_START = 0.86;
+const OREGON_APPLY_AT = 0.92;
+const RESOLVED_AT = 0.94;
 
 export const LAG_TIMING = {
   commitAt: COMMIT_AT,
   texasApplyAt: TEXAS_APPLY_AT,
   virginiaFailAt: VIRGINIA_FAIL_AT,
+  staleReadStart: STALE_READ_START,
+  staleResponseStart: STALE_RESPONSE_START,
   repairStart: REPAIR_START,
   oregonApplyAt: OREGON_APPLY_AT,
   resolvedAt: RESOLVED_AT,
 } as const;
 
-export const REDUCED_MOTION_PROGRESS = 0.94;
+export const REDUCED_MOTION_PROGRESS = RESOLVED_AT;
 
 export function deriveLagSnapshot(state: DemoState): LagSnapshot {
   const progress = clamp(state.progress, 0, 1);
@@ -89,7 +97,7 @@ export function deriveLagSnapshot(state: DemoState): LagSnapshot {
     phase,
     phaseLabel: phaseLabel(phase),
     committedVersion: progress >= COMMIT_AT ? 19 : 18,
-    replicas: [virginia(progress), texas(progress), oregon(progress)],
+    replicas: LAG_REGION_ORDER.map((code) => replica(code, progress)),
     packets: packets(progress),
     safeFailoverTarget: progress >= VIRGINIA_FAIL_AT ? "TX" : undefined,
     staleReadVisible:
@@ -152,40 +160,40 @@ function phaseLabel(phase: LagPhase) {
   }
 }
 
-function virginia(progress: number): ReplicaSnapshot {
-  return {
-    code: "VA",
-    label: "Virginia",
-    city: "Ashburn",
-    status: progress >= VIRGINIA_FAIL_AT ? "failed" : "primary",
-    version: progress >= COMMIT_AT ? 19 : 18,
-    lagMs: 0,
-  };
-}
+function replica(code: RegionCode, progress: number): ReplicaSnapshot {
+  if (code === "VA") {
+    return {
+      code,
+      label: "Virginia",
+      city: "Ashburn",
+      status: progress >= VIRGINIA_FAIL_AT ? "failed" : "primary",
+      version: progress >= COMMIT_AT ? 19 : 18,
+      lagMs: 0,
+    };
+  }
 
-function texas(progress: number): ReplicaSnapshot {
-  const caughtUp = progress >= TEXAS_APPLY_AT;
+  if (code === "TX") {
+    const caughtUp = progress >= TEXAS_APPLY_AT;
 
-  return {
-    code: "TX",
-    label: "Texas",
-    city: "Richardson",
-    status:
-      progress >= VIRGINIA_FAIL_AT
-        ? "new-primary"
-        : caughtUp
-          ? "caught-up"
-          : "replica",
-    version: caughtUp ? 19 : 18,
-    lagMs: caughtUp ? 0 : 120,
-  };
-}
+    return {
+      code,
+      label: "Texas",
+      city: "Richardson",
+      status:
+        progress >= VIRGINIA_FAIL_AT
+          ? "new-primary"
+          : caughtUp
+            ? "caught-up"
+            : "replica",
+      version: caughtUp ? 19 : 18,
+      lagMs: caughtUp ? 0 : 120,
+    };
+  }
 
-function oregon(progress: number): ReplicaSnapshot {
   const caughtUp = progress >= OREGON_APPLY_AT;
 
   return {
-    code: "OR",
+    code,
     label: "Oregon",
     city: "Hillsboro",
     status: caughtUp ? "caught-up" : "lagging",

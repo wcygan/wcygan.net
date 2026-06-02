@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveRoutingSnapshot,
   REDUCED_MOTION_PROGRESS,
+  ROUTING_REGION_ORDER,
   ROUTING_STEPS,
   routingStepState,
 } from "./model";
@@ -11,6 +12,9 @@ describe("deriveRoutingSnapshot", () => {
     const snapshot = deriveRoutingSnapshot({ progress: 0.08, playing: false });
 
     expect(snapshot.phase).toBe("enter-edge");
+    expect(snapshot.regions.map((region) => region.code)).toEqual([
+      ...ROUTING_REGION_ORDER,
+    ]);
     expect(
       snapshot.regions.find((region) => region.code === "OR"),
     ).toMatchObject({
@@ -58,9 +62,9 @@ describe("deriveRoutingSnapshot", () => {
     expect(
       snapshot.regions.map((region) => [region.code, region.version]),
     ).toEqual([
-      ["OR", 18],
       ["VA", 19],
       ["TX", 18],
+      ["OR", 18],
     ]);
   });
 
@@ -70,29 +74,22 @@ describe("deriveRoutingSnapshot", () => {
       playing: false,
     });
 
-    expect(snapshot.phase).toBe("complete");
+    expect(snapshot.phase).toBe("replicate");
     expect(snapshot.regions.every((region) => region.version === 19)).toBe(
       true,
     );
-    expect(routingStepState(snapshot.phase, 5)).toBe("complete");
+    expect(routingStepState(snapshot.phase, 4)).toBe("complete");
   });
 
   it("holds the final state after every region catches up", () => {
     const snapshot = deriveRoutingSnapshot({ progress: 0.87, playing: false });
 
-    expect(snapshot.phase).toBe("complete");
+    expect(snapshot.phase).toBe("replicate");
     expect(snapshot.regions.every((region) => region.version === 19)).toBe(
       true,
     );
     expect(
       ROUTING_STEPS.map((_, index) => routingStepState(snapshot.phase, index)),
-    ).toEqual([
-      "complete",
-      "complete",
-      "complete",
-      "complete",
-      "complete",
-      "complete",
-    ]);
+    ).toEqual(["complete", "complete", "complete", "complete", "complete"]);
   });
 });

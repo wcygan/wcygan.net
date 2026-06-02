@@ -114,10 +114,6 @@ The first thing that you should ask yourself is _"what decides where the user is
 
 By adding multiple zones, we've gained lower latency, regional fault tolerance, and more room to spread traffic. But we have also made the system harder to reason about. Now we need rules for routing users, assigning data ownership, and deciding what guarantees replication provides during failures.
 
----
-
-Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/) to help explain the remainder of the post. TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
-
 ## Routing Users
 
 Once upon a time, I had a system design interview at [Adyen](https://www.adyen.com/) and I couldn't clearly articulate the mechanism which determines which routes users between regions.
@@ -136,43 +132,27 @@ GeoDNS works by answering the same hostname with different regional endpoints. T
 
 ### Sticky Sessions
 
-## Giving Data a Home
+GeoDNS can get a user to a nearby regional entry point, but once the user has an active session, the system may want later requests to keep landing on the same region. For example, if the user issues writes to Texas, that data may not be replicated to Virgina or Oregon yet, so the only region with the "up-to-date" data is Texas, and the user's session should continue in Texas _at least_ until the other regions are updated.
 
-After traffic can enter anywhere, the next problem is ownership. A multi-region app stays understandable only when every important entity has a clear place where writes belong.
+That can be done with cookies, load balancer affinity, or session state stored somewhere shared. The tradeoff is that sticky sessions make the app feel stable during normal traffic, but they also make failover harder because the system has to decide what happens when the region holding that session goes away.
 
-For example, an account can have a home region. Requests can enter through any healthy edge, but writes for that account route to the region that owns it. This gives the product a simple rule: there is one current version of the account, even if the application runs in three places.
+## Entity Routing
 
-This is where the application model and the data model need to line up. If accounts have a home region, tables, partitions, caches, queues, and background workers should understand that boundary. If the same account can write actively in two regions at once, adding replicas does not choose a winner; the system needs conflict handling.
+Entity routing means choosing a home region for each important business object, like a customer or tenant. A request can enter through any healthy region, but work for that entity is routed back to the region that owns it, especially writes. This gives the system one clear place where the current version of the entity lives, instead of letting multiple regions accept conflicting updates and trying to pick a winner later.
+
+A new issue appears during failout: if an impacted region owns some entities, the system needs rules for whether those entities move to a backup region or accept only reads until replication catches up.
 
 <HomeRegionRoutingDemo />
 
 ## Replication, Consistency, and Failover
 
-Once writes have a home, replication decides what happens when that home region is unhealthy. It is what makes a regional failure survivable, and it is also where the tradeoff becomes visible.
-
-A write is not safe just because one data center accepted it. The system has to define when a write is committed, which replicas must have it, and what readers are allowed to see during failover.
-
-Strong consistency keeps the product easier to reason about, but it usually requires more coordination. Asynchronous replication can keep regions fast and independent, but failover can expose stale reads, missing writes, or conflicts the application must resolve.
-
-Failover should be treated like a product flow, not just an infrastructure feature. The important question is not only "can another region take traffic?" It is also "what do users see, what data can they trust, and which operations need to be retried?"
+TBD
 
 <ReplicationLagDemo />
 
 ## At LinkedIn
 
-At LinkedIn, this is not abstract. We are currently migrating parts of our database architecture from [MySQL](https://www.mysql.com/) to [TiDB](https://github.com/pingcap/tidb).
-
-The motivation is not just replacing one database with another. It is getting better primitives for building an application across regions, plus more room to scale beyond a single MySQL instance.
-
-TiDB separates the database into pieces that map well onto the problems above. [TiDB servers](https://docs.pingcap.com/tidb/stable/tidb-architecture/#tidb-server) provide a stateless SQL layer, [PD](https://docs.pingcap.com/tidb/stable/tidb-architecture/#placement-driver-pd-server) manages placement and scheduling, and [TiKV](https://docs.pingcap.com/tidb/stable/tidb-architecture/#tikv-server) stores data in replicated key ranges called Regions. [TiProxy](https://docs.pingcap.com/tidb/stable/tiproxy-overview/) can help route database connections to healthy TiDB servers, including with [location-based load balancing](https://docs.pingcap.com/tidb/stable/tiproxy-load-balance/).
-
-For data ownership, TiDB has [Placement Rules in SQL](https://docs.pingcap.com/tidb/stable/placement-rules-in-sql/) and [topology labels](https://docs.pingcap.com/tidb/stable/schedule-replicas-by-topology-labels/) so the database can understand where replicas and leaders should live. For consistency, TiKV uses [Raft](https://docs.pingcap.com/tidb/stable/multi-data-centers-in-one-city-deployment/#raft-protocol), and PD provides the [timestamp oracle](https://docs.pingcap.com/tidb/stable/tso/) used by distributed transactions.
-
-For read-heavy paths, [Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/) can prefer local follower replicas while preserving strong consistency. For regional copies or disaster recovery, [TiCDC](https://docs.pingcap.com/tidb/stable/ticdc-overview/) can replicate incremental changes between clusters and provide eventual consistency for primary-secondary setups.
-
-[Bidirectional replication](https://docs.pingcap.com/tidb/stable/ticdc-bidirectional-replication/) is possible too, but it does not detect write conflicts. The application still has to avoid conflicting writes or define how to resolve them.
-
-Those features help, but they do not remove the application decisions. We still have to decide which region owns an account, how sessions behave when traffic moves, and what consistency guarantees users should expect. TiDB gives us better database machinery for multi-region data, but the topology only works when the application and the data model agree on the rules.
+Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/) to help explain the remainder of the post. TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
 
 ## References
 

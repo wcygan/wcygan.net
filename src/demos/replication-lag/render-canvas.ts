@@ -2,6 +2,7 @@ import {
   LAG_TIMING,
   type LagPacket,
   type LagSnapshot,
+  type RegionCode,
   type ReplicaSnapshot,
 } from "./model";
 import type { CanvasViewport } from "./viewport";
@@ -91,11 +92,11 @@ function drawWide(
     oregon: { center: center(oregon), rect: oregon },
   };
 
-  drawUser(ctx, user.center, "user");
+  drawUser(ctx, user.center, "Seattle user");
   drawRelationshipLines(ctx, layout);
-  drawReplicaCard(ctx, virginia, snapshot.replicas[0]);
-  drawReplicaCard(ctx, texas, snapshot.replicas[1]);
-  drawReplicaCard(ctx, oregon, snapshot.replicas[2]);
+  drawReplicaCard(ctx, virginia, replicaByCode(snapshot.replicas, "VA"));
+  drawReplicaCard(ctx, texas, replicaByCode(snapshot.replicas, "TX"));
+  drawReplicaCard(ctx, oregon, replicaByCode(snapshot.replicas, "OR"));
   drawPackets(ctx, snapshot.packets, layout, "wide");
   drawTimeline(ctx, timeline, snapshot);
 }
@@ -132,11 +133,26 @@ function drawCompact(
     oregon: { center: center(oregon), rect: oregon },
   };
 
-  drawUser(ctx, user.center, "user");
+  drawUser(ctx, user.center, "Seattle user");
   drawRelationshipLines(ctx, layout);
-  drawReplicaCard(ctx, virginia, snapshot.replicas[0], "compact");
-  drawReplicaCard(ctx, texas, snapshot.replicas[1], "compact");
-  drawReplicaCard(ctx, oregon, snapshot.replicas[2], "compact");
+  drawReplicaCard(
+    ctx,
+    virginia,
+    replicaByCode(snapshot.replicas, "VA"),
+    "compact",
+  );
+  drawReplicaCard(
+    ctx,
+    texas,
+    replicaByCode(snapshot.replicas, "TX"),
+    "compact",
+  );
+  drawReplicaCard(
+    ctx,
+    oregon,
+    replicaByCode(snapshot.replicas, "OR"),
+    "compact",
+  );
   drawPackets(ctx, snapshot.packets, layout, "compact", width);
   drawTimeline(ctx, timeline, snapshot);
 }
@@ -625,6 +641,17 @@ function statusLabel(status: ReplicaSnapshot["status"]) {
     case "replica":
       return "replica";
   }
+}
+
+function replicaByCode(
+  replicas: readonly ReplicaSnapshot[],
+  code: RegionCode,
+): ReplicaSnapshot {
+  const replica = replicas.find((candidate) => candidate.code === code);
+  if (!replica) {
+    throw new Error(`Missing ${code} replica in replication lag snapshot`);
+  }
+  return replica;
 }
 
 function packetColor(tone: LagPacket["tone"]) {

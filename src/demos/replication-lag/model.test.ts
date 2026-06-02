@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveLagSnapshot,
-  LAG_TIMING,
+  LAG_REGION_ORDER,
   LAG_STEPS,
+  LAG_TIMING,
   lagStepState,
   REDUCED_MOTION_PROGRESS,
 } from "./model";
@@ -13,6 +14,9 @@ describe("deriveLagSnapshot", () => {
 
     expect(snapshot.phase).toBe("write");
     expect(snapshot.committedVersion).toBe(18);
+    expect(snapshot.replicas.map((replica) => replica.code)).toEqual([
+      ...LAG_REGION_ORDER,
+    ]);
     expect(snapshot.packets[0]).toMatchObject({
       from: "user",
       to: "virginia",
@@ -48,8 +52,14 @@ describe("deriveLagSnapshot", () => {
   });
 
   it("shows the stale Oregon read returning to the user", () => {
-    const readRequest = deriveLagSnapshot({ progress: 0.64, playing: false });
-    const staleResponse = deriveLagSnapshot({ progress: 0.7, playing: false });
+    const readRequest = deriveLagSnapshot({
+      progress: (LAG_TIMING.staleReadStart + LAG_TIMING.staleResponseStart) / 2,
+      playing: false,
+    });
+    const staleResponse = deriveLagSnapshot({
+      progress: (LAG_TIMING.staleResponseStart + LAG_TIMING.repairStart) / 2,
+      playing: false,
+    });
 
     expect(readRequest.packets).toContainEqual(
       expect.objectContaining({
@@ -99,7 +109,10 @@ describe("deriveLagSnapshot", () => {
   });
 
   it("holds the resolved state after Oregon repairs", () => {
-    const snapshot = deriveLagSnapshot({ progress: 0.87, playing: false });
+    const snapshot = deriveLagSnapshot({
+      progress: LAG_TIMING.resolvedAt + 0.01,
+      playing: false,
+    });
 
     expect(snapshot.phase).toBe("resolved");
     expect(snapshot.replicas.every((replica) => replica.version === 19)).toBe(

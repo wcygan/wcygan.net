@@ -1,4 +1,9 @@
-import type { RegionSnapshot, RoutingPacket, RoutingSnapshot } from "./model";
+import type {
+  RegionCode,
+  RegionSnapshot,
+  RoutingPacket,
+  RoutingSnapshot,
+} from "./model";
 import type { CanvasViewport } from "./viewport";
 
 type Point = {
@@ -68,14 +73,14 @@ function drawWide(
   const cardWidth = Math.min(176, (width - padding * 2 - 44) / 3);
   const cardHeight = 116;
   const cardY = 110;
-  const oregon = rect(padding, cardY, cardWidth, cardHeight);
-  const virginia = rect(
-    width / 2 - cardWidth / 2,
+  const virginia = rect(padding, cardY, cardWidth, cardHeight);
+  const texas = rect(width / 2 - cardWidth / 2, cardY, cardWidth, cardHeight);
+  const oregon = rect(
+    width - padding - cardWidth,
     cardY,
     cardWidth,
     cardHeight,
   );
-  const texas = rect(width - padding - cardWidth, cardY, cardWidth, cardHeight);
   const directory = rect(
     Math.max(padding, width / 2 - 160),
     height - 106,
@@ -94,9 +99,9 @@ function drawWide(
   drawUser(ctx, user.center, "Seattle user");
   drawRelationshipLines(ctx, layout);
   drawDirectory(ctx, directory, snapshot);
-  drawRegionCard(ctx, oregon, snapshot.regions[0]);
-  drawRegionCard(ctx, virginia, snapshot.regions[1]);
-  drawRegionCard(ctx, texas, snapshot.regions[2]);
+  drawRegionCard(ctx, virginia, regionByCode(snapshot.regions, "VA"));
+  drawRegionCard(ctx, texas, regionByCode(snapshot.regions, "TX"));
+  drawRegionCard(ctx, oregon, regionByCode(snapshot.regions, "OR"));
   drawPackets(ctx, snapshot.packets, layout, "wide");
 }
 
@@ -111,20 +116,20 @@ function drawCompact(
   const cardHeight = 96;
   const gap = 32;
   const user = { center: { x: width / 2, y: 38 }, radius: 18 };
-  const oregon = rect(padding, 72, cardWidth, cardHeight);
-  const directory = rect(padding, oregon.y + cardHeight + gap, cardWidth, 72);
-  const virginia = rect(
-    padding,
-    directory.y + directory.height + gap,
-    cardWidth,
-    cardHeight,
-  );
+  const virginia = rect(padding, 72, cardWidth, cardHeight);
   const texas = rect(
     padding,
     virginia.y + cardHeight + gap,
     cardWidth,
     cardHeight,
   );
+  const oregon = rect(
+    padding,
+    texas.y + cardHeight + gap,
+    cardWidth,
+    cardHeight,
+  );
+  const directory = rect(padding, oregon.y + cardHeight + gap, cardWidth, 72);
   const layout: Record<NodeKey, NodeLayout> = {
     user,
     oregon: { center: center(oregon), rect: oregon },
@@ -133,12 +138,12 @@ function drawCompact(
     texas: { center: center(texas), rect: texas },
   };
 
-  drawUser(ctx, user.center, "user request");
+  drawUser(ctx, user.center, "Seattle user");
   drawRelationshipLines(ctx, layout);
   drawDirectory(ctx, directory, snapshot);
-  drawRegionCard(ctx, oregon, snapshot.regions[0]);
-  drawRegionCard(ctx, virginia, snapshot.regions[1]);
-  drawRegionCard(ctx, texas, snapshot.regions[2]);
+  drawRegionCard(ctx, virginia, regionByCode(snapshot.regions, "VA"));
+  drawRegionCard(ctx, texas, regionByCode(snapshot.regions, "TX"));
+  drawRegionCard(ctx, oregon, regionByCode(snapshot.regions, "OR"));
   drawPackets(ctx, snapshot.packets, layout, "compact", width);
 
   const footer = rect(padding, height - 52, cardWidth, 34);
@@ -522,6 +527,17 @@ function roleLabel(role: RegionSnapshot["role"]) {
     case "replica":
       return "replica";
   }
+}
+
+function regionByCode(
+  regions: readonly RegionSnapshot[],
+  code: RegionCode,
+): RegionSnapshot {
+  const region = regions.find((candidate) => candidate.code === code);
+  if (!region) {
+    throw new Error(`Missing ${code} region in home-region routing snapshot`);
+  }
+  return region;
 }
 
 function center(box: Rect): Point {

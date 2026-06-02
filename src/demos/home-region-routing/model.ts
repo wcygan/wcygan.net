@@ -5,8 +5,7 @@ export type RoutingPhase =
   | "lookup-home"
   | "route-write"
   | "commit-home"
-  | "replicate"
-  | "complete";
+  | "replicate";
 
 export type PacketTone = "request" | "lookup" | "write" | "replication";
 
@@ -50,14 +49,18 @@ export const ROUTING_STEPS = [
   { phase: "route-write", label: "Route write" },
   { phase: "commit-home", label: "Commit v19" },
   { phase: "replicate", label: "Replicate" },
-  { phase: "complete", label: "One account" },
 ] as const satisfies readonly { phase: RoutingPhase; label: string }[];
+
+export const ROUTING_REGION_ORDER = [
+  "VA",
+  "TX",
+  "OR",
+] as const satisfies readonly RegionCode[];
 
 const LOOKUP_START = 0.16;
 const ROUTE_START = 0.32;
 const COMMIT_START = 0.52;
 const REPLICATE_START = 0.66;
-const COMPLETE_START = 0.86;
 const HOME_COMMIT_AT = 0.58;
 const TEXAS_REPLICA_APPLY_AT = 0.78;
 const OREGON_REPLICA_APPLY_AT = 0.84;
@@ -77,11 +80,7 @@ export function deriveRoutingSnapshot(state: DemoState): RoutingSnapshot {
     directoryStatus: directoryStatus(progress),
     homeRegion: "VA",
     accountVersion,
-    regions: [
-      region("OR", progress),
-      region("VA", progress),
-      region("TX", progress),
-    ],
+    regions: ROUTING_REGION_ORDER.map((code) => region(code, progress)),
     packets: packets(progress),
   };
 }
@@ -120,8 +119,7 @@ function derivePhase(progress: number): RoutingPhase {
   if (progress < ROUTE_START) return "lookup-home";
   if (progress < COMMIT_START) return "route-write";
   if (progress < REPLICATE_START) return "commit-home";
-  if (progress < COMPLETE_START) return "replicate";
-  return "complete";
+  return "replicate";
 }
 
 function phaseLabel(phase: RoutingPhase) {
@@ -136,15 +134,13 @@ function phaseLabel(phase: RoutingPhase) {
       return "Virginia commits the write and advances the account from version 18 to version 19.";
     case "replicate":
       return "Texas and Oregon receive the new version so reads can catch up around the country.";
-    case "complete":
-      return "The user saw one account, even though the application ran in three places.";
   }
 }
 
 function directoryStatus(progress: number) {
   if (progress < LOOKUP_START) return "waiting";
   if (progress < ROUTE_START) return "lookup: account 42 -> Virginia";
-  if (progress < COMPLETE_START) return "home: Virginia";
+  if (progress < OREGON_REPLICA_APPLY_AT) return "home: Virginia";
   return "home: Virginia, version 19";
 }
 

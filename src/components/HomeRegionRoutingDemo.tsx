@@ -49,10 +49,10 @@ export function HomeRegionRoutingDemo() {
       data-phase={visibleState.phase}
     >
       <div className="home-region-routing-header">
-        <h3>Home Region Routing</h3>
+        <h3>Entity Routing</h3>
         <p>
-          A request can enter through the nearest healthy edge while writes for
-          the account still route to the region that owns it.
+          A request can enter through the nearest healthy edge while account
+          writes still route to the region that owns that account.
         </p>
       </div>
 
@@ -60,12 +60,12 @@ export function HomeRegionRoutingDemo() {
         ref={canvasRef}
         className="home-region-routing-canvas"
         role="img"
-        aria-label="Animated home region routing demo showing a user request entering Oregon, the account directory returning Virginia as the account home, Oregon routing the write to Virginia, and Virginia replicating the committed version to Texas and Oregon"
+        aria-label="Animated entity routing demo showing a Seattle user request entering Oregon, the account directory returning Virginia as the account home, Oregon routing the write to Virginia, and Virginia replicating the committed version to Texas and Oregon"
       />
 
       <ol
         className="home-region-routing-steps"
-        aria-label="Home region routing timeline"
+        aria-label="Entity routing timeline"
       >
         {ROUTING_STEPS.map((step, index) => (
           <li

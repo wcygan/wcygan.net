@@ -57,7 +57,7 @@ export function ReplicationLagDemo() {
         ref={canvasRef}
         className="replication-lag-canvas"
         role="img"
-        aria-label="Animated replication lag demo showing a user writing version 19, Texas catching up, Virginia failing, Oregon returning stale version 18 to the user, and Oregon repairing from Texas"
+        aria-label="Animated replication lag demo showing a Seattle user writing version 19, Texas catching up, Virginia failing, Oregon returning stale version 18 to the user, and Oregon repairing from Texas"
       />
 
       <ol
