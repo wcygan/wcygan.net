@@ -8,6 +8,7 @@ draft: true
 
 import { MultiRegionDataMap } from "~/components/MultiRegionDataMap";
 import { HomeRegionRoutingDemo } from "~/components/HomeRegionRoutingDemo";
+import { MermaidDiagram } from "~/components/MermaidDiagram";
 import { ReplicationLagDemo } from "~/components/ReplicationLagDemo";
 
 LinkedIn has data centers in three US locations:
@@ -16,20 +17,49 @@ LinkedIn has data centers in three US locations:
 - Richardson, Texas
 - Hillsboro, Oregon
 
-A topology like this has an easy promise: keep the app near users, and keep another region ready when one fails. If Virginia is unavailable, traffic can move to Texas or Oregon instead of turning into an outage.
+This topology keeps the app near users and allows another region to be used as a backup when one fails. If Virginia is unavailable, traffic can move to Texas or Oregon.
 
 <MultiRegionDataMap />
 
-The hard part is making those regions feel invisible. Requests can land in different places, sessions may need to survive [failover](https://en.wikipedia.org/wiki/Failover), and replicated data still needs a clear answer for which version is current.
+Using multiple regions introduces some complexity:
 
-That turns into a few practical questions:
+- Which region should each user be routed to?
+- What happens to a session when the region is failed out?
+- How do we avoid stale reads, split brain, and lost writes?
 
-- Which region should each user hit?
-- What happens to a session when traffic moves?
-- How do we fail over when failures occur?
-- How do we replicate data without stale reads, split brain, or lost writes?
+## Topology
 
-## The Topology
+Every application is just a view on some data. You can imagine a simplified version of LinkedIn that is composed of only an application server and a database.
+
+<MermaidDiagram
+  height={460}
+  className="mermaid-simple-topology"
+  diagram={`flowchart TB
+      accTitle: Browser to database request path
+      accDescr: A browser sends an HTTP request to an application server, and the application server sends a SQL query to the database.
+      browser["Browser"]
+      subgraph region["Region"]
+        direction TB
+        app["Application server"] -->|"SQL query"| db[("Database")]
+      end
+      browser -->|"HTTP request"| app
+      class browser,app topologyCenteredNode`}
+/>
+
+In this model, the application is stateless and all data is persisted in the same database. This means all tables (e.g., `users`, `subscriptions`, `orders`) are accessible within the same transaction.
+
+```sql
+SELECT u.id, s.product_id
+FROM users u
+JOIN subscriptions s
+WHERE u.id = s.user_id
+      AND s.type = 'PREMIUM'
+      AND s.status = 'ACTIVE'
+```
+
+---
+
+Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/).
 
 Everything starts with the write topology: one logical database across three locations, or one regional database per location.
 
@@ -83,7 +113,7 @@ For read-heavy paths, [Follower Read](https://docs.pingcap.com/tidb/stable/follo
 
 Those features help, but they do not remove the application decisions. We still have to decide which region owns an account, how sessions behave when traffic moves, and what consistency guarantees users should expect. TiDB gives us better database machinery for multi-region data, but the topology only works when the application and the data model agree on the rules.
 
-### References
+## References
 
 - [TiDB Architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
 - [TiProxy Overview](https://docs.pingcap.com/tidb/stable/tiproxy-overview/)

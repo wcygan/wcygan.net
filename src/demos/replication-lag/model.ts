@@ -32,7 +32,7 @@ export type ReplicaSnapshot = {
 
 export type LagPacket = {
   from: "user" | "virginia" | "texas" | "oregon";
-  to: "virginia" | "texas" | "oregon";
+  to: "user" | "virginia" | "texas" | "oregon";
   label: string;
   progress: number;
   tone: "write" | "replication" | "stale-read" | "repair";
@@ -63,9 +63,19 @@ const COMMIT_AT = 0.18;
 const TEXAS_APPLY_AT = 0.4;
 const VIRGINIA_FAIL_AT = 0.52;
 const STALE_READ_START = 0.62;
-const REPAIR_START = 0.74;
+const STALE_RESPONSE_START = 0.68;
+const REPAIR_START = 0.78;
 const OREGON_APPLY_AT = 0.84;
 const RESOLVED_AT = 0.86;
+
+export const LAG_TIMING = {
+  commitAt: COMMIT_AT,
+  texasApplyAt: TEXAS_APPLY_AT,
+  virginiaFailAt: VIRGINIA_FAIL_AT,
+  repairStart: REPAIR_START,
+  oregonApplyAt: OREGON_APPLY_AT,
+  resolvedAt: RESOLVED_AT,
+} as const;
 
 export const REDUCED_MOTION_PROGRESS = 0.94;
 
@@ -134,7 +144,7 @@ function phaseLabel(phase: LagPhase) {
     case "virginia-fails":
       return "Virginia fails while Oregon is missing the latest write.";
     case "stale-window":
-      return "Failover should prefer Texas; serving Oregon now would expose version 18.";
+      return "Failover should prefer Texas; reading from Oregon now would return version 18.";
     case "repair":
       return "Oregon repairs from the caught-up region before serving current reads.";
     case "resolved":
@@ -199,10 +209,19 @@ function packets(progress: number): LagPacket[] {
     packet(
       progress,
       STALE_READ_START,
-      0.72,
+      STALE_RESPONSE_START,
       "user",
       "oregon",
-      "read sees v18",
+      "read Oregon",
+      "stale-read",
+    ),
+    packet(
+      progress,
+      STALE_RESPONSE_START,
+      REPAIR_START,
+      "oregon",
+      "user",
+      "returns v18",
       "stale-read",
     ),
     packet(

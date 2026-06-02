@@ -1,4 +1,9 @@
-import type { LagPacket, LagSnapshot, ReplicaSnapshot } from "./model";
+import {
+  LAG_TIMING,
+  type LagPacket,
+  type LagSnapshot,
+  type ReplicaSnapshot,
+} from "./model";
 import type { CanvasViewport } from "./viewport";
 
 type Point = {
@@ -86,12 +91,12 @@ function drawWide(
     oregon: { center: center(oregon), rect: oregon },
   };
 
-  drawUser(ctx, user.center, "write");
+  drawUser(ctx, user.center, "user");
   drawRelationshipLines(ctx, layout);
   drawReplicaCard(ctx, virginia, snapshot.replicas[0]);
   drawReplicaCard(ctx, texas, snapshot.replicas[1]);
   drawReplicaCard(ctx, oregon, snapshot.replicas[2]);
-  drawPackets(ctx, snapshot.packets, layout, true);
+  drawPackets(ctx, snapshot.packets, layout, "wide");
   drawTimeline(ctx, timeline, snapshot);
 }
 
@@ -103,8 +108,8 @@ function drawCompact(
 ) {
   const padding = width < 360 ? 12 : 14;
   const cardWidth = width - padding * 2;
-  const cardHeight = 96;
-  const gap = 20;
+  const cardHeight = 112;
+  const gap = 28;
   const user = { center: { x: width / 2, y: 36 }, radius: 18 };
   const virginia = rect(padding, 70, cardWidth, cardHeight);
   const texas = rect(
@@ -127,12 +132,12 @@ function drawCompact(
     oregon: { center: center(oregon), rect: oregon },
   };
 
-  drawUser(ctx, user.center, "write v19");
+  drawUser(ctx, user.center, "user");
   drawRelationshipLines(ctx, layout);
-  drawReplicaCard(ctx, virginia, snapshot.replicas[0]);
-  drawReplicaCard(ctx, texas, snapshot.replicas[1]);
-  drawReplicaCard(ctx, oregon, snapshot.replicas[2]);
-  drawPackets(ctx, snapshot.packets, layout, false);
+  drawReplicaCard(ctx, virginia, snapshot.replicas[0], "compact");
+  drawReplicaCard(ctx, texas, snapshot.replicas[1], "compact");
+  drawReplicaCard(ctx, oregon, snapshot.replicas[2], "compact");
+  drawPackets(ctx, snapshot.packets, layout, "compact", width);
   drawTimeline(ctx, timeline, snapshot);
 }
 
@@ -149,8 +154,13 @@ function drawReplicaCard(
   ctx: CanvasRenderingContext2D,
   card: Rect,
   replica: ReplicaSnapshot,
+  layout: "wide" | "compact" = "wide",
 ) {
   const palette = replicaPalette(replica.status);
+  const lagY = layout === "compact" ? card.y + 62 : card.y + card.height - 52;
+  const lagX = layout === "compact" ? card.x + 58 : card.x + card.width / 2;
+  const lagAlign = layout === "compact" ? "left" : "center";
+
   drawRoundedRect(ctx, card, 10);
   ctx.fillStyle = palette.fill;
   ctx.fill();
@@ -182,18 +192,12 @@ function drawReplicaCard(
     `v${replica.version}`,
     replica.version === 19 ? COLORS.green : COLORS.gold,
   );
-  drawText(
-    ctx,
-    `lag ${replica.lagMs}ms`,
-    card.x + card.width / 2,
-    card.y + card.height - 52,
-    {
-      align: "center",
-      color: replica.lagMs === 0 ? COLORS.green : COLORS.red,
-      font: `700 11px ${MONO_FONT}`,
-      maxWidth: card.width - 24,
-    },
-  );
+  drawText(ctx, `lag ${replica.lagMs}ms`, lagX, lagY, {
+    align: lagAlign,
+    color: replica.lagMs === 0 ? COLORS.green : COLORS.red,
+    font: `700 11px ${MONO_FONT}`,
+    maxWidth: layout === "compact" ? card.width - 150 : card.width - 24,
+  });
 }
 
 function drawTimeline(
@@ -217,6 +221,8 @@ function drawTimeline(
   const decision = snapshot.safeFailoverTarget
     ? `serve from ${snapshot.safeFailoverTarget}`
     : "primary healthy";
+  const timelineColor = timelineStatusColor(snapshot);
+
   drawDecisionPill(
     ctx,
     rect(
@@ -226,11 +232,11 @@ function drawTimeline(
       22,
     ),
     decision,
-    snapshot.staleReadVisible ? COLORS.red : COLORS.green,
+    timelineColor,
   );
 
-  const x1 = box.x + 18;
-  const x2 = box.x + box.width - 18;
+  const x1 = box.x + 32;
+  const x2 = box.x + box.width - 42;
   const y = box.y + 53;
   ctx.strokeStyle = COLORS.line;
   ctx.lineWidth = 4;
@@ -240,16 +246,60 @@ function drawTimeline(
   ctx.lineTo(x2, y);
   ctx.stroke();
 
-  const activeX = x1 + (x2 - x1) * snapshot.progress;
-  ctx.strokeStyle = snapshot.staleReadVisible ? COLORS.red : COLORS.green;
+  const timelineProgress = clampNumber(
+    snapshot.progress / LAG_TIMING.oregonApplyAt,
+    0,
+    1,
+  );
+  const activeX = x1 + (x2 - x1) * timelineProgress;
+  ctx.strokeStyle = timelineColor;
+  ctx.lineCap = "butt";
   ctx.beginPath();
   ctx.moveTo(x1, y);
   ctx.lineTo(activeX, y);
   ctx.stroke();
+  ctx.lineCap = "round";
 
-  drawTick(ctx, x1 + (x2 - x1) * 0.18, y, "commit v19", "below");
-  drawTick(ctx, x1 + (x2 - x1) * 0.52, y, "VA fails", "above");
-  drawTick(ctx, x1 + (x2 - x1) * 0.88, y, "OR repaired", "below");
+  drawTick(
+    ctx,
+    x1 + (x2 - x1) * timelinePosition(LAG_TIMING.commitAt),
+    y,
+    "commit",
+    "below",
+  );
+  drawTick(
+    ctx,
+    x1 + (x2 - x1) * timelinePosition(LAG_TIMING.texasApplyAt),
+    y,
+    "TX v19",
+    "above",
+  );
+  drawTick(
+    ctx,
+    x1 + (x2 - x1) * timelinePosition(LAG_TIMING.virginiaFailAt),
+    y,
+    "VA fails",
+    "below",
+  );
+  drawTick(
+    ctx,
+    x1 + (x2 - x1) * timelinePosition(LAG_TIMING.oregonApplyAt),
+    y,
+    "OR v19",
+    "below",
+  );
+}
+
+function timelinePosition(progress: number) {
+  return clampNumber(progress / LAG_TIMING.oregonApplyAt, 0, 1);
+}
+
+function timelineStatusColor(snapshot: LagSnapshot) {
+  const isInFailoverWindow =
+    snapshot.progress >= LAG_TIMING.virginiaFailAt &&
+    snapshot.progress < LAG_TIMING.oregonApplyAt;
+
+  return isInFailoverWindow ? COLORS.red : COLORS.green;
 }
 
 function drawTick(
@@ -299,15 +349,32 @@ function drawPackets(
   ctx: CanvasRenderingContext2D,
   packets: readonly LagPacket[],
   layout: Record<NodeKey, NodeLayout>,
-  showLabels: boolean,
+  labelMode: "wide" | "compact",
+  boundsWidth?: number,
 ) {
   for (const packet of packets) {
-    const { from: start, to: end } = connectorSegment(
-      layout[packet.from],
-      layout[packet.to],
-    );
-    const point = pointBetween(start, end, packet.progress);
+    const fromNode = layout[packet.from];
+    const toNode = layout[packet.to];
+    const { from: start, to: end } = connectorSegment(fromNode, toNode);
+    const pathPoint = pointBetween(start, end, packet.progress);
     const color = packetColor(packet.tone);
+
+    if (labelMode === "compact") {
+      const tokenPoint = compactPacketPoint(
+        pathPoint,
+        packet.progress,
+        fromNode,
+        toNode,
+      );
+      drawPacketToken(
+        ctx,
+        tokenPoint,
+        compactPacketLabel(packet),
+        color,
+        boundsWidth,
+      );
+      continue;
+    }
 
     ctx.save();
     ctx.fillStyle = color;
@@ -315,8 +382,8 @@ function drawPackets(
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(
-      point.x,
-      point.y,
+      pathPoint.x,
+      pathPoint.y,
       packet.tone === "stale-read" ? 9 : 8,
       0,
       Math.PI * 2,
@@ -324,14 +391,102 @@ function drawPackets(
     ctx.fill();
     ctx.stroke();
 
-    if (showLabels) {
-      drawText(ctx, packet.label, point.x + 12, point.y - 5, {
-        color,
-        font: `800 11px ${UI_FONT}`,
-        maxWidth: 126,
-      });
-    }
+    drawText(ctx, packet.label, pathPoint.x + 12, pathPoint.y - 5, {
+      color,
+      font: `800 11px ${UI_FONT}`,
+      maxWidth: 126,
+    });
     ctx.restore();
+  }
+}
+
+function drawPacketToken(
+  ctx: CanvasRenderingContext2D,
+  point: Point,
+  label: string,
+  color: string,
+  boundsWidth = Number.POSITIVE_INFINITY,
+) {
+  ctx.save();
+  ctx.font = `800 10px ${UI_FONT}`;
+
+  const tokenWidth = Math.min(
+    Math.max(ctx.measureText(label).width + 28, 58),
+    98,
+  );
+  const tokenHeight = 22;
+  const tokenX = clampNumber(
+    point.x - tokenWidth / 2,
+    8,
+    boundsWidth - tokenWidth - 8,
+  );
+  const tokenY = point.y - tokenHeight / 2;
+
+  roundedRectPath(ctx, tokenX, tokenY, tokenWidth, tokenHeight, 999);
+  ctx.fillStyle = "rgb(255 255 255 / 94%)";
+  ctx.fill();
+  ctx.strokeStyle = `${color}77`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(tokenX + 11, tokenY + tokenHeight / 2, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawText(ctx, label, tokenX + 21, tokenY + tokenHeight / 2 + 0.5, {
+    color: COLORS.ink,
+    font: `800 10px ${UI_FONT}`,
+    maxWidth: tokenWidth - 26,
+  });
+  ctx.restore();
+}
+
+function compactPacketPoint(
+  pathPoint: Point,
+  progress: number,
+  fromNode: NodeLayout,
+  toNode: NodeLayout,
+) {
+  if (toNode.radius) return pathPoint;
+
+  const landingPoint = insideNodePoint(toNode, fromNode.center, 24);
+  const landingBias = easeOut(clampNumber((progress - 0.66) / 0.34, 0, 1));
+  return pointBetween(pathPoint, landingPoint, landingBias);
+}
+
+function insideNodePoint(node: NodeLayout, from: Point, inset: number): Point {
+  const edge = boundaryPoint(node, from);
+  const dx = node.center.x - edge.x;
+  const dy = node.center.y - edge.y;
+  const length = Math.hypot(dx, dy);
+
+  if (length === 0) return edge;
+
+  return {
+    x: edge.x + (dx / length) * inset,
+    y: edge.y + (dy / length) * inset,
+  };
+}
+
+function easeOut(value: number) {
+  return 1 - Math.pow(1 - clampNumber(value, 0, 1), 3);
+}
+
+function compactPacketLabel(packet: LagPacket) {
+  switch (packet.label) {
+    case "write v19":
+      return "write";
+    case "async copy v19":
+      return "copy";
+    case "read Oregon":
+      return "read OR";
+    case "returns v18":
+      return "v18 back";
+    case "repair v19":
+      return "repair";
+    default:
+      return packet.label;
   }
 }
 
@@ -497,6 +652,11 @@ function pointBetween(start: Point, end: Point, amount: number): Point {
     x: start.x + (end.x - start.x) * amount,
     y: start.y + (end.y - start.y) * amount,
   };
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (max < min) return min;
+  return Math.min(Math.max(value, min), max);
 }
 
 function connectorSegment(

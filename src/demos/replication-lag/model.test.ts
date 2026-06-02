@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveLagSnapshot,
+  LAG_TIMING,
   LAG_STEPS,
   lagStepState,
   REDUCED_MOTION_PROGRESS,
@@ -44,6 +45,44 @@ describe("deriveLagSnapshot", () => {
       status: "lagging",
       version: 18,
     });
+  });
+
+  it("shows the stale Oregon read returning to the user", () => {
+    const readRequest = deriveLagSnapshot({ progress: 0.64, playing: false });
+    const staleResponse = deriveLagSnapshot({ progress: 0.7, playing: false });
+
+    expect(readRequest.packets).toContainEqual(
+      expect.objectContaining({
+        from: "user",
+        to: "oregon",
+        label: "read Oregon",
+        tone: "stale-read",
+      }),
+    );
+    expect(staleResponse.packets).toContainEqual(
+      expect.objectContaining({
+        from: "oregon",
+        to: "user",
+        label: "returns v18",
+        tone: "stale-read",
+      }),
+    );
+  });
+
+  it("switches failover state at the Virginia failure tick", () => {
+    const beforeFailure = deriveLagSnapshot({
+      progress: LAG_TIMING.virginiaFailAt - 0.001,
+      playing: false,
+    });
+    const atFailure = deriveLagSnapshot({
+      progress: LAG_TIMING.virginiaFailAt,
+      playing: false,
+    });
+
+    expect(beforeFailure.safeFailoverTarget).toBeUndefined();
+    expect(beforeFailure.replicas[0].status).toBe("primary");
+    expect(atFailure.safeFailoverTarget).toBe("TX");
+    expect(atFailure.replicas[0].status).toBe("failed");
   });
 
   it("uses the reduced-motion frame as the resolved state", () => {

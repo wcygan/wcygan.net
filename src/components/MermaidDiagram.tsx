@@ -90,7 +90,7 @@ const MERMAID_THEME = {
     clusterBorder: "#dedede",
     defaultLinkColor: "#666666",
     titleColor: "#466eaa",
-    edgeLabelBackground: "#ffffff",
+    edgeLabelBackground: "#f9f9f9",
     errorBkgColor: "#f9f9f9",
     errorTextColor: "#D55E00",
     fontFamily:
@@ -252,7 +252,7 @@ export function MermaidDiagram({
       <div
         ref={outerRef}
         className={[
-          "mermaid-container relative my-6 flex justify-center overflow-x-auto rounded-lg p-4",
+          "mermaid-container relative my-6 flex items-center justify-center overflow-x-auto rounded-lg p-4",
           className,
         ]
           .filter(Boolean)

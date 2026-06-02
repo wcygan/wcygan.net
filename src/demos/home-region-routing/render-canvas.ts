@@ -97,7 +97,7 @@ function drawWide(
   drawRegionCard(ctx, oregon, snapshot.regions[0]);
   drawRegionCard(ctx, virginia, snapshot.regions[1]);
   drawRegionCard(ctx, texas, snapshot.regions[2]);
-  drawPackets(ctx, snapshot.packets, layout, true);
+  drawPackets(ctx, snapshot.packets, layout, "wide");
 }
 
 function drawCompact(
@@ -108,11 +108,11 @@ function drawCompact(
 ) {
   const padding = width < 360 ? 12 : 14;
   const cardWidth = width - padding * 2;
-  const cardHeight = 92;
-  const gap = 22;
+  const cardHeight = 96;
+  const gap = 32;
   const user = { center: { x: width / 2, y: 38 }, radius: 18 };
   const oregon = rect(padding, 72, cardWidth, cardHeight);
-  const directory = rect(padding, oregon.y + cardHeight + gap, cardWidth, 68);
+  const directory = rect(padding, oregon.y + cardHeight + gap, cardWidth, 72);
   const virginia = rect(
     padding,
     directory.y + directory.height + gap,
@@ -139,7 +139,7 @@ function drawCompact(
   drawRegionCard(ctx, oregon, snapshot.regions[0]);
   drawRegionCard(ctx, virginia, snapshot.regions[1]);
   drawRegionCard(ctx, texas, snapshot.regions[2]);
-  drawPackets(ctx, snapshot.packets, layout, false);
+  drawPackets(ctx, snapshot.packets, layout, "compact", width);
 
   const footer = rect(padding, height - 52, cardWidth, 34);
   drawMiniStatus(
@@ -245,33 +245,136 @@ function drawPackets(
   ctx: CanvasRenderingContext2D,
   packets: readonly RoutingPacket[],
   layout: Record<NodeKey, NodeLayout>,
-  showLabels: boolean,
+  labelMode: "wide" | "compact",
+  boundsWidth?: number,
 ) {
   for (const packet of packets) {
-    const { from: start, to: end } = connectorSegment(
-      layout[packet.from],
-      layout[packet.to],
-    );
-    const point = pointBetween(start, end, packet.progress);
+    const fromNode = layout[packet.from];
+    const toNode = layout[packet.to];
+    const { from: start, to: end } = connectorSegment(fromNode, toNode);
+    const pathPoint = pointBetween(start, end, packet.progress);
     const color = packetColor(packet.tone);
+
+    if (labelMode === "compact") {
+      const tokenPoint = compactPacketPoint(
+        pathPoint,
+        packet.progress,
+        fromNode,
+        toNode,
+      );
+      drawPacketToken(
+        ctx,
+        tokenPoint,
+        compactPacketLabel(packet),
+        color,
+        boundsWidth,
+      );
+      continue;
+    }
 
     ctx.save();
     ctx.fillStyle = color;
     ctx.strokeStyle = COLORS.panel;
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+    ctx.arc(pathPoint.x, pathPoint.y, 8, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    if (showLabels) {
-      drawText(ctx, packet.label, point.x + 12, point.y - 5, {
-        color,
-        font: `800 11px ${UI_FONT}`,
-        maxWidth: 132,
-      });
-    }
+    drawText(ctx, packet.label, pathPoint.x + 12, pathPoint.y - 5, {
+      color,
+      font: `800 11px ${UI_FONT}`,
+      maxWidth: 132,
+    });
     ctx.restore();
+  }
+}
+
+function drawPacketToken(
+  ctx: CanvasRenderingContext2D,
+  point: Point,
+  label: string,
+  color: string,
+  boundsWidth = Number.POSITIVE_INFINITY,
+) {
+  ctx.save();
+  ctx.font = `800 10px ${UI_FONT}`;
+
+  const tokenWidth = Math.min(
+    Math.max(ctx.measureText(label).width + 28, 58),
+    98,
+  );
+  const tokenHeight = 22;
+  const tokenX = clampNumber(
+    point.x - tokenWidth / 2,
+    8,
+    boundsWidth - tokenWidth - 8,
+  );
+  const tokenY = point.y - tokenHeight / 2;
+
+  roundedRectPath(ctx, tokenX, tokenY, tokenWidth, tokenHeight, 999);
+  ctx.fillStyle = "rgb(255 255 255 / 94%)";
+  ctx.fill();
+  ctx.strokeStyle = `${color}77`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(tokenX + 11, tokenY + tokenHeight / 2, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  drawText(ctx, label, tokenX + 21, tokenY + tokenHeight / 2 + 0.5, {
+    color: COLORS.ink,
+    font: `800 10px ${UI_FONT}`,
+    maxWidth: tokenWidth - 26,
+  });
+  ctx.restore();
+}
+
+function compactPacketPoint(
+  pathPoint: Point,
+  progress: number,
+  fromNode: NodeLayout,
+  toNode: NodeLayout,
+) {
+  const landingPoint = insideNodePoint(toNode, fromNode.center, 24);
+  const landingBias = easeOut(clampNumber((progress - 0.66) / 0.34, 0, 1));
+  return pointBetween(pathPoint, landingPoint, landingBias);
+}
+
+function insideNodePoint(node: NodeLayout, from: Point, inset: number): Point {
+  const edge = boundaryPoint(node, from);
+  const dx = node.center.x - edge.x;
+  const dy = node.center.y - edge.y;
+  const length = Math.hypot(dx, dy);
+
+  if (length === 0) return edge;
+
+  return {
+    x: edge.x + (dx / length) * inset,
+    y: edge.y + (dy / length) * inset,
+  };
+}
+
+function easeOut(value: number) {
+  return 1 - Math.pow(1 - clampNumber(value, 0, 1), 3);
+}
+
+function compactPacketLabel(packet: RoutingPacket) {
+  switch (packet.label) {
+    case "request":
+      return "req";
+    case "lookup account 42":
+      return "lookup";
+    case "home = Virginia":
+      return "home VA";
+    case "write profile change":
+      return "write";
+    case "replicate v19":
+      return "copy";
+    default:
+      return packet.label;
   }
 }
 
@@ -433,6 +536,11 @@ function pointBetween(start: Point, end: Point, amount: number): Point {
     x: start.x + (end.x - start.x) * amount,
     y: start.y + (end.y - start.y) * amount,
   };
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (max < min) return min;
+  return Math.min(Math.max(value, min), max);
 }
 
 function connectorSegment(

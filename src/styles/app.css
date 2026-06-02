@@ -701,12 +701,102 @@
 
   /* Mermaid diagram container override - match light theme */
   .post-content .mermaid-container {
+    --mermaid-surface: rgb(249, 249, 249);
     background: rgb(
       249,
       249,
       249
     ) !important; /* Light background instead of dark */
     border: 1px solid rgb(222, 222, 222) !important; /* Light border */
+  }
+
+  .post-content
+    .mermaid-container.mermaid-simple-topology
+    .mermaid-render-container {
+    max-width: 320px;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology .cluster rect {
+    fill: rgb(246, 248, 252) !important;
+    stroke: rgba(70, 110, 170, 0.5) !important;
+    stroke-width: 1.5px !important;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology .cluster-label,
+  .post-content .mermaid-container.mermaid-simple-topology .cluster-label p,
+  .post-content .mermaid-container.mermaid-simple-topology .cluster-label span {
+    color: rgb(30, 70, 140) !important;
+    fill: rgb(30, 70, 140) !important;
+    font-weight: 650;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology .cluster-label {
+    transform: translate(24px, 145px) !important;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology .cluster-label p {
+    padding: 0 6px;
+    background: rgb(246, 248, 252) !important;
+  }
+
+  .post-content .mermaid-container.mermaid-simple-topology foreignobject {
+    overflow: visible;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-simple-topology
+    .topologyCenteredNode
+    foreignobject {
+    overflow: visible;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-simple-topology
+    .topologyCenteredNode
+    foreignobject
+    > div {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: normal !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-simple-topology
+    .topologyCenteredNode
+    .nodeLabel,
+  .post-content
+    .mermaid-container.mermaid-simple-topology
+    .topologyCenteredNode
+    .nodeLabel
+    p {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .post-content .mermaid-container .fullscreen-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.92);
+    color: rgb(30, 70, 140);
   }
 
   /* CDC canvas animation */
@@ -3289,6 +3379,7 @@
   }
 
   .post-content .mermaid-container.mermaid-featured-card {
+    --mermaid-surface: rgb(251, 252, 254);
     background: rgb(251, 252, 254) !important;
     border: 1px solid rgba(70, 110, 170, 0.22) !important;
     box-shadow:
@@ -3297,6 +3388,7 @@
   }
 
   .post-content .mermaid-container.mermaid-example-quadrant {
+    --mermaid-surface: rgb(253, 252, 249);
     background: rgb(253, 252, 249) !important;
     border-color: rgba(213, 94, 0, 0.28) !important;
   }
@@ -3357,6 +3449,7 @@
   }
 
   .post-content .mermaid-container.mermaid-featured-temperature {
+    --mermaid-surface: rgb(255, 251, 244);
     background: rgb(255, 251, 244) !important;
     border-color: rgba(213, 94, 0, 0.28) !important;
   }
@@ -3802,13 +3895,13 @@
     }
 
     .home-region-routing-canvas {
-      height: clamp(610px, 150vw, 720px);
+      height: clamp(660px, 168vw, 760px);
       min-height: 0;
       aspect-ratio: auto;
     }
 
     .replication-lag-canvas {
-      height: clamp(610px, 146vw, 700px);
+      height: clamp(670px, 166vw, 750px);
       min-height: 0;
       aspect-ratio: auto;
     }
@@ -3843,6 +3936,24 @@
     font-size: 16px;
     line-height: normal;
     margin: 0;
+  }
+
+  .mermaid-container .edgeLabel,
+  .mermaid-container .edgeLabel p,
+  .mermaid-container .edgeLabel span,
+  .mermaid-fullscreen-dialog .edgeLabel,
+  .mermaid-fullscreen-dialog .edgeLabel p,
+  .mermaid-fullscreen-dialog .edgeLabel span {
+    background-color: var(--mermaid-surface, rgb(249, 249, 249)) !important;
+  }
+
+  .mermaid-container .edgeLabel rect,
+  .mermaid-container .labelBkg,
+  .mermaid-fullscreen-dialog .edgeLabel rect,
+  .mermaid-fullscreen-dialog .labelBkg {
+    fill: var(--mermaid-surface, rgb(249, 249, 249)) !important;
+    background-color: var(--mermaid-surface, rgb(249, 249, 249)) !important;
+    opacity: 1 !important;
   }
 
   /* ER diagrams measure *relationship* labels at 14px per Mermaid's
