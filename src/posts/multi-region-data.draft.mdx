@@ -146,13 +146,33 @@ A new issue appears during failout: if an impacted region owns some entities, th
 
 ## Replication, Consistency, and Failover
 
-TBD
+Since our application is spread across regions, we have to cope with the delays associated in data movement in addition to the potential for failures.
+
+### Replication
+
+Replication is the process of keeping copies of an entity's state in more than one region. Each write creates a new version, often with an increasing counter, timestamp, or log position. That version gives replicas something concrete to compare: Virginia might have account `123` at version 19 while Oregon is still at version 18. Replication does not make every copy current at the same instant; it gives the system a way to measure which regions have caught up and which ones are still serving older state.
+
+### Consistency
+
+Consistency is the promise the application makes about what users are allowed to observe. For this article, the useful guarantees are read-your-writes and monotonic reads: after a user changes their account, later requests in the same session should not fall backward to an older version. Weaker guarantees may be fine for feeds, counters, or cached read paths, but account ownership and session-critical data need a clear rule for where the current version lives.
+
+### Replication Lag
+
+Replication lag is the delay between a write being accepted in one region and that write becoming visible in the others. The risky case is not a visibly broken replica, but a healthy-looking replica that is still behind: it can answer requests successfully while returning an older account version, breaking read-your-writes or monotonic reads. In the demo below, Virginia accepts version 19, Texas catches up, Oregon remains on version 18, and failover has to treat Oregon as too stale to serve the account.
 
 <ReplicationLagDemo />
 
+### Failover
+
+Failover is the controlled process of moving traffic and ownership away from a failed region without changing the application's data contract. A safe failover stops sending traffic to the failed region, chooses a replica that has the committed writes, fences the old writer so it cannot come back and accept conflicting updates, and waits for lagging replicas to repair before treating them as current.
+
+### Failure Modes
+
+The three failures to watch for are stale reads, split brain, and lost writes. A stale read sends the user to a region that returns an older version; split brain allows two regions to accept writes for the same entity at the same time; a lost write promotes a region that never received a write the application had already told the user was committed.
+
 ## At LinkedIn
 
-Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/) to help explain the remainder of the post. TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
+Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/). TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
 
 ## References
 
