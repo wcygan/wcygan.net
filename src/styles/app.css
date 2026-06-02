@@ -3779,6 +3779,321 @@
     color: rgb(132, 90, 18);
   }
 
+  /* GeoDNS SVG demo */
+  .geo-dns-routing-demo {
+    --multi-region-demo-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --multi-region-demo-ink: #172033;
+    --multi-region-demo-muted: #5c667a;
+    --multi-region-demo-line: #d9deea;
+    --multi-region-demo-shell: #eef1f7;
+    --multi-region-demo-blue: #2f69f0;
+    --multi-region-demo-blue-soft: rgb(47 105 240 / 10%);
+    --multi-region-demo-green: #1d8b65;
+    --multi-region-demo-green-soft: rgb(29 139 101 / 10%);
+    --multi-region-demo-gold: #d59b24;
+    --multi-region-demo-gold-soft: rgb(213 155 36 / 12%);
+    --multi-region-demo-red: #d24a44;
+    --multi-region-demo-red-soft: rgb(210 74 68 / 10%);
+    --multi-region-demo-shadow: 0 12px 34px rgb(23 32 51 / 8%);
+    container-type: inline-size;
+    display: grid;
+    gap: 16px;
+    margin: 30px 0 38px;
+    padding: 16px;
+    border: 1px solid var(--multi-region-demo-line);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 56%), transparent 54%),
+      var(--multi-region-demo-shell);
+    box-shadow: var(--multi-region-demo-shadow);
+  }
+
+  .geo-dns-routing-demo p,
+  .geo-dns-routing-demo figcaption,
+  .geo-dns-routing-demo h3 {
+    margin: 0;
+  }
+
+  .geo-dns-routing-header {
+    display: grid;
+    gap: 7px;
+  }
+
+  .post-content .geo-dns-routing-header h3 {
+    margin: 0;
+    color: var(--multi-region-demo-ink);
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .geo-dns-routing-header p {
+    color: var(--multi-region-demo-muted);
+    font-size: 15px;
+    line-height: 22px;
+  }
+
+  .geo-dns-routing-board {
+    display: block;
+  }
+
+  .geo-dns-routing-map {
+    display: block;
+    width: 100%;
+    min-height: 330px;
+    border: 1px solid var(--multi-region-demo-line);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 80%);
+    color: var(--multi-region-demo-ink);
+    font-family: var(--font-ui);
+    overflow: visible;
+  }
+
+  .geo-dns-network-plane {
+    fill: rgb(255 255 255 / 82%);
+    stroke: var(--multi-region-demo-line);
+    stroke-width: 2;
+  }
+
+  .geo-dns-network-grid {
+    fill: none;
+    opacity: 0.48;
+  }
+
+  .geo-dns-network-grid path {
+    fill: none;
+    stroke: rgb(92 102 122 / 12%);
+    stroke-width: 1;
+  }
+
+  .geo-dns-passive-links path {
+    fill: none;
+    stroke: rgb(92 102 122 / 16%);
+    stroke-width: 2;
+    stroke-dasharray: 4 9;
+  }
+
+  .geo-dns-route-line {
+    fill: none;
+    stroke-width: 4.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 3px 5px rgb(23 32 51 / 14%));
+    animation: geo-dns-line-draw 360ms var(--multi-region-demo-ease-out) both;
+    transition:
+      opacity 220ms ease,
+      stroke 220ms ease;
+  }
+
+  .geo-dns-query-line {
+    stroke: var(--multi-region-demo-red);
+  }
+
+  .geo-dns-answer-line {
+    animation-delay: 260ms;
+    animation-duration: 420ms;
+  }
+
+  .geo-dns-connect-line {
+    opacity: 1;
+    stroke-width: 6;
+    filter: drop-shadow(0 5px 8px rgb(23 32 51 / 20%));
+    animation-delay: 620ms;
+    animation-duration: 480ms;
+  }
+
+  .geo-dns-route-packet {
+    opacity: 0;
+    filter: drop-shadow(0 3px 7px rgb(23 32 51 / 20%));
+  }
+
+  .geo-dns-query-packet {
+    animation: geo-dns-packet-visible 440ms linear both;
+  }
+
+  .geo-dns-answer-packet {
+    animation: geo-dns-packet-visible 500ms linear 260ms both;
+  }
+
+  .geo-dns-connect-packet {
+    animation: geo-dns-packet-visible 560ms linear 620ms both;
+  }
+
+  .geo-dns-resolver-card rect {
+    fill: #ffffff;
+    stroke: rgb(47 105 240 / 26%);
+    stroke-width: 2;
+  }
+
+  .geo-dns-resolver-title,
+  .geo-dns-resolver-subtitle,
+  .geo-dns-marker-code,
+  .geo-dns-node-label,
+  .geo-dns-user-label {
+    font-family: var(--font-ui);
+    text-anchor: middle;
+  }
+
+  .geo-dns-resolver-title {
+    fill: var(--multi-region-demo-blue);
+    font-size: 19px;
+    font-weight: 900;
+  }
+
+  .geo-dns-resolver-subtitle {
+    fill: var(--multi-region-demo-muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .geo-dns-region-marker,
+  .geo-dns-user-marker {
+    transition:
+      opacity 220ms ease,
+      transform 220ms var(--multi-region-demo-ease-out),
+      filter 220ms ease;
+  }
+
+  .geo-dns-server-card,
+  .geo-dns-user-ring {
+    fill: #ffffff;
+    stroke-width: 2;
+  }
+
+  .geo-dns-server-card {
+    stroke: var(--multi-region-demo-line);
+  }
+
+  .geo-dns-region-marker[data-region="or"] .geo-dns-server-card {
+    stroke: rgb(213 155 36 / 48%);
+  }
+
+  .geo-dns-region-marker[data-region="tx"] .geo-dns-server-card {
+    stroke: rgb(29 139 101 / 48%);
+  }
+
+  .geo-dns-region-marker[data-region="va"] .geo-dns-server-card {
+    stroke: rgb(47 105 240 / 48%);
+  }
+
+  .geo-dns-region-marker[data-state="selected"] .geo-dns-server-card {
+    stroke-width: 4;
+  }
+
+  .geo-dns-region-marker[data-state="available"] {
+    opacity: 0.72;
+  }
+
+  .geo-dns-marker-code {
+    fill: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+  }
+
+  .geo-dns-node-label {
+    fill: var(--multi-region-demo-ink);
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  .geo-dns-user-ring {
+    stroke: rgb(210 74 68 / 46%);
+  }
+
+  .geo-dns-user-core {
+    fill: var(--multi-region-demo-red);
+    transition: fill 220ms ease;
+  }
+
+  .geo-dns-user-marker[data-state="active"] .geo-dns-user-ring {
+    fill: var(--multi-region-demo-red-soft);
+    stroke: rgb(210 74 68 / 76%);
+    stroke-width: 3;
+  }
+
+  .geo-dns-user-marker[data-state="active"] .geo-dns-user-core {
+    fill: var(--multi-region-demo-red);
+  }
+
+  .geo-dns-region-marker[data-state="selected"],
+  .geo-dns-user-marker[data-state="active"] {
+    filter: drop-shadow(0 7px 12px rgb(23 32 51 / 12%));
+  }
+
+  .geo-dns-user-marker[data-state="idle"] {
+    opacity: 0.48;
+  }
+
+  .geo-dns-user-label {
+    fill: var(--multi-region-demo-muted);
+    font-size: 13px;
+    font-weight: 900;
+  }
+
+  @media (max-width: 720px) {
+    .geo-dns-routing-demo {
+      gap: 14px;
+      margin: 24px 0 30px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgb(23 32 51 / 6%);
+    }
+
+    .post-content .geo-dns-routing-header h3 {
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .geo-dns-routing-header p {
+      font-size: 12px;
+      line-height: 1.35;
+    }
+  }
+
+  @container (max-width: 620px) {
+    .geo-dns-routing-map {
+      min-height: 220px;
+    }
+
+    .geo-dns-node-label,
+    .geo-dns-user-label {
+      display: none;
+    }
+  }
+
+  @keyframes geo-dns-line-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes geo-dns-packet-visible {
+    0%,
+    100% {
+      opacity: 0;
+    }
+
+    12%,
+    86% {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .geo-dns-route-line,
+    .geo-dns-route-packet,
+    .geo-dns-region-marker,
+    .geo-dns-user-marker,
+    .geo-dns-user-core {
+      animation: none;
+      transition-duration: 0.01ms;
+    }
+  }
+
   /* Multi-region data canvas demos */
   .home-region-routing-demo,
   .replication-lag-demo {

@@ -7,6 +7,7 @@ draft: true
 ---
 
 import { MultiRegionDataMap } from "~/components/MultiRegionDataMap";
+import { GeoDnsRoutingDemo } from "~/components/GeoDnsRoutingDemo";
 import { HomeRegionRoutingDemo } from "~/components/HomeRegionRoutingDemo";
 import { MermaidDiagram } from "~/components/MermaidDiagram";
 import { ReplicationLagDemo } from "~/components/ReplicationLagDemo";
@@ -111,9 +112,7 @@ Next, we introduce two additional regions to match the architecture of [linkedin
 
 The first thing that you should ask yourself is _"what decides where the user is routed to?"_. The answer is [DNS](https://www.cloudflare.com/learning/dns/what-is-dns/), but we will take a deeper look at that in the [Routing Users](multi-region-data#routing-users) section.
 
-By adding multiple zones, we've gained:
-
-1. TBD
+By adding multiple zones, we've gained lower latency, regional fault tolerance, and more room to spread traffic. But we have also made the system harder to reason about. Now we need rules for routing users, assigning data ownership, and deciding what guarantees replication provides during failures.
 
 ---
 
@@ -130,6 +129,12 @@ It turns out there are a few ways to answer this, for example [Cloudflare](https
 3. Geo Routing — route to the nearest region
 
 I think the answer they were looking for was a primitive like [GeoDNS](https://en.wikipedia.org/wiki/GeoDNS), which would enable a user in Seattle to usually land near Oregon, a user in New York to usually land near Virginia, etc.
+
+GeoDNS works by answering the same hostname with different regional endpoints. The user still asks for the same site, but DNS can return Oregon, Texas, or Virginia depending on where the lookup appears to come from.
+
+<GeoDnsRoutingDemo />
+
+### Sticky Sessions
 
 ## Giving Data a Home
 
