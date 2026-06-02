@@ -29,6 +29,8 @@ Using multiple regions introduces some complexity:
 
 ## Topology
 
+### Single-Region
+
 Every application is just a view on some data. You can imagine a simplified version of LinkedIn that is composed of only an application server and a database.
 
 <MermaidDiagram
@@ -43,29 +45,63 @@ Every application is just a view on some data. You can imagine a simplified vers
         app["Application server"] -->|"SQL query"| db[("Database")]
       end
       browser -->|"HTTP request"| app
+      style region fill:#e6f0ff,stroke:#2f69f0
       class browser,app topologyCenteredNode`}
 />
 
-In this model, the application is stateless and all data is persisted in the same database. This means all tables (e.g., `users`, `subscriptions`, `orders`) are accessible within the same transaction.
+In this model, the application is stateless and talks to one database. To read a user's subscription, it joins `users` and `subscriptions`.
 
 ```sql
-SELECT u.id, s.product_id
+SELECT u.id, u.name, s.plan
 FROM users u
-JOIN subscriptions s
-WHERE u.id = s.user_id
-      AND s.type = 'PREMIUM'
-      AND s.status = 'ACTIVE'
+JOIN subscriptions s ON s.user_id = u.id
+WHERE u.id = $1
+  AND s.status = 'ACTIVE'
 ```
+
+### Multi-Region
+
+Next, we introduce two additional regions to match the architecture of [linkedin.com](https://www.linkedin.com/) in the United States.
+
+<MermaidDiagram
+  height={420}
+  className="mermaid-multi-region-topology"
+  diagram={`flowchart TB
+      accTitle: Browser to regional application path behind DNS
+      accDescr: A browser reaches DNS, and DNS sends traffic to Oregon, Texas, or Virginia. Each regional application sends SQL queries to its regional database.
+      browser["Browser"]
+      dns["DNS"]
+      browser --> dns
+
+      subgraph oregon["Oregon"]
+        direction TB
+        oregonApp["Application server"] -->|"SQL query"| oregonDb[("Database")]
+      end
+
+      subgraph texas["Texas"]
+        direction TB
+        texasApp["Application server"] -->|"SQL query"| texasDb[("Database")]
+      end
+
+      subgraph virginia["Virginia"]
+        direction TB
+        virginiaApp["Application server"] -->|"SQL query"| virginiaDb[("Database")]
+      end
+
+      dns --> oregonApp
+      dns --> texasApp
+      dns --> virginiaApp
+
+      style oregon fill:#fff7cc,stroke:#d59b24
+      style texas fill:#e3f7e8,stroke:#1d8b65
+      style virginia fill:#e6f0ff,stroke:#2f69f0
+      class browser,dns,oregonApp,texasApp,virginiaApp topologyCenteredNode`}
+
+/>
 
 ---
 
-Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/).
-
-Everything starts with the write topology: one logical database across three locations, or one regional database per location.
-
-One logical database gives the application a single consistency boundary, but writes may need to coordinate across distance. A regional database in each location keeps local work more independent, but now the application needs a clear story for replication, ownership, and conflict handling.
-
-This choice sets the rest of the design. It decides who can accept writes, where ordering is assigned, which failures the system can survive, and how much complexity leaks into the application.
+Since [LinkedIn is migrating from MySQL to TiDB](https://www.youtube.com/watch?v=DzZ-I8WL2jM), I will use terminology from [TiDB](https://docs.pingcap.com/tidb/stable/overview/) to help explain the remainder of the post. TiDB does a nice job of facilitating a "Distributed Data Platform", allowing you to achieve the benefits of distribution while minimizing the added complexity. That said, the operational costs for NewSQL databases are very high; it requires a lot of demanding hardware to achieve scalability goals. For vibe coded apps with zero users, stick to MySQL, Postgres, or SQLite.
 
 ## Routing Users
 

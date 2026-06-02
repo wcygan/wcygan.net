@@ -85,13 +85,13 @@ Code blocks use the Idle Toes dark palette:
 **Black (`#000000`)**:
 
 - Body text
-- H1 and H2 headings in content
+- H1 headings in content
 - Site title
 
 **Gray (`#666666`)**:
 
 - Dates and timestamps
-- H2 headings in content (secondary)
+- H2 headings in content
 
 **Light Gray (`#aaaaaa`)**:
 

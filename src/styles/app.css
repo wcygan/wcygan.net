@@ -518,7 +518,7 @@
   }
 
   .post-content h3 {
-    color: rgb(102, 102, 102);
+    color: rgb(70, 110, 170);
     font-size: 22px;
     font-weight: bold;
     margin-top: 0;
@@ -723,8 +723,8 @@
   }
 
   .post-content .mermaid-container.mermaid-simple-topology .cluster rect {
-    fill: rgb(246, 248, 252) !important;
-    stroke: rgba(70, 110, 170, 0.5) !important;
+    fill: #e6f0ff !important;
+    stroke: #2f69f0 !important;
     stroke-width: 1.5px !important;
   }
 
@@ -737,12 +737,12 @@
   }
 
   .post-content .mermaid-container.mermaid-simple-topology .cluster-label {
-    transform: translate(24px, 145px) !important;
+    transform: translate(24px, 162px) !important;
   }
 
   .post-content .mermaid-container.mermaid-simple-topology .cluster-label p {
     padding: 0 6px;
-    background: rgb(246, 248, 252) !important;
+    background: transparent !important;
   }
 
   .post-content .mermaid-container.mermaid-simple-topology foreignobject {
@@ -775,6 +775,118 @@
     .nodeLabel,
   .post-content
     .mermaid-container.mermaid-simple-topology
+    .topologyCenteredNode
+    .nodeLabel
+    p {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .post-content .mermaid-container.mermaid-multi-region-topology .cluster rect {
+    stroke-width: 1.5px !important;
+  }
+
+  .post-content .mermaid-container.mermaid-multi-region-topology .cluster-label,
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .cluster-label
+    p,
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .cluster-label
+    span {
+    font-weight: 650;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-virginia"]
+    .cluster-label {
+    transform: translate(32px, 252px) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-texas"]
+    .cluster-label {
+    transform: translate(339px, 252px) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-oregon"]
+    .cluster-label {
+    transform: translate(647px, 252px) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-virginia"]
+    .cluster-label
+    p {
+    background: #e6f0ff !important;
+    color: rgb(30, 70, 140) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-texas"]
+    .cluster-label
+    p {
+    background: #e3f7e8 !important;
+    color: rgb(15, 95, 68) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    [id$="-oregon"]
+    .cluster-label
+    p {
+    background: #fff7cc !important;
+    color: rgb(132, 90, 18) !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .cluster-label
+    p {
+    display: inline-flex;
+    white-space: nowrap;
+    padding: 0 6px;
+  }
+
+  .post-content .mermaid-container.mermaid-multi-region-topology foreignobject {
+    overflow: visible;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .topologyCenteredNode
+    foreignobject {
+    overflow: visible;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .topologyCenteredNode
+    foreignobject
+    > div {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    line-height: normal !important;
+  }
+
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
+    .topologyCenteredNode
+    .nodeLabel,
+  .post-content
+    .mermaid-container.mermaid-multi-region-topology
     .topologyCenteredNode
     .nodeLabel
     p {
