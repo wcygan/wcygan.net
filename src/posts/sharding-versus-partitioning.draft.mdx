@@ -1,0 +1,28 @@
+---
+title: Sharding Versus Partitioning
+date: June 4, 2026
+description: ""
+tags: [Data, Databases, Architecture]
+draft: true
+---
+
+import {
+  BadPartitionKeyDemo,
+  HotTenantShardDemo,
+  QueryPlannerPruningDemo,
+  ShardRequestRouterDemo,
+} from "~/components/ShardingPartitioningDemos";
+
+This post starts from PlanetScale's [Sharding vs. partitioning: What's the difference?](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference).
+
+## Sharding
+
+<ShardRequestRouterDemo />
+
+<HotTenantShardDemo />
+
+## Partitioning
+
+<BadPartitionKeyDemo />
+
+<QueryPlannerPruningDemo />
