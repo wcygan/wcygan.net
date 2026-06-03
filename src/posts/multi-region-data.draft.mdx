@@ -61,10 +61,6 @@ WHERE u.id = $1
   AND s.status = 'ACTIVE'
 ```
 
-#### Highly-Available Database
-
----
-
 Some downsides of the single-region approach include:
 
 1. Single-points of failure across the stack (one issue can take the entire application down)
@@ -72,6 +68,41 @@ Some downsides of the single-region approach include:
 3. There is nothing to failover to
 4. Maintenance is harder to hide
 5. The entire application relies on one region's capacity; scaling limits are easier to reach
+
+#### Highly-Available Database
+
+In practice, a "single-region" database is often not a single machine. A common setup has one primary database that accepts writes and multiple read replicas that copy changes from the primary. If the primary fails, one replica can be promoted and the application can reconnect to the new primary.
+
+<MermaidDiagram
+  height={460}
+  className="mermaid-single-region-ha-database"
+  caption="Single-region high availability: one primary accepts writes, read replicas copy changes asynchronously, and a healthy replica can be promoted if the primary fails."
+  diagram={`flowchart TB
+      accTitle: Single-region primary database with read replicas
+      accDescr: An application server writes to a primary database, reads from read replicas, and a replica can be promoted when the primary fails.
+      app["Application server"]
+
+      subgraph region["Region"]
+        direction TB
+        primary[("Primary database")]
+        replicaA[("Read replica A")]
+        replicaB[("Read replica B")]
+        promoted[("Promoted primary")]
+
+        primary -->|"async replication"| replicaA
+        primary -->|"async replication"| replicaB
+        replicaA -. "failover promotion" .-> promoted
+      end
+
+      app -->|"writes"| primary
+      app -->|"reads"| replicaA
+      app -->|"reads"| replicaB
+      app -. "reconnect after failover" .-> promoted
+
+      style region fill:#e6f0ff,stroke:#2f69f0
+      class app topologyCenteredNode` }
+
+/>
 
 ### Multi-Region
 
