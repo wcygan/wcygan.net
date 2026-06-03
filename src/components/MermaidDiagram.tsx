@@ -132,18 +132,18 @@ function padForeignObjectLabels(svg: string): string {
   if (document.querySelector("parsererror")) return svg;
 
   document.querySelectorAll("foreignObject").forEach((foreignObject) => {
+    const alreadyPadded =
+      foreignObject.getAttribute("data-label-padded") === "true";
+    if (alreadyPadded) return;
+
     const width = Number.parseFloat(foreignObject.getAttribute("width") ?? "");
     if (!Number.isFinite(width)) return;
 
-    const x = Number.parseFloat(foreignObject.getAttribute("x") ?? "0");
-    foreignObject.setAttribute(
-      "x",
-      String(x - FOREIGN_OBJECT_LABEL_PADDING / 2),
-    );
     foreignObject.setAttribute(
       "width",
       String(width + FOREIGN_OBJECT_LABEL_PADDING),
     );
+    foreignObject.setAttribute("data-label-padded", "true");
   });
 
   return new XMLSerializer().serializeToString(document.documentElement);
