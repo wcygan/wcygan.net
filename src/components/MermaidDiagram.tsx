@@ -1,4 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { MermaidFullscreen } from "./MermaidFullscreen";
 import { getCachedSVG, setCachedSVG } from "~/lib/utils/mermaid-cache";
 
@@ -8,6 +14,7 @@ interface Props {
   useLazyLoading?: boolean;
   rootMargin?: string;
   className?: string;
+  caption?: ReactNode;
 }
 
 let mermaidInstance: typeof import("mermaid").default | null = null;
@@ -112,6 +119,7 @@ export function MermaidDiagram({
   useLazyLoading = false,
   rootMargin = "100px",
   className,
+  caption,
 }: Props) {
   const outerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string | null>(null);
@@ -247,85 +255,96 @@ export function MermaidDiagram({
     }
   }, [isInViewport, diagram, rendered, error, renderDiagram]);
 
+  const diagramElement = (
+    <div
+      ref={outerRef}
+      className={[
+        "mermaid-container relative my-6 flex items-center justify-center overflow-x-auto rounded-lg p-4",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ minHeight: `${height}px` }}
+    >
+      {/* Loading state */}
+      {!rendered && isInViewport && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
+            <p className="mt-2 text-sm text-zinc-400">{status}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div
+          className="flex flex-col items-center justify-center text-red-400"
+          style={{ height: `${height}px` }}
+        >
+          <p className="font-bold">Error rendering diagram</p>
+          <p className="mt-2 text-sm">{error}</p>
+          <details className="mt-4 w-full max-w-2xl">
+            <summary className="cursor-pointer text-sm hover:underline">
+              View Diagram Source
+            </summary>
+            <pre className="mt-2 overflow-x-auto rounded bg-zinc-800 p-2 text-xs">
+              {diagram}
+            </pre>
+          </details>
+        </div>
+      )}
+
+      {/* Rendered SVG — using dangerouslySetInnerHTML so React owns the DOM */}
+      {svgHtml && (
+        <div
+          className="mermaid-render-container flex w-full justify-center"
+          dangerouslySetInnerHTML={{ __html: svgHtml }}
+        />
+      )}
+
+      {/* Fullscreen button (mobile only) */}
+      {rendered && !error && isMobile && (
+        <button
+          className="fullscreen-button"
+          onClick={() => setShowFullscreen(true)}
+          aria-label="View diagram in fullscreen"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
+        </button>
+      )}
+
+      {/* Placeholder for lazy loading */}
+      {!isInViewport && useLazyLoading && (
+        <div
+          className="flex items-center justify-center"
+          style={{ height: `${height}px` }}
+        >
+          <p className="text-zinc-400">Diagram will load when visible</p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
-      <div
-        ref={outerRef}
-        className={[
-          "mermaid-container relative my-6 flex items-center justify-center overflow-x-auto rounded-lg p-4",
-          className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        style={{ minHeight: `${height}px` }}
-      >
-        {/* Loading state */}
-        {!rendered && isInViewport && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-              <p className="mt-2 text-sm text-zinc-400">{status}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Error state */}
-        {error && (
-          <div
-            className="flex flex-col items-center justify-center text-red-400"
-            style={{ height: `${height}px` }}
-          >
-            <p className="font-bold">Error rendering diagram</p>
-            <p className="mt-2 text-sm">{error}</p>
-            <details className="mt-4 w-full max-w-2xl">
-              <summary className="cursor-pointer text-sm hover:underline">
-                View Diagram Source
-              </summary>
-              <pre className="mt-2 overflow-x-auto rounded bg-zinc-800 p-2 text-xs">
-                {diagram}
-              </pre>
-            </details>
-          </div>
-        )}
-
-        {/* Rendered SVG — using dangerouslySetInnerHTML so React owns the DOM */}
-        {svgHtml && (
-          <div
-            className="mermaid-render-container flex w-full justify-center"
-            dangerouslySetInnerHTML={{ __html: svgHtml }}
-          />
-        )}
-
-        {/* Fullscreen button (mobile only) */}
-        {rendered && !error && isMobile && (
-          <button
-            className="fullscreen-button"
-            onClick={() => setShowFullscreen(true)}
-            aria-label="View diagram in fullscreen"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-          </button>
-        )}
-
-        {/* Placeholder for lazy loading */}
-        {!isInViewport && useLazyLoading && (
-          <div
-            className="flex items-center justify-center"
-            style={{ height: `${height}px` }}
-          >
-            <p className="text-zinc-400">Diagram will load when visible</p>
-          </div>
-        )}
-      </div>
+      {caption ? (
+        <figure className="mermaid-figure">
+          {diagramElement}
+          <figcaption className="mermaid-caption">{caption}</figcaption>
+        </figure>
+      ) : (
+        diagramElement
+      )}
 
       {showFullscreen && (
         <MermaidFullscreen

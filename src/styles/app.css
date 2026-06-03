@@ -710,6 +710,18 @@
     border: 1px solid rgb(222, 222, 222) !important; /* Light border */
   }
 
+  .post-content .mermaid-figure {
+    margin: 30px 0;
+  }
+
+  .post-content .mermaid-figure .mermaid-container {
+    margin: 0;
+  }
+
+  .post-content .mermaid-caption {
+    margin-top: 8px;
+  }
+
   .post-content
     .mermaid-container.mermaid-simple-topology
     .mermaid-render-container {

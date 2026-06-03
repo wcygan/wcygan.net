@@ -37,6 +37,7 @@ Every application is just a view on some data. You can imagine a simplified vers
 <MermaidDiagram
   height={460}
   className="mermaid-simple-topology"
+  caption="Single-region topology: one region handles the application and database, so every request depends on the same regional stack."
   diagram={`flowchart TB
       accTitle: Browser to database request path
       accDescr: A browser sends an HTTP request to an application server, and the application server sends a SQL query to the database.
@@ -50,7 +51,7 @@ Every application is just a view on some data. You can imagine a simplified vers
       class browser,app topologyCenteredNode`}
 />
 
-In this model, the application is stateless and talks to one database. Since the `users` and `subscriptions` tables aren't in separate databases (as the ["Database per Service" pattern](https://microservices.io/patterns/data/database-per-service.html) describes), you can simply join them in a single query:
+In this model, the application is stateless and talks to one database. Since the `users` and `subscriptions` tables are in the same database, you can simply join them in a single query:
 
 ```sql
 SELECT u.id, u.name, s.plan
@@ -77,6 +78,7 @@ Next, we introduce two additional regions to match the architecture of [linkedin
 <MermaidDiagram
   height={420}
   className="mermaid-multi-region-topology"
+  caption="Multi-region topology: DNS can send users to several regional stacks, which improves latency and failover but requires clear data routing and replication rules."
   diagram={`flowchart TB
       accTitle: Browser to regional application path behind DNS
       accDescr: A browser reaches DNS, and DNS sends traffic to Oregon, Texas, or Virginia. Each regional application sends SQL queries to its regional database.
@@ -116,7 +118,7 @@ By adding multiple zones, we've gained lower latency, regional fault tolerance, 
 
 ## Routing Users
 
-Once upon a time, I had a system design interview at [Adyen](https://www.adyen.com/) and I couldn't clearly articulate the mechanism which determines which routes users between regions.
+Once upon a time, I had a system design interview at [Adyen](https://www.adyen.com/) and I couldn't clearly articulate the mechanism which routes users between regions.
 
 It turns out there are a few ways to answer this, for example [Cloudflare](https://developers.cloudflare.com/load-balancing/understand-basics/traffic-steering/steering-policies/) and [AWS](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html) list a few methods which enable their DNS servers to act like load balancers:
 
@@ -146,11 +148,11 @@ A new issue appears during failout: if an impacted region owns some entities, th
 
 ## Replication, Consistency, and Failover
 
-Since our application is spread across regions, we have to cope with the delays associated in data movement in addition to the potential for failures.
+Since our application is spread across regions, it has to cope with replication lag and the potential for failures.
 
 ### Replication
 
-Replication is the process of keeping copies of an entity's state in more than one region. Each write creates a new version, often with an increasing counter, timestamp, or log position. That version gives replicas something concrete to compare: Virginia might have account `123` at version 19 while Oregon is still at version 18. Replication does not make every copy current at the same instant; it gives the system a way to measure which regions have caught up and which ones are still serving older state.
+Replication is the process of keeping copies of an entity's state in more than one region. Each write creates a new version, often with an increasing counter, timestamp, or log position. That version gives replicas something concrete to compare: Virginia might have account `123` at version 19 while Oregon is still at version 18. Replication will asynchronously update its peer regions; sending the version 19 update from Virginia to Oregon.
 
 ### Consistency
 

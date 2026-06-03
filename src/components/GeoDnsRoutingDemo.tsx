@@ -1,8 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import {
   deriveGeoDnsSnapshot,
-  REDUCED_MOTION_STEP_INDEX,
   type GeoDnsSnapshot,
+  REDUCED_MOTION_STEP_INDEX,
   type RegionCode,
   type UserCode,
 } from "~/demos/geodns-routing/model";
@@ -63,6 +63,7 @@ const RESOLVER_CARD_HALF_HEIGHT = 34;
 const REGION_CARD_HALF_WIDTH = 48;
 const REGION_CARD_HALF_HEIGHT = 37;
 const USER_RING_RADIUS = 20;
+const USER_ROUTE_ORIGIN_RADIUS = 8;
 
 export function GeoDnsRoutingDemo() {
   const markerSuffix = useId().replaceAll(":", "");
@@ -340,7 +341,7 @@ function UserMarkers({ activeUser }: { activeUser: UserCode }) {
           data-state={activeUser === user.code ? "active" : "idle"}
           transform={`translate(${user.x} ${user.y})`}
         >
-          <circle className="geo-dns-user-ring" r="20" />
+          <circle className="geo-dns-user-ring" r={USER_RING_RADIUS} />
           <circle className="geo-dns-user-core" r="10" />
           <text className="geo-dns-user-label" y="-27">
             {user.label}
@@ -357,7 +358,7 @@ function linePath(from: Point, to: Point) {
 
 function linePathFromUserToResolver(user: UserNode) {
   return linePath(
-    circleEdgePoint(user, RESOLVER_POINT, USER_RING_RADIUS),
+    userRouteOriginPoint(user, RESOLVER_POINT),
     rectEdgePoint(user, RESOLVER_POINT, {
       halfWidth: RESOLVER_CARD_HALF_WIDTH,
       halfHeight: RESOLVER_CARD_HALF_HEIGHT,
@@ -380,7 +381,7 @@ function linePathFromResolverToRegion(region: RegionNode) {
 
 function linePathFromUserToRegion(user: UserNode, region: RegionNode) {
   return linePath(
-    circleEdgePoint(user, region, USER_RING_RADIUS),
+    userRouteOriginPoint(user, region),
     rectEdgePoint(user, region, {
       halfWidth: REGION_CARD_HALF_WIDTH,
       halfHeight: REGION_CARD_HALF_HEIGHT,
@@ -388,7 +389,15 @@ function linePathFromUserToRegion(user: UserNode, region: RegionNode) {
   );
 }
 
-function circleEdgePoint(center: Point, toward: Point, radius: number): Point {
+function userRouteOriginPoint(user: UserNode, toward: Point): Point {
+  return pointToward(user, toward, USER_ROUTE_ORIGIN_RADIUS);
+}
+
+function pointToward(
+  center: Point,
+  toward: Point,
+  distanceFromCenter: number,
+): Point {
   const dx = toward.x - center.x;
   const dy = toward.y - center.y;
   const distance = Math.hypot(dx, dy);
@@ -398,8 +407,8 @@ function circleEdgePoint(center: Point, toward: Point, radius: number): Point {
   }
 
   return {
-    x: center.x + (dx / distance) * radius,
-    y: center.y + (dy / distance) * radius,
+    x: center.x + (dx / distance) * distanceFromCenter,
+    y: center.y + (dy / distance) * distanceFromCenter,
   };
 }
 
