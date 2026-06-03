@@ -1,0 +1,24 @@
+flowchart TB
+    accTitle: Single-region primary database with read replicas
+    accDescr: An application server writes to a primary database, reads from read replicas, and a replica can be promoted when the primary fails.
+    app["Application server"]
+
+    subgraph region["Region"]
+        direction TB
+        primary[("Primary database")]
+        replicaA[("Read replica A")]
+        replicaB[("Read replica B")]
+        promoted[("Promoted primary")]
+
+        primary -->|"async replication"| replicaA
+        primary -->|"async replication"| replicaB
+        replicaA -. "failover promotion" .-> promoted
+    end
+
+    app -->|"writes"| primary
+    app -->|"reads"| replicaA
+    app -->|"reads"| replicaB
+    app -. "reconnect after failover" .-> promoted
+
+    style region fill:#e6f0ff,stroke:#2f69f0
+    class app topologyCenteredNode

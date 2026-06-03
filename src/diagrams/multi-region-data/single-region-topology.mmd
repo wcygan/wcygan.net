@@ -1,0 +1,11 @@
+flowchart TB
+    accTitle: Browser to database request path
+    accDescr: A browser sends an HTTP request to an application server, and the application server sends a SQL query to the database.
+    browser["Browser"]
+    subgraph region["Region"]
+        direction TB
+        app["Application server"] -->|"SQL query"| db[("Database")]
+    end
+    browser -->|"HTTP request"| app
+    style region fill:#e6f0ff,stroke:#2f69f0
+    class browser,app topologyCenteredNode

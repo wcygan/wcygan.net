@@ -1,0 +1,30 @@
+flowchart TB
+    accTitle: Browser to regional application path behind DNS
+    accDescr: A browser reaches DNS, and DNS sends traffic to Oregon, Texas, or Virginia. Each regional application sends SQL queries to its regional database.
+    browser["Browser"]
+    dns["DNS Server"]
+    browser --> dns
+
+    subgraph oregon["Oregon"]
+        direction TB
+        oregonApp["Application server"] -->|"SQL query"| oregonDb[("Database")]
+    end
+
+    subgraph texas["Texas"]
+        direction TB
+        texasApp["Application server"] -->|"SQL query"| texasDb[("Database")]
+    end
+
+    subgraph virginia["Virginia"]
+        direction TB
+        virginiaApp["Application server"] -->|"SQL query"| virginiaDb[("Database")]
+    end
+
+    dns --> oregonApp
+    dns --> texasApp
+    dns --> virginiaApp
+
+    style oregon fill:#fff7cc,stroke:#d59b24
+    style texas fill:#e3f7e8,stroke:#1d8b65
+    style virginia fill:#e6f0ff,stroke:#2f69f0
+    class browser,dns,oregonApp,texasApp,virginiaApp topologyCenteredNode

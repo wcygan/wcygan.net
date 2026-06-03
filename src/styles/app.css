@@ -722,6 +722,46 @@
     margin-top: 8px;
   }
 
+  .post-content .static-mermaid-figure {
+    margin: 30px 0;
+  }
+
+  .post-content .static-mermaid-frame {
+    --static-mermaid-max-width: 900px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 28px 22px;
+    overflow-x: auto;
+    background: rgb(249, 249, 249);
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 8px;
+  }
+
+  .post-content .static-mermaid-frame-simple {
+    --static-mermaid-max-width: 360px;
+  }
+
+  .post-content .static-mermaid-diagram {
+    display: block;
+    width: min(100%, var(--static-mermaid-max-width));
+    height: auto;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  @media (max-width: 640px) {
+    .post-content .static-mermaid-frame {
+      padding: 18px 12px;
+    }
+
+    .post-content .static-mermaid-frame-simple {
+      --static-mermaid-max-width: 330px;
+    }
+  }
+
   .post-content
     .mermaid-container.mermaid-simple-topology
     .mermaid-render-container {
