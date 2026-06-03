@@ -19,6 +19,8 @@ interface Props {
 
 let mermaidInstance: typeof import("mermaid").default | null = null;
 
+const FOREIGN_OBJECT_LABEL_PADDING = 48;
+
 const MERMAID_THEME = {
   theme: "base" as const,
   themeVariables: {
@@ -113,6 +115,40 @@ async function loadMermaid() {
   return mermaidInstance;
 }
 
+async function waitForDiagramFonts() {
+  if (typeof document === "undefined" || !("fonts" in document)) return;
+  await document.fonts.ready;
+}
+
+function padForeignObjectLabels(svg: string): string {
+  if (
+    typeof DOMParser === "undefined" ||
+    typeof XMLSerializer === "undefined"
+  ) {
+    return svg;
+  }
+
+  const document = new DOMParser().parseFromString(svg, "image/svg+xml");
+  if (document.querySelector("parsererror")) return svg;
+
+  document.querySelectorAll("foreignObject").forEach((foreignObject) => {
+    const width = Number.parseFloat(foreignObject.getAttribute("width") ?? "");
+    if (!Number.isFinite(width)) return;
+
+    const x = Number.parseFloat(foreignObject.getAttribute("x") ?? "0");
+    foreignObject.setAttribute(
+      "x",
+      String(x - FOREIGN_OBJECT_LABEL_PADDING / 2),
+    );
+    foreignObject.setAttribute(
+      "width",
+      String(width + FOREIGN_OBJECT_LABEL_PADDING),
+    );
+  });
+
+  return new XMLSerializer().serializeToString(document.documentElement);
+}
+
 export function MermaidDiagram({
   height = 400,
   diagram = "",
@@ -139,7 +175,7 @@ export function MermaidDiagram({
     try {
       const cachedSVG = getCachedSVG(diagram);
       if (cachedSVG) {
-        setSvgHtml(cachedSVG);
+        setSvgHtml(padForeignObjectLabels(cachedSVG));
         setStatus("complete");
         renderingRef.current = false;
         return;
@@ -197,6 +233,7 @@ export function MermaidDiagram({
       });
 
       const id = `mermaid-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      await waitForDiagramFonts();
       setStatus("rendering");
 
       const renderResult = await mermaid.render(id, diagram.trim());
@@ -204,8 +241,9 @@ export function MermaidDiagram({
         throw new Error("No SVG returned from render");
       }
 
-      setCachedSVG(diagram, renderResult.svg);
-      setSvgHtml(renderResult.svg);
+      const paddedSVG = padForeignObjectLabels(renderResult.svg);
+      setCachedSVG(diagram, paddedSVG);
+      setSvgHtml(paddedSVG);
       setStatus("complete");
 
       // Mermaid leaves an orphan element at id `d${id}` when it renders into
