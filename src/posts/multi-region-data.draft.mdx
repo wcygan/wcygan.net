@@ -61,6 +61,8 @@ WHERE u.id = $1
   AND s.status = 'ACTIVE'
 ```
 
+#### Highly-Available Database
+
 ---
 
 Some downsides of the single-region approach include:
@@ -171,3 +173,37 @@ Failover is the controlled process of moving traffic and ownership away from a f
 ### Failure Modes
 
 The three failures to watch for are stale reads, split brain, and lost writes. A stale read sends the user to a region that returns an older version; split brain allows two regions to accept writes for the same entity at the same time; a lost write promotes a region that never received a write the application had already told the user was committed.
+
+## At LinkedIn
+
+### Traffic Routing and Sticky Sessions
+
+From [TrafficShift: Load Testing at Scale](https://www.linkedin.com/blog/engineering/scalability/trafficshift-load-testing-at-scale):
+
+> When a user visits “https://www.linkedin.com” in their browser, requests are sent to one of 13 PoPs distributed globally using [GeoDNS](https://en.wikipedia.org/wiki/GeoDNS). Each PoP runs a service called ATS (Apache Traffic Server). To determine which colo to route a user’s traffic to, ATS includes a custom plugin that verifies the signed cookie present in request headers to identify the data center that the user's request should be routed to and establish a sticky session. If this cookie is not available, the primary data center is not online, or if the cookie has expired, ATS communicates with the stickyrouting service to determine the primary colo the user’s request should be routed to and a cookie is set with data center information for that particular user.
+
+### Entity Routing Service
+
+From [Entity Routing Service (ERS) load test evolution](https://www.linkedin.com/blog/engineering/infrastructure/entity-routing-service-ers-load-test-evolution):
+
+> An enterprise business has a concept of a “customer entity,” which requires maintaining strong consistency for all users within the same customer scope. Cross data center replication lag is a problem that leads to members or admins seeing stale, inconsistent data. The impact of this lag is greater for enterprise products because more members are operating on the same data set (high cardinality). To mitigate this, the application does second-level routing using Entity Routing Service (ERS), funneling users from the same contract to a specific data center to achieve consistent data access.
+
+### High-Availability MySQL
+
+From [Addressing the last mile problem with MySQL high availability](https://www.linkedin.com/blog/engineering/optimization/addressing-the-last-mile-problem-with-mysql-high-availability)
+
+> A typical MySQL cluster in our ecosystem consists of at least three components:
+>
+> - A primary node accepting writes
+> - One or more replicas for read scaling
+> - A dedicated replica for backup and ETLs
+
+<figure>
+  <img
+    src="/multi-region-data/linkedin-multi-region-data.png"
+    alt="LinkedIn diagram showing a MySQL primary in Colo 1 asynchronously replicating to read replicas, a backup and ETL replica, and a read replica in Colo 2."
+    width={750}
+    height={307}
+  />
+  <figcaption>Diagram of MySQL replication within and across colos.</figcaption>
+</figure>
