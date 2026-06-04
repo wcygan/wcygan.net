@@ -1,5 +1,5 @@
 ---
-title: Sharding Versus Partitioning
+title: Sharding vs. Partitioning
 date: June 4, 2026
 description: The difference between splitting a table inside one database and spreading data across many, and how to choose a key for each.
 tags: [Data, Databases, Architecture]
@@ -46,11 +46,11 @@ The application issues a normal query, and the router sends it to the shard that
 
 ### Choosing a shard key
 
-The shard key decides how evenly data spreads and which queries can be served by a single shard. [Range sharding](https://www.mongodb.com/docs/manual/core/ranged-sharding/) keeps adjacent keys together, so range scans stay on one shard, but a busy range can overload one instance. [Hash sharding](https://www.mongodb.com/docs/manual/core/hashed-sharding/) scatters keys evenly and avoids hotspots from monotonic keys, but a range query then has to fan out to every shard.
+The shard key decides how evenly data spreads and which queries can be served by a single shard. Range sharding keeps adjacent keys together, so range scans stay on one shard, but a busy range can overload one instance. Hash sharding scatters keys evenly and avoids hotspots from monotonic keys, but a range query then has to fan out to every shard.
 
 ### Hot shards
 
-Even with hashing, skew can concentrate load on one shard. A _hotspot_ is when one key value or one tenant takes most of the traffic, so a single shard saturates while the rest sit idle. A low-cardinality shard key is the usual cause.
+Even with hashing, skew can concentrate load on one shard. A [_hotspot_](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/) is when one key value or one tenant takes most of the traffic, so a single shard saturates while the rest sit idle. A low-cardinality shard key is the usual cause.
 
 <HotTenantShardDemo />
 
@@ -60,7 +60,7 @@ The hard part of sharding is any operation that spans shards. A query without th
 
 ## Partitioning
 
-Partitioning makes the opposite tradeoff: it stays on one machine and asks the engine, not a router, to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html) and [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html) both offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
+Partitioning makes the opposite tradeoff: it stays on one machine and asks the engine, not a router, to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html), [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html), and [TiDB partitioned tables](https://docs.pingcap.com/tidb/stable/partitioned-table/) all offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
 
 ```sql
 CREATE TABLE events (
@@ -71,7 +71,7 @@ CREATE TABLE events (
 
 ### Choosing a partition key
 
-The partition key has to do two jobs that can pull against each other: match the queries you run and spread rows evenly. The [Postgres docs suggest](https://www.postgresql.org/docs/current/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-BEST-PRACTICES) the column you most often filter on in a `WHERE` clause. A low-cardinality key (a boolean, a three-value status) or a skewed key (a country column where most rows share one country) leaves you with one giant partition that still gets scanned in full.
+The partition key has to do two jobs that can pull against each other: match the queries you run and spread rows evenly. The [Postgres docs suggest](https://www.postgresql.org/docs/current/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-BEST-PRACTICES) the column you most often filter on in a `WHERE` clause, and TiDB's [partitioned-table best practices](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/) frame the same tradeoff around pruning, write hotspots, and index design. A low-cardinality key (a boolean, a three-value status) or a skewed key (a country column where most rows share one country) leaves you with one giant partition that still gets scanned in full.
 
 <BadPartitionKeyDemo />
 
@@ -83,21 +83,10 @@ The payoff for a good key is [_partition pruning_](https://www.postgresql.org/do
 
 ## References
 
-- [Sharding vs. Partitioning: A Detailed Comparison (PingCAP)](https://www.pingcap.com/article/sharding-vs-partitioning-a-detailed-comparison/)
-- [Database Sharding Explained: Strategies for Scalable SQL Performance (PingCAP)](https://www.pingcap.com/blog/database-sharding-defined/)
-- [TiDB Architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
-- [TiDB Storage](https://docs.pingcap.com/tidb/stable/tidb-storage/)
-- [TiDB Partitioning](https://docs.pingcap.com/tidb/stable/partitioned-table/)
-- [Best Practices for Using TiDB Partitioned Tables](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/)
-- [Troubleshoot Hotspot Issues in TiDB](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/)
-- [Migrate and Merge MySQL Shards of Large Datasets to TiDB](https://docs.pingcap.com/tidb/stable/migrate-large-mysql-shards-to-tidb/)
 - [PostgreSQL: Table Partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html)
 - [MySQL: Partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html)
-- [Shard (database architecture), Wikipedia](<https://en.wikipedia.org/wiki/Shard_(database_architecture)>)
 - [Vitess: VTGate concepts](https://vitess.io/docs/concepts/vtgate/)
-- [Vitess: Shards and resharding](https://vitess.io/docs/concepts/shard/)
 - [Citus: Distributed data modeling](https://docs.citusdata.com/en/stable/sharding/data_modeling.html)
-- [MongoDB: Ranged sharding](https://www.mongodb.com/docs/manual/core/ranged-sharding/)
-- [MongoDB: Hashed sharding](https://www.mongodb.com/docs/manual/core/hashed-sharding/)
-- [Consistent hashing, Wikipedia](https://en.wikipedia.org/wiki/Consistent_hashing)
-- [Introducing Espresso, LinkedIn's distributed document store](https://engineering.linkedin.com/espresso/introducing-espresso-linkedins-hot-new-distributed-document-store)
+- [TiDB: Partitioning](https://docs.pingcap.com/tidb/stable/partitioned-table/)
+- [TiDB: Troubleshoot Hotspot Issues](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/)
+- [TiDB: Best Practices for Using TiDB Partitioned Tables](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/)
