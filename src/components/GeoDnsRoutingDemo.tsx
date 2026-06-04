@@ -7,7 +7,7 @@ import {
   type UserCode,
 } from "~/demos/geodns-routing/model";
 
-const STEP_INTERVAL_MS = 2600;
+const STEP_INTERVAL_MS = 1600;
 
 type Point = {
   x: number;
@@ -226,21 +226,21 @@ function ActiveRoutes({
       <RoutePacket
         begin="0s"
         className="geo-dns-query-packet"
-        dur="0.36s"
+        dur="0.28s"
         pathId={queryPathId}
         tone={USER_ROUTE_COLOR}
       />
       <RoutePacket
-        begin="0.26s"
+        begin="0.2s"
         className="geo-dns-answer-packet"
-        dur="0.42s"
+        dur="0.32s"
         pathId={answerPathId}
         tone={selectedRegion.color}
       />
       <RoutePacket
-        begin="0.62s"
+        begin="0.46s"
         className="geo-dns-connect-packet"
-        dur="0.48s"
+        dur="0.36s"
         pathId={connectPathId}
         radius={6.5}
         tone={USER_ROUTE_COLOR}
