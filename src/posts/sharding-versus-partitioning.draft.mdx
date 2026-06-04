@@ -13,7 +13,9 @@ import {
   ShardRequestRouterDemo,
 } from "~/components/ShardingPartitioningDemos";
 
-Sharding and partitioning are easy to conflate. PlanetScale's [Sharding vs. partitioning: What's the difference](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference) differentiates the two: partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.
+Sharding and partitioning are easy to conflate. The simplest distinction is that partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.[^planetscale-sharding-partitioning]
+
+[^planetscale-sharding-partitioning]: See PlanetScale's [Sharding vs. partitioning: What's the difference?](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference).
 
 <figure>
   <img
@@ -81,7 +83,6 @@ The payoff for a good key is [_partition pruning_](https://www.postgresql.org/do
 
 ## References
 
-- [Sharding vs. partitioning: What's the difference? (PlanetScale)](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference)
 - [Sharding vs. Partitioning: A Detailed Comparison (PingCAP)](https://www.pingcap.com/article/sharding-vs-partitioning-a-detailed-comparison/)
 - [Database Sharding Explained: Strategies for Scalable SQL Performance (PingCAP)](https://www.pingcap.com/blog/database-sharding-defined/)
 - [TiDB Architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/)

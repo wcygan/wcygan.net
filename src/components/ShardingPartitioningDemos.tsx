@@ -219,7 +219,7 @@ export function ShardRequestRouterDemo() {
     <figure className="sp-demo sp-router-demo">
       <DemoHeader
         eyebrow="Sharding"
-        title="Request Router To Shards"
+        title="Routing Requests To Shards"
         copy="A request uses a shard key to find the database instance that owns the row."
       />
 
