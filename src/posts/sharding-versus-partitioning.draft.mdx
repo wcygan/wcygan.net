@@ -15,6 +15,21 @@ import {
 
 Sharding and partitioning are easy to conflate. PlanetScale's [Sharding vs. partitioning: What's the difference](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference) differentiates the two: partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.
 
+<figure>
+  <img
+    src="/sharding-versus-partitioning/partitioning-vs-sharding-pingcap.png"
+    alt="A PingCAP diagram comparing partitioned data on one database instance with sharded data split across two database instances."
+    width={1280}
+    height={720}
+  />
+  <figcaption>
+    Partitioning divides data inside one database instance; sharding puts shards
+    on separate database instances.[^pingcap-sharding-diagram]
+  </figcaption>
+</figure>
+
+[^pingcap-sharding-diagram]: Diagram vendored from PingCAP's [Database Sharding Explained: Strategies for Scalable SQL Performance](https://www.pingcap.com/blog/database-sharding-defined/).
+
 ## Sharding
 
 Sharding spreads one logical dataset across multiple independent database instances, so storage and write load can grow past what one machine can handle. Each shard is a normal database with its own disk and compute, and nothing is shared.
@@ -33,15 +48,13 @@ The shard key decides how evenly data spreads and which queries can be served by
 
 ### Hot shards
 
-Even with hashing, skew can concentrate load on one shard. A _hotspot_ is when one key value or one tenant takes most of the traffic, so a single shard saturates while the rest sit idle. A low-cardinality shard key, or one that tracks something like today's date, is the usual cause.
-
-Push traffic onto one shard below and watch it go hot while the others stay cool.
+Even with hashing, skew can concentrate load on one shard. A _hotspot_ is when one key value or one tenant takes most of the traffic, so a single shard saturates while the rest sit idle. A low-cardinality shard key is the usual cause.
 
 <HotTenantShardDemo />
 
 ### Crossing shards
 
-The hard part of sharding is any operation that spans shards. A query with the shard key is a targeted lookup; one without it becomes a scatter/gather across every shard. Joins are worse, since related rows often live on different instances, which is why systems like Citus push you to _co-locate_ data on the same key. A transaction across shards needs a [distributed commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) to stay atomic, and [resharding](https://vitess.io/docs/concepts/shard/) a live cluster is one of the hardest things to run. [Consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) lowers the rebalancing cost by moving only about 1/n of the keys when you add a node.
+The hard part of sharding is any operation that spans shards. A query without the shard key becomes a scatter/gather across every shard. A transaction across shards needs a [distributed commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) to stay atomic, and [resharding](https://vitess.io/docs/concepts/shard/) a live cluster is one of the hardest things to run. [Consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) lowers the rebalancing cost by moving only about 1/n of the keys when you add a node.
 
 ## Partitioning
 
@@ -56,39 +69,27 @@ CREATE TABLE events (
 
 ### Choosing a partition key
 
-The partition key has to do two jobs that can pull against each other: match the queries you run and spread rows evenly. The Postgres docs suggest the column you most often filter on in a `WHERE` clause. A low-cardinality key (a boolean, a three-value status) or a skewed key (a country column where most rows share one country) leaves you with one giant partition that still gets scanned in full.
-
-The demo below contrasts a balanced key with a low-cardinality key and a skewed one.
+The partition key has to do two jobs that can pull against each other: match the queries you run and spread rows evenly. The [Postgres docs suggest](https://www.postgresql.org/docs/current/ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-BEST-PRACTICES) the column you most often filter on in a `WHERE` clause. A low-cardinality key (a boolean, a three-value status) or a skewed key (a country column where most rows share one country) leaves you with one giant partition that still gets scanned in full.
 
 <BadPartitionKeyDemo />
 
 ### Partition pruning
 
-The payoff for a good key is _partition pruning_. The planner reads each partition's bounds, proves a partition cannot hold any matching rows, and skips it entirely. Pruning follows the partition key, not indexes, so a query has to filter on that key to benefit.
-
-The demo below runs one query against five monthly partitions and shows how many the planner has to touch for different `WHERE` clauses.
+The payoff for a good key is [_partition pruning_](https://www.postgresql.org/docs/current/ddl-partitioning.html#DDL-PARTITION-PRUNING). The planner reads each partition's bounds, proves a partition cannot hold any matching rows, and skips it entirely. Pruning follows the partition key, not indexes, so a query has to filter on that key to benefit.
 
 <QueryPlannerPruningDemo />
-
-### Lifecycle and limits
-
-Partitioning also makes data lifecycle cheap: dropping a whole partition removes millions of rows almost instantly, because the engine drops a sub-table instead of running a per-row `DELETE`. The limits are that indexes are local to each partition, so a unique constraint has to include the partition key, and that none of this adds a machine. Every partition shares the same CPU, memory, and disk. Partitioning makes one server faster to query and easier to maintain; it is not horizontal scale.
-
-## At LinkedIn
-
-[Espresso](https://engineering.linkedin.com/espresso/introducing-espresso-linkedins-hot-new-distributed-document-store), LinkedIn's distributed document store, is a clean example of the sharded shape. An Espresso database is horizontally partitioned: the leading key in a table's schema is the partition key, and the router hashes it to pick the storage node that serves the request, which is sharding by another name.
-
-Placement is managed by [Apache Helix](https://helix.apache.org/), which spreads partitions evenly across the storage nodes and keeps each partition to one master plus configurable replicas. As the post describes it, Espresso powers around 30 LinkedIn applications and serves millions of records per second at peak. The shard-then-partition composition shows up here too: each storage node could range-partition its big tables by time within the shard.
-
-## Choosing between them
-
-Reach for partitioning when the data fits on one machine and you want pruning on a big table, cheap archival of old rows, or smaller per-partition indexes. Reach for sharding when one machine can no longer hold the data or absorb the writes, and you are willing to pay for cross-shard queries, distributed transactions, and resharding.
-
-The two compose, which is why the line blurs in practice. A shard is just an ordinary database instance, so a large system often shards by tenant or user id across nodes, then range-partitions each shard's big tables by time. You scale across machines with one technique and manage the data within each machine with the other.
 
 ## References
 
 - [Sharding vs. partitioning: What's the difference? (PlanetScale)](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference)
+- [Sharding vs. Partitioning: A Detailed Comparison (PingCAP)](https://www.pingcap.com/article/sharding-vs-partitioning-a-detailed-comparison/)
+- [Database Sharding Explained: Strategies for Scalable SQL Performance (PingCAP)](https://www.pingcap.com/blog/database-sharding-defined/)
+- [TiDB Architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/)
+- [TiDB Storage](https://docs.pingcap.com/tidb/stable/tidb-storage/)
+- [TiDB Partitioning](https://docs.pingcap.com/tidb/stable/partitioned-table/)
+- [Best Practices for Using TiDB Partitioned Tables](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/)
+- [Troubleshoot Hotspot Issues in TiDB](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/)
+- [Migrate and Merge MySQL Shards of Large Datasets to TiDB](https://docs.pingcap.com/tidb/stable/migrate-large-mysql-shards-to-tidb/)
 - [PostgreSQL: Table Partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html)
 - [MySQL: Partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html)
 - [Shard (database architecture), Wikipedia](<https://en.wikipedia.org/wiki/Shard_(database_architecture)>)
