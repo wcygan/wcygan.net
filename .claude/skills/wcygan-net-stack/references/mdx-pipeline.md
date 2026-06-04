@@ -27,8 +27,6 @@ description: A short description for SEO and listings
 tags: [Tag1, Tag2, Tag3]
 ---
 
-import { MermaidDiagram } from "~/components/MermaidDiagram";
-
 Regular markdown content here. Links, **bold**, _italic_, etc.
 
 ## Code blocks get Shiki highlighting
@@ -40,8 +38,22 @@ echo "highlighted with github-light theme"
 
 ## React components work inline
 
-<MermaidDiagram height={300} diagram={`flowchart LR
-  A --> B --> C`} />
+Diagrams embed a static SVG (built from `src/diagrams/<slug>/<name>.mmd` via `deno task render:diagrams`):
+
+```mdx
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/post-slug/name.svg"
+      alt="Description."
+      width={400}
+      height={300}
+    />
+  </div>
+  <figcaption>Caption.</figcaption>
+</figure>
+```
 
 ````
 

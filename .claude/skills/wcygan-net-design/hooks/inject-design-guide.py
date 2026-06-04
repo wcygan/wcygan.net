@@ -40,7 +40,7 @@ GUIDE = """\
 - `$slug` route's `beforeLoad` dot-rejection protects `/rss.xml` etc. — do not touch.
 - Loaders return **serializable data only**. No React components from loaders.
 - Never `ref.current.innerHTML` — use `dangerouslySetInnerHTML` via state.
-- Mermaid is `import('mermaid')` dynamic only. Never top-level import.
+- Mermaid diagrams are build-time static SVG: source in `src/diagrams/<slug>/<name>.mmd`, run `deno task render:diagrams`, embed `public/<slug>/<name>.svg` via a `<figure className="static-mermaid-figure">`. No runtime component.
 - Prefer named classes (`.bio-highlight`, `.post-list`, `.post-item`, `.post-date`, `.site-header`, `.site-nav`, `.blog-post`, `.post-title`, `.post-permalink`, `.post-footnote`, `.post-content`, `.pull-quote`) over new Tailwind utilities.
 
 **Load the full `wcygan-net-design` skill** (references/colors.md, typography.md, layout.md, components.md, blog-mdx.md, routing-and-chrome.md, accessibility.md) for specifics before non-trivial design work.

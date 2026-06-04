@@ -9,13 +9,13 @@ Fast checks to confirm production is serving the **current TanStack Start + Vite
 
 ## Fingerprint cheat sheet
 
-| Signal                | TanStack Start (current)                         | SvelteKit (old)                         |
-| --------------------- | ------------------------------------------------ | --------------------------------------- |
-| SSR hydration global  | `__TSR_` / `__TSR_ROUTER_MANIFEST__`             | `__sveltekit_`                          |
-| Asset path prefix     | `/assets/<name>-<hash>.js`                       | `/_app/immutable/entry/start.<hash>.js` |
-| Router markers        | `tsr-scroll-restoration-v`, `tsr-stream-barrier` | Svelte hydration comments `<!--[-->`    |
-| Component chunk names | `MermaidDiagram-<hash>.js` (React)               | `Mermaid-<hash>.svelte-<hash>.js`       |
-| Console probe         | `window.__TSR_ROUTER_MANIFEST__` is an object    | `undefined`                             |
+| Signal               | TanStack Start (current)                                             | SvelteKit (old)                         |
+| -------------------- | -------------------------------------------------------------------- | --------------------------------------- |
+| SSR hydration global | `__TSR_` / `__TSR_ROUTER_MANIFEST__`                                 | `__sveltekit_`                          |
+| Asset path prefix    | `/assets/<name>-<hash>.js`                                           | `/_app/immutable/entry/start.<hash>.js` |
+| Router markers       | `tsr-scroll-restoration-v`, `tsr-stream-barrier`                     | Svelte hydration comments `<!--[-->`    |
+| Mermaid              | No client chunk — diagrams are build-time static SVG under `public/` | `Mermaid-<hash>.svelte-<hash>.js`       |
+| Console probe        | `window.__TSR_ROUTER_MANIFEST__` is an object                        | `undefined`                             |
 
 Any SvelteKit marker on wcygan.net means the deploy didn't land or an old cached response is being served.
 

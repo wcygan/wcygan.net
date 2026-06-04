@@ -1,0 +1,9 @@
+flowchart TD
+    accTitle: CI/CD Deployment Pipeline
+    accDescr: This flowchart shows a typical CI/CD deployment pipeline. It starts with a developer push, goes through a CI pipeline that either passes or fails tests. If tests pass, the system builds a Docker image, pushes it to a registry, deploys to Kubernetes, and updates the service. If tests fail, it notifies the developer.
+    A[Developer Push] --> B{CI Pipeline}
+    B -->|Tests Pass| C[Build Docker Image]
+    B -->|Tests Fail| D[Notify Developer]
+    C --> E[Push to Registry]
+    E --> F[Deploy to Kubernetes]
+    F --> G[Update Service]

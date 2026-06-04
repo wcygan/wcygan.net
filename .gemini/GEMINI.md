@@ -87,37 +87,38 @@ pnpm ci:test:quick    # Quick CI workflow test
 
 #### Using Mermaid Diagrams in Posts
 
-Mermaid diagrams are supported in blog posts for creating flowcharts, sequence
-diagrams, and more.
+Mermaid diagrams are compiled to static SVG at build time. There is no runtime
+component; diagrams ship as plain images with no client-side JavaScript.
 
-**Basic Usage:**
+**Pipeline:**
 
-```svelte
-<script>
-	import MermaidDiagram from '$lib/components/MermaidDiagram.svelte';
-</script>
+1. Write the Mermaid source in `src/diagrams/<post-slug>/<name>.mmd` (include
+   `accTitle` and `accDescr` lines for accessibility).
+2. Run `deno task render:diagrams` (script: `scripts/render-diagrams.mjs`). It
+   compiles each `.mmd` to `public/<post-slug>/<name>.svg` and prints the
+   `width`/`height` to use. It also runs during `deno task build`.
+3. An optional sibling `<name>.css` is inlined into the SVG for charts that need
+   custom colors.
 
-<MermaidDiagram
-	height={300}
-	diagram={`flowchart TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Do this]
-    B -->|No| D[Do that]`}
-/>
+**Embed in the post:**
+
+```mdx
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/post-slug/name.svg"
+      alt="Description of the diagram."
+      width={400}
+      height={300}
+    />
+  </div>
+  <figcaption>Caption.</figcaption>
+</figure>
 ```
 
-**Available Components:**
-
-- `MermaidDiagram` - Main component with caching and error handling
-- `MermaidViewport` - Lazy-loads when scrolled into view
-- `MermaidFlexible` - Supports both prop and slot syntax
-
-**Performance Tips:**
-
-- Diagrams are automatically cached in sessionStorage
-- Use `MermaidViewport` for diagrams below the fold
-- See `/docs/MERMAID_USAGE.md` for comprehensive guide
-- Visit `/mermaid-examples` for live examples
+Use `static-mermaid-frame-simple` (alongside `static-mermaid-frame`) for small or
+narrow diagrams. Visit `/mermaid-examples` for live examples.
 
 #### Modifying Routes
 

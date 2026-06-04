@@ -1,0 +1,54 @@
+.border {
+  stroke: rgb(30, 70, 140) !important;
+  stroke-width: 2.5px !important;
+}
+
+.quadrants .quadrant:nth-child(1) rect {
+  fill: rgb(228, 246, 239) !important;
+}
+
+.quadrants .quadrant:nth-child(2) rect {
+  fill: rgb(230, 241, 255) !important;
+}
+
+.quadrants .quadrant:nth-child(3) rect {
+  fill: rgb(248, 248, 248) !important;
+}
+
+.quadrants .quadrant:nth-child(4) rect {
+  fill: rgb(255, 245, 224) !important;
+}
+
+.quadrant text,
+.labels text {
+  fill: rgb(40, 40, 40) !important;
+  font-weight: 650;
+}
+
+.title text {
+  fill: rgb(30, 70, 140) !important;
+  font-weight: 700;
+}
+
+.data-point circle {
+  fill: rgb(30, 70, 140) !important;
+  stroke: rgb(255, 255, 255) !important;
+  stroke-width: 2px !important;
+}
+
+.data-point:nth-child(1) circle {
+  fill: rgb(0, 158, 115) !important;
+}
+
+.data-point:nth-child(2) circle {
+  fill: rgb(213, 94, 0) !important;
+}
+
+.data-point:nth-child(5) circle {
+  fill: rgb(70, 110, 170) !important;
+}
+
+.data-point text {
+  fill: rgb(0, 0, 0) !important;
+  font-weight: 650;
+}

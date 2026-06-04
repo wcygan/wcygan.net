@@ -5,214 +5,163 @@ description: Using Mermaid.js to create diagrams in markdown blog posts
 tags: [Mermaid, Visualization, Diagrams]
 ---
 
-import { MermaidDiagram } from "~/components/MermaidDiagram";
-
-[Mermaid.js](https://mermaid.js.org/) is used to render
-diagrams this blog. Below are a few examples of what you can do.
+[Mermaid.js](https://mermaid.js.org/) renders the diagrams on this blog. The
+source lives in `.mmd` files and is compiled to static SVG at build time, so
+each diagram ships as a plain image with no client-side JavaScript. Below are a
+few examples of what you can do.
 
 ## Temperature by Day of Week
 
-<MermaidDiagram
-  height={360}
-  className="mermaid-featured-card mermaid-featured-temperature"
-  diagram={`xychart-beta
-	  accTitle: Weekly Temperature Chart
-	  accDescr: This chart shows high and low temperatures across a week, with bars for daily highs and a line for daily lows.
-	  title "Temperature by day of week"
-	  x-axis ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-	  y-axis "Degrees F" 70 --> 90
-	  bar [74, 76, 79, 83, 88, 90, 85]
-	  line [71, 72, 74, 76, 79, 78, 75]`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/temperature.svg"
+      alt="Bar-and-line chart of high and low temperatures across a week, with bars for daily highs and a line for daily lows."
+      width={700}
+      height={500}
+    />
+  </div>
+  <figcaption>High and low temperatures across a week.</figcaption>
+</figure>
 
 ## More Examples
 
 ### Flow Chart
 
-Here's a simple deployment flow:
-
-<MermaidDiagram
-  height={300}
-  useLazyLoading
-  diagram={`flowchart TD
-	  accTitle: CI/CD Deployment Pipeline
-	  accDescr: This flowchart shows a typical CI/CD deployment pipeline. It starts with a developer push, goes through a CI pipeline that either passes or fails tests. If tests pass, the system builds a Docker image, pushes it to a registry, deploys to Kubernetes, and updates the service. If tests fail, it notifies the developer.
-	  A[Developer Push] --> B{CI Pipeline}
-	  B -->|Tests Pass| C[Build Docker Image]
-	  B -->|Tests Fail| D[Notify Developer]
-	  C --> E[Push to Registry]
-	  E --> F[Deploy to Kubernetes]
-	  F --> G[Update Service]`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/flow-chart.svg"
+      alt="Flowchart of a CI/CD pipeline: a developer push enters the CI pipeline; passing tests build a Docker image, push to a registry, deploy to Kubernetes, and update the service, while failing tests notify the developer."
+      width={496.234375}
+      height={712.296875}
+    />
+  </div>
+  <figcaption>A simple deployment flow.</figcaption>
+</figure>
 
 ### Sequence Diagram
 
-API authentication flow:
-
-<MermaidDiagram
-  height={500}
-  useLazyLoading
-  diagram={`sequenceDiagram
-	  accTitle: OAuth2 Authentication Flow
-	  accDescr: This sequence diagram shows the OAuth2 authentication flow between a user, client app, authorization server, and resource server. The user initiates a login request, the client redirects to the auth server, the user provides credentials, the auth server validates and returns an authorization code, the client exchanges the code for an access token, and finally uses the token to access protected resources.
-	  participant User
-	  participant Client as Client App
-	  participant Auth as Auth Server
-	  participant Resource as Resource Server
-	  User->>Client: Login Request
-	  Client->>Auth: Authorization Request
-	  Auth->>User: Login Page
-	  User->>Auth: Credentials
-	  Auth->>Auth: Validate
-	  Auth->>Client: Authorization Code
-	  Client->>Auth: Exchange Code for Token
-	  Auth->>Client: Access Token
-	  Client->>Resource: API Request with Token
-	  Resource->>Resource: Validate Token
-	  Resource->>Client: Protected Data
-	  Client->>User: Display Data`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/sequence.svg"
+      alt="Sequence diagram of an OAuth2 authentication flow between a user, client app, authorization server, and resource server, ending with the client displaying protected data to the user."
+      width={888}
+      height={783}
+    />
+  </div>
+  <figcaption>An OAuth2 authentication flow.</figcaption>
+</figure>
 
 ### State Diagram
 
-Order processing states:
-
-<MermaidDiagram
-  height={350}
-  useLazyLoading
-  diagram={`stateDiagram-v2
-	  accTitle: Order Processing State Machine
-	  accDescr: This state diagram shows the possible states and transitions in an order processing system. Orders start in a Pending state, can move to Processing when payment is confirmed or to Cancelled if they timeout. From Processing, orders can be Shipped when items are packed or Refunded upon customer request. Shipped orders become Delivered when the package is received. All final states (Delivered, Cancelled, Refunded) end the process.
-	  [*] --> Pending
-	  Pending --> Processing: Payment Confirmed
-	  Pending --> Cancelled: Timeout
-	  Processing --> Shipped: Items Packed
-	  Processing --> Refunded: Customer Request
-	  Shipped --> Delivered: Package Received
-	  Delivered --> [*]
-	  Cancelled --> [*]
-	  Refunded --> [*]`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/state.svg"
+      alt="State diagram for order processing: orders move from Pending to Processing or Cancelled, then to Shipped or Refunded, and Shipped orders become Delivered before the process ends."
+      width={407.2890625}
+      height={496}
+    />
+  </div>
+  <figcaption>Order processing states.</figcaption>
+</figure>
 
 ### Task Priority Matrix
 
-Generic tasks sorted by impact and effort:
-
-<MermaidDiagram
-  height={420}
-  className="mermaid-featured-card mermaid-example-quadrant"
-  useLazyLoading
-  diagram={`quadrantChart
-	  accTitle: Task Priority Matrix
-	  accDescr: This quadrant chart organizes generic tasks by effort and impact, separating quick wins, big bets, fill-ins, and work to reconsider.
-	  title Task priority matrix
-	  x-axis Low effort --> High effort
-	  y-axis Low impact --> High impact
-	  quadrant-1 Big bets
-	  quadrant-2 Quick wins
-	  quadrant-3 Fill-ins
-	  quadrant-4 Reconsider
-	  Update docs: [0.22, 0.72]
-	  Prototype UI: [0.62, 0.78]
-	  Launch campaign: [0.82, 0.86]
-	  Clean inbox: [0.18, 0.32]
-	  Rename files: [0.34, 0.24]
-	  Rewrite module: [0.78, 0.44]`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/quadrant.svg"
+      alt="Quadrant chart organizing tasks by effort and impact into quick wins, big bets, fill-ins, and work to reconsider."
+      width={500}
+      height={500}
+    />
+  </div>
+  <figcaption>Generic tasks sorted by impact and effort.</figcaption>
+</figure>
 
 ### Git Flow
 
-<MermaidDiagram
-  height={350}
-  useLazyLoading
-  diagram={`gitGraph
-	  accTitle: Git Flow Branching Model
-	  accDescr: This diagram shows a typical Git Flow workflow. The main branch (green) represents production code. A develop branch (sky blue) is created for ongoing development. A feature branch called feature/mermaid (orange) is created from develop for implementing the Mermaid.js feature. After two commits on the feature branch, it merges back into develop. Finally, develop merges into main for release, followed by a hotfix commit on main.
-	  commit id: "Initial commit"
-	  branch develop
-	  checkout develop
-	  commit id: "Set up development"
-	  branch feature/mermaid
-	  checkout feature/mermaid
-	  commit id: "Add Mermaid component"
-	  commit id: "Style Mermaid diagrams"
-	  checkout develop
-	  merge feature/mermaid tag: "feature complete"
-	  checkout main
-	  merge develop tag: "v1.0.0"
-	  commit id: "Hotfix: security patch"`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/git-flow.svg"
+      alt="Git Flow branching diagram: a feature branch off develop merges back into develop, develop merges into main for a v1.0.0 release, followed by a hotfix commit on main."
+      width={538.59375}
+      height={379.90167236328125}
+    />
+  </div>
+  <figcaption>A Git Flow branching model.</figcaption>
+</figure>
 
 ### Entity Relationship
 
-Database schema for a blog:
-
-<MermaidDiagram
-  height={300}
-  useLazyLoading
-  diagram={`erDiagram
-	  accTitle: Blog Database Schema
-	  accDescr: This entity relationship diagram shows the database schema for a blog system. Users can write many posts, posts can have many comments, and posts belong to one category. The diagram shows the relationships between USER, POST, COMMENT, and CATEGORY entities with their respective fields and data types.
-	  USER ||--o{ POST : writes
-	  USER {
-	      int id PK
-	      string name
-	      string email
-	      datetime created_at
-	  }
-	  POST ||--o{ COMMENT : has
-	  POST {
-	      int id PK
-	      int user_id FK
-	      string title
-	      text content
-	      datetime published_at
-	  }
-	  COMMENT {
-	      int id PK
-	      int post_id FK
-	      int user_id FK
-	      text content
-	      datetime created_at
-	  }
-	  POST }o--|| CATEGORY : belongs_to
-	  CATEGORY {
-	      int id PK
-	      string name
-	      string slug
-	  }`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/er.svg"
+      alt="Entity relationship diagram of a blog schema: users write many posts, posts have many comments, and posts belong to one category, with fields shown for each entity."
+      width={581.984375}
+      height={844.75}
+    />
+  </div>
+  <figcaption>Database schema for a blog.</figcaption>
+</figure>
 
 ### Pie Chart
 
-Technology stack distribution:
-
-<MermaidDiagram
-  height={300}
-  useLazyLoading
-  diagram={`pie title Technology Stack
-	  accTitle: Technology Stack Distribution
-	  accDescr: This pie chart shows the rough distribution of technologies powering this site: TanStack Start 35%, TypeScript 25%, Tailwind CSS 20%, MDX with Shiki 15%, and Tooling 5%.
-	  "TanStack Start" : 35
-	  "TypeScript" : 25
-	  "Tailwind CSS" : 20
-	  "MDX + Shiki" : 15
-	  "Tooling" : 5`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/pie.svg"
+      alt="Pie chart of the technology stack: TanStack Start 35 percent, TypeScript 25 percent, Tailwind CSS 20 percent, MDX with Shiki 15 percent, and tooling 5 percent."
+      width={623.40625}
+      height={450}
+    />
+  </div>
+  <figcaption>Technology stack distribution.</figcaption>
+</figure>
 
 ## Usage in Markdown
 
-In a blog post, I can use Mermaid like this:
+Each diagram is a `.mmd` file under `src/diagrams/<post>/`. For example,
+`src/diagrams/mermaid-diagrams/flow-chart.mmd`:
 
-```javascript
-import { MermaidDiagram } from "~/components/MermaidDiagram";
-
-<MermaidDiagram
-  height={300}
-  diagram={`flowchart LR
-	  Start --> Process --> End`}
-/>;
+```text
+flowchart LR
+  Start --> Process --> End
 ```
+
+`deno task render:diagrams` compiles every `.mmd` to a matching SVG under
+`public/` using a shared theme, then the post embeds the result as a static
+image:
+
+```html
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/mermaid-diagrams/flow-chart.svg"
+      alt="A short description of the diagram"
+      width="{496}"
+      height="{712}"
+    />
+  </div>
+</figure>
+```
+
+A diagram that needs custom colors can ship a sibling `.mmd`-named `.css` file,
+which the renderer inlines into the SVG so the image stays self-contained.
 
 ## Bonus: Code Blocks with Shiki
 

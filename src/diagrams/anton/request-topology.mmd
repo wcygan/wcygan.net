@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Browser
+    participant CF as Cloudflare edge
+    participant Tunnel as Cloudflare Tunnel
+    participant Envoy as Envoy Gateway
+    participant Echo as echo service
+
+    Browser->>CF: GET https://echo.wcygan.net/
+    CF->>Tunnel: Forward over tunnel
+    Tunnel->>Envoy: HTTP request
+    Envoy->>Echo: Route by Host header
+    Echo-->>Envoy: JSON echo response
+    Envoy-->>Tunnel: 200 OK
+    Tunnel-->>CF: Response
+    CF-->>Browser: JSON + cf-ray

@@ -103,21 +103,31 @@ import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 - `.post-content` is where MDX rendered output lives. Styles cascade from `app.css` `.post-content h1/h2/h3/p/ul/ol/pre/code/table`. See `references/typography.md` for exact sizes and margins — they are all tighter than the old `30px` rhythm.
 - Do not wrap content in `prose` — the prose plugin would conflict with the custom content styles. (`about.tsx` and `resume.tsx` currently use `prose` — treat that as legacy drift.)
 
-## MermaidDiagram
+## Mermaid diagrams (static SVG)
 
-```tsx
-import { MermaidDiagram } from "~/components/MermaidDiagram";
+There is no runtime Mermaid component. Diagrams are compiled to static SVGs at build time and embedded as plain `<img>`.
 
-<MermaidDiagram height={400} diagram={`flowchart TD\n  A --> B`} />;
+```mdx
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/post-slug/name.svg"
+      alt="Description of the diagram."
+      width={400}
+      height={300}
+    />
+  </div>
+  <figcaption>Caption.</figcaption>
+</figure>
 ```
 
 Rules:
 
-- Only use inside MDX posts (via `import` at top of the `.mdx` file).
-- Lazy-loaded: `import('mermaid')` at runtime, never top-level.
-- SessionStorage cache prevents re-render on navigation (see `src/lib/utils/mermaid-cache.ts`).
-- Fullscreen trigger renders via `MermaidFullscreen.tsx`.
-- Container gets light theme overrides — see `app.css` `.post-content .mermaid-container`.
+- Source lives in `src/diagrams/<post-slug>/<name>.mmd`; `deno task render:diagrams` (`scripts/render-diagrams.mjs`) compiles each to `public/<post-slug>/<name>.svg`. It also runs during `deno task build`.
+- An optional sibling `src/diagrams/<post-slug>/<name>.css` is inlined into the SVG for charts needing custom colors.
+- `width`/`height` come from what the render script prints; the SVG ships with no client-side JavaScript.
+- Use `static-mermaid-frame-simple` (alongside `static-mermaid-frame`) for small/narrow diagrams. The only Mermaid CSS classes in `app.css` are `.static-mermaid-figure`, `.static-mermaid-frame`, `.static-mermaid-frame-simple`, `.static-mermaid-diagram`.
 
 ## ExperienceCard (about page)
 

@@ -1,0 +1,19 @@
+sequenceDiagram
+    accTitle: OAuth2 Authentication Flow
+    accDescr: This sequence diagram shows the OAuth2 authentication flow between a user, client app, authorization server, and resource server. The user initiates a login request, the client redirects to the auth server, the user provides credentials, the auth server validates and returns an authorization code, the client exchanges the code for an access token, and finally uses the token to access protected resources.
+    participant User
+    participant Client as Client App
+    participant Auth as Auth Server
+    participant Resource as Resource Server
+    User->>Client: Login Request
+    Client->>Auth: Authorization Request
+    Auth->>User: Login Page
+    User->>Auth: Credentials
+    Auth->>Auth: Validate
+    Auth->>Client: Authorization Code
+    Client->>Auth: Exchange Code for Token
+    Auth->>Client: Access Token
+    Client->>Resource: API Request with Token
+    Resource->>Resource: Validate Token
+    Resource->>Client: Protected Data
+    Client->>User: Display Data

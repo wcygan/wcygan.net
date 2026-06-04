@@ -1,0 +1,36 @@
+.background {
+  fill: rgb(255, 251, 244) !important;
+}
+
+.chart-title text,
+.title text {
+  fill: rgb(30, 70, 140) !important;
+  font-weight: 700;
+}
+
+.bar-plot-0 rect {
+  fill: rgb(213, 94, 0) !important;
+  opacity: 0.7;
+}
+
+.line-plot-1 path {
+  stroke: rgb(70, 110, 170) !important;
+  stroke-width: 4px !important;
+}
+
+.line-plot-1 circle {
+  fill: rgb(70, 110, 170) !important;
+  stroke: rgb(255, 255, 255) !important;
+  stroke-width: 2px !important;
+}
+
+.axis-line path,
+.axisl-line path,
+.ticks line {
+  stroke: rgba(213, 94, 0, 0.3) !important;
+}
+
+.label text {
+  fill: rgb(65, 65, 65) !important;
+  font-weight: 600;
+}

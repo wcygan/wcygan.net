@@ -36,7 +36,7 @@ tags: ["distributed-systems", "rust"]
 - First in-content heading should be H2 (gray, 28px).
 - H3 (cornflower blue, 24px) for subsections.
 - Code fences with language tag always — Shiki is build-time and uses the `github-light` theme.
-- Mermaid diagrams: import at top of MDX, use `<MermaidDiagram height={N} diagram={\`...\`} />`.
+- Mermaid diagrams: author the source in `src/diagrams/<post-slug>/<name>.mmd`, run `deno task render:diagrams`, then embed the built `public/<post-slug>/<name>.svg` as a `<figure className="static-mermaid-figure">` (see below). No runtime component.
 
 Example skeleton:
 
@@ -48,8 +48,6 @@ description: "Summary."
 tags: ["topic"]
 ---
 
-import { MermaidDiagram } from "~/components/MermaidDiagram";
-
 Lede paragraph.
 
 ## First section
@@ -58,12 +56,21 @@ Body.
 
 ## Second section
 
-<MermaidDiagram
-  height={400}
-  diagram={`flowchart LR
-  A --> B`}
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/post-slug/name.svg"
+      alt="Description of the diagram."
+      width={400}
+      height={300}
+    />
+  </div>
+  <figcaption>Caption.</figcaption>
+</figure>
 ```
+
+(The SVG comes from `src/diagrams/post-slug/name.mmd` via `deno task render:diagrams`.)
 
 ## Routing gotchas
 

@@ -61,7 +61,7 @@ No other colors. No dark mode. No Tailwind color-scale classes in new work (`tex
 - [colors](references/colors.md) — exact values, where each is used, anti-patterns
 - [typography](references/typography.md) — font stack, sizes, headings hierarchy, meta/date style
 - [layout](references/layout.md) — 800px container, header, spacing, responsive rules
-- [components](references/components.md) — header, bio-highlight, post-list, blog-post, post-content, MermaidDiagram, ExperienceCard drift
+- [components](references/components.md) — header, bio-highlight, post-list, blog-post, post-content, static Mermaid figures, ExperienceCard drift
 - [blog-mdx](references/blog-mdx.md) — MDX frontmatter shape, post location, RSS sync, Mermaid usage
 - [blog-prose](references/blog-prose.md) — voice, tone, markdown-usage standards, essay-structure archetypes for posts
 - [routing-and-chrome](references/routing-and-chrome.md) — `__root.tsx` rules, `$slug` catch-all, loader serialization

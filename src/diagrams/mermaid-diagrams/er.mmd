@@ -1,0 +1,31 @@
+erDiagram
+    accTitle: Blog Database Schema
+    accDescr: This entity relationship diagram shows the database schema for a blog system. Users can write many posts, posts can have many comments, and posts belong to one category. The diagram shows the relationships between USER, POST, COMMENT, and CATEGORY entities with their respective fields and data types.
+    USER ||--o{ POST : writes
+    USER {
+        int id PK
+        string name
+        string email
+        datetime created_at
+    }
+    POST ||--o{ COMMENT : has
+    POST {
+        int id PK
+        int user_id FK
+        string title
+        text content
+        datetime published_at
+    }
+    COMMENT {
+        int id PK
+        int post_id FK
+        int user_id FK
+        text content
+        datetime created_at
+    }
+    POST }o--|| CATEGORY : belongs_to
+    CATEGORY {
+        int id PK
+        string name
+        string slug
+    }

@@ -79,10 +79,10 @@ The blog likes markdown. Use it. These are the conventions, with the hard rules 
 
 ### Mermaid diagrams
 
-- **Hard rule: every `<MermaidDiagram>` needs `accTitle` and `accDescr`** inside the diagram source. All examples in `mermaid-diagrams.mdx` model this. It's accessibility, not taste.
+- Diagrams are static SVGs, not a runtime component. Author the Mermaid source in `src/diagrams/<post-slug>/<name>.mmd`, run `deno task render:diagrams`, then embed the built `public/<post-slug>/<name>.svg` as a `<figure className="static-mermaid-figure">`. See `mermaid-diagrams.mdx` for the markup.
+- **Hard rule: every diagram needs `accTitle` and `accDescr`** inside the `.mmd` source, plus a real `alt` on the `<img>`. All examples in `mermaid-diagrams.mdx` model this. It's accessibility, not taste.
 - Earn-its-keep test: does the diagram replace a paragraph of explanation? Use for architecture, state machines, sequence flows. Don't decorate.
-- Pick `height` to fit content — roughly 300 for small flowcharts, 350 for state/git graphs, 500 for dense sequence diagrams.
-- Always `import { MermaidDiagram } from "~/components/MermaidDiagram";` at the top of the MDX file.
+- The `<img>` `width`/`height` come from what `deno task render:diagrams` prints; use `static-mermaid-frame-simple` (alongside `static-mermaid-frame`) for small/narrow diagrams.
 
 ### Images
 

@@ -32,8 +32,8 @@ after a 2s delay.
   imports
 - **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (custom Idle
   Toes theme)
-- **Mermaid.js** for interactive diagrams (client-side rendered, sessionStorage
-  cached)
+- **Mermaid.js** for diagrams, compiled to static SVG at build time
+  (`deno task render:diagrams`); no client-side rendering
 - **TypeScript** with strict mode for type safety
 - **Nitro** with `deno-server` preset for prerendering
 

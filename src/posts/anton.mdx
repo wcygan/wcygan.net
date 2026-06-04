@@ -6,7 +6,6 @@ tags: [Kubernetes, Talos, Homelab]
 ---
 
 import { EchoLivenessCheck } from "~/components/EchoLivenessCheck";
-import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 <section className="anton-hero" aria-label="Anton cluster overview">
   <div className="anton-hero-description">
@@ -47,25 +46,22 @@ import { MermaidDiagram } from "~/components/MermaidDiagram";
 
 ## Request Topology
 
-<MermaidDiagram
-  height={430}
-  diagram={`sequenceDiagram
-    participant Browser
-    participant CF as Cloudflare edge
-    participant Tunnel as Cloudflare Tunnel
-    participant Envoy as Envoy Gateway
-    participant Echo as echo service
-
-    Browser->>CF: GET https://echo.wcygan.net/
-    CF->>Tunnel: Forward over tunnel
-    Tunnel->>Envoy: HTTP request
-    Envoy->>Echo: Route by Host header
-    Echo-->>Envoy: JSON echo response
-    Envoy-->>Tunnel: 200 OK
-    Tunnel-->>CF: Response
-    CF-->>Browser: JSON + cf-ray`}
-
-/>
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/anton/request-topology.svg"
+      alt="Sequence diagram of a request to echo.wcygan.net flowing from the browser through the Cloudflare edge, Cloudflare Tunnel, and Envoy Gateway to the echo service, and the JSON response returning back along the same path."
+      width={1121}
+      height={539}
+    />
+  </div>
+  <figcaption>
+    A request to echo.wcygan.net travels from the browser through the Cloudflare
+    edge and Tunnel to Envoy Gateway, which routes by Host header to the echo
+    service before the response returns along the same path.
+  </figcaption>
+</figure>
 
 ## The Hardware
 

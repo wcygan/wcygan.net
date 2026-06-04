@@ -5,8 +5,6 @@ description: One-line summary for lists and RSS
 tags: [Tag1, Tag2]
 ---
 
-import { MermaidDiagram } from "~/components/MermaidDiagram";
-
 One or two sentences that state the subject directly. No "in this post" or "let's dive into." Open with the thing.
 
 ## First section
@@ -26,13 +24,22 @@ Use `###` sparingly. Don't nest deeper.
 
 ## A section that earns a diagram
 
-<MermaidDiagram
-  height={300}
-  diagram={`flowchart LR
-    accTitle: Short accessible title
-    accDescr: One-sentence description of what this diagram shows and why.
-    A[Start] --> B[Middle] --> C[End]`}
-/>
+{/_ Diagrams are static SVGs built from Mermaid source, not a runtime component. 1. Put the Mermaid text in src/diagrams/<this-post-slug>/<name>.mmd
+(add accTitle + accDescr lines inside the source for accessibility). 2. Run `deno task render:diagrams` to compile it to public/<slug>/<name>.svg
+(the width/height it prints go on the <img> below). 3. Embed the result like this (use `static-mermaid-frame-simple` for small ones): _/}
+
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/example-post-title/some-diagram.svg"
+      alt="One-sentence description of what this diagram shows."
+      width={400}
+      height={300}
+    />
+  </div>
+  <figcaption>Short caption describing the diagram.</figcaption>
+</figure>
 
 The diagram replaces a paragraph — don't also write the paragraph.
 

@@ -1,0 +1,12 @@
+stateDiagram-v2
+    accTitle: Order Processing State Machine
+    accDescr: This state diagram shows the possible states and transitions in an order processing system. Orders start in a Pending state, can move to Processing when payment is confirmed or to Cancelled if they timeout. From Processing, orders can be Shipped when items are packed or Refunded upon customer request. Shipped orders become Delivered when the package is received. All final states (Delivered, Cancelled, Refunded) end the process.
+    [*] --> Pending
+    Pending --> Processing: Payment Confirmed
+    Pending --> Cancelled: Timeout
+    Processing --> Shipped: Items Packed
+    Processing --> Refunded: Customer Request
+    Shipped --> Delivered: Package Received
+    Delivered --> [*]
+    Cancelled --> [*]
+    Refunded --> [*]

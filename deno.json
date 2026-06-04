@@ -9,7 +9,7 @@
     "build": "deno run -A scripts/build.mjs",
     "preview": "vite preview",
     "preview-static": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server .output/public",
-    "render:multi-region-diagrams": "node scripts/render-multi-region-diagrams.mjs",
+    "render:diagrams": "node scripts/render-diagrams.mjs",
     "deploy": "deno task build && wrangler deploy",
     "test": "vitest run",
     "fmt": "prettier --write .",
