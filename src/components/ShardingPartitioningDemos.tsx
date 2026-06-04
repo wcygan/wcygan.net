@@ -1,4 +1,11 @@
-import { type CSSProperties, useEffect, useMemo, useState } from "react";
+import {
+  type CSSProperties,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type ShardId = "a" | "b" | "c";
 
@@ -27,6 +34,9 @@ type CubicPath = {
   controlB: Point;
   to: Point;
 };
+
+const useBrowserLayoutEffect =
+  typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 type RouterLayout = {
   viewBox: string;
@@ -196,6 +206,169 @@ const PARTITION_KEY_SCENARIOS = [
 
 type PartitionKeyScenario = (typeof PARTITION_KEY_SCENARIOS)[number];
 
+type ShardKeyStrategy = "range" | "hash";
+type RingNodeCount = 3 | 4 | 5;
+type RingShardId = ShardId | "d" | "e";
+
+type ShardKeyRow = {
+  id: string;
+  tenantId: number;
+  label: string;
+};
+
+const SHARD_KEY_ROWS: readonly ShardKeyRow[] = [
+  { id: "tenant-042", tenantId: 42, label: "042" },
+  { id: "tenant-118", tenantId: 118, label: "118" },
+  { id: "tenant-240", tenantId: 240, label: "240" },
+  { id: "tenant-245", tenantId: 245, label: "245" },
+  { id: "tenant-250", tenantId: 250, label: "250" },
+  { id: "tenant-252", tenantId: 252, label: "252" },
+  { id: "tenant-260", tenantId: 260, label: "260" },
+  { id: "tenant-481", tenantId: 481, label: "481" },
+  { id: "tenant-817", tenantId: 817, label: "817" },
+  { id: "tenant-920", tenantId: 920, label: "920" },
+];
+
+const SHARD_KEY_RANGE_QUERY = {
+  lowerBound: 240,
+  prefix: "WHERE tenant_id",
+  upperBound: 260,
+};
+
+const SHARD_KEY_STRATEGIES: readonly {
+  id: ShardKeyStrategy;
+  label: string;
+  summary: string;
+}[] = [
+  {
+    id: "range",
+    label: "Range",
+    summary: "Adjacent tenant IDs stay together, so this range query is local.",
+  },
+  {
+    id: "hash",
+    label: "Hash",
+    summary: "Tenant IDs scatter evenly, so this range query fans out.",
+  },
+];
+
+const SHARD_KEY_LANES: readonly {
+  id: ShardId;
+  label: string;
+  rangeLabel: string;
+}[] = [
+  { id: "a", label: "Shard A", rangeLabel: "001-333" },
+  { id: "b", label: "Shard B", rangeLabel: "334-666" },
+  { id: "c", label: "Shard C", rangeLabel: "667-999" },
+];
+
+const REBALANCE_SCENARIOS = [
+  {
+    id: "modulo",
+    label: "Modulo",
+    movedKeys: ["042", "118", "245", "250", "481", "817", "920"],
+    stableKeys: ["252", "260"],
+    summary: "Adding a shard changes the divisor, so most keys remap.",
+  },
+  {
+    id: "ring",
+    label: "Consistent ring",
+    movedKeys: ["245", "250", "252"],
+    stableKeys: ["042", "118", "260", "481", "817", "920"],
+    summary: "Only keys in the new shard's slice move.",
+  },
+] as const;
+
+const VIRTUAL_NODE_SCENARIOS = [
+  {
+    id: "single",
+    label: "One token",
+    tokens: [
+      { id: "a1", shard: "a", label: "A", x: 50, y: 11 },
+      { id: "b1", shard: "b", label: "B", x: 86, y: 63 },
+      { id: "c1", shard: "c", label: "C", x: 15, y: 65 },
+    ],
+    loads: { a: 47, b: 36, c: 17 },
+    summary:
+      "With one token per shard, each owner gets one large slice of the ring.",
+  },
+  {
+    id: "virtual",
+    label: "Virtual nodes",
+    tokens: [
+      { id: "a1", shard: "a", label: "A1", x: 50, y: 11 },
+      { id: "b1", shard: "b", label: "B1", x: 78, y: 25 },
+      { id: "c1", shard: "c", label: "C1", x: 87, y: 58 },
+      { id: "a2", shard: "a", label: "A2", x: 66, y: 84 },
+      { id: "b2", shard: "b", label: "B2", x: 33, y: 84 },
+      { id: "c2", shard: "c", label: "C2", x: 13, y: 57 },
+      { id: "a3", shard: "a", label: "A3", x: 22, y: 25 },
+      { id: "b3", shard: "b", label: "B3", x: 50, y: 50 },
+      { id: "c3", shard: "c", label: "C3", x: 72, y: 48 },
+    ],
+    loads: { a: 34, b: 32, c: 34 },
+    summary:
+      "Virtual nodes break ownership into smaller slices, which smooths skew.",
+  },
+] as const;
+
+const RING_FAILURE_SCENARIOS = [
+  {
+    id: "healthy",
+    label: "Healthy ring",
+    downShard: null,
+    keys: [
+      { key: "118", owner: "a", current: "a" },
+      { key: "245", owner: "b", current: "b" },
+      { key: "481", owner: "b", current: "b" },
+      { key: "817", owner: "c", current: "c" },
+      { key: "920", owner: "a", current: "a" },
+    ],
+    summary: "Every key routes to the next live token clockwise.",
+  },
+  {
+    id: "takeover",
+    label: "Shard B down",
+    downShard: "b",
+    keys: [
+      { key: "118", owner: "a", current: "a" },
+      { key: "245", owner: "b", current: "c" },
+      { key: "481", owner: "b", current: "c" },
+      { key: "817", owner: "c", current: "c" },
+      { key: "920", owner: "a", current: "a" },
+    ],
+    summary:
+      "Only keys owned by the unavailable token move to the next live owner.",
+  },
+] as const;
+
+const RING_RESHARD_TOKENS: readonly {
+  angle: number;
+  id: RingShardId;
+  label: string;
+}[] = [
+  { angle: 35, id: "a", label: "A" },
+  { angle: 145, id: "b", label: "B" },
+  { angle: 230, id: "d", label: "D" },
+  { angle: 275, id: "c", label: "C" },
+  { angle: 330, id: "e", label: "E" },
+];
+
+const RING_RESHARD_KEYS: readonly {
+  angle: number;
+  key: string;
+}[] = [
+  { angle: 18, key: "042" },
+  { angle: 78, key: "118" },
+  { angle: 132, key: "245" },
+  { angle: 156, key: "250" },
+  { angle: 185, key: "252" },
+  { angle: 224, key: "260" },
+  { angle: 255, key: "481" },
+  { angle: 318, key: "817" },
+  { angle: 346, key: "920" },
+];
+
 export function ShardRequestRouterDemo() {
   const compactLayout = useMediaQuery("(max-width: 560px)");
   const layout = compactLayout ? COMPACT_ROUTER_LAYOUT : DESKTOP_ROUTER_LAYOUT;
@@ -275,6 +448,504 @@ export function ShardRequestRouterDemo() {
   );
 }
 
+export function ConsistentHashingRebalanceDemo() {
+  const [scenarioId, setScenarioId] =
+    useState<(typeof REBALANCE_SCENARIOS)[number]["id"]>("modulo");
+  const scenario =
+    REBALANCE_SCENARIOS.find((item) => item.id === scenarioId) ??
+    REBALANCE_SCENARIOS[0];
+
+  return (
+    <figure className="sp-demo sp-rebalance-demo">
+      <DemoHeader
+        eyebrow="Prototype 08 - Crossing shards"
+        title="Consistent Hashing Ring Rebalance"
+        copy="The rebalancing strategy determines how much data moves when a shard is added."
+      />
+
+      <div className="sp-query-controls">
+        <div
+          className="sp-query-tabs"
+          role="tablist"
+          aria-label="Rebalance strategy"
+        >
+          {REBALANCE_SCENARIOS.map((item) => (
+            <button
+              aria-selected={item.id === scenario.id}
+              className="sp-query-tab"
+              key={item.id}
+              onClick={() => setScenarioId(item.id)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sp-rebalance-layout">
+        <div className="sp-ring-sketch" aria-hidden="true">
+          <span data-shard="a">A</span>
+          <span data-shard="b">B</span>
+          <span data-shard="c">C</span>
+          <span data-shard="d">D</span>
+        </div>
+        <div className="sp-rebalance-keys">
+          <div>
+            <strong>Moved keys</strong>
+            <span>{scenario.movedKeys.length} of 9</span>
+            <div>
+              {scenario.movedKeys.map((key, index) => (
+                <code
+                  data-state="moved"
+                  key={key}
+                  style={{ "--sp-item-index": index } as CSSProperties}
+                >
+                  {key}
+                </code>
+              ))}
+            </div>
+          </div>
+          <div>
+            <strong>Stable keys</strong>
+            <span>{scenario.stableKeys.length} of 9</span>
+            <div>
+              {scenario.stableKeys.map((key, index) => (
+                <code
+                  data-state="stable"
+                  key={key}
+                  style={{ "--sp-item-index": index } as CSSProperties}
+                >
+                  {key}
+                </code>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p key={scenario.id} className="sp-demo-status sp-swap-line">
+        {scenario.summary}
+      </p>
+    </figure>
+  );
+}
+
+export function VirtualNodeBalanceDemo() {
+  const [scenarioId, setScenarioId] =
+    useState<(typeof VIRTUAL_NODE_SCENARIOS)[number]["id"]>("single");
+  const scenario =
+    VIRTUAL_NODE_SCENARIOS.find((item) => item.id === scenarioId) ??
+    VIRTUAL_NODE_SCENARIOS[0];
+
+  return (
+    <figure className="sp-demo sp-token-ring-demo">
+      <DemoHeader
+        eyebrow="Prototype 10 - Crossing shards"
+        title="Virtual Nodes Smooth Load"
+        copy="A consistent-hashing ring gets less lumpy when each physical shard owns several smaller positions."
+      />
+
+      <div className="sp-query-controls">
+        <div
+          className="sp-query-tabs"
+          role="tablist"
+          aria-label="Virtual node layout"
+        >
+          {VIRTUAL_NODE_SCENARIOS.map((item) => (
+            <button
+              aria-selected={item.id === scenario.id}
+              className="sp-query-tab"
+              key={item.id}
+              onClick={() => setScenarioId(item.id)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sp-token-ring-layout">
+        <div className="sp-token-ring" aria-label={`${scenario.label} ring`}>
+          {scenario.tokens.map((token, index) => (
+            <span
+              data-shard={token.shard}
+              key={token.id}
+              style={
+                {
+                  "--sp-item-index": index,
+                  "--sp-token-x": `${token.x}%`,
+                  "--sp-token-y": `${token.y}%`,
+                } as CSSProperties
+              }
+            >
+              {token.label}
+            </span>
+          ))}
+        </div>
+
+        <div className="sp-load-bars" aria-label="Ring ownership load">
+          {SHARD_KEY_LANES.map((lane) => {
+            const load = scenario.loads[lane.id];
+            return (
+              <div className="sp-load-row" data-hot={load >= 45} key={lane.id}>
+                <span>{lane.label}</span>
+                <div className="sp-skew-track">
+                  <span style={{ inlineSize: `${load}%` }} />
+                </div>
+                <strong>{load}%</strong>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <p key={scenario.id} className="sp-demo-status sp-swap-line">
+        {scenario.summary}
+      </p>
+    </figure>
+  );
+}
+
+export function RingFailureTakeoverDemo() {
+  const [scenarioId, setScenarioId] =
+    useState<(typeof RING_FAILURE_SCENARIOS)[number]["id"]>("healthy");
+  const scenario =
+    RING_FAILURE_SCENARIOS.find((item) => item.id === scenarioId) ??
+    RING_FAILURE_SCENARIOS[0];
+
+  return (
+    <figure className="sp-demo sp-ring-failure-demo">
+      <DemoHeader
+        eyebrow="Prototype 11 - Crossing shards"
+        title="Ring Failure Takeover"
+        copy="When a shard disappears from the ring, only the keys it owned need a new live owner."
+      />
+
+      <div className="sp-query-controls">
+        <div
+          className="sp-query-tabs"
+          role="tablist"
+          aria-label="Ring availability"
+        >
+          {RING_FAILURE_SCENARIOS.map((item) => (
+            <button
+              aria-selected={item.id === scenario.id}
+              className="sp-query-tab"
+              key={item.id}
+              onClick={() => setScenarioId(item.id)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sp-ring-failure-layout">
+        <div
+          className="sp-ring-sketch"
+          aria-label={`${scenario.label} ownership ring`}
+        >
+          {["a", "b", "c"].map((shardId) => (
+            <span
+              data-down={scenario.downShard === shardId}
+              data-shard={shardId}
+              key={shardId}
+            >
+              {shardId.toUpperCase()}
+            </span>
+          ))}
+        </div>
+
+        <div className="sp-ring-key-grid">
+          {scenario.keys.map((key, index) => {
+            const moved = key.owner !== key.current;
+            return (
+              <div
+                data-moved={moved}
+                key={key.key}
+                style={{ "--sp-item-index": index } as CSSProperties}
+              >
+                <code>{key.key}</code>
+                <span>
+                  {moved
+                    ? `${key.owner.toUpperCase()} -> ${key.current.toUpperCase()}`
+                    : key.current.toUpperCase()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <p key={scenario.id} className="sp-demo-status sp-swap-line">
+        {scenario.summary}
+      </p>
+    </figure>
+  );
+}
+
+export function ConsistentHashingAddNodeDemo() {
+  const [nodeCount, setNodeCount] = useState<RingNodeCount>(3);
+  const handleNodeCountInput = (value: string) => {
+    setNodeCount(clampRingNodeCount(Number(value)));
+  };
+  const activeShardIds = activeRingShardIds(nodeCount);
+  const activeTokenIds = new Set<RingShardId>(activeShardIds);
+  const keyPlacements = RING_RESHARD_KEYS.map((key) => {
+    const beforeOwner = ownerForRingAngle(key.angle, ["a", "b", "c"]);
+    const currentOwner = ownerForRingAngle(key.angle, activeShardIds);
+
+    return {
+      ...key,
+      beforeOwner,
+      currentOwner,
+      moved: beforeOwner !== currentOwner,
+    };
+  });
+  const movedKeys = keyPlacements.filter((key) => key.moved);
+  const stableKeyCount = RING_RESHARD_KEYS.length - movedKeys.length;
+
+  return (
+    <figure className="sp-demo sp-ring-add-node-demo">
+      <DemoHeader
+        eyebrow="Prototype 09 - Crossing shards"
+        title="Add Node Ring Reshard"
+        copy="Adding nodes to a consistent-hashing ring creates new ownership intervals; only keys inside those intervals move."
+      />
+
+      <div className="sp-ring-add-control">
+        <label>
+          <span>Cluster size</span>
+          <strong>{nodeCount} nodes</strong>
+        </label>
+        <input
+          aria-label="Cluster size"
+          max="5"
+          min="3"
+          onChange={(event) => handleNodeCountInput(event.currentTarget.value)}
+          onInput={(event) => handleNodeCountInput(event.currentTarget.value)}
+          step="1"
+          type="range"
+          value={nodeCount}
+        />
+        <div aria-hidden="true">
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+        </div>
+      </div>
+
+      <div className="sp-ring-add-layout">
+        <div
+          className="sp-ring-add-stage"
+          data-node-count={nodeCount}
+          aria-label={`${nodeCount} node consistent hashing ring`}
+        >
+          <div className="sp-ring-add-ring" aria-hidden="true" />
+          {RING_RESHARD_TOKENS.map((token, index) => (
+            <span
+              className="sp-ring-add-token"
+              data-active={activeTokenIds.has(token.id)}
+              data-shard={token.id}
+              key={token.id}
+              style={
+                {
+                  ...ringPercentStyle(token.angle, 40),
+                  "--sp-item-index": index,
+                } as CSSProperties
+              }
+            >
+              {token.label}
+            </span>
+          ))}
+          {keyPlacements.map((key, index) => (
+            <span
+              className="sp-ring-add-key"
+              data-moved={key.moved && nodeCount > 3}
+              data-owner={key.currentOwner}
+              key={key.key}
+              style={
+                {
+                  ...ringPercentStyle(key.angle, 28),
+                  "--sp-item-index": index,
+                } as CSSProperties
+              }
+              title={`${key.key}: ${key.beforeOwner.toUpperCase()} -> ${key.currentOwner.toUpperCase()}`}
+            >
+              {key.key}
+            </span>
+          ))}
+        </div>
+
+        <div className="sp-ring-add-table" aria-label="Key movement">
+          <div className="sp-ring-add-metric">
+            <strong>
+              {nodeCount === 3 ? "before add" : `${movedKeys.length} moved`}
+            </strong>
+            <span>
+              {nodeCount === 3
+                ? "keys route to A, B, or C"
+                : `${stableKeyCount} keys stay put`}
+            </span>
+          </div>
+          {keyPlacements.map((key, index) => (
+            <div
+              data-moved={key.moved && nodeCount > 3}
+              key={key.key}
+              style={{ "--sp-item-index": index } as CSSProperties}
+            >
+              <code>{key.key}</code>
+              <span>
+                {nodeCount === 3
+                  ? key.beforeOwner.toUpperCase()
+                  : `${key.beforeOwner.toUpperCase()} -> ${key.currentOwner.toUpperCase()}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p key={nodeCount} className="sp-demo-status sp-swap-line">
+        {nodeCount === 3
+          ? "With three nodes, each key is owned by the next A, B, or C token clockwise."
+          : `${movedKeys.length} of ${RING_RESHARD_KEYS.length} keys move when the ring grows to ${nodeCount} nodes; ${stableKeyCount} keys keep their original owner.`}
+      </p>
+    </figure>
+  );
+}
+
+export function ShardKeyRangeHashDemo() {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [strategy, setStrategy] = useState<ShardKeyStrategy>("range");
+  const placedRows = SHARD_KEY_ROWS.map((row) => ({
+    ...row,
+    highlighted: rowIsInShardKeyRange(row),
+    shardId: shardForTenant(row.tenantId, strategy),
+  }));
+  const touchedShardIds = new Set(
+    placedRows.filter((row) => row.highlighted).map((row) => row.shardId),
+  );
+  const touchedShardLabels = SHARD_KEY_LANES.filter((lane) =>
+    touchedShardIds.has(lane.id),
+  ).map((lane) => lane.label);
+  const activeStrategy =
+    SHARD_KEY_STRATEGIES.find((item) => item.id === strategy) ??
+    SHARD_KEY_STRATEGIES[0];
+  const laneGroups = SHARD_KEY_LANES.map((lane) => {
+    const rows = placedRows.filter((row) => row.shardId === lane.id);
+
+    return { lane, rows };
+  });
+
+  useBrowserLayoutEffect(() => {
+    const board = boardRef.current;
+    if (!board) return;
+
+    const positionedChips = Array.from(
+      board.querySelectorAll<HTMLElement>(".sp-shard-key-dot"),
+    ).map((chip) => ({
+      chip,
+      rect: chip.getBoundingClientRect(),
+    }));
+
+    positionedChips
+      .sort((left, right) => {
+        const topDelta = left.rect.top - right.rect.top;
+        if (Math.abs(topDelta) > 1) return topDelta;
+
+        return left.rect.left - right.rect.left;
+      })
+      .forEach(({ chip }, fillIndex) => {
+        chip.style.setProperty("--sp-fill-index", `${fillIndex}`);
+      });
+  }, [strategy]);
+
+  return (
+    <figure className="sp-demo sp-shard-key-demo">
+      <DemoHeader
+        eyebrow="Choosing a shard key"
+        title="Range vs Hash Splitter"
+        copy="The same tenant IDs can preserve range locality or scatter more evenly depending on the shard key strategy."
+      />
+
+      <div className="sp-query-controls">
+        <div
+          className="sp-query-tabs"
+          role="tablist"
+          aria-label="Shard key strategy"
+        >
+          {SHARD_KEY_STRATEGIES.map((item) => (
+            <button
+              aria-selected={item.id === strategy}
+              className="sp-query-tab"
+              key={item.id}
+              onClick={() => setStrategy(item.id)}
+              type="button"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="sp-query-panel">
+        <code>
+          {SHARD_KEY_RANGE_QUERY.prefix}{" "}
+          <span className="sp-query-range-highlight">
+            BETWEEN {SHARD_KEY_RANGE_QUERY.lowerBound} AND{" "}
+            {SHARD_KEY_RANGE_QUERY.upperBound}
+          </span>
+        </code>
+        <span>
+          touches {touchedShardIds.size} of {SHARD_KEY_LANES.length} shards:{" "}
+          {touchedShardLabels.join(", ")}
+        </span>
+      </div>
+
+      <div
+        className="sp-shard-key-board"
+        aria-label="Tenant IDs assigned to shards"
+        ref={boardRef}
+      >
+        {laneGroups.map(({ lane, rows }) => (
+          <section
+            className="sp-shard-key-lane"
+            data-touched={touchedShardIds.has(lane.id)}
+            key={lane.id}
+          >
+            <header>
+              <strong>{lane.label}</strong>
+              <span>
+                {strategy === "range" ? lane.rangeLabel : "hash bucket"}
+              </span>
+            </header>
+            <div className="sp-shard-key-dots">
+              {rows.map((row, index) => (
+                <span
+                  className="sp-shard-key-dot"
+                  data-highlighted={row.highlighted}
+                  key={`${strategy}-${row.id}`}
+                  style={{ "--sp-fill-index": index } as CSSProperties}
+                  title={`tenant_${row.label}`}
+                >
+                  {row.label}
+                </span>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <p className="sp-demo-status sp-swap-line" key={strategy}>
+        {activeStrategy.summary}
+      </p>
+    </figure>
+  );
+}
+
 export function HotTenantShardDemo() {
   const [trafficByShard, setTrafficByShard] = useState(
     INITIAL_HOT_TENANT_TRAFFIC,
@@ -350,6 +1021,16 @@ export function HotTenantShardDemo() {
                   max="100"
                   min="0"
                   onChange={(event) => {
+                    const nextTraffic = Number(event.currentTarget.value);
+                    setTrafficByShard((currentTraffic) =>
+                      redistributeTraffic(
+                        currentTraffic,
+                        shard.id,
+                        nextTraffic,
+                      ),
+                    );
+                  }}
+                  onInput={(event) => {
                     const nextTraffic = Number(event.currentTarget.value);
                     setTrafficByShard((currentTraffic) =>
                       redistributeTraffic(
@@ -740,6 +1421,23 @@ function layoutShardById(layout: RouterLayout, shardId: ShardId) {
   );
 }
 
+function shardForTenant(tenantId: number, strategy: ShardKeyStrategy): ShardId {
+  if (strategy === "hash") {
+    return SHARD_IDS[tenantId % SHARD_IDS.length] ?? "a";
+  }
+
+  if (tenantId <= 333) return "a";
+  if (tenantId <= 666) return "b";
+  return "c";
+}
+
+function rowIsInShardKeyRange(row: ShardKeyRow) {
+  return (
+    row.tenantId >= SHARD_KEY_RANGE_QUERY.lowerBound &&
+    row.tenantId <= SHARD_KEY_RANGE_QUERY.upperBound
+  );
+}
+
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
 
@@ -918,6 +1616,40 @@ function clampTraffic(value: number) {
 
 function interpolateChannel(start: number, end: number, progress: number) {
   return Math.round(start + (end - start) * progress);
+}
+
+function activeRingShardIds(nodeCount: RingNodeCount): readonly RingShardId[] {
+  if (nodeCount === 5) return ["a", "b", "c", "d", "e"];
+  if (nodeCount === 4) return ["a", "b", "c", "d"];
+  return ["a", "b", "c"];
+}
+
+function clampRingNodeCount(value: number): RingNodeCount {
+  if (value >= 5) return 5;
+  if (value >= 4) return 4;
+  return 3;
+}
+
+function ownerForRingAngle(
+  angle: number,
+  activeShardIds: readonly RingShardId[],
+) {
+  const sortedTokens = RING_RESHARD_TOKENS.filter((token) =>
+    activeShardIds.includes(token.id),
+  ).sort((left, right) => left.angle - right.angle);
+  const owningToken =
+    sortedTokens.find((token) => angle <= token.angle) ?? sortedTokens[0];
+
+  return owningToken.id;
+}
+
+function ringPercentStyle(angle: number, radius: number): CSSProperties {
+  const radians = ((angle - 90) * Math.PI) / 180;
+
+  return {
+    "--sp-ring-x": `${50 + Math.cos(radians) * radius}%`,
+    "--sp-ring-y": `${50 + Math.sin(radians) * radius}%`,
+  } as CSSProperties;
 }
 
 function pathToShard(layout: RouterLayout, shard: Shard): CubicPath {

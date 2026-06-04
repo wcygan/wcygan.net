@@ -10,8 +10,10 @@ import {
   BadPartitionKeyDemo,
   HotTenantShardDemo,
   QueryPlannerPruningDemo,
+  ShardKeyRangeHashDemo,
   ShardRequestRouterDemo,
 } from "~/components/ShardingPartitioningDemos";
+import { ConsistentHashingRingCanvasDemo } from "~/components/ConsistentHashingRingCanvasDemo";
 
 Sharding and partitioning are easy to conflate. The simplest distinction is that partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.[^planetscale-sharding-partitioning]
 
@@ -48,6 +50,8 @@ The application issues a normal query, and the router sends it to the shard that
 
 The shard key decides how evenly data spreads and which queries can be served by a single shard. Range sharding keeps adjacent keys together, so range scans stay on one shard, but a busy range can overload one instance. Hash sharding scatters keys evenly and avoids hotspots from monotonic keys, but a range query then has to fan out to every shard.
 
+<ShardKeyRangeHashDemo />
+
 ### Hot shards
 
 Even with hashing, skew can concentrate load on one shard. A [_hotspot_](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/) is when one key value or one tenant takes most of the traffic, so a single shard saturates while the rest sit idle. A low-cardinality shard key is the usual cause.
@@ -57,6 +61,8 @@ Even with hashing, skew can concentrate load on one shard. A [_hotspot_](https:/
 ### Crossing shards
 
 The hard part of sharding is any operation that spans shards. A query without the shard key becomes a scatter/gather across every shard. A transaction across shards needs a [distributed commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) to stay atomic, and [resharding](https://vitess.io/docs/concepts/shard/) a live cluster is one of the hardest things to run. [Consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) lowers the rebalancing cost by moving only about 1/n of the keys when you add a node.
+
+<ConsistentHashingRingCanvasDemo />
 
 ## Partitioning
 
@@ -81,6 +87,19 @@ The payoff for a good key is [_partition pruning_](https://www.postgresql.org/do
 
 <QueryPlannerPruningDemo />
 
+## Conclusion
+
+Sharding and partitioning both route rows by key. A partition key groups rows inside one database so the engine can route writes and skip irrelevant chunks. A shard key chooses which independent storage node owns the row or request.[^row-routing]
+
+| Pattern                | Key                | Reason                                                                                                                                                    |
+| ---------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Merchant SaaS          | `shop_id`          | In Shopify's shop-owned tables, `shop_id` identifies the shop; shard balancing moves rows for that shop to another shard.[^shopify-shop-id]               |
+| Multi-tenant SaaS      | `tenant_id`        | The Citus tenant example distributes tenant tables by `tenant_id`, keeping same-tenant joins on one worker.[^citus-tenant-id]                             |
+| DM search              | `user_id`          | Discord reindexed direct messages by `user_id`, so cross-DM search can target one user's messages instead of every conversation.[^discord-message-search] |
+| Warehouse partitioning | `transaction_date` | BigQuery can prune partitions when a query filters the `transaction_date` partition key, so date filters scan less data.[^bigquery-partition-pruning]     |
+
+Choose keys that appear in filters or joins, have high cardinality, avoid skew, and colocate rows queried together. Use time keys for pruning or retention; use entity keys when distributing time-series data. Avoid low-cardinality distribution keys such as a three-value `status` column.[^key-checklist]
+
 ## References
 
 - [PostgreSQL: Table Partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html)
@@ -90,3 +109,20 @@ The payoff for a good key is [_partition pruning_](https://www.postgresql.org/do
 - [TiDB: Partitioning](https://docs.pingcap.com/tidb/stable/partitioned-table/)
 - [TiDB: Troubleshoot Hotspot Issues](https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/)
 - [TiDB: Best Practices for Using TiDB Partitioned Tables](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/)
+- [Shopify Engineering: Shard Balancing](https://shopify.engineering/mysql-database-shard-balancing-terabyte-scale)
+- [Discord: How Discord Indexes Trillions of Messages](https://discord.com/blog/how-discord-indexes-trillions-of-messages)
+- [Microsoft Learn: Choosing a Citus distribution column](https://learn.microsoft.com/en-us/postgresql/citus/data-modeling?view=citus-14)
+- [BigQuery: Query partitioned tables](https://docs.cloud.google.com/bigquery/docs/querying-partitioned-tables)
+- [ClickHouse: Top 10 best practices tips](https://clickhouse.com/blog/10-best-practice-tips)
+
+[^row-routing]: PostgreSQL's [table partitioning docs](https://www.postgresql.org/docs/current/ddl-partitioning.html) describe the partition key as routing rows to partitions; Microsoft's [Citus distribution-column docs](https://learn.microsoft.com/en-us/postgresql/citus/data-modeling?view=citus-14) describe the distribution column as assigning distributed-table rows to shards and determining how data spreads across nodes.
+
+[^shopify-shop-id]: Shopify Engineering's [shard-balancing post](https://shopify.engineering/mysql-database-shard-balancing-terabyte-scale) says `shop_id` serves as the sharding key for shop-owned tables and that moving a shop means copying rows with that `shop_id` to another MySQL shard.
+
+[^discord-message-search]: Discord's [message-indexing post](https://discord.com/blog/how-discord-indexes-trillions-of-messages) says DM messages are sharded by `user_id`, which powers cross-DM search.
+
+[^citus-tenant-id]: Microsoft's [Citus distribution-column docs](https://learn.microsoft.com/en-us/postgresql/citus/data-modeling?view=citus-14) include a tenant example that distributes `event` and `page` by `tenant_id` so same-tenant joins stay colocated.
+
+[^bigquery-partition-pruning]: BigQuery's [querying partitioned tables](https://docs.cloud.google.com/bigquery/docs/querying-partitioned-tables) docs show pruning on a table partitioned by `transaction_date`.
+
+[^key-checklist]: Microsoft's [Citus distribution-column docs](https://learn.microsoft.com/en-us/postgresql/citus/data-modeling?view=citus-14) recommend high-cardinality, evenly distributed columns used in joins or grouping, warn that skew concentrates data in some shards, and warn against timestamps as distribution columns for time-series data. BigQuery's [partition-pruning docs](https://docs.cloud.google.com/bigquery/docs/querying-partitioned-tables) and TiDB's [partitioned-table best practices](https://docs.pingcap.com/best-practices/tidb-partitioned-tables-best-practices/) document pruning when predicates align with partition keys. ClickHouse's [best-practices post](https://clickhouse.com/blog/10-best-practice-tips) warns that over-partitioning can hurt.
