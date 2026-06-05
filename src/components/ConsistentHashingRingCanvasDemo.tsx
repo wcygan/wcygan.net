@@ -44,7 +44,7 @@ const HASH_RING_MIN_KEY_COUNT = 12;
 const HASH_RING_DEFAULT_KEY_COUNT = 28;
 const HASH_RING_MAX_KEY_COUNT = 60;
 const HASH_RING_MIN_NODE_COUNT = 3;
-const HASH_RING_DEFAULT_NODE_COUNT = HASH_RING_MIN_NODE_COUNT;
+const HASH_RING_DEFAULT_NODE_COUNT = HASH_RING_MIN_NODE_COUNT + 1;
 const HASH_RING_MAX_NODE_COUNT = 7;
 const HASH_RING_VIRTUAL_TOKEN_COUNT = 2;
 const GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
@@ -134,7 +134,7 @@ export function ConsistentHashingRingCanvasDemo() {
       <DemoHeader
         eyebrow="Crossing shards"
         title="Consistent Hashing Ring"
-        copy="Start with three nodes, then add up to seven. Key positions stay fixed; red keys are the ones whose next clockwise token changed when the latest node was added."
+        copy="Compare the current ring with the previous node count. Key positions stay fixed; red keys are the ones whose next clockwise token changed when the latest node was added."
       />
 
       <div
@@ -479,11 +479,11 @@ function drawHashRingCenterLabel(
   state: HashRingState,
   model: HashRingModel,
 ) {
-  const title = `${state.nodeCount} nodes on the ring`;
+  const title = `${state.nodeCount} nodes`;
   const detail =
     state.nodeCount === HASH_RING_MIN_NODE_COUNT
-      ? "keys use A, B, C tokens"
-      : "red keys moved on add";
+      ? "baseline ring"
+      : "red keys moved";
 
   const titleFontSize = clampNumber(model.radius * 0.08, 12, 14);
   const detailFontSize = clampNumber(model.radius * 0.074, 11, 13);

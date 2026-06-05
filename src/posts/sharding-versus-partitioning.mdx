@@ -1,9 +1,8 @@
 ---
 title: Sharding vs. Partitioning
-date: June 4, 2026
+date: June 5, 2026
 description: The difference between splitting a table inside one database and spreading data across many, and how to choose a key for each.
 tags: [Data, Databases, Architecture]
-draft: true
 ---
 
 import {
@@ -15,7 +14,7 @@ import {
 } from "~/components/ShardingPartitioningDemos";
 import { ConsistentHashingRingCanvasDemo } from "~/components/ConsistentHashingRingCanvasDemo";
 
-Sharding and partitioning both split one logical dataset into smaller pieces so the database can route work to a narrower slice of data. They are easy to conflate; the simplest distinction is that partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.[^planetscale-sharding-partitioning]
+Sharding and partitioning both split one logical dataset into smaller pieces so the database can route work to a narrower slice of data. They are easy to conflate; the simplest distinction is that partitioning splits one table under a single database engine, while sharding spreads ownership across multiple independent storage nodes.[^planetscale-sharding-partitioning]
 
 [^planetscale-sharding-partitioning]: See PlanetScale's [Sharding vs. partitioning: What's the difference?](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference).
 
@@ -27,8 +26,8 @@ Sharding and partitioning both split one logical dataset into smaller pieces so 
     height={720}
   />
   <figcaption>
-    Partitioning divides data inside one database instance; sharding puts shards
-    on separate database instances.[^pingcap-sharding-diagram]
+    Partitioning divides data inside one database engine; sharding puts shards
+    on separate storage nodes.[^pingcap-sharding-diagram]
   </figcaption>
 </figure>
 
@@ -36,7 +35,7 @@ Sharding and partitioning both split one logical dataset into smaller pieces so 
 
 ## Sharding
 
-Sharding spreads one logical dataset across multiple independent database instances, so storage and write load can grow past what one machine can handle. Each shard is a normal database with its own disk and compute, and nothing is shared.
+Sharding spreads one logical dataset across multiple independent storage nodes, so storage and write load can grow past what one node can handle. Each shard is an ownership boundary with its own disk and compute path.
 
 ### Choosing a shard key
 
@@ -66,7 +65,7 @@ The hard part of sharding is any operation that spans shards. A query without th
 
 ## Partitioning
 
-Partitioning makes the opposite tradeoff: it stays on one machine and asks the database engine to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html), [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html), and [TiDB partitioned tables](https://docs.pingcap.com/tidb/stable/partitioned-table/) all offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
+Partitioning makes the opposite tradeoff: it keeps one logical table under one database engine and asks that engine to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html), [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html), and [TiDB partitioned tables](https://docs.pingcap.com/tidb/stable/partitioned-table/) all offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
 
 ```sql
 CREATE TABLE events (
@@ -89,14 +88,71 @@ The payoff for a good key is [_partition pruning_](https://www.postgresql.org/do
 
 ## Conclusion
 
-Sharding and partitioning both route rows by key. A partition key groups rows inside one database so the engine can route writes and skip irrelevant chunks. A shard key chooses which independent storage node owns the row or request.[^row-routing]
+Sharding and partitioning both route rows by key. A partition key groups rows inside one database engine so the engine can route writes and skip irrelevant chunks. A shard key chooses which independent storage owner gets the row or request.[^row-routing]
 
-| Pattern                | Key                | Reason                                                                                                                                                    |
-| ---------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Merchant SaaS          | `shop_id`          | In Shopify's shop-owned tables, `shop_id` identifies the shop; shard balancing moves rows for that shop to another shard.[^shopify-shop-id]               |
-| Multi-tenant SaaS      | `tenant_id`        | The Citus tenant example distributes tenant tables by `tenant_id`, keeping same-tenant joins on one worker.[^citus-tenant-id]                             |
-| DM search              | `user_id`          | Discord reindexed direct messages by `user_id`, so cross-DM search can target one user's messages instead of every conversation.[^discord-message-search] |
-| Warehouse partitioning | `transaction_date` | BigQuery can prune partitions when a query filters the `transaction_date` partition key, so date filters scan less data.[^bigquery-partition-pruning]     |
+<table className="key-example-table">
+  <thead>
+    <tr>
+      <th scope="col">Pattern</th>
+      <th scope="col">Key</th>
+      <th scope="col">Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th data-label="Pattern" scope="row">
+        Merchant SaaS
+      </th>
+      <td data-label="Key">
+        <code>shop_id</code>
+      </td>
+      <td data-label="Reason">
+        In Shopify's shop-owned tables, <code>shop_id</code> identifies the
+        shop; shard balancing moves rows for that shop to another
+        shard.[^shopify-shop-id]
+      </td>
+    </tr>
+    <tr>
+      <th data-label="Pattern" scope="row">
+        Multi-tenant SaaS
+      </th>
+      <td data-label="Key">
+        <code>tenant_id</code>
+      </td>
+      <td data-label="Reason">
+        The Citus tenant example distributes tenant tables by{" "}
+        <code>tenant_id</code>, keeping same-tenant joins on one
+        worker.[^citus-tenant-id]
+      </td>
+    </tr>
+    <tr>
+      <th data-label="Pattern" scope="row">
+        DM search
+      </th>
+      <td data-label="Key">
+        <code>user_id</code>
+      </td>
+      <td data-label="Reason">
+        Discord reindexed direct messages by <code>user_id</code>, so cross-DM
+        search can target one user's messages instead of every
+        conversation.[^discord-message-search]
+      </td>
+    </tr>
+    <tr>
+      <th data-label="Pattern" scope="row">
+        Warehouse partitioning
+      </th>
+      <td data-label="Key">
+        <code>transaction_date</code>
+      </td>
+      <td data-label="Reason">
+        BigQuery can prune partitions when a query filters the{" "}
+        <code>transaction_date</code> partition key, so date filters scan less
+        data.[^bigquery-partition-pruning]
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 Choose keys that appear in filters or joins, have high cardinality, avoid skew, and colocate rows queried together. Use time keys for pruning or retention; use entity keys when distributing time-series data. Avoid low-cardinality distribution keys such as a three-value `status` column.[^key-checklist]
 
