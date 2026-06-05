@@ -821,7 +821,7 @@ export function ConsistentHashingAddNodeDemo() {
 
 export function ShardKeyRangeHashDemo() {
   const boardRef = useRef<HTMLDivElement>(null);
-  const { playing, selectStep, stepIndex, togglePlaying } = usePausableAutoplay(
+  const { selectStep, stepIndex } = usePausableAutoplay(
     SHARD_KEY_STRATEGIES.length,
     SHARD_KEY_STRATEGY_INTERVAL_MS,
   );
@@ -896,14 +896,6 @@ export function ShardKeyRangeHashDemo() {
             </button>
           ))}
         </div>
-        <button
-          aria-pressed={playing}
-          className="sp-playback-button"
-          onClick={togglePlaying}
-          type="button"
-        >
-          {playing ? "Pause" : "Resume"}
-        </button>
       </div>
 
       <div className="sp-query-panel">
@@ -1074,7 +1066,7 @@ export function HotTenantShardDemo() {
 }
 
 export function QueryPlannerPruningDemo() {
-  const { playing, selectStep, stepIndex, togglePlaying } = usePausableAutoplay(
+  const { selectStep, stepIndex } = usePausableAutoplay(
     QUERY_SCENARIOS.length,
     2600,
   );
@@ -1107,14 +1099,6 @@ export function QueryPlannerPruningDemo() {
             </button>
           ))}
         </div>
-        <button
-          aria-pressed={playing}
-          className="sp-playback-button"
-          onClick={togglePlaying}
-          type="button"
-        >
-          {playing ? "Pause" : "Resume"}
-        </button>
       </div>
 
       <div className="sp-query-panel">
@@ -1148,7 +1132,7 @@ export function QueryPlannerPruningDemo() {
 }
 
 export function BadPartitionKeyDemo() {
-  const { playing, selectStep, stepIndex, togglePlaying } = usePausableAutoplay(
+  const { selectStep, stepIndex } = usePausableAutoplay(
     PARTITION_KEY_SCENARIOS.length,
     3000,
   );
@@ -1190,14 +1174,6 @@ export function BadPartitionKeyDemo() {
             </button>
           ))}
         </div>
-        <button
-          aria-pressed={playing}
-          className="sp-playback-button"
-          onClick={togglePlaying}
-          type="button"
-        >
-          {playing ? "Pause" : "Resume"}
-        </button>
       </div>
 
       <div className="sp-skew-bars" aria-label={`${scenario.label} partitions`}>
@@ -1386,13 +1362,11 @@ function usePausableAutoplay(count: number, intervalMs: number) {
   }, [count, intervalMs, playing]);
 
   return {
-    playing,
     selectStep: (index: number) => {
       setStepIndex(normalizeIndex(index, count));
       setPlaying(false);
     },
     stepIndex,
-    togglePlaying: () => setPlaying((currentPlaying) => !currentPlaying),
   };
 }
 

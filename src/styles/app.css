@@ -5554,8 +5554,7 @@
     margin-block-end: 0;
   }
 
-  .sp-query-tab,
-  .sp-playback-button {
+  .sp-query-tab {
     position: relative;
     isolation: isolate;
     padding: 7px 10px;
@@ -5589,14 +5588,7 @@
     transform-origin: center;
   }
 
-  .sp-playback-button {
-    min-inline-size: 86px;
-    background: var(--sp-blue-dark);
-    color: white;
-  }
-
-  .sp-query-tab:active,
-  .sp-playback-button:active {
+  .sp-query-tab:active {
     transform: scale(0.97);
   }
 
@@ -5604,11 +5596,6 @@
     .sp-query-tab:hover {
       border-color: rgb(47 105 240 / 45%);
       color: var(--sp-blue-dark);
-      transform: translateY(-1px);
-    }
-
-    .sp-playback-button:hover {
-      background: var(--sp-blue);
       transform: translateY(-1px);
     }
   }
@@ -5964,23 +5951,14 @@
       justify-content: flex-start;
     }
 
-    .sp-query-controls {
-      align-items: stretch;
-    }
-
     .sp-query-controls .sp-query-tabs {
       flex-basis: 100%;
     }
 
-    .sp-query-tab,
-    .sp-playback-button {
+    .sp-query-tab {
       min-block-size: 34px;
       padding: 7px 9px;
       font-size: 12px;
-    }
-
-    .sp-playback-button {
-      flex: 1 1 92px;
     }
 
     .sp-query-panel {
@@ -6024,6 +6002,18 @@
       gap: 7px;
     }
 
+    .sp-query-tabs,
+    .sp-query-controls .sp-query-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-block-end: 2px;
+      scrollbar-width: none;
+    }
+
+    .sp-query-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
     .sp-hot-tenant-demo .sp-traffic-presets {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6035,19 +6025,16 @@
     }
 
     .sp-pruning-demo .sp-query-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
       inline-size: 100%;
     }
 
-    .sp-query-tab,
-    .sp-playback-button {
-      inline-size: 100%;
-      white-space: normal;
-    }
-
-    .sp-pruning-demo .sp-playback-button {
-      flex-basis: 100%;
+    .sp-query-tab {
+      flex: 0 0 auto;
+      inline-size: auto;
+      min-block-size: 30px;
+      padding: 6px 8px;
+      font-size: 11px;
+      white-space: nowrap;
     }
 
     .sp-partition-row {
@@ -6104,7 +6091,6 @@
     .post-content .sp-step-list > li,
     .sp-query-tab,
     .sp-traffic-preset,
-    .sp-playback-button,
     .sp-partition-card,
     .sp-ring-add-key,
     .sp-ring-add-table > div,
