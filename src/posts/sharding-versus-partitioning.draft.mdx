@@ -60,7 +60,7 @@ Even with hashing, skew can concentrate load on one shard. A [_hotspot_](https:/
 
 ### Crossing shards
 
-The hard part of sharding is any operation that spans shards. A query without the shard key becomes a scatter/gather across every shard. A transaction across shards needs a [distributed commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) to stay atomic, and [resharding](https://vitess.io/docs/concepts/shard/) a live cluster is one of the hardest things to run. [Consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) lowers the rebalancing cost by moving only about 1/n of the keys when you add a node.
+The hard part of sharding is any operation that spans shards. A query without the shard key becomes a scatter/gather across every shard. A transaction across shards needs a [distributed commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) to stay atomic, and [resharding](https://vitess.io/docs/concepts/shard/) a live cluster is one of the hardest things to run. [Consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) lowers the rebalancing cost by moving roughly the new node's share of keys when you add capacity.
 
 <ConsistentHashingRingCanvasDemo />
 

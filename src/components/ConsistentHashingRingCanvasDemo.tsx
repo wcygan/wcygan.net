@@ -44,7 +44,7 @@ const HASH_RING_MIN_KEY_COUNT = 12;
 const HASH_RING_DEFAULT_KEY_COUNT = 28;
 const HASH_RING_MAX_KEY_COUNT = 60;
 const HASH_RING_MIN_NODE_COUNT = 3;
-const HASH_RING_DEFAULT_NODE_COUNT = 4;
+const HASH_RING_DEFAULT_NODE_COUNT = HASH_RING_MIN_NODE_COUNT;
 const HASH_RING_MAX_NODE_COUNT = 7;
 const HASH_RING_VIRTUAL_TOKEN_COUNT = 2;
 const GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
@@ -81,8 +81,8 @@ export function ConsistentHashingRingCanvasDemo() {
   );
   const note =
     nodeCount === HASH_RING_MIN_NODE_COUNT
-      ? "Three nodes is the baseline ring. Increase the node count to see which keys change owners."
-      : `The ring now has ${nodeCount} nodes. Red keys changed owners relative to the three-node baseline.`;
+      ? "Three nodes is the baseline ring. Increase the node count to add one more node."
+      : `The ring now has ${nodeCount} nodes. Red keys changed owners when the latest node was added.`;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -134,7 +134,7 @@ export function ConsistentHashingRingCanvasDemo() {
       <DemoHeader
         eyebrow="Crossing shards"
         title="Consistent Hashing Ring"
-        copy="Start with three nodes, then add up to seven. Key positions stay fixed; red keys are the ones whose next clockwise token changes owner."
+        copy="Start with three nodes, then add up to seven. Key positions stay fixed; red keys are the ones whose next clockwise token changed when the latest node was added."
       />
 
       <div
@@ -151,7 +151,7 @@ export function ConsistentHashingRingCanvasDemo() {
         <div className="sp-hash-ring-controls">
           <div className="sp-hash-ring-metrics" aria-live="polite">
             <div>
-              <span>Moved keys</span>
+              <span>Moved on add</span>
               <strong>
                 {metrics.movedCount} of {metrics.keyCount}
               </strong>
@@ -310,8 +310,12 @@ function deriveHashRingModel(
     y: view.cssHeight * 0.43,
   };
   const radius = Math.min(view.cssWidth * 0.31, view.cssHeight * 0.3, 172);
-  const baselineTokens = buildHashRingTokens(
+  const previousNodeCount = Math.max(
     HASH_RING_MIN_NODE_COUNT,
+    state.nodeCount - 1,
+  );
+  const previousTokens = buildHashRingTokens(
+    previousNodeCount,
     HASH_RING_VIRTUAL_TOKEN_COUNT,
   );
   const currentTokens = buildHashRingTokens(
@@ -320,7 +324,7 @@ function deriveHashRingModel(
   );
   const keys = Array.from({ length: state.keyCount }, (_, index) => {
     const hash = sampleKeyHash(index);
-    const beforeOwner = ownerForHash(baselineTokens, hash).node;
+    const beforeOwner = ownerForHash(previousTokens, hash).node;
     const afterOwner = ownerForHash(currentTokens, hash).node;
 
     return {
@@ -479,7 +483,7 @@ function drawHashRingCenterLabel(
   const detail =
     state.nodeCount === HASH_RING_MIN_NODE_COUNT
       ? "keys use A, B, C tokens"
-      : "red keys changed owner";
+      : "red keys moved on add";
 
   const titleFontSize = clampNumber(model.radius * 0.08, 12, 14);
   const detailFontSize = clampNumber(model.radius * 0.074, 11, 13);
