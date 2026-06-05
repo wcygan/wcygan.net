@@ -5362,7 +5362,7 @@
 
   .sp-hash-ring-workbench {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 286px;
+    grid-template-columns: minmax(0, 1fr) 232px;
     gap: 14px;
     align-items: stretch;
   }
@@ -5388,22 +5388,15 @@
   }
 
   .sp-hash-ring-metrics {
-    position: absolute;
-    inset-inline: 14px;
-    inset-block-end: 14px;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
-    pointer-events: none;
   }
 
   .sp-hash-ring-metrics > div {
     padding: 9px 10px;
     border: 1px solid rgb(217 222 234 / 84%);
     border-radius: 7px;
-    background: rgb(255 255 255 / 88%);
-    box-shadow: 0 8px 18px rgb(23 32 51 / 7%);
-    backdrop-filter: blur(8px);
+    background: rgb(255 255 255 / 72%);
   }
 
   .sp-hash-ring-metrics span {
@@ -5427,44 +5420,30 @@
   .sp-hash-ring-controls {
     display: grid;
     align-content: start;
+    gap: 14px;
     padding: 14px;
   }
 
-  .sp-hash-ring-button-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    margin-block-end: 12px;
-  }
-
-  .sp-hash-ring-button-row .sp-query-tab,
-  .sp-hash-ring-button-row .sp-playback-button {
-    min-block-size: 38px;
-    inline-size: 100%;
-  }
-
-  .sp-hash-ring-control,
-  .sp-hash-ring-layers {
+  .sp-hash-ring-control {
     display: grid;
     gap: 8px;
     margin: 0;
-    padding: 12px 0;
-    border: 0;
-    border-block-start: 1px solid var(--sp-line);
   }
 
   .sp-hash-ring-control > span {
     display: flex;
+    gap: 8px;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
     color: var(--sp-muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 900;
     line-height: 1.2;
   }
 
   .sp-hash-ring-control strong {
     color: var(--sp-ink);
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
 
@@ -5473,79 +5452,24 @@
     margin: 0;
     accent-color: var(--sp-blue-dark);
     cursor: pointer;
-    transition: filter 140ms var(--sp-ease-feedback);
   }
 
-  .sp-hash-ring-control input[type="range"]:active {
-    filter: saturate(1.18);
-  }
-
-  .sp-hash-ring-layers {
-    gap: 10px;
-  }
-
-  .sp-hash-ring-layers legend {
-    margin-block-end: 1px;
-    padding: 0;
-    color: var(--sp-muted);
-    font-size: 12px;
-    font-weight: 900;
-    line-height: 1.2;
-  }
-
-  .sp-hash-ring-layers label {
+  .sp-hash-ring-control > i {
     display: flex;
-    gap: 9px;
-    align-items: center;
-    color: var(--sp-ink);
-    font-size: 12px;
+    justify-content: space-between;
+    color: rgb(92 102 122 / 72%);
+    font-size: 10px;
+    font-style: normal;
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1;
   }
 
-  .sp-hash-ring-layers input {
-    inline-size: 15px;
-    block-size: 15px;
-    flex: 0 0 auto;
+  .post-content .sp-hash-ring-note {
     margin: 0;
-    accent-color: var(--sp-blue-dark);
-  }
-
-  .sp-hash-ring-legend {
-    display: grid;
-    gap: 7px;
-    padding-block-start: 12px;
-    border-block-start: 1px solid var(--sp-line);
     color: var(--sp-muted);
     font-size: 12px;
     font-weight: 800;
-    line-height: 1.25;
-  }
-
-  .sp-hash-ring-legend span {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .sp-hash-ring-swatch {
-    inline-size: 12px;
-    block-size: 12px;
-    border-radius: 999px;
-    background: var(--sp-blue);
-  }
-
-  .sp-hash-ring-swatch-key {
-    background: conic-gradient(
-      var(--sp-blue) 0 25%,
-      var(--sp-red) 0 50%,
-      var(--sp-green) 0 75%,
-      var(--sp-gold) 0 100%
-    );
-  }
-
-  .sp-hash-ring-swatch-move {
-    background: var(--sp-red);
+    line-height: 1.45;
   }
 
   .sp-query-controls {
@@ -5929,15 +5853,15 @@
     }
 
     .sp-hash-ring-stage {
-      min-block-size: 400px;
+      min-block-size: 360px;
     }
 
     .sp-hash-ring-stage canvas {
-      min-block-size: 400px;
+      min-block-size: 360px;
     }
 
     .sp-hash-ring-controls {
-      display: none;
+      display: grid;
     }
 
     .sp-token-ring {
@@ -6076,25 +6000,29 @@
     }
 
     .sp-hash-ring-stage {
-      display: flex;
       min-block-size: 0;
-      flex-direction: column;
     }
 
     .sp-hash-ring-stage canvas {
-      block-size: 370px;
-      min-block-size: 370px;
-      flex: 0 0 auto;
+      block-size: min(330px, 84vw);
+      min-block-size: 300px;
     }
 
     .sp-hash-ring-metrics {
-      position: static;
-      grid-template-columns: 1fr;
-      padding: 0 12px 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
     }
 
-    .sp-hash-ring-button-row {
-      grid-template-columns: 1fr;
+    .sp-hash-ring-metrics > div {
+      padding: 8px 7px;
+    }
+
+    .sp-hash-ring-metrics span {
+      font-size: 10px;
+    }
+
+    .sp-hash-ring-metrics strong {
+      font-size: 12px;
     }
   }
 
