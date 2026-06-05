@@ -15,7 +15,7 @@ import {
 } from "~/components/ShardingPartitioningDemos";
 import { ConsistentHashingRingCanvasDemo } from "~/components/ConsistentHashingRingCanvasDemo";
 
-Sharding and partitioning are easy to conflate. The simplest distinction is that partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.[^planetscale-sharding-partitioning]
+Sharding and partitioning both split one logical dataset into smaller pieces so the database can route work to a narrower slice of data. They are easy to conflate; the simplest distinction is that partitioning splits a table inside one database instance, while sharding spreads data across multiple independent instances.[^planetscale-sharding-partitioning]
 
 [^planetscale-sharding-partitioning]: See PlanetScale's [Sharding vs. partitioning: What's the difference?](https://planetscale.com/blog/sharding-vs-partitioning-whats-the-difference).
 
@@ -38,6 +38,12 @@ Sharding and partitioning are easy to conflate. The simplest distinction is that
 
 Sharding spreads one logical dataset across multiple independent database instances, so storage and write load can grow past what one machine can handle. Each shard is a normal database with its own disk and compute, and nothing is shared.
 
+### Choosing a shard key
+
+The shard key decides how evenly data spreads and which queries can be served by a single shard. Range sharding keeps adjacent keys together, so range scans stay on one shard, but a busy range can overload one instance. Hash sharding scatters keys evenly and avoids hotspots from monotonic keys, but a range query then has to fan out to every shard.
+
+<ShardKeyRangeHashDemo />
+
 ### Routing requests
 
 Because the data lives in different places, something has to decide where each row goes. That decision comes from a _shard key_: the column whose value maps a row to the instance that owns it. A routing layer turns the key into a connection, either inside the application or in a proxy that speaks the database protocol, like [Vitess's VTGate](https://vitess.io/docs/concepts/vtgate/) for MySQL or [Citus's coordinator](https://docs.citusdata.com/en/stable/sharding/data_modeling.html) for Postgres.
@@ -45,12 +51,6 @@ Because the data lives in different places, something has to decide where each r
 The application issues a normal query, and the router sends it to the shard that owns the row.
 
 <ShardRequestRouterDemo />
-
-### Choosing a shard key
-
-The shard key decides how evenly data spreads and which queries can be served by a single shard. Range sharding keeps adjacent keys together, so range scans stay on one shard, but a busy range can overload one instance. Hash sharding scatters keys evenly and avoids hotspots from monotonic keys, but a range query then has to fan out to every shard.
-
-<ShardKeyRangeHashDemo />
 
 ### Hot shards
 
@@ -66,7 +66,7 @@ The hard part of sharding is any operation that spans shards. A query without th
 
 ## Partitioning
 
-Partitioning makes the opposite tradeoff: it stays on one machine and asks the engine, not a router, to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html), [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html), and [TiDB partitioned tables](https://docs.pingcap.com/tidb/stable/partitioned-table/) all offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
+Partitioning makes the opposite tradeoff: it stays on one machine and asks the database engine to do the splitting. It is declarative, so you tell the engine the partition key and method and it routes rows and rewrites queries for you. [PostgreSQL declarative partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html), [MySQL partitioning](https://dev.mysql.com/doc/refman/8.0/en/partitioning.html), and [TiDB partitioned tables](https://docs.pingcap.com/tidb/stable/partitioned-table/) all offer RANGE for an ordered key like a date, LIST for an explicit set of values, and HASH for even spread when no natural range exists.
 
 ```sql
 CREATE TABLE events (

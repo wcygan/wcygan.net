@@ -5891,6 +5891,10 @@
       min-block-size: 400px;
     }
 
+    .sp-hash-ring-controls {
+      display: none;
+    }
+
     .sp-token-ring {
       min-block-size: 220px;
     }
@@ -6344,6 +6348,9 @@ pre:not(.shiki) code {
   border-radius: 0;
   color: #5a3a1a;
   overflow: hidden;
+  /* The generated 100-column frame is centered, but the colored glyph mass
+     reads left-heavy in the panel. Nudge the grid to center the visible art. */
+  transform: translateX(8ch);
   -webkit-font-smoothing: antialiased;
 }
 

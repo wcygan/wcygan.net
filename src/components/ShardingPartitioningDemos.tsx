@@ -58,9 +58,9 @@ type RouterLayout = {
 };
 
 const SHARDS: readonly Shard[] = [
-  { id: "a", label: "Shard A", range: "tenant 001-299", x: 470, y: 72 },
-  { id: "b", label: "Shard B", range: "tenant 300-699", x: 470, y: 190 },
-  { id: "c", label: "Shard C", range: "tenant 700-999", x: 470, y: 308 },
+  { id: "a", label: "Shard A", range: "tenant 001-299", x: 470, y: 92 },
+  { id: "b", label: "Shard B", range: "tenant 300-699", x: 470, y: 210 },
+  { id: "c", label: "Shard C", range: "tenant 700-999", x: 470, y: 328 },
 ];
 
 const SHARD_IDS = SHARDS.map((shard) => shard.id);
@@ -251,6 +251,8 @@ const SHARD_KEY_STRATEGIES: readonly {
     summary: "Tenant IDs scatter evenly, so this range query fans out.",
   },
 ];
+
+const SHARD_KEY_STRATEGY_INTERVAL_MS = 3000;
 
 const SHARD_KEY_LANES: readonly {
   id: ShardId;
@@ -819,7 +821,15 @@ export function ConsistentHashingAddNodeDemo() {
 
 export function ShardKeyRangeHashDemo() {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [strategy, setStrategy] = useState<ShardKeyStrategy>("range");
+  const { playing, selectStep, stepIndex, togglePlaying } = usePausableAutoplay(
+    SHARD_KEY_STRATEGIES.length,
+    SHARD_KEY_STRATEGY_INTERVAL_MS,
+  );
+  const activeStrategy =
+    SHARD_KEY_STRATEGIES[
+      normalizeIndex(stepIndex, SHARD_KEY_STRATEGIES.length)
+    ] ?? SHARD_KEY_STRATEGIES[0];
+  const strategy = activeStrategy.id;
   const placedRows = SHARD_KEY_ROWS.map((row) => ({
     ...row,
     highlighted: rowIsInShardKeyRange(row),
@@ -831,9 +841,6 @@ export function ShardKeyRangeHashDemo() {
   const touchedShardLabels = SHARD_KEY_LANES.filter((lane) =>
     touchedShardIds.has(lane.id),
   ).map((lane) => lane.label);
-  const activeStrategy =
-    SHARD_KEY_STRATEGIES.find((item) => item.id === strategy) ??
-    SHARD_KEY_STRATEGIES[0];
   const laneGroups = SHARD_KEY_LANES.map((lane) => {
     const rows = placedRows.filter((row) => row.shardId === lane.id);
 
@@ -877,18 +884,26 @@ export function ShardKeyRangeHashDemo() {
           role="tablist"
           aria-label="Shard key strategy"
         >
-          {SHARD_KEY_STRATEGIES.map((item) => (
+          {SHARD_KEY_STRATEGIES.map((item, index) => (
             <button
               aria-selected={item.id === strategy}
               className="sp-query-tab"
               key={item.id}
-              onClick={() => setStrategy(item.id)}
+              onClick={() => selectStep(index)}
               type="button"
             >
               {item.label}
             </button>
           ))}
         </div>
+        <button
+          aria-pressed={playing}
+          className="sp-playback-button"
+          onClick={togglePlaying}
+          type="button"
+        >
+          {playing ? "Pause" : "Resume"}
+        </button>
       </div>
 
       <div className="sp-query-panel">
