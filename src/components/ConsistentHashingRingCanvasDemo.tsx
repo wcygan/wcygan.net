@@ -481,14 +481,72 @@ function drawHashRingCenterLabel(
       ? "keys use A, B, C tokens"
       : "red keys changed owner";
 
-  drawHashRingLabel(context, title, model.center.x, model.center.y, "#172033");
-  drawHashRingLabel(
+  const titleFontSize = clampNumber(model.radius * 0.08, 12, 14);
+  const detailFontSize = clampNumber(model.radius * 0.074, 11, 13);
+  const maxLineWidth = model.radius * 1.34;
+  const detailLines = wrapHashRingLabelText(
     context,
     detail,
-    model.center.x,
-    model.center.y + 23,
-    "#5c667a",
+    maxLineWidth,
+    detailFontSize,
   );
+  const lineHeight = Math.max(16, detailFontSize + 5);
+  const lines = [
+    {
+      color: "#172033",
+      fontSize: titleFontSize,
+      text: title,
+    },
+    ...detailLines.map((text) => ({
+      color: "#5c667a",
+      fontSize: detailFontSize,
+      text,
+    })),
+  ];
+  const totalHeight = titleFontSize + detailLines.length * lineHeight;
+  let y = model.center.y - totalHeight / 2 + titleFontSize / 2;
+
+  lines.forEach((line, index) => {
+    drawHashRingLabel(
+      context,
+      line.text,
+      model.center.x,
+      y,
+      line.color,
+      line.fontSize,
+    );
+    y += index === 0 ? lineHeight + 2 : lineHeight;
+  });
+}
+
+function wrapHashRingLabelText(
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxLineWidth: number,
+  fontSize: number,
+) {
+  context.save();
+  context.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
+
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  words.forEach((word) => {
+    const candidate = currentLine ? `${currentLine} ${word}` : word;
+
+    if (currentLine && context.measureText(candidate).width > maxLineWidth) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = candidate;
+    }
+  });
+
+  if (currentLine) lines.push(currentLine);
+  context.restore();
+
+  return lines;
 }
 
 function drawHashRingLabel(
@@ -497,14 +555,19 @@ function drawHashRingLabel(
   x: number,
   y: number,
   color: string,
-  align: CanvasTextAlign = "center",
+  fontSize: number,
 ) {
   context.save();
-  context.font = "700 14px Inter, system-ui, sans-serif";
+  context.font = `700 ${fontSize}px Inter, system-ui, sans-serif`;
   context.fillStyle = color;
-  context.textAlign = align;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
   context.fillText(text, x, y);
   context.restore();
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function sampleKeyHash(index: number) {
