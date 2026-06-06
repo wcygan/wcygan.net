@@ -1,0 +1,15 @@
+---
+title: N+1 Query Problem (SQL)
+date: June 6, 2026
+description: A short note on how one parent query can accidentally become many child queries.
+tags: [Data, Databases]
+---
+
+The N+1 SQL query problem shows up when application code asks for a list of
+records, then loops through that list and runs another query for each row,
+performing 1 + N database round trips.
+
+The repeated trips, query execution, and result transfers usually cost more than one larger query the database can optimize. The issue can be resolved by using a `JOIN` to fetch the related rows in one pass before
+shaping them into the structure the application wants.[^planetscale-n-plus-one]
+
+[^planetscale-n-plus-one]: See PlanetScale's [What is the N+1 Query Problem and How to Solve it?](https://planetscale.com/blog/what-is-n-1-query-problem-and-how-to-solve-it).
