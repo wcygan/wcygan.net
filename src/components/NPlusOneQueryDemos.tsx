@@ -6,18 +6,15 @@ import {
   type ReactNode,
 } from "react";
 import {
-  buildQueryComparison,
   DEFAULT_RECORD_COUNT,
   deriveRoundTripSnapshot,
   REDUCED_MOTION_ROUND_TRIP_PROGRESS,
-  ROUND_TRIP_LOOP_MS,
-  type QueryPlan,
+  ROUND_TRIP_DURATION_MS,
   type RoundTripLaneSnapshot,
   type RoundTripPacket,
   type RoundTripSnapshot,
 } from "~/demos/n-plus-one-query/model";
 
-const comparison = buildQueryComparison(DEFAULT_RECORD_COUNT);
 const INITIAL_ROUND_TRIP_SNAPSHOT = deriveRoundTripSnapshot({ progress: 0 });
 
 const FLOW_VIEWBOX_WIDTH = 560;
@@ -33,10 +30,9 @@ export function NPlusOneQueryDemos() {
   return (
     <div
       className="n1-query-demo-stack"
-      aria-label="N plus one query versus batch query demos"
+      aria-label="N plus one query versus batch query demo"
     >
       <RoundTripTimelineDemo />
-      <QueryBudgetMeterDemo />
     </div>
   );
 }
@@ -57,9 +53,9 @@ function RoundTripTimelineDemo() {
             Reset
           </button>
         }
-        eyebrow="Demo 1"
-        title="Round trips for 10 records"
-        copy="Both paths want the same 10 records with related rows; watch how many records have actually arrived at the app."
+        eyebrow="Demo"
+        title="Round trips for 10 known order ids"
+        copy="The app already has the order ids; watch whether it asks for each order separately or sends one set lookup."
       />
 
       <div className="n1-round-trip-grid">
@@ -68,8 +64,10 @@ function RoundTripTimelineDemo() {
       </div>
 
       <figcaption className="n1-demo-status">
-        The N+1 path receives one record per database response; the batch path
-        jumps from 0 to 10 when the single batched response arrives.
+        The per-id path receives one order per database response; the batch path
+        jumps from 0 to 10 when the single set lookup returns. Per-id requests
+        use 25ms each; the batch lookup takes 35ms to account for extra database
+        work.
       </figcaption>
     </figure>
   );
@@ -104,10 +102,12 @@ function useRoundTripSnapshot(): {
     let startedAt = performance.now();
 
     const tick = (now: number) => {
-      const progress =
-        ((now - startedAt) % ROUND_TRIP_LOOP_MS) / ROUND_TRIP_LOOP_MS;
+      const progress = Math.min(1, (now - startedAt) / ROUND_TRIP_DURATION_MS);
       setSnapshot(deriveRoundTripSnapshot({ progress }));
-      frameId = window.requestAnimationFrame(tick);
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(tick);
+      }
     };
 
     const start = () => {
@@ -132,33 +132,6 @@ function useRoundTripSnapshot(): {
   }, [restartIndex]);
 
   return { reset, snapshot };
-}
-
-function QueryBudgetMeterDemo() {
-  return (
-    <figure className="n1-demo n1-budget-demo">
-      <DemoHeader
-        eyebrow="Demo 2"
-        title="Query budget meter"
-        copy="The output stays fixed at 10 records, while query count and estimated wait time change with the query shape."
-      />
-
-      <div className="n1-budget-input">
-        <span>Records wanted</span>
-        <strong>{comparison.recordCount}</strong>
-      </div>
-
-      <div className="n1-budget-grid">
-        <BudgetCard plan={comparison.nPlusOne} />
-        <BudgetCard plan={comparison.batch} />
-      </div>
-
-      <figcaption className="n1-demo-status">
-        Batching keeps the child lookup set-oriented: one query can return rows
-        for all 10 parent ids.
-      </figcaption>
-    </figure>
-  );
 }
 
 function DemoHeader({
@@ -200,18 +173,31 @@ function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
         <div>
           <h4>{snapshot.title}</h4>
         </div>
-        <strong>{snapshot.queryCount} queries</strong>
+        <strong>{formatQueryCount(snapshot.queryCount)}</strong>
       </div>
 
-      <div className="n1-fetched-counter" aria-label="Fetched records">
-        <strong>
-          {snapshot.fetchedRecords}/{snapshot.recordCount}
-        </strong>
-        <span>records fetched</span>
+      <div
+        className="n1-fetched-counter"
+        aria-label={`Fetched orders, ${snapshot.elapsedMs} milliseconds elapsed`}
+      >
+        <div className="n1-fetched-main">
+          <strong>
+            {snapshot.fetchedRecords}/{snapshot.recordCount}
+          </strong>
+          <span>orders fetched</span>
+        </div>
+        <time
+          className="n1-query-timer"
+          dateTime={`PT${(snapshot.elapsedMs / 1000).toFixed(3)}S`}
+          aria-label={`${snapshot.elapsedMs} milliseconds elapsed`}
+        >
+          {snapshot.elapsedMs}ms
+        </time>
       </div>
 
       <div
         className="n1-record-progress"
+        data-empty={snapshot.fetchedRecords === 0 ? "true" : "false"}
         style={{ "--n1-fetched-width": fetchedPercent } as CSSProperties}
         aria-hidden="true"
       >
@@ -238,7 +224,8 @@ function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
         <title>{snapshot.title} data-fetch animation</title>
         <desc>
           The application sends query requests to the database, and database
-          response packets increase the fetched record counter.
+          response packets increase the fetched order counter and elapsed query
+          timer.
         </desc>
 
         <line
@@ -318,66 +305,6 @@ function pointForPacket(packet: RoundTripPacket) {
   };
 }
 
-function BudgetCard({ plan }: { plan: QueryPlan }) {
-  return (
-    <section className="n1-budget-card" data-kind={plan.kind}>
-      <div className="n1-budget-card-header">
-        <h4>{plan.title}</h4>
-        <strong>{plan.queryCount} queries</strong>
-      </div>
-
-      <MeterRow
-        label="Database trips"
-        value={plan.queryCount}
-        max={comparison.maxQueryCount}
-        suffix=""
-      />
-      <MeterRow
-        label="Estimated wait"
-        value={plan.estimatedMs}
-        max={comparison.maxEstimatedMs}
-        suffix="ms"
-      />
-      <MeterRow
-        label="Records wanted"
-        value={plan.recordsWanted}
-        max={comparison.recordCount}
-        suffix=""
-      />
-    </section>
-  );
-}
-
-function MeterRow({
-  label,
-  max,
-  suffix,
-  value,
-}: {
-  label: string;
-  max: number;
-  suffix: string;
-  value: number;
-}) {
-  const width = `${Math.max(6, Math.min(100, (value / max) * 100))}%`;
-
-  return (
-    <div className="n1-meter-row">
-      <span>{label}</span>
-      <div
-        className="n1-meter-track"
-        role="meter"
-        aria-label={`${label}: ${value}${suffix}`}
-        aria-valuemin={0}
-        aria-valuemax={max}
-        aria-valuenow={value}
-      >
-        <span style={{ "--n1-meter-width": width } as CSSProperties} />
-      </div>
-      <strong>
-        {value}
-        {suffix}
-      </strong>
-    </div>
-  );
+function formatQueryCount(queryCount: number) {
+  return `${queryCount} ${queryCount === 1 ? "query" : "queries"}`;
 }

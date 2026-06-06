@@ -4584,8 +4584,7 @@
   }
 
   .post-content .n1-demo-header h3,
-  .post-content .n1-query-lane h4,
-  .post-content .n1-budget-card h4 {
+  .post-content .n1-query-lane h4 {
     margin: 0;
     color: var(--n1-ink);
     font-weight: 800;
@@ -4596,8 +4595,7 @@
     font-size: 22px;
   }
 
-  .post-content .n1-query-lane h4,
-  .post-content .n1-budget-card h4 {
+  .post-content .n1-query-lane h4 {
     font-size: 16px;
   }
 
@@ -4610,16 +4608,14 @@
     line-height: 1.45;
   }
 
-  .n1-round-trip-grid,
-  .n1-budget-grid {
+  .n1-round-trip-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
     gap: 14px;
   }
 
-  .n1-query-lane,
-  .n1-budget-card {
+  .n1-query-lane {
     display: grid;
     gap: 12px;
     min-inline-size: 0;
@@ -4632,28 +4628,24 @@
     padding: 12px;
   }
 
-  .n1-query-lane[data-kind="n-plus-one"],
-  .n1-budget-card[data-kind="n-plus-one"] {
+  .n1-query-lane[data-kind="n-plus-one"] {
     --n1-plan-color: var(--n1-red);
     --n1-plan-soft: var(--n1-red-soft);
   }
 
-  .n1-query-lane[data-kind="batch"],
-  .n1-budget-card[data-kind="batch"] {
+  .n1-query-lane[data-kind="batch"] {
     --n1-plan-color: var(--n1-green);
     --n1-plan-soft: var(--n1-green-soft);
   }
 
-  .n1-query-lane-summary,
-  .n1-budget-card-header {
+  .n1-query-lane-summary {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
   }
 
-  .n1-query-lane-summary strong,
-  .n1-budget-card-header strong {
+  .n1-query-lane-summary strong {
     flex: 0 0 auto;
     padding: 4px 8px;
     border-radius: 999px;
@@ -4671,8 +4663,9 @@
 
   .n1-fetched-counter {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     padding: 10px 12px;
     border: 1px solid var(--n1-line);
     border-radius: 8px;
@@ -4680,7 +4673,14 @@
     color: var(--n1-plan-color);
   }
 
-  .n1-fetched-counter strong {
+  .n1-fetched-main {
+    display: flex;
+    align-items: baseline;
+    min-inline-size: 0;
+    gap: 8px;
+  }
+
+  .n1-fetched-main strong {
     font-size: 26px;
     font-weight: 850;
     font-variant-numeric: tabular-nums;
@@ -4688,12 +4688,26 @@
     line-height: 1;
   }
 
-  .n1-fetched-counter span {
+  .n1-fetched-main span {
     color: var(--n1-muted);
     font-size: 12px;
     font-weight: 800;
     line-height: 1.2;
     text-transform: uppercase;
+  }
+
+  .n1-query-timer {
+    flex: 0 0 auto;
+    min-inline-size: 54px;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--n1-plan-color) 12%, rgb(255 255 255));
+    color: var(--n1-plan-color);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 850;
+    line-height: 1.2;
+    text-align: end;
   }
 
   .n1-record-progress {
@@ -4712,12 +4726,17 @@
     content: "";
     position: absolute;
     inset: 6px auto 6px 6px;
-    inline-size: calc(var(--n1-fetched-width) - 12px);
+    inline-size: max(0px, calc(var(--n1-fetched-width) - 12px));
     max-inline-size: calc(100% - 12px);
     border-radius: 999px;
     background: var(--n1-plan-color);
     opacity: 0.12;
     transition: inline-size 180ms var(--n1-ease);
+  }
+
+  .n1-record-progress[data-empty="true"]::before,
+  .n1-record-progress[data-empty="true"] span {
+    transition: none;
   }
 
   .n1-record-progress span {
@@ -4828,72 +4847,6 @@
     line-height: 1.35;
   }
 
-  .n1-budget-input {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    justify-self: start;
-    margin-block-end: 14px;
-    padding: 8px 10px;
-    border: 1px solid var(--n1-line);
-    border-radius: 8px;
-    background: var(--n1-panel);
-    color: var(--n1-muted);
-    font-size: 13px;
-    line-height: 1.2;
-  }
-
-  .n1-budget-input strong {
-    color: var(--n1-blue-dark);
-    font-size: 20px;
-    line-height: 1;
-  }
-
-  .n1-budget-card {
-    padding: 14px;
-  }
-
-  .n1-meter-row {
-    display: grid;
-    grid-template-columns: minmax(88px, 0.38fr) minmax(0, 1fr) 58px;
-    align-items: center;
-    gap: 8px;
-    min-block-size: 30px;
-  }
-
-  .n1-meter-row > span {
-    color: var(--n1-muted);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.2;
-  }
-
-  .n1-meter-track {
-    position: relative;
-    block-size: 10px;
-    min-inline-size: 0;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgb(226 232 240);
-  }
-
-  .n1-meter-track span {
-    display: block;
-    inline-size: var(--n1-meter-width);
-    block-size: 100%;
-    border-radius: inherit;
-    background: var(--n1-plan-color);
-    transition: inline-size 220ms var(--n1-ease);
-  }
-
-  .n1-meter-row > strong {
-    color: var(--n1-ink);
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.2;
-    text-align: end;
-  }
-
   .n1-demo-status {
     margin-block-start: 12px;
   }
@@ -4903,8 +4856,7 @@
       padding: 12px;
     }
 
-    .n1-round-trip-grid,
-    .n1-budget-grid {
+    .n1-round-trip-grid {
       grid-template-columns: 1fr;
     }
 
@@ -4918,7 +4870,7 @@
       font-size: 13px;
     }
 
-    .n1-fetched-counter strong {
+    .n1-fetched-main strong {
       font-size: 24px;
     }
   }
@@ -4932,29 +4884,21 @@
       align-items: flex-start;
     }
 
-    .n1-query-lane-summary,
-    .n1-budget-card-header {
+    .n1-query-lane-summary {
       display: grid;
     }
 
-    .n1-fetched-counter {
-      display: grid;
-      gap: 3px;
+    .n1-fetched-main {
+      gap: 6px;
     }
 
-    .n1-meter-row {
-      grid-template-columns: 1fr 52px;
-      gap: 6px 8px;
-    }
-
-    .n1-meter-track {
-      grid-column: 1 / -1;
-      grid-row: 2;
+    .n1-query-timer {
+      min-inline-size: 50px;
+      padding-inline: 6px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .n1-meter-track span,
     .n1-record-progress::before,
     .n1-record-progress span {
       transition: none;

@@ -1,52 +1,50 @@
 ---
 title: N+1 Query Problem (SQL)
 date: June 6, 2026
-description: A short note on how one parent query can accidentally become many child queries.
+description: A short note on how fetching known ids one at a time can accidentally become many SQL queries.
 tags: [Data, Databases]
 ---
 
 import { NPlusOneQueryDemos } from "~/components/NPlusOneQueryDemos";
 
-The N+1 SQL query problem shows up when application code asks for a list of
-records, then loops through that list and runs another query for each row,
-performing 1 + N database round trips.
+The classic N+1 query problem is one query to find a parent list, followed
+by N more queries for related rows. This demo assumes the order ids are already
+known: there is no extra user or parent fetch. If the app wants 10 orders and
+asks for them one by one, it performs 10 database round trips.
 
-The repeated trips, query execution, and result transfers usually cost more than one larger query the database can optimize. The issue can be resolved by using a `JOIN` to fetch the related rows in one pass before
+The repeated trips, query execution, and result transfers usually cost more than
+one larger query the database can optimize. When the ids are already known, the
+fix is often to ask for all of them in one `WHERE id IN (...)` query before
 shaping them into the structure the application wants.[^planetscale-n-plus-one]
 
 <NPlusOneQueryDemos />
 
-At a high level, the N+1 version moves the loop across the database boundary:
+At a high level, the inefficient version moves the loop across the database
+boundary:
 
 ```python
-def n_plus_one(db):
-    users = db.query("SELECT id, name FROM users LIMIT 10")
+def n_plus_one(db, order_ids):
+    orders = []
 
-    rows = []
-    for user in users:
-        orders = db.query(
-            "SELECT id, total FROM orders WHERE user_id = ?",
-            [user["id"]],
+    for order_id in order_ids:
+        order = db.query_one(
+            "SELECT id, total FROM orders WHERE id = ?",
+            [order_id],
         )
-        rows.append({**user, "orders": orders})
+        orders.append(order)
 
-    return rows
+    return orders
 ```
 
-The batched version keeps the same page shape, but asks for all related rows in
-one child query:
+The batched version keeps the same output shape, but asks for all 10 orders in
+one query:
 
 ```python
-def batch_query(db):
-    users = db.query("SELECT id, name FROM users LIMIT 10")
-    user_ids = [user["id"] for user in users]
-
-    orders = db.query(
-        "SELECT id, user_id, total FROM orders WHERE user_id IN (?)",
-        [user_ids],
+def batch_query(db, order_ids):
+    return db.query(
+        "SELECT id, total FROM orders WHERE id IN (?)",
+        [order_ids],
     )
-
-    return attach_orders(users, orders)
 ```
 
 [^planetscale-n-plus-one]: See PlanetScale's [What is the N+1 Query Problem and How to Solve it?](https://planetscale.com/blog/what-is-n-1-query-problem-and-how-to-solve-it).
