@@ -1,0 +1,230 @@
+---
+title: Reconciliation
+date: June 7, 2026
+description: A scheduled Airflow and Trino reconciliation job finds bad data, publishes repair events to Kafka, and lets an idempotent processor fix the online store.
+tags: [Data, Databases, Architecture]
+---
+
+Reconciliation is what you add when the online system can drift away from the
+data you trust.
+
+Suppose an application serves product search from OpenSearch. The source of
+truth lives elsewhere: product rows, inventory facts, moderation decisions, and
+catalog metadata eventually land in the warehouse. Most of the time, streaming
+updates keep the search index fresh enough.
+
+But "most of the time" is not a correctness guarantee. A bulk index request can
+partially fail. A consumer can skip a record because of a bad deploy. A manual
+backfill can rebuild an index from an incomplete snapshot. The search endpoint
+still responds quickly, but the answer can be wrong: a discontinued product is
+still searchable, a hidden product is visible, or a product document has an old
+category.
+
+The reconciliation pattern is:
+
+1. Schedule a job.
+2. Query trusted data to identify records in a bad state.
+3. Publish repair events to a log.
+4. Let an online processor apply each repair idempotently.
+
+In this version, [Airflow](https://airflow.apache.org/) owns the schedule,
+[Trino](https://trino.io/) identifies the bad records, [Kafka](https://kafka.apache.org/)
+holds the repair events, and an online processor reconciles the serving store.
+
+## The Boundary
+
+The important boundary is between detection and repair.
+
+Airflow and Trino are good at asking a broad question:
+
+> Which online records disagree with the trusted source as of this run?
+
+The online processor is good at applying a narrow command:
+
+> Reconcile product `42` to source version `1200`.
+
+Keeping those responsibilities separate makes the system easier to operate.
+The batch job can scan, join, and compare large datasets without being on the
+request path. The processor can use the same online write path, rate limits,
+idempotency checks, and retry behavior as other serving-store updates.
+
+## The Invariant
+
+Every repair event should name the entity, the source version that won, and the
+run that produced the decision.
+
+That gives the processor enough information to make retries safe. If Kafka
+delivers the same repair more than once, applying it again should either update
+the same document to the same version or become a no-op.
+
+```json
+{
+  "event_id": "recon-2026-06-07T09:00Z-product-42-v1200",
+  "run_id": "recon-2026-06-07T09:00Z",
+  "entity_type": "product",
+  "entity_id": 42,
+  "source_version": 1200,
+  "action": "reindex_product",
+  "reason": "search_document_stale"
+}
+```
+
+The event does not say "something might be wrong." It says exactly what the
+batch comparison found and which source version should be used for repair.
+
+## Finding Bad State
+
+The Airflow DAG runs on a schedule. Its Trino task compares trusted source data
+against a table that represents the online index. That online-index table might
+come from an exported snapshot, an audit table, or a connector that lets Trino
+query the serving store's metadata.
+
+```sql
+WITH source_products AS (
+  SELECT
+    product_id,
+    title,
+    category_id,
+    searchable,
+    version
+  FROM warehouse.catalog.products
+  WHERE updated_at < TIMESTAMP '2026-06-07 09:00:00 UTC'
+),
+search_documents AS (
+  SELECT
+    product_id,
+    title,
+    category_id,
+    searchable,
+    source_version
+  FROM online_snapshots.search_products
+)
+SELECT
+  source_products.product_id,
+  source_products.version AS source_version,
+  CASE
+    WHEN search_documents.product_id IS NULL THEN 'search_document_missing'
+    WHEN source_products.searchable = false THEN 'search_document_should_delete'
+    WHEN search_documents.source_version < source_products.version THEN 'search_document_stale'
+    WHEN search_documents.category_id <> source_products.category_id THEN 'search_document_wrong_category'
+  END AS reason
+FROM source_products
+LEFT JOIN search_documents
+  ON search_documents.product_id = source_products.product_id
+WHERE search_documents.product_id IS NULL
+   OR source_products.searchable = false
+   OR search_documents.source_version < source_products.version
+   OR search_documents.category_id <> source_products.category_id;
+```
+
+The query is intentionally boring. It turns a vague concern, "search might be
+stale," into a concrete list of product IDs and reasons.
+
+## Publishing Repairs
+
+Once Trino has identified bad records, the job publishes keyed events to a Kafka
+topic such as `product_search_repairs`.
+
+The key should be stable:
+
+```json
+{
+  "entity_type": "product",
+  "entity_id": 42
+}
+```
+
+The value should include enough context for the processor to repair and for an
+operator to audit the decision:
+
+```json
+{
+  "event_id": "recon-2026-06-07T09:00Z-product-42-v1200",
+  "run_id": "recon-2026-06-07T09:00Z",
+  "entity_type": "product",
+  "entity_id": 42,
+  "source_version": 1200,
+  "action": "reindex_product",
+  "reason": "search_document_stale",
+  "detected_at": "2026-06-07T09:03:14Z"
+}
+```
+
+There are two common ways to publish those records. Airflow can run a Python
+task that reads Trino results and produces Kafka messages. Or Trino can write
+directly to Kafka through its Kafka connector when the topic mapping is
+configured.
+
+Either way, the contract should assume at-least-once delivery. Retried jobs,
+producer retries, or repeated runs can publish the same repair again. That is
+fine if the processor is idempotent.
+
+## Idempotent Repair
+
+The online processor consumes repair events and applies them against the serving
+store. It should not blindly overwrite state. It should first read the current
+serving document, compare versions, and then decide whether work is still
+needed.
+
+```text
+consume repair event
+load source product by entity_id
+load current search document by entity_id
+
+if search_document.source_version >= repair.source_version:
+  mark repair as already applied
+  commit Kafka offset
+
+else:
+  rebuild search document from source product
+  write document with source_version = repair.source_version
+  commit Kafka offset
+```
+
+If the same repair event is delivered again, the processor reads the document,
+sees that `source_version >= 1200`, and exits without changing anything. If a
+newer repair already landed, the older repair cannot move the document
+backward.
+
+That is the heart of the pattern: the batch job can be retried, Kafka can
+redeliver, and the processor can restart without corrupting the serving store.
+
+## What To Measure
+
+A reconciliation job should produce small, countable facts:
+
+- how many records the Trino query checked;
+- how many repair events it produced;
+- how many events were published to Kafka;
+- how many repairs the processor applied;
+- how many repairs became no-ops because the store was already current;
+- how many repairs failed and need another retry.
+
+Those numbers make drift visible. Without them, the search service can stay
+healthy while the data inside it gets worse.
+
+## Where It Fits
+
+This pattern is useful when the system has a trusted analytical view and a fast
+online view:
+
+- product search indexes;
+- entitlement caches;
+- recommendation candidates;
+- denormalized account read models;
+- fraud or moderation decision stores;
+- catalog, inventory, or pricing serving tables.
+
+The same shape applies even if the tools change. Airflow could be another
+orchestrator. Trino could be Spark, Flink SQL, or a database query. Kafka could
+be another durable queue. The important idea is the boundary:
+
+> Batch identifies bad state; the log carries repair intent; the online
+> processor applies repairs idempotently.
+
+## References
+
+- [Trino: How to use Airflow with Trino](https://trino.io/blog/2022/07/13/how-to-use-airflow-to-schedule-trino-jobs.html)
+- [Apache Airflow: Trino provider](https://airflow.apache.org/docs/apache-airflow-providers-trino/stable/index.html)
+- [Trino: Kafka Connector](https://trino.io/docs/current/connector/kafka.html)
+- [Kafka: Log Compaction](https://kafka.apache.org/documentation/#compaction)

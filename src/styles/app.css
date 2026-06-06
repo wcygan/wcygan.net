@@ -4377,9 +4377,11 @@
   .sp-active-path {
     stroke: var(--sp-blue);
     stroke-width: 4;
-    transition:
-      d 260ms var(--sp-ease-in-out),
-      stroke 180ms var(--sp-ease-out);
+    transition: stroke 180ms var(--sp-ease-out);
+  }
+
+  .sp-lookup-path {
+    stroke: var(--sp-gold);
   }
 
   .sp-router-packet-dot {

@@ -7,7 +7,7 @@ import {
 import { drawOptimisticLockingRaceDemo } from "./render-canvas";
 import { resizeCanvas } from "./viewport";
 
-const LOOP_MS = 16000;
+const LOOP_MS = 22400;
 
 export type OptimisticLockingRaceDemoEngine = {
   start(): void;

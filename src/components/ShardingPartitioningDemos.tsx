@@ -385,6 +385,8 @@ export function ShardRequestRouterDemo() {
   const routerToShardPath = pathToShard(layout, selectedShard);
   const lookupProgress = easeInOutCubic(clamp(progress / 0.34));
   const shardProgress = easeInOutCubic(clamp((progress - 0.38) / 0.48));
+  const lookupActivePath = partialCubicPath(layout.clientPath, lookupProgress);
+  const shardActivePath = partialCubicPath(routerToShardPath, shardProgress);
   const lookupPacket = pointOnCubic(layout.clientPath, lookupProgress);
   const shardPacket = pointOnCubic(routerToShardPath, shardProgress);
   const lookupOpacity = progress < 0.5 ? 1 : 0;
@@ -408,9 +410,12 @@ export function ShardRequestRouterDemo() {
         <NetworkPlane layout={layout} />
         <path className="sp-passive-path" d={pathData(layout.clientPath)} />
         <path
-          className="sp-active-path"
-          d={pathData(routerToShardPath)}
-          pathLength="1"
+          className="sp-active-path sp-lookup-path"
+          d={pathData(lookupActivePath)}
+        />
+        <path
+          className="sp-active-path sp-query-path"
+          d={pathData(shardActivePath)}
         />
 
         <circle
@@ -1652,6 +1657,37 @@ function pathToShard(layout: RouterLayout, shard: Shard): CubicPath {
 
 function pathData(path: CubicPath) {
   return `M ${path.from.x} ${path.from.y} C ${path.controlA.x} ${path.controlA.y}, ${path.controlB.x} ${path.controlB.y}, ${path.to.x} ${path.to.y}`;
+}
+
+function partialCubicPath(path: CubicPath, t: number): CubicPath {
+  const progress = clamp(t);
+  const fromToControlA = lerpPoint(path.from, path.controlA, progress);
+  const controlAToControlB = lerpPoint(path.controlA, path.controlB, progress);
+  const controlBToEnd = lerpPoint(path.controlB, path.to, progress);
+  const firstInnerControl = lerpPoint(
+    fromToControlA,
+    controlAToControlB,
+    progress,
+  );
+  const secondInnerControl = lerpPoint(
+    controlAToControlB,
+    controlBToEnd,
+    progress,
+  );
+
+  return {
+    from: path.from,
+    controlA: fromToControlA,
+    controlB: firstInnerControl,
+    to: lerpPoint(firstInnerControl, secondInnerControl, progress),
+  };
+}
+
+function lerpPoint(start: Point, end: Point, progress: number): Point {
+  return {
+    x: start.x + (end.x - start.x) * progress,
+    y: start.y + (end.y - start.y) * progress,
+  };
 }
 
 function pointOnCubic(path: CubicPath, t: number): Point {
