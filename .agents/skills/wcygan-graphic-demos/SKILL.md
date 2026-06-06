@@ -29,6 +29,13 @@ agree with the concept being taught.
 - `references/ui-design.md`: Read when a demo needs a broader visual polish
   pass, interaction review, component feel audit, or concrete Before/After
   feedback on design details.
+- `references/canvas-rendering-lifecycle.md`: Read before implementing or
+  reviewing Canvas 2D renderers, `requestAnimationFrame` engines, DPR sizing,
+  offscreen/layered canvases, and frame cleanup.
+- `references/web-animation-techniques.md`: Read before choosing CSS
+  transitions, CSS animations, or the Web Animations API for demo UI motion.
+- `references/playwright-visual-verification.md`: Read before writing or running
+  Playwright screenshot checks for rendered article demos.
 
 ## Start Here
 
