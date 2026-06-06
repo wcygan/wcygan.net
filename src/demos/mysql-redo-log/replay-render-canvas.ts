@@ -5,7 +5,7 @@ import type {
   ReplayLogRecord,
   ReplaySnapshot,
 } from "./replay-model";
-import type { CanvasViewport } from "./viewport";
+import type { CanvasViewport } from "../shared/viewport";
 
 type Point = {
   x: number;

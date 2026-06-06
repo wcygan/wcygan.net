@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const LOOP_MS = 5200;
+const LOOP_MS = 10000;
 const WRITE_START_PHASE = 0.04;
 const WRITE_COMMIT_PHASE = 0.265;
 const WRITE_SETTLE_PHASE = 0.14;

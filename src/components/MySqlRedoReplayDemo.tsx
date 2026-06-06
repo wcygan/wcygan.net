@@ -25,7 +25,10 @@ export function MySqlRedoReplayDemo() {
   }, []);
 
   return (
-    <figure className="mysql-redo-replay-demo">
+    <figure
+      className="mysql-redo-replay-demo"
+      data-phase={replayPhase(snapshot)}
+    >
       <div className="mysql-redo-replay-header">
         <h2>High-level InnoDB redo replay</h2>
         <p>Logical cards stand in for lower-level page redo records.</p>
@@ -34,14 +37,19 @@ export function MySqlRedoReplayDemo() {
       <canvas
         ref={canvasRef}
         className="mysql-redo-replay-canvas"
+        role="img"
         aria-label="Animated high-level MySQL redo replay demo showing durable redo records after a checkpoint replayed in LSN order into recovered InnoDB state"
       />
 
-      <div className="mysql-redo-replay-footer">
-        <p className="mysql-redo-replay-status" aria-live="polite">
-          {snapshot.phaseLabel}
-        </p>
-      </div>
+      <figcaption className="mysql-redo-replay-status">
+        {snapshot.phaseLabel}
+      </figcaption>
     </figure>
   );
+}
+
+function replayPhase(snapshot: ReplaySnapshot) {
+  if (snapshot.appliedCount === 0) return "checkpoint";
+  if (snapshot.activeRecord === undefined) return "complete";
+  return "replay";
 }

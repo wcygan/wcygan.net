@@ -145,6 +145,7 @@ export function ConsistentHashingRingCanvasDemo() {
           <canvas
             aria-label="Consistent hashing ring diagram"
             ref={canvasRef}
+            role="img"
           />
         </div>
 

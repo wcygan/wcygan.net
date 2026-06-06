@@ -88,6 +88,9 @@ export function OptimisticLockingRaceDemo() {
               visibleState.workerBStatus === "committed",
               index,
             )}
+            aria-current={
+              step.phase === visibleState.phase ? "step" : undefined
+            }
           >
             <span>{step.label}</span>
           </li>

@@ -20,7 +20,7 @@
 // every frame is derived from one phase value, like CdcPropagationAnimation.
 import { useEffect, useRef } from "react";
 
-const LOOP_MS = 7600;
+const LOOP_MS = 11500;
 
 // Phase milestones (fractions of the loop). Each level shares one death time so
 // both siblings flip together; token travel fills the gap between two times.

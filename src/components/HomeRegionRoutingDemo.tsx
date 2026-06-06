@@ -74,6 +74,9 @@ export function HomeRegionRoutingDemo() {
               visibleState.phase as RoutingPhase,
               index,
             )}
+            aria-current={
+              step.phase === visibleState.phase ? "step" : undefined
+            }
           >
             <span>{step.label}</span>
           </li>

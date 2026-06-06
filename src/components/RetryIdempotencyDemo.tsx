@@ -56,7 +56,7 @@ export function RetryIdempotencyDemo() {
   }, []);
 
   return (
-    <figure className="retry-idempotency-demo">
+    <figure className="retry-idempotency-demo" data-phase={visibleState.phase}>
       <div className="retry-idempotency-header">
         <h2>Design for Idempotency</h2>
         <p>
@@ -86,11 +86,19 @@ export function RetryIdempotencyDemo() {
               visibleState.resolved,
               index,
             )}
+            aria-current={
+              step.phase === visibleState.phase && !visibleState.resolved
+                ? "step"
+                : undefined
+            }
           >
             <span>{step.label}</span>
           </li>
         ))}
       </ol>
+      <figcaption className="retry-idempotency-status">
+        {retryPhaseLabel(visibleState.phase, visibleState.resolved)}
+      </figcaption>
     </figure>
   );
 }
@@ -106,4 +114,22 @@ function stepState(currentPhase: RetryPhase, resolved: boolean, index: number) {
   }
   if (index === currentIndex) return "active";
   return "pending";
+}
+
+function retryPhaseLabel(currentPhase: RetryPhase, resolved: boolean) {
+  if (currentPhase === "send") {
+    return "Both activities send the first email request; only the stable-key path records a dedupe key.";
+  }
+
+  if (currentPhase === "crash") {
+    return "The Worker crashes after the provider responds, before Temporal records completion.";
+  }
+
+  if (currentPhase === "retry") {
+    return "Temporal retries the Activity. The stable key matches the first attempt; the blind retry has no key to match.";
+  }
+
+  return resolved
+    ? "The stable-key path stays at one delivered email, while the blind path sends a duplicate."
+    : "The provider is deciding whether the second request is a retry or a new send.";
 }

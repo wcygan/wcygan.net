@@ -21,7 +21,7 @@
 // canvas is a fixed-height portrait centered in the figure.
 import { useEffect, useRef } from "react";
 
-const LOOP_MS = 8600;
+const LOOP_MS = 14000;
 
 // Phase milestones (fractions of the loop).
 const WRITE_IN_START = 0.03; // UPDATE card drifts toward MySQL
@@ -150,12 +150,47 @@ type Frame = {
     progress: number;
     opacity: number;
   };
+  operation: {
+    visible: boolean;
+    label: "Produce" | "Consume";
+    opacity: number;
+    progress: number;
+  } | null;
   write: { visible: boolean; opacity: number; travel: number };
 };
 
 function pulseAt(at: number, phase: number) {
   const since = (phase - at) / PULSE_WINDOW;
   return since < 0 || since > 1 ? 0 : Math.sin(since * Math.PI);
+}
+
+function operationForPhase(phase: number, reset: number): Frame["operation"] {
+  if (reset > 0) return null;
+
+  const operations = [
+    { label: "Produce" as const, start: ARRIVALS[1], end: ARRIVALS[2] },
+    { label: "Consume" as const, start: ARRIVALS[2], end: ARRIVALS[3] },
+  ];
+
+  const active = operations.find(
+    (operation) => phase >= operation.start && phase <= operation.end,
+  );
+  if (!active) return null;
+
+  const progress = clamp(
+    (phase - active.start) / (active.end - active.start),
+    0,
+    1,
+  );
+  const fadeIn = easeOut(clamp(progress / 0.18, 0, 1));
+  const fadeOut = easeOut(clamp((1 - progress) / 0.18, 0, 1));
+
+  return {
+    visible: true,
+    label: active.label,
+    opacity: Math.min(fadeIn, fadeOut),
+    progress,
+  };
 }
 
 function deriveFrame(phase: number): Frame {
@@ -197,6 +232,7 @@ function deriveFrame(phase: number): Frame {
     progress: easeInOut(clamp((phase - ARRIVALS[segment]) / segSpan, 0, 1)),
     opacity: Math.min(fadeIn, fadeOut),
   };
+  const operation = operationForPhase(phase, reset);
 
   const writeVisible =
     phase >= WRITE_IN_START && phase < COMMIT_PHASE + WRITE_SETTLE;
@@ -209,7 +245,7 @@ function deriveFrame(phase: number): Frame {
     ),
   };
 
-  return { reset, commit, land, transport, pulse, token, write };
+  return { reset, commit, land, transport, pulse, token, operation, write };
 }
 
 // --- layout --------------------------------------------------------------
@@ -599,6 +635,50 @@ function drawToken(
   ctx.restore();
 }
 
+function drawOperationCallout(
+  ctx: CanvasRenderingContext2D,
+  label: "Produce" | "Consume",
+  x: number,
+  y: number,
+  opacity: number,
+  progress: number,
+) {
+  if (opacity <= 0.01) return;
+
+  const width = label === "Produce" ? 74 : 78;
+  const height = 24;
+  const slide = mix(5, 0, easeOut(clamp(progress / 0.22, 0, 1)));
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.translate(x, y - slide);
+
+  ctx.shadowColor = "rgba(23, 32, 51, 0.12)";
+  ctx.shadowBlur = 9;
+  ctx.shadowOffsetY = 3;
+  roundedRect(ctx, -width / 2, -height / 2, width, height, height / 2);
+  ctx.fillStyle = COLORS.panel;
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = COLORS.blue;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(-width / 2 + 12, 0, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.gold;
+  ctx.fill();
+
+  ctx.fillStyle = COLORS.ink;
+  ctx.font = `800 10px ${UI_FONT}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, -width / 2 + 22, 0.5);
+
+  ctx.restore();
+}
+
 // Compact UPDATE statement that triggers the whole flow, styled with the Idle
 // Toes code palette like the sibling propagation demo.
 function drawWriteCard(
@@ -747,6 +827,18 @@ function drawFrame(canvas: HTMLCanvasElement, now: number) {
     drawToken(ctx, spineX, eventY, frame.token.opacity);
   }
 
+  if (frame.operation?.visible) {
+    const calloutX = clamp(spineX + 94, 58, width - 58);
+    drawOperationCallout(
+      ctx,
+      frame.operation.label,
+      calloutX,
+      eventY,
+      frame.operation.opacity * frame.token.opacity,
+      frame.operation.progress,
+    );
+  }
+
   if (frame.write.visible) {
     const mysql = layout.positions[0];
     const restX = clamp(mysql.x, 80, width - 80);
@@ -814,7 +906,7 @@ export function IncrementalEtlFlowDemo() {
         ref={canvasRef}
         className="etl-flow-canvas"
         role="img"
-        aria-label="Animated incremental ETL pipeline arranged as a vertical column. An UPDATE statement sets plan to pro for id 42 in the MySQL users table, which commits and turns green. A gold CDC event labelled id 42, free to pro, travels top to bottom along connecting pipes: Brooklin captures the change, emits it to Kafka, Gobblin consumes it, and each stage glows blue as the event arrives. The event finally lands in the Opal table on HDFS, whose plan cell for row 42 flips from free to pro to match the source. The pipeline then resets and loops."
+        aria-label="Animated incremental ETL pipeline arranged as a vertical column. An UPDATE statement sets plan to pro for id 42 in the MySQL users table, which commits and turns green. A gold CDC event labelled id 42, free to pro, travels top to bottom along connecting pipes: Brooklin captures the change, a temporary Produce callout appears as Brooklin emits it to Kafka, a temporary Consume callout appears as Gobblin consumes it from Kafka, and each stage glows blue as the event arrives. The event finally lands in the Opal table on HDFS, whose plan cell for row 42 flips from free to pro to match the source. The pipeline then resets and loops."
       />
 
       <figcaption className="etl-flow-legend" aria-label="Pipeline legend">

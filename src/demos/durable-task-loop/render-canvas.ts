@@ -8,7 +8,7 @@ import {
   type SlotSnapshot,
   type WorkerSnapshot,
 } from "./model";
-import type { CanvasViewport } from "./viewport";
+import type { CanvasViewport } from "../shared/viewport";
 
 type Point = {
   x: number;

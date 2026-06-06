@@ -1,14 +1,44 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createCdcWalKafkaDemo } from "~/demos/cdc-wal-kafka/engine";
+import {
+  deriveWalKafkaSnapshot,
+  type WalKafkaSnapshot,
+} from "~/demos/cdc-wal-kafka/model";
+
+const INITIAL_SNAPSHOT = deriveWalKafkaSnapshot({ progress: 0, playing: true });
+
+type VisibleWalKafkaState = {
+  phase: WalKafkaSnapshot["activeUpdate"]["status"];
+  phaseLabel: WalKafkaSnapshot["phaseLabel"];
+  recordLabel: WalKafkaSnapshot["activeUpdate"]["walSummary"];
+};
 
 export function CdcWalKafkaDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const statusKeyRef = useRef(
+    `${INITIAL_SNAPSHOT.activeUpdate.status}:${INITIAL_SNAPSHOT.phaseLabel}:${INITIAL_SNAPSHOT.activeUpdate.walSummary}`,
+  );
+  const [visibleState, setVisibleState] = useState<VisibleWalKafkaState>({
+    phase: INITIAL_SNAPSHOT.activeUpdate.status,
+    phaseLabel: INITIAL_SNAPSHOT.phaseLabel,
+    recordLabel: INITIAL_SNAPSHOT.activeUpdate.walSummary,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = createCdcWalKafkaDemo(canvas);
+    const engine = createCdcWalKafkaDemo(canvas, (snapshot) => {
+      const statusKey = `${snapshot.activeUpdate.status}:${snapshot.phaseLabel}:${snapshot.activeUpdate.walSummary}`;
+      if (statusKey === statusKeyRef.current) return;
+
+      statusKeyRef.current = statusKey;
+      setVisibleState({
+        phase: snapshot.activeUpdate.status,
+        phaseLabel: snapshot.phaseLabel,
+        recordLabel: snapshot.activeUpdate.walSummary,
+      });
+    });
     engine.start();
 
     return () => {
@@ -17,7 +47,7 @@ export function CdcWalKafkaDemo() {
   }, []);
 
   return (
-    <figure className="cdc-wal-kafka-demo">
+    <figure className="cdc-wal-kafka-demo" data-phase={visibleState.phase}>
       <div className="cdc-wal-kafka-header">
         <h2>Debezium reads the WAL in order</h2>
         <p>
@@ -29,6 +59,7 @@ export function CdcWalKafkaDemo() {
       <canvas
         ref={canvasRef}
         className="cdc-wal-kafka-canvas"
+        role="img"
         aria-label="Animated demo showing Debezium reading three Postgres WAL row changes and producing Kafka events"
       />
 
@@ -46,6 +77,9 @@ export function CdcWalKafkaDemo() {
           produced Kafka event
         </span>
       </div>
+      <figcaption className="cdc-wal-kafka-status">
+        {visibleState.phaseLabel}: {visibleState.recordLabel}
+      </figcaption>
     </figure>
   );
 }

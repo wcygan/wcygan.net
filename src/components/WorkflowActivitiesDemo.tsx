@@ -8,17 +8,44 @@
 // an orchestrator dispatching activities one at a time — and that it keeps
 // making forward progress despite faults, by retrying the failed activity until
 // it succeeds. The model and rendering live in ~/demos/workflow-activities.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createWorkflowActivitiesDemo } from "~/demos/workflow-activities/engine";
+import {
+  deriveActivitiesSnapshot,
+  type ActivitiesSnapshot,
+} from "~/demos/workflow-activities/model";
+
+const INITIAL_SNAPSHOT = deriveActivitiesSnapshot({
+  progress: 0,
+  playing: true,
+});
+
+type VisibleWorkflowState = Pick<ActivitiesSnapshot, "phase" | "phaseLabel">;
 
 export function WorkflowActivitiesDemo() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const statusKeyRef = useRef(
+    `${INITIAL_SNAPSHOT.phase}:${INITIAL_SNAPSHOT.phaseLabel}`,
+  );
+  const [visibleState, setVisibleState] = useState<VisibleWorkflowState>({
+    phase: INITIAL_SNAPSHOT.phase,
+    phaseLabel: INITIAL_SNAPSHOT.phaseLabel,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const engine = createWorkflowActivitiesDemo(canvas);
+    const engine = createWorkflowActivitiesDemo(canvas, (snapshot) => {
+      const statusKey = `${snapshot.phase}:${snapshot.phaseLabel}`;
+      if (statusKey === statusKeyRef.current) return;
+
+      statusKeyRef.current = statusKey;
+      setVisibleState({
+        phase: snapshot.phase,
+        phaseLabel: snapshot.phaseLabel,
+      });
+    });
     engine.start();
 
     return () => {
@@ -27,7 +54,10 @@ export function WorkflowActivitiesDemo() {
   }, []);
 
   return (
-    <figure className="workflow-activities-demo">
+    <figure
+      className="workflow-activities-demo"
+      data-phase={visibleState.phase}
+    >
       <div className="workflow-activities-header">
         <h2>Booking Workflow</h2>
         <p>An example workflow that retries when the payment activity fails</p>
@@ -39,6 +69,9 @@ export function WorkflowActivitiesDemo() {
         role="img"
         aria-label="Animated diagram of a bookTrip workflow on the left orchestrating four activities on the right. The workflow sends a schedule command to reserveSeat, which fills a circular progress ring to 100% and returns seat 14C, then to chargeCard, whose first attempt fails at 50% and shows a red cross; Temporal retries chargeCard after a backoff and the second attempt fills to 100% and returns charged $480. Then confirmSeat returns seat confirmed and sendItinerary returns email sent. Only one activity is active at a time and the workflow ends complete."
       />
+      <figcaption className="workflow-activities-status">
+        {visibleState.phaseLabel}
+      </figcaption>
     </figure>
   );
 }

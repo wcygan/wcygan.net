@@ -750,6 +750,7 @@ export function ConsistentHashingAddNodeDemo() {
           className="sp-ring-add-stage"
           data-node-count={nodeCount}
           aria-label={`${nodeCount} node consistent hashing ring`}
+          role="img"
         >
           <div className="sp-ring-add-ring" aria-hidden="true" />
           {RING_RESHARD_TOKENS.map((token, index) => (
@@ -1334,6 +1335,7 @@ function StepList({
       {items.map((item, index) => (
         <li
           data-state={index === activeIndex ? "active" : "idle"}
+          aria-current={index === activeIndex ? "step" : undefined}
           key={item.key}
         >
           {item.label}

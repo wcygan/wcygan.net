@@ -68,6 +68,9 @@ export function ReplicationLagDemo() {
           <li
             key={step.phase}
             data-state={lagStepState(visibleState.phase as LagPhase, index)}
+            aria-current={
+              step.phase === visibleState.phase ? "step" : undefined
+            }
           >
             <span>{step.label}</span>
           </li>

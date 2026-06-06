@@ -6,7 +6,7 @@ import {
   type PacketSnapshot,
   type WorkflowSnapshot,
 } from "./model";
-import type { CanvasViewport } from "./viewport";
+import type { CanvasViewport } from "../shared/viewport";
 
 type Point = {
   x: number;
