@@ -197,17 +197,6 @@ function BlogPostPage() {
           </time>
         </p>
 
-        {showToc ? (
-          <details className="post-toc-mobile">
-            <summary>Contents</summary>
-            <TableOfContents
-              activeId={activeTocId}
-              items={tocWithTitle}
-              showTitle={false}
-            />
-          </details>
-        ) : null}
-
         <div className="post-content e-content">
           {Content ? <Content /> : <p>Loading...</p>}
         </div>

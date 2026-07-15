@@ -103,20 +103,19 @@ Rules:
 
 ### Font roles
 
-| Role            | Stack                                            | Use                                                                          |
-| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Editorial UI    | `Inter`, `system-ui`, sans-serif                 | Homepage, header, navigation, titles, headings, metadata, captions, controls |
-| Long-form prose | `Atkinson Hyperlegible`, `system-ui`, sans-serif | Article paragraphs, lists, and blockquotes                                   |
-| Monospace       | `Lilex`, `ui-monospace`, monospace               | Code, terminals, SQL traces, and ASCII art                                   |
+| Role           | Stack                              | Use                                                                                                      |
+| -------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Editorial sans | `Inter`, `system-ui`, sans-serif   | Homepage, article prose, header, navigation, titles, headings, metadata, captions, controls, blockquotes |
+| Monospace      | `Lilex`, `ui-monospace`, monospace | Code, terminals, SQL traces, and ASCII art                                                               |
 
 Use local `.woff2` assets for Lilex. Keep `font-synthesis: none` so missing
 weights fail visibly instead of producing fake bold or italic. Apply font
-smoothing once at the document root. Use `font-ui` when a Tailwind utility must
-select Inter; `font-sans` currently maps to the body face.
+smoothing once at the document root. `font-body`, `font-sans`, and `font-ui`
+all select Inter; keep the role aliases until the stylesheet is consolidated.
 
-The homepage intentionally uses Inter throughout, with `"cv01"` and `"ss03"`
-enabled and ligatures disabled. Keep one consistent Inter feature policy across
-shared UI as the article restyle is consolidated.
+The homepage, shared header, and editorial article text use Inter with `"cv01"`
+and `"ss03"` enabled and ligatures disabled. Reset that feature policy at the
+Lilex boundary so code and ASCII retain their own ligatures.
 
 ### Shared shell and homepage scale
 
@@ -135,10 +134,13 @@ shared UI as the article restyle is consolidated.
 - Article title: Inter, `clamp(1.875rem, 4vw, 2.25rem)`, weight `600`, `1.12`
   line-height, `-0.025em` tracking, balanced wrapping.
 - Publication date: Inter, `14px / 1.5`, weight `500`, normal style, muted ink.
-- Prose: Atkinson Hyperlegible, `17px / 1.6`, primary ink, with `1.5em`
-  paragraph rhythm.
-- `h2`: Inter `28px / 1.2`; `h3`: `20px / 1.3`; `h4`: `17px / 1.35`. Article
-  headings use weight `600`, `-0.018em` tracking, and balanced wrapping.
+- Prose: Inter, `16px / 1.65`, primary ink, with `26px` paragraph rhythm.
+  Enable `"cv01"` and `"ss03"` and disable ligatures for editorial prose, but
+  do not inherit that feature policy into Lilex code.
+- Top-level `h2`: Inter `16px / 24px`, weight `550`, normal tracking, with
+  `56px` above and `20px` below (`48px` above on mobile). This is the measured
+  article-heading reference. `h3` and `h4` keep the same type treatment and
+  express hierarchy through progressively tighter spacing.
 - Author the first heading in an MDX post as an `h2`; use `h3` only under an
   `h2`. Treat existing violations as migration debt. Choose heading levels from
   document structure, never appearance.
@@ -225,7 +227,7 @@ Standardize and verify all of these:
 - inline code, Shiki blocks, copy buttons, SQL transcripts, and terminals;
 - tables at narrow widths;
 - figures, linked images, captions, diagrams, maps, Canvas, and ASCII art;
-- mobile and desktop TOCs, including current-location state;
+- the desktop TOC, including current-location state;
 - the end-of-post rhythm and non-home footer.
 
 Important boundaries:
@@ -241,9 +243,9 @@ Important boundaries:
   `44x44px` touch target. This includes code-copy and demo controls.
 - Tables and code may scroll inside their own container. The page itself must
   never scroll horizontally.
-- The mobile TOC uses an inline disclosure with a `44px` summary target. At
-  `1180px` and wider, the `176px` fixed TOC may sit outside the reading column;
-  verify that it never overlaps the article.
+- The TOC is desktop-only. At `1180px` and wider, the `176px` fixed TOC may sit
+  outside the reading column; verify that it never overlaps the article. Below
+  that breakpoint, do not render an inline TOC or expose hidden TOC controls.
 
 ## CSS architecture and migration debt
 
@@ -318,7 +320,7 @@ Check at least:
 | ------------------------------- | --------------------------------------------------------------------------- |
 | `/`                             | Canonical shell, header, About, writing rhythm, hover rows, IndieWeb footer |
 | `/talking-to-my-computer`       | Simple prose, figure, caption, post ending                                  |
-| `/change-data-capture`          | Code, lists, TOC, and rich graphic demos                                    |
+| `/change-data-capture`          | Code, lists, desktop TOC, and rich graphic demos                            |
 | `/sharding-versus-partitioning` | Tables and Canvas behavior                                                  |
 | `/street-maps`                  | Map containment and responsive height                                       |
 | `/mermaid-diagrams`             | Static SVG rendering                                                        |
@@ -334,7 +336,7 @@ breakpoint when article navigation changes. Confirm:
 - shell width, gutters, and left-edge alignment;
 - computed font family, size, weight, line-height, and color;
 - heading and paragraph wrapping;
-- keyboard focus, link, TOC, copy, and demo interactions;
+- keyboard focus, link, desktop TOC, copy, and demo interactions;
 - responsive images, tables, code, maps, SVG, Canvas, and ASCII; and
 - reduced-motion behavior for animated content.
 

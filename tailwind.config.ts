@@ -7,7 +7,7 @@ export default {
     extend: {
       fontFamily: {
         body: [
-          '"Atkinson Hyperlegible"',
+          '"Inter"',
           "system",
           "-apple-system",
           "system-ui",
@@ -16,7 +16,7 @@ export default {
           "sans-serif",
         ],
         sans: [
-          '"Atkinson Hyperlegible"',
+          '"Inter"',
           "system",
           "-apple-system",
           "system-ui",
