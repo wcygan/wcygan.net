@@ -186,11 +186,11 @@ function BlogPostPage() {
   return (
     <div className={showToc ? "post-shell post-shell-with-toc" : "post-shell"}>
       <article className="blog-post h-entry">
-        <h2 id={postTitleTocId} className="post-title p-name">
+        <h1 id={postTitleTocId} className="post-title p-name">
           <Link to="/$slug" params={{ slug }} className="post-permalink">
             {meta.title}
           </Link>
-        </h2>
+        </h1>
         <p className="post-footnote">
           <time className="dt-published" dateTime={toIsoDate(meta.date)}>
             {meta.date}

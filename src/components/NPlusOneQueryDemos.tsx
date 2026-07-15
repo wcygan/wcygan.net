@@ -151,7 +151,7 @@ function DemoHeader({
         <span>{eyebrow}</span>
         {action}
       </div>
-      <h3>{title}</h3>
+      <h2>{title}</h2>
       <p>{copy}</p>
     </div>
   );
@@ -171,7 +171,7 @@ function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
     >
       <div className="n1-query-lane-summary">
         <div>
-          <h4>{snapshot.title}</h4>
+          <h3>{snapshot.title}</h3>
         </div>
         <strong>{formatQueryCount(snapshot.queryCount)}</strong>
       </div>

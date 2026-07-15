@@ -249,7 +249,7 @@ export function EchoLivenessCheck() {
     >
       <div className="anton-probe-header">
         <div>
-          <h3 id="anton-probe-title">Live edge check</h3>
+          <h2 id="anton-probe-title">Live edge check</h2>
           <p>
             Pings <a href={ECHO_URL}>echo.wcygan.net</a> straight from this
             browser.

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   buildSitemapEntries,
   deriveStaticPathsFromFilenames,
@@ -7,9 +7,9 @@ import {
   generateRssXml,
   generateSitemapXml,
   parseFrontmatter,
-  sortPostsByDateDesc,
-  SITE_URL,
   type PostEntry,
+  SITE_URL,
+  sortPostsByDateDesc,
 } from "./generators";
 
 describe("parseFrontmatter", () => {
@@ -109,9 +109,8 @@ describe("deriveStaticPathsFromFilenames", () => {
       "__root.tsx",
       "$slug.tsx",
       "index.tsx",
-      "posts.tsx",
     ]);
-    expect(paths).toEqual(["/", "/posts"]);
+    expect(paths).toEqual(["/"]);
   });
 
   it("returns an empty list when only dynamic routes exist", () => {
@@ -151,7 +150,7 @@ describe("buildSitemapEntries + generateSitemapXml", () => {
 
   it("produces a valid XML document with all paths", () => {
     const entries = buildSitemapEntries(
-      ["/", "/posts"],
+      ["/"],
       [{ slug: "really-good-software", date: "Nov 1, 2025" }],
       fixedDate,
     );
@@ -159,7 +158,7 @@ describe("buildSitemapEntries + generateSitemapXml", () => {
     expect(xml).toContain('<?xml version="1.0"');
     expect(xml).toContain("<urlset");
     expect(xml).toContain(`<loc>${SITE_URL}/</loc>`);
-    expect(xml).toContain(`<loc>${SITE_URL}/posts</loc>`);
+    expect(xml).not.toContain(`<loc>${SITE_URL}/posts</loc>`);
     expect(xml).toContain(`<loc>${SITE_URL}/really-good-software</loc>`);
     expect(xml).toContain("<lastmod>2025-11-01</lastmod>");
     expect(xml).toContain("<lastmod>2026-04-17</lastmod>");

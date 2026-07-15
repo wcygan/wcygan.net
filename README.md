@@ -26,8 +26,7 @@ helpers are executed via `uv run`.
 ## Create a new post
 
 Drop a new `.mdx` file into `src/posts/` with YAML frontmatter (`title`, `date`,
-`description`, `tags`). It will appear automatically on the homepage and
-`/posts`.
+`description`, `tags`). It will appear automatically on the homepage.
 
 ## Download Resume
 
@@ -51,7 +50,8 @@ Validate the markup at [indiewebify.me](https://indiewebify.me/).
 
 ## Integration Testing
 
-The project includes comprehensive end-to-end integration tests for Mermaid diagram rendering using Puppeteer and Vitest.
+The project includes comprehensive end-to-end integration tests for Mermaid
+diagram rendering using Puppeteer and Vitest.
 
 ### Prerequisites
 
@@ -63,7 +63,8 @@ The project includes comprehensive end-to-end integration tests for Mermaid diag
 
 #### Recommended: Automated Server Setup
 
-The integration tests use a global server setup that automatically manages the test server lifecycle:
+The integration tests use a global server setup that automatically manages the
+test server lifecycle:
 
 ```bash
 # Build the project (required before integration tests)
@@ -92,7 +93,8 @@ NODE_OPTIONS="" BASE_URL="http://localhost:5173" just test tests/integration
 
 The integration tests support the following environment variables:
 
-- `VITE_TEST_BASE_URL`: Set automatically by global server setup (default: `http://localhost:4173`)
+- `VITE_TEST_BASE_URL`: Set automatically by global server setup (default:
+  `http://localhost:4173`)
 - `BASE_URL`: Alternative base URL for manual testing (fallback option)
 - `NODE_OPTIONS`: Set to empty string to avoid Node.js warnings in test output
 
@@ -107,7 +109,8 @@ The integration tests support the following environment variables:
 
 The integration tests cover:
 
-- **Mermaid Diagram Types**: Flow charts, sequence diagrams, state diagrams, Git graphs, ER diagrams, pie charts
+- **Mermaid Diagram Types**: Flow charts, sequence diagrams, state diagrams, Git
+  graphs, ER diagrams, pie charts
 - **Rendering Behavior**: Lazy loading, caching (SessionStorage), error handling
 - **Responsive Design**: Mobile viewport testing
 - **Accessibility**: ARIA labels and roles
@@ -121,16 +124,17 @@ The integration tests cover:
 just build
 ```
 
-**Port already in use:**
-The global setup uses `strictPort: true` and will fail if port 4173 is occupied. Stop any existing servers on that port.
+**Port already in use:** The global setup uses `strictPort: true` and will fail
+if port 4173 is occupied. Stop any existing servers on that port.
 
-**Browser launch failures:**
-Ensure you have sufficient system resources and no conflicting browser processes.
+**Browser launch failures:** Ensure you have sufficient system resources and no
+conflicting browser processes.
 
-**Timeout errors:**
-Mermaid diagrams can take time to render. The tests include enhanced waiting utilities with proper timeout handling.
+**Timeout errors:** Mermaid diagrams can take time to render. The tests include
+enhanced waiting utilities with proper timeout handling.
 
-For more detailed information about the integration test architecture, see `tests/integration/README.md`.
+For more detailed information about the integration test architecture, see
+`tests/integration/README.md`.
 
 ## CI Testing
 

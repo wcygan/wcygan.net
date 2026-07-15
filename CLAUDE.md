@@ -1,92 +1,344 @@
-# CLAUDE.md
+# AGENTS.md
 
-guide for wcygan.net — a TanStack Start blog with clean, accessible design.
+Guide for `wcygan.net`, a TanStack Start software blog with a quiet,
+content-first editorial design.
 
-## Essential Commands
+## Essential commands
 
 ```bash
 # Development
-just dev              # Dev server at https://wcygan.localhost (portless-wrapped, opens browser)
+just dev              # Portless dev server at https://wcygan.localhost
 
-# Quality & Testing
-deno task pre-commit  # Format + typecheck + tests (run before commits)
-deno task test        # Run Vitest unit tests
+# Quality and testing
+deno task pre-commit  # Format, typecheck, and tests
+deno task test        # Vitest unit tests
+deno task build       # Production build and prerendering
 ```
 
-### Local dev URL: `https://wcygan.localhost`
+`just dev` runs Vite through Portless. It uses `portless.json` and
+`scripts/ensure-portless-443.sh` to provide a stable HTTPS `.localhost` URL. Use
+the active worktree's assigned Portless URL when another checkout is already
+using `wcygan.localhost`.
 
-`just dev` runs Vite under [portless](https://github.com/vercel-labs/portless),
-which gives a stable HTTPS URL backed by a local CA. The dev task first runs
-`scripts/ensure-portless-443.sh`, which keeps the proxy on privileged port 443
-and repairs root-owned Portless state after sudo startup. Configured via
-`portless.json` (`{ "name": "wcygan" }`); the justfile also `open`s the URL
-after a 2s delay.
+## Technology stack
 
-## Technology Stack
+- TanStack Start and TanStack Router for React 19 SSR
+- Deno for the runtime, package management, tasks, and tests
+- Tailwind CSS 3 with the Typography plugin
+- MDX through `@mdx-js/rollup`
+- Shiki for build-time syntax highlighting with the Idle Toes theme
+- Mermaid compiled to static SVG by `deno task render:diagrams`
+- Nitro with the `deno-server` preset for prerendering
 
-- **TanStack Start** with TanStack Router for full-stack React SSR
-- **Deno** runtime and package manager
-- **React 19** with hooks for state management
-- **Tailwind CSS 3** with Typography plugin for consistent styling
-- **MDX** via `@mdx-js/rollup` for Markdown blog posts with React component
-  imports
-- **Shiki** (`@shikijs/rehype`) for build-time syntax highlighting (custom Idle
-  Toes theme)
-- **Mermaid.js** for diagrams, compiled to static SVG at build time
-  (`deno task render:diagrams`); no client-side rendering
-- **TypeScript** with strict mode for type safety
-- **Nitro** with `deno-server` preset for prerendering
+## Design direction and authority
 
-## Interactive Graphics Demos
+The homepage is the approved visual reference for the shared shell, identity,
+navigation, density, palette, and restraint. Article pages have begun converging
+on that system, but their restyle is **in progress**. Do not describe the whole
+article experience as finished merely because the shared shell and basic prose
+styles match.
 
-It's encouraged to embed interactive graphics with the
-`interactive-graphics-demos` Codex skill.
+Use this order when design sources disagree:
 
-## Mobile Support
+1. The accepted homepage and browser-computed styles are the product reference.
+2. The final scoped editorial rules near the end of `src/styles/app.css` are the
+   current implementation reference.
+3. This guide defines the durable direction and validation bar.
+4. `design.md` is a legacy cornflower-blue, 800px design document. Do not copy
+   its palette, uppercase navigation, bordered header, bio banner, or layout
+   values into new work. Reconcile or retire it in a dedicated future change.
 
-Assume most readers will view the site from a phone. Treat mobile styling as a
-first-class acceptance criterion for pages, posts, and demos: text must stay
-readable, controls must remain usable, and layouts must avoid horizontal
-overflow at common phone widths. When a change affects rendered UI, verify the
-real page in a mobile viewport as well as desktop before calling it done.
+When code and this guide disagree, inspect the rendered page and computed
+styles. Fix an accidental regression; update this guide only when the design
+change is intentional and accepted.
 
-## DESIGN.md
+## Design principles
 
-Goal: Keep the rendered site and `design.md` aligned around a readable
-software-blog typography system.
+- **Quiet editorial hierarchy:** let typography, spacing, and alignment create
+  structure. Avoid decorative chrome, banners, heavy borders, and gratuitous
+  cards.
+- **Content first:** every visual decision should improve reading, scanning, or
+  navigation. The interface should recede behind the writing.
+- **Warm neutrals:** the shared shell is nearly monochrome. Reserve strong color
+  for focus, code, state, maps, and explanatory graphics.
+- **One aligned column:** the name, navigation, section labels, prose, post
+  titles, and media share the same left edge.
+- **Compact but unhurried:** use deliberate whitespace between semantic groups,
+  not large empty regions inside a group.
+- **Accessible without hover:** keyboard, touch, reduced-motion, and narrow
+  viewports are first-class states.
 
-Success means:
+## Canonical color system
 
-- Body and long-form prose use `Atkinson Hyperlegible` with `system-ui`
-  fallbacks.
-- Headings, navigation, metadata, buttons, and compact UI labels use `Inter`
-  with `system-ui` fallbacks.
-- Code samples, terminals, inline code, and ASCII animation blocks use the
-  existing `Lilex` mono stack.
+These are the accepted shared-shell values. Prefer promoting them to semantic
+CSS custom properties when consolidating the stylesheet; do not create another
+high-specificity override layer.
 
-Stop when `src/styles/app.css`, `tailwind.config.ts`, `design.md`, and
-browser-computed styles agree on those three roles.
+| Role             | Value     | Use                                             |
+| ---------------- | --------- | ----------------------------------------------- |
+| Page background  | `#fdfdfc` | Shared site canvas                              |
+| Primary ink      | `#21201c` | Names, headings, titles, primary copy           |
+| Muted ink        | `#63635e` | Role, descriptions, dates, secondary UI         |
+| Subtle underline | `#bcbbb5` | Neutral link decoration and hover affordance    |
+| Hairline         | `#e4e3de` | Quiet borders, dividers, and TOC structure      |
+| Raised surface   | `#f7f6f3` | TOC, table headers, restrained inset surfaces   |
+| Hover surface    | `#f5f4f4` | Homepage writing-row hover                      |
+| Focus accent     | `#466eaa` | Visible keyboard focus; not general page chrome |
 
-### Design System
+Rules:
 
-**Color Palette** (Light theme):
+- Do not reintroduce blue page titles, blue section headings, a blue bio banner,
+  or a blue header divider.
+- Editorial links inherit primary ink and use a subtle underline. Strengthen the
+  underline on hover instead of changing to a saturated color.
+- Muted text must remain readable; `#63635e` on `#fdfdfc` meets normal-text
+  contrast.
+- Demo-specific semantic colors may live inside the demo boundary. They must not
+  redefine the article shell.
+- Editorial raster images use a `1px` inset outline of `oklch(0 0 0 / 0.1)`.
+  Transparent diagrams and artwork may opt out when an outline damages the
+  image.
 
-- Primary blue: `rgb(70, 110, 170)` — titles, banners, accents
-- Link blue: `rgb(30, 70, 140)` — interactive links
-- Text primary: `rgb(0, 0, 0)` — body text
-- Text secondary: `rgb(102, 102, 102)` — dates, metadata
+## Typography
 
-**Typography**: Atkinson Hyperlegible for body/prose, Inter for headings/UI,
-Lilex for code/ASCII
+### Font roles
 
-**Code block palette**: Idle Toes from Cmux Themes. Keep this palette encoded in
-both `src/lib/syntax/idle-toes-theme.ts` and `src/styles/app.css`:
+| Role            | Stack                                            | Use                                                                          |
+| --------------- | ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Editorial UI    | `Inter`, `system-ui`, sans-serif                 | Homepage, header, navigation, titles, headings, metadata, captions, controls |
+| Long-form prose | `Atkinson Hyperlegible`, `system-ui`, sans-serif | Article paragraphs, lists, and blockquotes                                   |
+| Monospace       | `Lilex`, `ui-monospace`, monospace               | Code, terminals, SQL traces, and ASCII art                                   |
+
+Use local `.woff2` assets for Lilex. Keep `font-synthesis: none` so missing
+weights fail visibly instead of producing fake bold or italic. Apply font
+smoothing once at the document root. Use `font-ui` when a Tailwind utility must
+select Inter; `font-sans` currently maps to the body face.
+
+The homepage intentionally uses Inter throughout, with `"cv01"` and `"ss03"`
+enabled and ligatures disabled. Keep one consistent Inter feature policy across
+shared UI as the article restyle is consolidated.
+
+### Shared shell and homepage scale
+
+| Element             | Size / line-height | Weight | Color       |
+| ------------------- | ------------------ | ------ | ----------- |
+| Site name           | `16px / 24px`      | `500`  | Primary ink |
+| Site role           | `16px / 16px`      | `500`  | Muted ink   |
+| Navigation          | `14px / 1.2`       | `500`  | Muted ink   |
+| Section label       | `16px / 24px`      | `500`  | Primary ink |
+| About copy          | `16px / 1.65`      | `400`  | Muted ink   |
+| Writing title       | `16px / 24px`      | `400`  | Primary ink |
+| Writing description | `16px / 24px`      | `400`  | Muted ink   |
+
+### Article scale: current convergence baseline
+
+- Article title: Inter, `clamp(1.875rem, 4vw, 2.25rem)`, weight `600`, `1.12`
+  line-height, `-0.025em` tracking, balanced wrapping.
+- Publication date: Inter, `14px / 1.5`, weight `500`, normal style, muted ink.
+- Prose: Atkinson Hyperlegible, `17px / 1.6`, primary ink, with `1.5em`
+  paragraph rhythm.
+- `h2`: Inter `28px / 1.2`; `h3`: `20px / 1.3`; `h4`: `17px / 1.35`. Article
+  headings use weight `600`, `-0.018em` tracking, and balanced wrapping.
+- Author the first heading in an MDX post as an `h2`; use `h3` only under an
+  `h2`. Treat existing violations as migration debt. Choose heading levels from
+  document structure, never appearance.
+- Top-level prose links currently use weight `700` with a tuned neutral `1px`
+  underline. Nested editorial link contexts remain a migration target.
+- Use `text-wrap: balance` for headings and `text-wrap: pretty` for short
+  descriptions where it improves the final line. Do not balance long prose.
+
+## Layout and spacing
+
+The shared `.site-container` is `692px` wide including `24px` inline gutters,
+which yields a `644px` reading column. This measure is canonical; do not restore
+the legacy `800px` container.
+
+| Context                    | Desktop     | Mobile (`<640px`) |
+| -------------------------- | ----------- | ----------------- |
+| Container padding          | `64px 24px` | `48px 24px`       |
+| Header-to-content gap      | `48px`      | `48px`            |
+| Navigation top gap         | `28px`      | `24px`            |
+| Major homepage section gap | `48px`      | `48px`            |
+| Writing-list gap           | `16px`      | `28px`            |
+
+Favor the established spacing set: `4`, `8`, `12`, `16`, `20`, `24`, `28`, `48`,
+and `64px`. Introduce a new value only when the component's geometry requires
+it. Avoid stacking parent and child margins that create accidental double
+spacing.
+
+All routes share the same shell and header. The site name always links home. The
+homepage owns the site-name `h1`; article pages reserve `h1` for the article
+title and render the site name as non-heading text. There is no `/posts` index:
+the homepage writing list is the index. The IndieWeb Webring footer closes every
+route, including the homepage.
+
+## Header and navigation
+
+Keep this shared order on every route:
+
+1. `Will Cygan`
+2. `Software Engineer`
+3. Resume, Email, GitHub, LinkedIn, Projects
+
+Navigation uses natural case, wraps when necessary, and sits below the role.
+Every nav link has a minimum `44px` height. Hover changes only color and
+underline color over `150ms ease-out`; focus remains independently visible. Do
+not restore uppercase navigation, a separate Posts link, a header border,
+profile artwork, newsletter UI, or a More section.
+
+## Homepage composition
+
+The homepage is intentionally simple:
+
+1. Shared name, role, and navigation
+2. About section
+3. Writing section
+4. IndieWeb Webring footer
+
+The About and Writing sections use semantic headings and `aria-labelledby`. Keep
+the copy direct and concrete. The whole writing row is the link; title and
+description stack without dates or additional metadata.
+
+Writing-row rules:
+
+- Desktop rows extend `12px` beyond the reading edge, use `12px` padding and a
+  `6px` radius, and reveal only the subtle hover surface.
+- Mobile rows have no vertical padding and use the larger `28px` list gap.
+- Keep post titles unchanged unless a writing task explicitly changes them.
+- Homepage descriptions are sentence-case fragments of at most **eight words**.
+  They have **no terminal period**.
+- Descriptions should add an angle rather than repeat the title. This
+  frontmatter also feeds page metadata, so do not silently replace it with long
+  SEO copy.
+
+## Article pages: migration target
+
+The current article shell, title, date, basic prose, tables, code blocks, direct
+figures, and TOC are a strong first pass. They are not the completion bar.
+Future article work should make every reading primitive feel native to the same
+warm-neutral system while allowing technical demos to keep useful semantic
+color.
+
+Standardize and verify all of these:
+
+- paragraphs, nested lists, links, headings, blockquotes, footnotes, and rules;
+- inline code, Shiki blocks, copy buttons, SQL transcripts, and terminals;
+- tables at narrow widths;
+- figures, linked images, captions, diagrams, maps, Canvas, and ASCII art;
+- mobile and desktop TOCs, including current-location state;
+- the end-of-post rhythm and non-home footer.
+
+Important boundaries:
+
+- Direct-child `.post-content > ...` selectors establish top-level MDX rhythm
+  without flattening demo internals. Preserve that boundary, but add explicit
+  scoped rules for nested editorial content such as list links, blockquotes, and
+  captions.
+- A figure owns its internal spacing. Images inside figures should not retain an
+  independent large bottom margin; captions sit close to their media in muted
+  type.
+- Article controls must be discoverable without hover and provide at least a
+  `44x44px` touch target. This includes code-copy and demo controls.
+- Tables and code may scroll inside their own container. The page itself must
+  never scroll horizontally.
+- The mobile TOC uses an inline disclosure with a `44px` summary target. At
+  `1180px` and wider, the `176px` fixed TOC may sit outside the reading column;
+  verify that it never overlaps the article.
+
+## CSS architecture and migration debt
+
+`src/styles/app.css` still contains the retired design plus a late editorial
+override layer. Treat that as migration debt, not a pattern to repeat.
+
+- Shared shell, typography, and prose belong in `app.css` and should use
+  semantic variables and scoped selectors.
+- When touching a superseded rule, consolidate or remove the conflict instead of
+  appending another override island.
+- One canonical rule should own each shared primitive. Prefer low specificity
+  and source order that is easy to reason about.
+- Use the existing styling system. Do not introduce CSS Modules, CSS-in-JS, or
+  inline style objects for shared editorial styling.
+- Avoid `transition: all`; name the exact properties that move or fade.
+- Use `will-change` only for observed transform, opacity, or filter stutter.
+- Keep page-load motion quiet. Interactive transitions must remain
+  interruptible, and reduced-motion users must retain the same information.
+- Add a reduced-motion override for global smooth scrolling when that cleanup is
+  in scope.
+
+## Code blocks
+
+Keep the Idle Toes palette synchronized between
+`src/lib/syntax/idle-toes-theme.ts` and `src/styles/app.css`:
 
 - Foreground `#ffffff`, background `#323232`, cursor `#d6d6d6`
-- ANSI 0-7: black `#323232`, red `#d25252`, green `#7fe173`, yellow `#ffc66d`,
-  blue `#4099ff`, magenta `#f680ff`, cyan `#bed6ff`, white `#eeeeec`
-- ANSI 8-15: bright black `#606060`, bright red `#f07070`, bright green
-  `#9dff91`, bright yellow `#ffe48b`, bright blue `#5eb7f7`, bright magenta
-  `#ff9dff`, bright cyan `#dcf4ff`, bright white `#ffffff`
+- ANSI 0-7: `#323232`, `#d25252`, `#7fe173`, `#ffc66d`, `#4099ff`, `#f680ff`,
+  `#bed6ff`, `#eeeeec`
+- ANSI 8-15: `#606060`, `#f07070`, `#9dff91`, `#ffe48b`, `#5eb7f7`, `#ff9dff`,
+  `#dcf4ff`, `#ffffff`
 
-**Layout**: 800px max-width container, 8pt grid system
+Code uses Lilex. Preserve syntax contrast, horizontal scrolling, copy feedback,
+and readable wrapping around—not inside—code samples.
+
+## Interactive graphic demos
+
+Load the repository's `$wcygan-graphic-demos` skill before creating, editing,
+reviewing, or debugging article demos. Inspect both the component shell in
+`src/components/` and any backing model, engine, renderer, viewport, and tests
+in `src/demos/`.
+
+Each demo must:
+
+- fit the article measure without page-level horizontal overflow;
+- expose useful accessibility text and semantic controls;
+- preserve meaning when animation is reduced or disabled;
+- use a `44x44px` minimum touch target for controls;
+- use component-owned semantic color without changing the editorial shell; and
+- be verified in its real MDX article on desktop and mobile.
+
+## Accessibility and responsive behavior
+
+- Preserve semantic heading order and exactly one page `h1`.
+- Keep `:focus-visible` obvious with a `2px` outline and `2px` offset.
+- Do not rely on hover for content, controls, or state.
+- Keep normal body text at least `16px` and maintain WCAG AA contrast.
+- Use logical properties when introducing directional spacing or alignment.
+- Ensure images and canvases scale within the reading column.
+- Honor `prefers-reduced-motion` in every animated demo and nonessential
+  transition.
+- Print may hide navigation, but it must preserve readable article content.
+
+## Visual validation matrix
+
+Rendered inspection is required for every visual or interaction change. A CSS
+diff or passing test suite is not enough.
+
+Check at least:
+
+| Route                           | Purpose                                                                     |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `/`                             | Canonical shell, header, About, writing rhythm, hover rows, IndieWeb footer |
+| `/talking-to-my-computer`       | Simple prose, figure, caption, post ending                                  |
+| `/change-data-capture`          | Code, lists, TOC, and rich graphic demos                                    |
+| `/sharding-versus-partitioning` | Tables and Canvas behavior                                                  |
+| `/street-maps`                  | Map containment and responsive height                                       |
+| `/mermaid-diagrams`             | Static SVG rendering                                                        |
+| `/ascii-animation`              | Monospace art and overflow                                                  |
+
+For routine shell work, `/`, one simple post, and one rich post are the minimum.
+Add the relevant specialized route whenever its primitive changes.
+
+Verify at `1440x900` desktop and `390x844` mobile. Also cross the `1180px` TOC
+breakpoint when article navigation changes. Confirm:
+
+- no page-level horizontal overflow;
+- shell width, gutters, and left-edge alignment;
+- computed font family, size, weight, line-height, and color;
+- heading and paragraph wrapping;
+- keyboard focus, link, TOC, copy, and demo interactions;
+- responsive images, tables, code, maps, SVG, Canvas, and ASCII; and
+- reduced-motion behavior for animated content.
+
+Run `deno task pre-commit` before considering a change complete. Run
+`deno task build` when routes, MDX, static diagrams, or prerendering behavior
+change. Stop only when source checks pass and the affected rendered states have
+been inspected.

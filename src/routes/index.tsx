@@ -1,65 +1,53 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { RotatingPenguin } from "~/components/RotatingPenguin";
 import { getAllPosts } from "~/lib/services/blog";
-import { socials } from "~/lib/socials";
-import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 
 export const Route = createFileRoute("/")({
   loader: () => ({ posts: getAllPosts() }),
+  head: () => ({
+    meta: [{ title: "Will Cygan - Software Engineer" }],
+  }),
   component: HomePage,
 });
 
-const INTERESTS = ["Distributed Systems", "Self Hosting", "Local LLMs"];
-
 function HomePage() {
   const { posts } = Route.useLoaderData();
+
   return (
-    <>
-      <div className="bio-highlight h-card">
-        <img className="u-photo" src="/wcygan.jpg" alt="Will Cygan" />
-        <div className="bio-text">
-          <p>
-            <data className="p-name" value="Will Cygan" />
-            <data className="u-url" value="https://wcygan.net/" />
-            <span className="p-note">
-              Senior Software Engineer at{" "}
-              <a
-                href={socials.linkedin}
-                target="_blank"
-                rel="noopener noreferrer me"
-              >
-                LinkedIn
-              </a>
-            </span>
-          </p>
-          <p className="bio-interests">
-            {INTERESTS.map((it) => (
-              <span key={it} className="bio-interest-chip">
-                {it}
-              </span>
-            ))}
-          </p>
-        </div>
-      </div>
+    <div className="home-page">
+      <section className="home-section home-intro" aria-labelledby="about">
+        <h2 className="home-section-title" id="about">
+          About
+        </h2>
+        <p className="p-note">
+          I work on the Checkout team at LinkedIn building mission-critical
+          systems for our E-Commerce platform. My background includes designing
+          and building distributed systems involving APIs, databases, stream
+          processing systems, and data pipelines. Outside of work, I run a
+          Kubernetes homelab in my basement to host projects with my friends.
+        </p>
+      </section>
 
-      <RotatingPenguin />
-
-      <section>
-        <ul className="post-list">
+      <section className="home-section" aria-labelledby="writing">
+        <h2 className="home-section-title" id="writing">
+          Writing
+        </h2>
+        <ul className="home-writing-list">
           {posts.map((post) => (
-            <li key={post.slug} className="post-item">
-              <div className="post-title">
-                <Link to="/$slug" params={{ slug: post.slug }}>
-                  {post.title}
-                </Link>
-              </div>
-              <time className="post-date" dateTime={toIsoDate(post.date)}>
-                {toDisplayDate(post.date)}
-              </time>
+            <li key={post.slug} className="home-writing-item">
+              <Link
+                className="home-writing-link"
+                to="/$slug"
+                params={{ slug: post.slug }}
+              >
+                <span className="home-writing-title">{post.title}</span>
+                <span className="home-writing-description">
+                  {post.description}
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
       </section>
-    </>
+    </div>
   );
 }

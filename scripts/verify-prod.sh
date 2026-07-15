@@ -92,7 +92,6 @@ printf "${YELLOW}→${NC} Verifying %s\n\n" "$BASE"
 printf "${DIM}# Core routes${NC}\n"
 check "home serves 200"             status_is "$BASE/" 200
 check "/about reachable"            status_in "$BASE/about" 200 307 308
-check "/posts reachable"            status_in "$BASE/posts" 200 307 308
 check "known post reachable"        status_in "$BASE/really-good-software" 200 307 308
 
 printf "\n${DIM}# Static asset dot-rejection guard${NC}\n"
@@ -101,6 +100,7 @@ check "/will_cygan_resume.pdf → 200" status_is "$BASE/will_cygan_resume.pdf" 2
 check "/favicon.ico → 200"          status_is "$BASE/favicon.ico" 200
 
 printf "\n${DIM}# Removed routes stay 404${NC}\n"
+check "/posts → 404"                status_is "$BASE/posts" 404
 check "/feed → 404"                 status_is "$BASE/feed" 404
 check "/mermaid-examples → 404"     status_is "$BASE/mermaid-examples" 404
 
