@@ -11,8 +11,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createWorkflowActivitiesDemo } from "~/demos/workflow-activities/engine";
 import {
-  deriveActivitiesSnapshot,
   type ActivitiesSnapshot,
+  deriveActivitiesSnapshot,
 } from "~/demos/workflow-activities/model";
 
 const INITIAL_SNAPSHOT = deriveActivitiesSnapshot({
@@ -55,15 +55,20 @@ export function WorkflowActivitiesDemo() {
 
   return (
     <figure
+      data-graphic-frame="plate"
+      aria-labelledby="workflow-activities-title"
       className="workflow-activities-demo"
       data-phase={visibleState.phase}
     >
       <div className="workflow-activities-header">
-        <h2>Booking Workflow</h2>
+        <p className="article-graphic-title" id="workflow-activities-title">
+          Booking Workflow
+        </p>
         <p>An example workflow that retries when the payment activity fails</p>
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="workflow-activities-canvas"
         role="img"

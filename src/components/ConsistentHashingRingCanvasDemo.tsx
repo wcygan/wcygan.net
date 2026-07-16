@@ -130,9 +130,13 @@ export function ConsistentHashingRingCanvasDemo() {
   };
 
   return (
-    <figure className="sp-demo sp-hash-ring-canvas-demo">
+    <figure
+      className="sp-demo sp-hash-ring-canvas-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-hash-ring-title"
+    >
       <DemoHeader
-        eyebrow="Crossing shards"
+        titleId="sp-hash-ring-title"
         title="Consistent Hashing Ring"
         copy="Compare the current ring with the previous node count. Key positions stay fixed; red keys are the ones whose next clockwise token changed when the latest node was added."
       />
@@ -141,7 +145,7 @@ export function ConsistentHashingRingCanvasDemo() {
         className="sp-hash-ring-workbench"
         aria-label="Interactive consistent hashing demo"
       >
-        <div className="sp-hash-ring-stage">
+        <div className="sp-hash-ring-stage" data-graphic-stage="padded">
           <canvas
             aria-label="Consistent hashing ring diagram"
             ref={canvasRef}
@@ -236,19 +240,20 @@ function HashRingRangeControl({
 
 function DemoHeader({
   copy,
-  eyebrow,
+  titleId,
   title,
 }: {
   copy: string;
-  eyebrow: string;
+  titleId: string;
   title: string;
 }) {
   return (
-    <figcaption className="sp-demo-header">
-      <span>{eyebrow}</span>
-      <h3>{title}</h3>
+    <div className="sp-demo-header">
+      <p className="article-graphic-title" id={titleId}>
+        {title}
+      </p>
       <p>{copy}</p>
-    </figcaption>
+    </div>
   );
 }
 

@@ -393,14 +393,23 @@ export function ShardRequestRouterDemo() {
   const shardOpacity = progress < 0.34 ? 0 : 1;
 
   return (
-    <figure className="sp-demo sp-router-demo">
+    <figure
+      className="sp-demo sp-router-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="sp-router-title"
+    >
       <DemoHeader
-        eyebrow="Sharding"
+        titleId="sp-router-title"
         title="Routing Requests To Shards"
         copy="A request uses a shard key to find the database instance that owns the row."
       />
 
-      <svg className="sp-router-map" viewBox={layout.viewBox} role="img">
+      <svg
+        className="sp-router-map"
+        data-graphic-stage="flush"
+        viewBox={layout.viewBox}
+        role="img"
+      >
         <title>Request router to shards</title>
         <desc>
           A tenant request moves from the application through a router to the
@@ -463,9 +472,13 @@ export function ConsistentHashingRebalanceDemo() {
     REBALANCE_SCENARIOS[0];
 
   return (
-    <figure className="sp-demo sp-rebalance-demo">
+    <figure
+      className="sp-demo sp-rebalance-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-rebalance-title"
+    >
       <DemoHeader
-        eyebrow="Prototype 08 - Crossing shards"
+        titleId="sp-rebalance-title"
         title="Consistent Hashing Ring Rebalance"
         copy="The rebalancing strategy determines how much data moves when a shard is added."
       />
@@ -490,7 +503,7 @@ export function ConsistentHashingRebalanceDemo() {
         </div>
       </div>
 
-      <div className="sp-rebalance-layout">
+      <div className="sp-rebalance-layout" data-graphic-stage="padded">
         <div className="sp-ring-sketch" aria-hidden="true">
           <span data-shard="a">A</span>
           <span data-shard="b">B</span>
@@ -546,9 +559,13 @@ export function VirtualNodeBalanceDemo() {
     VIRTUAL_NODE_SCENARIOS[0];
 
   return (
-    <figure className="sp-demo sp-token-ring-demo">
+    <figure
+      className="sp-demo sp-token-ring-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-token-ring-title"
+    >
       <DemoHeader
-        eyebrow="Prototype 10 - Crossing shards"
+        titleId="sp-token-ring-title"
         title="Virtual Nodes Smooth Load"
         copy="A consistent-hashing ring gets less lumpy when each physical shard owns several smaller positions."
       />
@@ -573,7 +590,7 @@ export function VirtualNodeBalanceDemo() {
         </div>
       </div>
 
-      <div className="sp-token-ring-layout">
+      <div className="sp-token-ring-layout" data-graphic-stage="padded">
         <div className="sp-token-ring" aria-label={`${scenario.label} ring`}>
           {scenario.tokens.map((token, index) => (
             <span
@@ -623,9 +640,13 @@ export function RingFailureTakeoverDemo() {
     RING_FAILURE_SCENARIOS[0];
 
   return (
-    <figure className="sp-demo sp-ring-failure-demo">
+    <figure
+      className="sp-demo sp-ring-failure-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-ring-failure-title"
+    >
       <DemoHeader
-        eyebrow="Prototype 11 - Crossing shards"
+        titleId="sp-ring-failure-title"
         title="Ring Failure Takeover"
         copy="When a shard disappears from the ring, only the keys it owned need a new live owner."
       />
@@ -650,7 +671,7 @@ export function RingFailureTakeoverDemo() {
         </div>
       </div>
 
-      <div className="sp-ring-failure-layout">
+      <div className="sp-ring-failure-layout" data-graphic-stage="padded">
         <div
           className="sp-ring-sketch"
           aria-label={`${scenario.label} ownership ring`}
@@ -716,9 +737,13 @@ export function ConsistentHashingAddNodeDemo() {
   const stableKeyCount = RING_RESHARD_KEYS.length - movedKeys.length;
 
   return (
-    <figure className="sp-demo sp-ring-add-node-demo">
+    <figure
+      className="sp-demo sp-ring-add-node-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-ring-add-node-title"
+    >
       <DemoHeader
-        eyebrow="Prototype 09 - Crossing shards"
+        titleId="sp-ring-add-node-title"
         title="Add Node Ring Reshard"
         copy="Adding nodes to a consistent-hashing ring creates new ownership intervals; only keys inside those intervals move."
       />
@@ -745,7 +770,7 @@ export function ConsistentHashingAddNodeDemo() {
         </div>
       </div>
 
-      <div className="sp-ring-add-layout">
+      <div className="sp-ring-add-layout" data-graphic-stage="padded">
         <div
           className="sp-ring-add-stage"
           data-node-count={nodeCount}
@@ -877,9 +902,13 @@ export function ShardKeyRangeHashDemo() {
   }, [strategy]);
 
   return (
-    <figure className="sp-demo sp-shard-key-demo">
+    <figure
+      className="sp-demo sp-shard-key-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-shard-key-title"
+    >
       <DemoHeader
-        eyebrow="Choosing a shard key"
+        titleId="sp-shard-key-title"
         title="Range vs Hash Splitter"
         copy="The same tenant IDs can preserve range locality or scatter more evenly depending on the shard key strategy."
       />
@@ -920,6 +949,7 @@ export function ShardKeyRangeHashDemo() {
 
       <div
         className="sp-shard-key-board"
+        data-graphic-stage="padded"
         aria-label="Tenant IDs assigned to shards"
         ref={boardRef}
       >
@@ -969,9 +999,13 @@ export function HotTenantShardDemo() {
   const trafficTotal = totalTraffic(trafficByShard);
 
   return (
-    <figure className="sp-demo sp-hot-tenant-demo">
+    <figure
+      className="sp-demo sp-hot-tenant-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-hot-tenant-title"
+    >
       <DemoHeader
-        eyebrow="Sharding"
+        titleId="sp-hot-tenant-title"
         title="Hot Tenant Problem"
         copy="If one tenant sends most of the traffic, the shard that owns it gets hot while the other shards stay cool."
       />
@@ -998,6 +1032,7 @@ export function HotTenantShardDemo() {
 
       <div
         className="sp-hot-layout"
+        data-graphic-stage="padded"
         aria-label="Three shards with traffic heat"
       >
         {SHARDS.map((shard) => {
@@ -1084,9 +1119,13 @@ export function QueryPlannerPruningDemo() {
   ).length;
 
   return (
-    <figure className="sp-demo sp-pruning-demo">
+    <figure
+      className="sp-demo sp-pruning-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-pruning-title"
+    >
       <DemoHeader
-        eyebrow="Partitioning"
+        titleId="sp-pruning-title"
         title="Query Planner Pruning"
         copy="A partition-aware query planner skips partitions that cannot contain matching rows."
       />
@@ -1116,7 +1155,11 @@ export function QueryPlannerPruningDemo() {
         </span>
       </div>
 
-      <div className="sp-partition-row" aria-label="Date partitions">
+      <div
+        className="sp-partition-row"
+        data-graphic-stage="padded"
+        aria-label="Date partitions"
+      >
         {DATE_PARTITIONS.map((partition, index) => {
           const active = partition.matches.includes(scenario.id);
           return (
@@ -1155,9 +1198,13 @@ export function BadPartitionKeyDemo() {
   );
 
   return (
-    <figure className="sp-demo sp-bad-key-demo">
+    <figure
+      className="sp-demo sp-bad-key-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="sp-bad-key-title"
+    >
       <DemoHeader
-        eyebrow="Partitioning"
+        titleId="sp-bad-key-title"
         title="Bad Partition Key"
         copy="A partition key should match common queries and distribute rows. A low-cardinality or skewed key can create one giant partition."
       />
@@ -1182,7 +1229,11 @@ export function BadPartitionKeyDemo() {
         </div>
       </div>
 
-      <div className="sp-skew-bars" aria-label={`${scenario.label} partitions`}>
+      <div
+        className="sp-skew-bars"
+        data-graphic-stage="padded"
+        aria-label={`${scenario.label} partitions`}
+      >
         {scenario.partitions.map((partition, index) => (
           <div
             className="sp-skew-row"
@@ -1210,17 +1261,18 @@ export function BadPartitionKeyDemo() {
 
 function DemoHeader({
   copy,
-  eyebrow,
+  titleId,
   title,
 }: {
   copy: string;
-  eyebrow: string;
+  titleId?: string;
   title: string;
 }) {
   return (
     <div className="sp-demo-header">
-      <span>{eyebrow}</span>
-      <h3>{title}</h3>
+      <p className="article-graphic-title" id={titleId}>
+        {title}
+      </p>
       <p>{copy}</p>
     </div>
   );
@@ -1353,11 +1405,25 @@ function usePausableAutoplay(count: number, intervalMs: number) {
     if (typeof window === "undefined") return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) {
-      setStepIndex(count - 1);
-      setPlaying(false);
-      return;
-    }
+    const updateForMotion = () => {
+      if (reducedMotion.matches) {
+        setStepIndex(count - 1);
+        setPlaying(false);
+      } else {
+        setStepIndex(0);
+        setPlaying(true);
+      }
+    };
+    updateForMotion();
+    reducedMotion.addEventListener("change", updateForMotion);
+    return () => reducedMotion.removeEventListener("change", updateForMotion);
+  }, [count]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotion.matches) return;
 
     if (!playing) return;
 
@@ -1384,13 +1450,8 @@ function useAutoplayTimeline(count: number, durationMs: number) {
     if (typeof window === "undefined") return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) {
-      setTimeline({ stepIndex: count - 1, progress: 1 });
-      return;
-    }
-
     let frameId = 0;
-    const startedAt = performance.now();
+    let startedAt = performance.now();
 
     const tick = (now: number) => {
       const elapsed = now - startedAt;
@@ -1400,8 +1461,27 @@ function useAutoplayTimeline(count: number, durationMs: number) {
       frameId = window.requestAnimationFrame(tick);
     };
 
-    frameId = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frameId);
+    const start = () => {
+      window.cancelAnimationFrame(frameId);
+      if (reducedMotion.matches) {
+        setTimeline({ stepIndex: count - 1, progress: 1 });
+        return;
+      }
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    const handleMotionChange = () => {
+      startedAt = performance.now();
+      setTimeline({ stepIndex: 0, progress: 0 });
+      start();
+    };
+
+    start();
+    reducedMotion.addEventListener("change", handleMotionChange);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      reducedMotion.removeEventListener("change", handleMotionChange);
+    };
   }, [count, durationMs]);
 
   return timeline;

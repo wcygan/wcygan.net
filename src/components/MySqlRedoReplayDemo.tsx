@@ -26,15 +26,20 @@ export function MySqlRedoReplayDemo() {
 
   return (
     <figure
+      data-graphic-frame="plate"
+      aria-labelledby="mysql-redo-replay-title"
       className="mysql-redo-replay-demo"
       data-phase={replayPhase(snapshot)}
     >
       <div className="mysql-redo-replay-header">
-        <h2>High-level InnoDB redo replay</h2>
+        <p className="article-graphic-title" id="mysql-redo-replay-title">
+          High-level InnoDB redo replay
+        </p>
         <p>Logical cards stand in for lower-level page redo records.</p>
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="mysql-redo-replay-canvas"
         role="img"

@@ -44,9 +44,16 @@ export function ReplicationLagDemo() {
   }, []);
 
   return (
-    <figure className="replication-lag-demo" data-phase={visibleState.phase}>
+    <figure
+      className="replication-lag-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="replication-lag-title"
+      data-phase={visibleState.phase}
+    >
       <div className="replication-lag-header">
-        <h3>Replication Lag</h3>
+        <p className="article-graphic-title" id="replication-lag-title">
+          Replication Lag
+        </p>
         <p>
           A write may be accepted before every region has copied it, so failover
           has to know which replicas are current enough to serve.
@@ -54,6 +61,7 @@ export function ReplicationLagDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="replication-lag-canvas"
         role="img"

@@ -45,11 +45,15 @@ export function HomeRegionRoutingDemo() {
 
   return (
     <figure
+      data-graphic-frame="plate"
+      aria-labelledby="home-region-routing-title"
       className="home-region-routing-demo"
       data-phase={visibleState.phase}
     >
       <div className="home-region-routing-header">
-        <h3>Entity Routing</h3>
+        <p className="article-graphic-title" id="home-region-routing-title">
+          Entity Routing
+        </p>
         <p>
           A request can enter through the nearest healthy edge while account
           writes still route to the region that owns that account.
@@ -57,6 +61,7 @@ export function HomeRegionRoutingDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="home-region-routing-canvas"
         role="img"

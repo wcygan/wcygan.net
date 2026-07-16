@@ -891,9 +891,15 @@ export function IncrementalEtlFlowDemo() {
   }, []);
 
   return (
-    <figure className="etl-flow-demo">
+    <figure
+      className="etl-flow-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="etl-flow-title"
+    >
       <div className="etl-flow-header">
-        <h2>Online → Offline Data Flow</h2>
+        <p className="article-graphic-title" id="etl-flow-title">
+          Online → Offline Data Flow
+        </p>
         <p>
           An <code>UPDATE</code> to the MySQL <code>users</code> table is
           captured by Brooklin, emitted to Kafka, consumed by Gobblin, and lands
@@ -903,6 +909,7 @@ export function IncrementalEtlFlowDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="etl-flow-canvas"
         role="img"

@@ -1,9 +1,9 @@
 import {
+  type CSSProperties,
+  type ReactNode,
   useCallback,
   useEffect,
   useState,
-  type CSSProperties,
-  type ReactNode,
 } from "react";
 import {
   DEFAULT_RECORD_COUNT,
@@ -41,7 +41,11 @@ function RoundTripTimelineDemo() {
   const { reset, snapshot } = useRoundTripSnapshot();
 
   return (
-    <figure className="n1-demo n1-round-trip-demo">
+    <figure
+      className="n1-demo n1-round-trip-demo"
+      data-graphic-frame="workbench"
+      aria-labelledby="n1-round-trip-title"
+    >
       <DemoHeader
         action={
           <button
@@ -53,12 +57,11 @@ function RoundTripTimelineDemo() {
             Reset
           </button>
         }
-        eyebrow="Demo"
         title="Round trips for 10 known order ids"
         copy="The app already has the order ids; watch whether it asks for each order separately or sends one set lookup."
       />
 
-      <div className="n1-round-trip-grid">
+      <div className="n1-round-trip-grid" data-graphic-stage="padded">
         <AnimatedQueryLane snapshot={snapshot.nPlusOne} />
         <AnimatedQueryLane snapshot={snapshot.batch} />
       </div>
@@ -89,15 +92,6 @@ function useRoundTripSnapshot(): {
     if (typeof window === "undefined") return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reducedMotion.matches) {
-      setSnapshot(
-        deriveRoundTripSnapshot({
-          progress: REDUCED_MOTION_ROUND_TRIP_PROGRESS,
-        }),
-      );
-      return;
-    }
-
     let frameId = 0;
     let startedAt = performance.now();
 
@@ -111,7 +105,22 @@ function useRoundTripSnapshot(): {
     };
 
     const start = () => {
+      window.cancelAnimationFrame(frameId);
+      if (reducedMotion.matches) {
+        setSnapshot(
+          deriveRoundTripSnapshot({
+            progress: REDUCED_MOTION_ROUND_TRIP_PROGRESS,
+          }),
+        );
+        return;
+      }
       frameId = window.requestAnimationFrame(tick);
+    };
+
+    const handleMotionChange = () => {
+      startedAt = performance.now();
+      setSnapshot(INITIAL_ROUND_TRIP_SNAPSHOT);
+      start();
     };
 
     const handleVisibilityChange = () => {
@@ -123,10 +132,12 @@ function useRoundTripSnapshot(): {
     };
 
     start();
+    reducedMotion.addEventListener("change", handleMotionChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.cancelAnimationFrame(frameId);
+      reducedMotion.removeEventListener("change", handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [restartIndex]);
@@ -137,21 +148,20 @@ function useRoundTripSnapshot(): {
 function DemoHeader({
   action,
   copy,
-  eyebrow,
   title,
 }: {
   action?: ReactNode;
   copy: string;
-  eyebrow: string;
   title: string;
 }) {
   return (
     <div className="n1-demo-header">
       <div className="n1-demo-header-top">
-        <span>{eyebrow}</span>
+        <p className="article-graphic-title" id="n1-round-trip-title">
+          {title}
+        </p>
         {action}
       </div>
-      <h2>{title}</h2>
       <p>{copy}</p>
     </div>
   );
@@ -161,7 +171,9 @@ function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
   const packetPoint = snapshot.packet
     ? pointForPacket(snapshot.packet)
     : undefined;
-  const fetchedPercent = `${(snapshot.fetchedRecords / snapshot.recordCount) * 100}%`;
+  const fetchedPercent = `${
+    (snapshot.fetchedRecords / snapshot.recordCount) * 100
+  }%`;
 
   return (
     <section
@@ -171,7 +183,7 @@ function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
     >
       <div className="n1-query-lane-summary">
         <div>
-          <h3>{snapshot.title}</h3>
+          <p className="n1-query-lane-title">{snapshot.title}</p>
         </div>
         <strong>{formatQueryCount(snapshot.queryCount)}</strong>
       </div>

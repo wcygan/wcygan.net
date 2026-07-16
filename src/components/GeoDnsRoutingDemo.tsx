@@ -98,9 +98,16 @@ export function GeoDnsRoutingDemo() {
   const snapshot = deriveGeoDnsSnapshot({ stepIndex });
 
   return (
-    <figure className="geo-dns-routing-demo" data-phase={snapshot.phase}>
+    <figure
+      className="geo-dns-routing-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="geo-dns-routing-title"
+      data-phase={snapshot.phase}
+    >
       <div className="geo-dns-routing-header">
-        <h3>GeoDNS Routing</h3>
+        <p className="article-graphic-title" id="geo-dns-routing-title">
+          GeoDNS Routing
+        </p>
         <p>
           DNS answers the same hostname with the closest regional entry point
           for the user making the query.
@@ -110,6 +117,7 @@ export function GeoDnsRoutingDemo() {
       <div className="geo-dns-routing-board">
         <svg
           className="geo-dns-routing-map"
+          data-graphic-stage="flush"
           role="img"
           aria-labelledby={`${titleId} ${descriptionId}`}
           viewBox="0 0 640 390"

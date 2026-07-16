@@ -47,9 +47,16 @@ export function CdcWalKafkaDemo() {
   }, []);
 
   return (
-    <figure className="cdc-wal-kafka-demo" data-phase={visibleState.phase}>
+    <figure
+      className="cdc-wal-kafka-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="cdc-wal-kafka-title"
+      data-phase={visibleState.phase}
+    >
       <div className="cdc-wal-kafka-header">
-        <h2>Debezium reads the WAL in order</h2>
+        <p className="article-graphic-title" id="cdc-wal-kafka-title">
+          Debezium reads the WAL in order
+        </p>
         <p>
           Postgres writes three row changes to the WAL. Debezium reads them one
           by one and sends each event to Kafka.
@@ -57,6 +64,7 @@ export function CdcWalKafkaDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="cdc-wal-kafka-canvas"
         role="img"

@@ -1,6 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TableOfContents } from "~/components/TableOfContents";
+import {
+  clearArticleGraphicMarkers,
+  markArticleGraphics,
+  shouldInspectArticleGraphics,
+} from "~/lib/article-graphics";
 import { draftPostModules } from "~/lib/services/draft-post-modules";
 import { getPostBySlug } from "~/lib/services/blog";
 import type { LazyMdxModule, MdxModule } from "~/lib/services/post-modules";
@@ -148,6 +153,7 @@ export const Route = createFileRoute("/$slug")({
 function BlogPostPage() {
   const { meta, moduleKey, slug } = Route.useLoaderData();
   const [postModule, setPostModule] = useState<MdxModule | null>(null);
+  const postContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isCurrent = true;
@@ -183,6 +189,21 @@ function BlogPostPage() {
   const showToc = shouldShowTableOfContents(tocWithTitle);
   const activeTocId = useActiveTocId(tocWithTitle);
 
+  useEffect(() => {
+    const postContent = postContentRef.current;
+    if (!postContent) {
+      return;
+    }
+
+    markArticleGraphics(postContent, slug);
+    postContent.toggleAttribute(
+      "data-inspect-graphics",
+      shouldInspectArticleGraphics(window.location.search),
+    );
+
+    return () => clearArticleGraphicMarkers(postContent);
+  }, [Content, slug]);
+
   return (
     <div className={showToc ? "post-shell post-shell-with-toc" : "post-shell"}>
       <article className="blog-post h-entry">
@@ -197,7 +218,7 @@ function BlogPostPage() {
           </time>
         </p>
 
-        <div className="post-content e-content">
+        <div ref={postContentRef} className="post-content e-content">
           {Content ? <Content /> : <p>Loading...</p>}
         </div>
 

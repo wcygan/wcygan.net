@@ -65,21 +65,44 @@ export function MultiRegionDataMap() {
     if (typeof window === "undefined" || !mapElementRef.current) return;
 
     let disposed = false;
+    let creationVersion = 0;
     let map: LeafletMap | null = null;
+    let pendingFrame = 0;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const cancelPendingFrame = () => {
+      if (pendingFrame) {
+        window.cancelAnimationFrame(pendingFrame);
+        pendingFrame = 0;
+      }
+    };
 
     async function initializeMap() {
+      const version = ++creationVersion;
+
       try {
         const L = await import("leaflet");
 
-        if (disposed || !mapElementRef.current) return;
+        if (disposed || version !== creationVersion || !mapElementRef.current) {
+          return;
+        }
 
         const mapWidth = mapElementRef.current.clientWidth;
         const isMobileMap = mapWidth < MOBILE_MAP_MAX_WIDTH;
         const initialZoom = isMobileMap ? 2.25 : 4;
-        const leafletMap = L.map(mapElementRef.current).setView(
-          CONTINENTAL_US_CENTER,
-          initialZoom,
+        setError(null);
+        setIsReady(false);
+        const reduceMotion = motionQuery.matches;
+        mapElementRef.current.classList.remove(
+          "leaflet-fade-anim",
+          "leaflet-zoom-anim",
         );
+        const leafletMap = L.map(mapElementRef.current, {
+          fadeAnimation: !reduceMotion,
+          inertia: !reduceMotion,
+          markerZoomAnimation: !reduceMotion,
+          zoomAnimation: !reduceMotion,
+        }).setView(CONTINENTAL_US_CENTER, initialZoom);
         map = leafletMap;
 
         L.tileLayer(OPENSTREETMAP_TILES, {
@@ -116,18 +139,36 @@ export function MultiRegionDataMap() {
 
         mapRef.current = leafletMap;
         leafletMap.whenReady(() => {
-          if (disposed) return;
+          if (
+            disposed ||
+            version !== creationVersion ||
+            map !== leafletMap ||
+            mapRef.current !== leafletMap
+          ) {
+            return;
+          }
+
           setIsReady(true);
-          requestAnimationFrame(() => {
-            if (disposed) return;
+          pendingFrame = window.requestAnimationFrame(() => {
+            pendingFrame = 0;
+            if (
+              disposed ||
+              version !== creationVersion ||
+              map !== leafletMap ||
+              mapRef.current !== leafletMap
+            ) {
+              return;
+            }
+
             leafletMap.invalidateSize();
             leafletMap.fitBounds(viewBounds, {
+              animate: !reduceMotion,
               padding: viewPadding,
             });
           });
         });
       } catch (caughtError) {
-        if (!disposed) {
+        if (!disposed && version === creationVersion) {
           setError(
             caughtError instanceof Error
               ? caughtError.message
@@ -137,14 +178,31 @@ export function MultiRegionDataMap() {
       }
     }
 
+    const recreateMapForMotion = () => {
+      cancelPendingFrame();
+      map?.stop();
+      map?.remove();
+      map = null;
+      if (mapRef.current) {
+        mapRef.current = null;
+      }
+      setIsReady(false);
+      void initializeMap();
+    };
+
+    motionQuery.addEventListener("change", recreateMapForMotion);
     initializeMap();
 
     return () => {
       disposed = true;
-      map?.remove();
-      if (mapRef.current === map) {
+      cancelPendingFrame();
+      motionQuery.removeEventListener("change", recreateMapForMotion);
+      const removedMap = map;
+      removedMap?.remove();
+      if (mapRef.current === removedMap) {
         mapRef.current = null;
       }
+      map = null;
       setIsReady(false);
     };
   }, []);
@@ -154,8 +212,12 @@ export function MultiRegionDataMap() {
   } as CSSProperties;
 
   return (
-    <figure className="multi-region-map-frame" style={style}>
-      <div className="multi-region-map-shell">
+    <figure
+      className="multi-region-map-frame"
+      data-graphic-frame="workbench"
+      style={style}
+    >
+      <div className="multi-region-map-shell" data-graphic-stage="flush">
         <div
           ref={mapElementRef}
           aria-label="OpenStreetMap showing data centers in Ashburn, Richardson, and Hillsboro"

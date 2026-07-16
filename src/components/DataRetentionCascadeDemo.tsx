@@ -492,9 +492,15 @@ export function DataRetentionCascadeDemo() {
   }, []);
 
   return (
-    <figure className="data-retention-demo">
+    <figure
+      className="data-retention-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="data-retention-title"
+    >
       <div className="data-retention-header">
-        <h2>Event-Based Delete Cascade</h2>
+        <p className="article-graphic-title" id="data-retention-title">
+          Event-Based Delete Cascade
+        </p>
         <p>
           Deleting customer #91 emits a purge event. The order service deletes
           its orders, and those deletes flow back through CDC as the next round
@@ -503,6 +509,7 @@ export function DataRetentionCascadeDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="data-retention-canvas"
         role="img"

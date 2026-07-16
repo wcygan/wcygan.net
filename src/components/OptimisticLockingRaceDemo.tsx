@@ -56,11 +56,15 @@ export function OptimisticLockingRaceDemo() {
 
   return (
     <figure
+      data-graphic-frame="plate"
+      aria-labelledby="optimistic-locking-race-title"
       className="optimistic-locking-race-demo"
       data-phase={visibleState.phase}
     >
       <div className="optimistic-locking-race-header">
-        <h2>Two checkout workers reserve inventory</h2>
+        <p className="article-graphic-title" id="optimistic-locking-race-title">
+          Two checkout workers reserve inventory
+        </p>
         <p>
           Two checkout workers read the same available counter at version 7. One
           decrement commits first; the stale worker rereads version 8 and
@@ -70,6 +74,7 @@ export function OptimisticLockingRaceDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="optimistic-locking-race-canvas"
         role="img"

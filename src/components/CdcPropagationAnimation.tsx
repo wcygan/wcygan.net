@@ -411,8 +411,9 @@ export function CdcPropagationAnimation() {
   }, []);
 
   return (
-    <figure className="cdc-animation-demo">
+    <figure className="cdc-animation-demo" data-graphic-frame="plate">
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="cdc-animation-canvas"
         aria-label="Looping animation of a Postgres update flowing through CDC into Redis"

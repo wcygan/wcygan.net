@@ -56,9 +56,16 @@ export function RetryIdempotencyDemo() {
   }, []);
 
   return (
-    <figure className="retry-idempotency-demo" data-phase={visibleState.phase}>
+    <figure
+      className="retry-idempotency-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="retry-idempotency-title"
+      data-phase={visibleState.phase}
+    >
       <div className="retry-idempotency-header">
-        <h2>Design for Idempotency</h2>
+        <p className="article-graphic-title" id="retry-idempotency-title">
+          Design for Idempotency
+        </p>
         <p>
           When the Worker crashes after sending an email and Temporal retries, a
           stable idempotency key lets the provider recognize the retry and skip
@@ -68,6 +75,7 @@ export function RetryIdempotencyDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="retry-idempotency-canvas"
         role="img"

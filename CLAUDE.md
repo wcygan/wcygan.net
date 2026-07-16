@@ -297,6 +297,24 @@ Each demo must:
 - use component-owned semantic color without changing the editorial shell; and
 - be verified in its real MDX article on desktop and mobile.
 
+The shared article route automatically marks every rendered `<figure>` with
+`data-article-graphic`, a route-local `data-graphic-id`, its inferred
+`data-graphic-kind`, and an accessible-text-derived `data-graphic-label`. Open
+an article with `?inspect=graphics` to outline and label the discovered figures,
+or query `[data-article-graphic]` from browser tooling. Keep new article graphics
+inside a semantic `<figure>` so discovery remains automatic; use
+`data-graphic-key`, `data-graphic-kind`, or `data-graphic-label` only when the
+inferred metadata needs an explicit stable override. Do not maintain a separate
+handwritten graphic index for discovery.
+
+Author the outer editorial role with `data-graphic-frame="bare|plate|workbench"`,
+not the renderer technology: use Bare for transparent or static reference media,
+Plate for a self-contained explanatory figure, and Workbench only when readers
+can operate controls. Every Plate and Workbench has exactly one authored
+`data-graphic-stage="flush|padded"` on its intended visual region; Bare figures
+have no stage. The route marker discovers and preserves this authored metadata,
+but does not infer a stage from child order.
+
 ## Accessibility and responsive behavior
 
 - Preserve semantic heading order and exactly one page `h1`.

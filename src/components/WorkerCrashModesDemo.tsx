@@ -13,8 +13,8 @@
 import { useEffect, useRef, useState } from "react";
 import { createWorkerCrashModesDemo } from "~/demos/worker-crash-modes/engine";
 import {
-  deriveCrashSnapshot,
   type CrashSnapshot,
+  deriveCrashSnapshot,
 } from "~/demos/worker-crash-modes/model";
 
 const INITIAL_SNAPSHOT = deriveCrashSnapshot({ progress: 0, playing: true });
@@ -54,11 +54,15 @@ export function WorkerCrashModesDemo() {
 
   return (
     <figure
+      data-graphic-frame="plate"
+      aria-labelledby="worker-crash-modes-title"
       className="worker-crash-modes-demo"
       data-phase={visibleState.activeAct}
     >
       <div className="worker-crash-modes-header">
-        <h2>Worker Failure</h2>
+        <p className="article-graphic-title" id="worker-crash-modes-title">
+          Worker Failure
+        </p>
         <p>
           When a Worker dies mid-task, a Workflow Task records its whole
           recovery in Event History, but an Activity leaves no trace at all,
@@ -67,6 +71,7 @@ export function WorkerCrashModesDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="worker-crash-modes-canvas"
         role="img"

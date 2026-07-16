@@ -60,9 +60,16 @@ export function DurableTaskLoopDemo() {
   }, []);
 
   return (
-    <figure className="durable-task-loop-demo" data-phase={visibleState.phase}>
+    <figure
+      className="durable-task-loop-demo"
+      data-graphic-frame="plate"
+      aria-labelledby="durable-task-loop-title"
+      data-phase={visibleState.phase}
+    >
       <div className="durable-task-loop-header">
-        <h2>The coordination loop</h2>
+        <p className="article-graphic-title" id="durable-task-loop-title">
+          The coordination loop
+        </p>
         <p>
           The Temporal Service queues pending tasks; a Worker processes the
           queue, running each activity and reporting every outcome to the Event
@@ -71,6 +78,7 @@ export function DurableTaskLoopDemo() {
       </div>
 
       <canvas
+        data-graphic-stage="flush"
         ref={canvasRef}
         className="durable-task-loop-canvas"
         role="img"
