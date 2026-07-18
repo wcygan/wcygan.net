@@ -1,322 +1,266 @@
 import {
   type CSSProperties,
-  type ReactNode,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import {
-  DEFAULT_RECORD_COUNT,
-  deriveRoundTripSnapshot,
-  REDUCED_MOTION_ROUND_TRIP_PROGRESS,
-  ROUND_TRIP_DURATION_MS,
-  type RoundTripLaneSnapshot,
-  type RoundTripPacket,
-  type RoundTripSnapshot,
+  deriveQueryRaceSnapshot,
+  INITIAL_QUERY_RACE_SNAPSHOT,
+  ORDER_COUNT,
+  QUERY_RACE_DURATION_MS,
+  type QueryLaneSnapshot,
+  type QueryRaceSnapshot,
 } from "~/demos/n-plus-one-query/model";
 
-const INITIAL_ROUND_TRIP_SNAPSHOT = deriveRoundTripSnapshot({ progress: 0 });
-
-const FLOW_VIEWBOX_WIDTH = 560;
-const FLOW_VIEWBOX_HEIGHT = 220;
-const FLOW_APP_X = 86;
-const FLOW_DATABASE_X = 474;
-const FLOW_NODE_Y = 104;
-const FLOW_START_X = 154;
-const FLOW_END_X = 406;
-const FLOW_RAIL_Y = 104;
-
 export function NPlusOneQueryDemos() {
-  return (
-    <div
-      className="n1-query-demo-stack"
-      aria-label="N plus one query versus batch query demo"
-    >
-      <RoundTripTimelineDemo />
-    </div>
-  );
-}
-
-function RoundTripTimelineDemo() {
-  const { reset, snapshot } = useRoundTripSnapshot();
+  const { replay, snapshot } = useQueryRacePlayback();
 
   return (
     <figure
-      className="n1-demo n1-round-trip-demo"
+      className="query-race"
       data-graphic-frame="workbench"
-      aria-labelledby="n1-round-trip-title"
+      data-graphic-key="query-race"
+      aria-labelledby="query-race-title"
+      aria-describedby="query-race-description query-race-caption"
     >
-      <DemoHeader
-        action={
-          <button
-            aria-label="Reset round trip animation"
-            className="n1-reset-button"
-            onClick={reset}
-            type="button"
-          >
-            Reset
-          </button>
-        }
-        title="Round trips for 10 known order ids"
-        copy="The app already has the order ids; watch whether it asks for each order separately or sends one set lookup."
-      />
+      <header className="query-race-header">
+        <div>
+          <p className="article-graphic-title" id="query-race-title">
+            Round trips for 10 known order ids
+          </p>
+          <p id="query-race-description">
+            Both paths need the same rows. The difference is how many times the
+            application waits on the database boundary.
+          </p>
+        </div>
+        <button
+          className="query-race-replay"
+          type="button"
+          onClick={replay}
+          aria-label="Replay query round trip comparison"
+        >
+          Replay
+        </button>
+      </header>
 
-      <div className="n1-round-trip-grid" data-graphic-stage="padded">
-        <AnimatedQueryLane snapshot={snapshot.nPlusOne} />
-        <AnimatedQueryLane snapshot={snapshot.batch} />
+      <div className="query-race-stage" data-graphic-stage="flush">
+        <div className="query-race-input" aria-hidden="true">
+          <span>Same input</span>
+          <code className="query-race-input-value">
+            [101, 102, 103, …, 110]
+          </code>
+        </div>
+
+        <div className="query-race-lanes" aria-hidden="true">
+          <QueryLane snapshot={snapshot.nPlusOne} />
+          <QueryLane snapshot={snapshot.batch} />
+        </div>
+
+        <div className="query-race-status" aria-hidden="true">
+          <p key={snapshot.statusLabel}>{snapshot.statusLabel}</p>
+        </div>
+
+        <div
+          className="query-race-summary"
+          data-visible={snapshot.batch.isComplete ? "true" : "false"}
+          aria-hidden="true"
+        >
+          <ComparisonMetric label="Rows returned" value="10 = 10" />
+          <ComparisonMetric label="Round trips removed" value="9" />
+          <ComparisonMetric
+            label="Illustrative wait"
+            value={`${snapshot.batch.elapsedMs}ms vs 250ms`}
+          />
+        </div>
       </div>
 
-      <figcaption className="n1-demo-status">
-        The per-id path receives one order per database response; the batch path
-        jumps from 0 to 10 when the single set lookup returns. Per-id requests
-        use 25ms each; the batch lookup takes 35ms to account for extra database
-        work.
+      <p className="sr-only" aria-live="polite">
+        {snapshot.isComplete
+          ? "Comparison complete. Both approaches returned 10 rows. The batch query used one round trip and 35 milliseconds; the per-id queries used ten round trips and 250 milliseconds."
+          : ""}
+      </p>
+
+      <figcaption id="query-race-caption">
+        Illustrative latency: each per-id trip costs 25ms; the grouped lookup
+        costs 35ms. The rows are identical, but batching removes nine waits.
       </figcaption>
     </figure>
   );
 }
 
-function useRoundTripSnapshot(): {
-  reset: () => void;
-  snapshot: RoundTripSnapshot;
+function useQueryRacePlayback(): {
+  replay: () => void;
+  snapshot: QueryRaceSnapshot;
 } {
-  const [snapshot, setSnapshot] = useState(INITIAL_ROUND_TRIP_SNAPSHOT);
-  const [restartIndex, setRestartIndex] = useState(0);
+  const [snapshot, setSnapshot] = useState(INITIAL_QUERY_RACE_SNAPSHOT);
+  const [playbackId, setPlaybackId] = useState(0);
 
-  const reset = useCallback(() => {
-    setSnapshot(INITIAL_ROUND_TRIP_SNAPSHOT);
-    setRestartIndex((current) => current + 1);
+  const replay = useCallback(() => {
+    setSnapshot(INITIAL_QUERY_RACE_SNAPSHOT);
+    setPlaybackId((current) => current + 1);
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let frameId = 0;
-    let startedAt = performance.now();
+    let animationFrame = 0;
+    let elapsedMs = 0;
+    let previousFrame: number | undefined;
+
+    const renderSettledComparison = () => {
+      window.cancelAnimationFrame(animationFrame);
+      previousFrame = undefined;
+      setSnapshot(deriveQueryRaceSnapshot(1));
+    };
 
     const tick = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / ROUND_TRIP_DURATION_MS);
-      setSnapshot(deriveRoundTripSnapshot({ progress }));
+      if (previousFrame !== undefined) {
+        elapsedMs += now - previousFrame;
+      }
+      previousFrame = now;
+
+      const progress = Math.min(1, elapsedMs / QUERY_RACE_DURATION_MS);
+      setSnapshot(deriveQueryRaceSnapshot(progress));
 
       if (progress < 1) {
-        frameId = window.requestAnimationFrame(tick);
+        animationFrame = window.requestAnimationFrame(tick);
       }
     };
 
     const start = () => {
-      window.cancelAnimationFrame(frameId);
+      window.cancelAnimationFrame(animationFrame);
+      previousFrame = undefined;
+
       if (reducedMotion.matches) {
-        setSnapshot(
-          deriveRoundTripSnapshot({
-            progress: REDUCED_MOTION_ROUND_TRIP_PROGRESS,
-          }),
-        );
+        renderSettledComparison();
         return;
       }
-      frameId = window.requestAnimationFrame(tick);
+
+      animationFrame = window.requestAnimationFrame(tick);
     };
 
-    const handleMotionChange = () => {
-      startedAt = performance.now();
-      setSnapshot(INITIAL_ROUND_TRIP_SNAPSHOT);
+    const handleMotionPreference = () => {
+      elapsedMs = 0;
+      setSnapshot(INITIAL_QUERY_RACE_SNAPSHOT);
       start();
     };
 
-    const handleVisibilityChange = () => {
-      window.cancelAnimationFrame(frameId);
-      if (document.hidden) return;
+    const handleVisibility = () => {
+      window.cancelAnimationFrame(animationFrame);
+      previousFrame = undefined;
 
-      startedAt = performance.now();
-      start();
+      if (!document.hidden && !reducedMotion.matches) {
+        animationFrame = window.requestAnimationFrame(tick);
+      }
     };
 
     start();
-    reducedMotion.addEventListener("change", handleMotionChange);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    reducedMotion.addEventListener("change", handleMotionPreference);
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
-      reducedMotion.removeEventListener("change", handleMotionChange);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.cancelAnimationFrame(animationFrame);
+      reducedMotion.removeEventListener("change", handleMotionPreference);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [restartIndex]);
+  }, [playbackId]);
 
-  return { reset, snapshot };
+  return { replay, snapshot };
 }
 
-function DemoHeader({
-  action,
-  copy,
-  title,
-}: {
-  action?: ReactNode;
-  copy: string;
-  title: string;
-}) {
-  return (
-    <div className="n1-demo-header">
-      <div className="n1-demo-header-top">
-        <p className="article-graphic-title" id="n1-round-trip-title">
-          {title}
-        </p>
-        {action}
-      </div>
-      <p>{copy}</p>
-    </div>
-  );
-}
+function QueryLane({ snapshot }: { snapshot: QueryLaneSnapshot }) {
+  const railRef = useRef<HTMLDivElement>(null);
+  const packetRef = useRef<HTMLSpanElement>(null);
+  const [travelDistance, setTravelDistance] = useState(0);
 
-function AnimatedQueryLane({ snapshot }: { snapshot: RoundTripLaneSnapshot }) {
-  const packetPoint = snapshot.packet
-    ? pointForPacket(snapshot.packet)
-    : undefined;
-  const fetchedPercent = `${
-    (snapshot.fetchedRecords / snapshot.recordCount) * 100
-  }%`;
+  useEffect(() => {
+    const rail = railRef.current;
+    const packet = packetRef.current;
+    if (!rail || !packet) return;
+
+    const measure = () => {
+      setTravelDistance(Math.max(0, rail.clientWidth - packet.offsetWidth));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(rail);
+
+    return () => observer.disconnect();
+  }, []);
+
+  const packetPosition = snapshot.packet
+    ? snapshot.packet.direction === "outbound"
+      ? snapshot.packet.progress
+      : 1 - snapshot.packet.progress
+    : snapshot.isComplete
+      ? 0
+      : 1;
+  const packetStyle = {
+    opacity: snapshot.packet ? 1 : 0,
+    transform: `translate3d(${packetPosition * travelDistance}px, 0, 0)`,
+  } satisfies CSSProperties;
 
   return (
     <section
-      className="n1-query-lane n1-animation-lane"
+      className="query-race-lane"
       data-kind={snapshot.kind}
       data-phase={snapshot.phase}
     >
-      <div className="n1-query-lane-summary">
+      <div className="query-race-lane-header">
         <div>
-          <p className="n1-query-lane-title">{snapshot.title}</p>
+          <strong>{snapshot.title}</strong>
+          <span>{snapshot.queryLabel}</span>
         </div>
-        <strong>{formatQueryCount(snapshot.queryCount)}</strong>
-      </div>
-
-      <div
-        className="n1-fetched-counter"
-        aria-label={`Fetched orders, ${snapshot.elapsedMs} milliseconds elapsed`}
-      >
-        <div className="n1-fetched-main">
-          <strong>
-            {snapshot.fetchedRecords}/{snapshot.recordCount}
-          </strong>
-          <span>orders fetched</span>
-        </div>
-        <time
-          className="n1-query-timer"
-          dateTime={`PT${(snapshot.elapsedMs / 1000).toFixed(3)}S`}
-          aria-label={`${snapshot.elapsedMs} milliseconds elapsed`}
-        >
-          {snapshot.elapsedMs}ms
+        <time dateTime={`PT${(snapshot.elapsedMs / 1000).toFixed(3)}S`}>
+          {snapshot.elapsedMs.toString().padStart(3, "0")}ms
         </time>
       </div>
 
-      <div
-        className="n1-record-progress"
-        data-empty={snapshot.fetchedRecords === 0 ? "true" : "false"}
-        style={{ "--n1-fetched-width": fetchedPercent } as CSSProperties}
-        aria-hidden="true"
-      >
-        {Array.from({ length: snapshot.recordCount }, (_, index) => {
-          const recordNumber = index + 1;
-          const state =
-            recordNumber <= snapshot.fetchedRecords
-              ? "fetched"
-              : recordNumber === snapshot.activeRecord
-                ? "active"
-                : "pending";
-
-          return (
-            <span key={recordNumber} data-state={state} aria-hidden="true" />
-          );
-        })}
+      <div className="query-race-track">
+        <div className="query-race-endpoints">
+          <span>Application</span>
+          <span>Database</span>
+        </div>
+        <div className="query-race-rail" ref={railRef}>
+          <span className="query-race-rail-line" />
+          <span
+            className="query-race-packet"
+            data-direction={snapshot.packet?.direction ?? "idle"}
+            ref={packetRef}
+            style={packetStyle}
+          >
+            {snapshot.packet?.label ?? "done"}
+          </span>
+        </div>
       </div>
 
-      <svg
-        className="n1-flow-map"
-        viewBox={`0 0 ${FLOW_VIEWBOX_WIDTH} ${FLOW_VIEWBOX_HEIGHT}`}
-        role="img"
-      >
-        <title>{snapshot.title} data-fetch animation</title>
-        <desc>
-          The application sends query requests to the database, and database
-          response packets increase the fetched order counter and elapsed query
-          timer.
-        </desc>
-
-        <line
-          className="n1-flow-line n1-flow-line-request"
-          x1={FLOW_START_X}
-          y1={FLOW_RAIL_Y}
-          x2={FLOW_END_X}
-          y2={FLOW_RAIL_Y}
-        />
-        <line
-          className="n1-flow-line n1-flow-line-response"
-          x1={FLOW_END_X}
-          y1={FLOW_RAIL_Y}
-          x2={FLOW_START_X}
-          y2={FLOW_RAIL_Y}
-        />
-
-        <EndpointNode kind="app" />
-        <EndpointNode kind="database" />
-
-        {packetPoint && snapshot.packet ? (
-          <g className="n1-flow-packet" data-tone={snapshot.packet.tone}>
-            <circle cx={packetPoint.x} cy={packetPoint.y} r="10" />
-            <text x={packetPoint.x} y={packetPoint.y + 4}>
-              {snapshot.packet.label}
-            </text>
-          </g>
-        ) : null}
-      </svg>
-
-      <p className="n1-lane-status">{snapshot.statusLabel}</p>
+      <div className="query-race-output">
+        <div
+          className="query-race-records"
+          data-grouped={snapshot.kind === "batch" ? "true" : "false"}
+        >
+          {Array.from({ length: ORDER_COUNT }, (_, index) => (
+            <span
+              key={index}
+              data-returned={index < snapshot.returnedOrders ? "true" : "false"}
+            />
+          ))}
+        </div>
+        <span>{snapshot.returnedOrders}/10 rows</span>
+      </div>
     </section>
   );
 }
 
-function EndpointNode({ kind }: { kind: "app" | "database" }) {
-  if (kind === "app") {
-    return (
-      <g
-        className="n1-flow-node n1-flow-node-app"
-        transform={`translate(${FLOW_APP_X} ${FLOW_NODE_Y})`}
-      >
-        <rect x="-38" y="-31" width="76" height="62" rx="10" />
-        <circle cx="-21" cy="-16" r="3" />
-        <circle cx="-10" cy="-16" r="3" />
-        <line x1="-27" y1="-3" x2="27" y2="-3" />
-        <line x1="-27" y1="13" x2="18" y2="13" />
-        <text y="58">App</text>
-      </g>
-    );
-  }
-
+function ComparisonMetric({ label, value }: { label: string; value: string }) {
   return (
-    <g
-      className="n1-flow-node n1-flow-node-db"
-      transform={`translate(${FLOW_DATABASE_X} ${FLOW_NODE_Y})`}
-    >
-      <path d="M -38 -18 C -38 -31 38 -31 38 -18 L 38 25 C 38 38 -38 38 -38 25 Z" />
-      <path d="M -38 -18 C -38 -5 38 -5 38 -18" />
-      <path d="M -38 4 C -38 17 38 17 38 4" />
-      <text y="58">Database</text>
-    </g>
+    <div>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
   );
-}
-
-function pointForPacket(packet: RoundTripPacket) {
-  if (packet.direction === "to-db") {
-    return {
-      x: FLOW_START_X + (FLOW_END_X - FLOW_START_X) * packet.progress,
-      y: FLOW_RAIL_Y,
-    };
-  }
-
-  return {
-    x: FLOW_END_X - (FLOW_END_X - FLOW_START_X) * packet.progress,
-    y: FLOW_RAIL_Y,
-  };
-}
-
-function formatQueryCount(queryCount: number) {
-  return `${queryCount} ${queryCount === 1 ? "query" : "queries"}`;
 }

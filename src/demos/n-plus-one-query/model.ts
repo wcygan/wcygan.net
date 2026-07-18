@@ -1,344 +1,208 @@
-export type QueryPlanKind = "n-plus-one" | "batch";
+export const ORDER_COUNT = 10;
+export const QUERY_RACE_DURATION_MS = 22_500;
+export const PER_ID_TOTAL_MS = 250;
+export const BATCH_TOTAL_MS = 35;
 
-export type QueryTrip = {
-  id: string;
-  label: string;
-  detail: string;
-  recordCount: number;
-  role: "individual" | "batch";
-};
-
-export type QueryPlan = {
-  kind: QueryPlanKind;
-  title: string;
-  summary: string;
-  recordsWanted: number;
-  queryCount: number;
-  estimatedMs: number;
-  trips: QueryTrip[];
-};
-
-export type QueryComparison = {
-  recordCount: number;
-  nPlusOne: QueryPlan;
-  batch: QueryPlan;
-  savedQueries: number;
-  maxQueryCount: number;
-  maxEstimatedMs: number;
-};
-
-export type RoundTripPhase = "request" | "processing" | "response" | "settled";
-
-export type RoundTripPacket = {
-  direction: "to-db" | "from-db";
-  progress: number;
-  label: string;
-  tone: "request" | "data";
-};
-
-export type RoundTripLaneSnapshot = {
-  kind: QueryPlanKind;
-  title: string;
-  queryCount: number;
-  fetchedRecords: number;
-  recordCount: number;
-  activeRecord: number;
-  elapsedMs: number;
-  phase: RoundTripPhase;
-  packet?: RoundTripPacket;
-  statusLabel: string;
-};
-
-export type RoundTripSnapshot = {
-  nPlusOne: RoundTripLaneSnapshot;
-  batch: RoundTripLaneSnapshot;
-};
-
-export const DEFAULT_RECORD_COUNT = 10;
-export const ROUND_TRIP_DURATION_MS = 22000;
-export const REDUCED_MOTION_ROUND_TRIP_PROGRESS = 1;
-export const QUERY_TURN_MS = 25;
-export const BATCH_QUERY_MS = 35;
-
-const REQUEST_END = 0.32;
-const RESPONSE_START = 0.5;
-const RESPONSE_END = 0.82;
-const BATCH_REQUEST_START = 0;
-const BATCH_REQUEST_END = 0.06;
-const BATCH_RESPONSE_START = 0.18;
-const BATCH_RESPONSE_END = 0.28;
+const INTRO_END = 0.045;
+const BATCH_WINDOW_END = 0.22;
+const N_PLUS_ONE_WINDOW_END = 0.96;
+const REQUEST_END = 0.3;
+const PROCESSING_END = 0.54;
+const RESPONSE_END = 0.86;
 const FINAL_SEGMENT_EPSILON = 1e-6;
 
-export function buildQueryComparison(
-  recordCount = DEFAULT_RECORD_COUNT,
-): QueryComparison {
-  const normalizedRecordCount = Math.max(1, Math.floor(recordCount));
-  const nPlusOne = buildNPlusOnePlan(normalizedRecordCount);
-  const batch = buildBatchPlan(normalizedRecordCount);
+export type QueryLaneKind = "n-plus-one" | "batch";
+export type QueryLanePhase =
+  | "waiting"
+  | "request"
+  | "processing"
+  | "response"
+  | "settled";
+
+export type QueryPacket = {
+  direction: "outbound" | "inbound";
+  label: string;
+  progress: number;
+};
+
+export type QueryLaneSnapshot = {
+  kind: QueryLaneKind;
+  title: string;
+  queryLabel: string;
+  elapsedMs: number;
+  returnedOrders: number;
+  remainingTrips: number;
+  phase: QueryLanePhase;
+  packet?: QueryPacket;
+  isComplete: boolean;
+};
+
+export type QueryRaceSnapshot = {
+  nPlusOne: QueryLaneSnapshot;
+  batch: QueryLaneSnapshot;
+  statusLabel: string;
+  isComplete: boolean;
+};
+
+export const INITIAL_QUERY_RACE_SNAPSHOT = deriveQueryRaceSnapshot(0);
+
+export function deriveQueryRaceSnapshot(progress: number): QueryRaceSnapshot {
+  const normalizedProgress = clamp(progress, 0, 1);
+  const nPlusOne = deriveNPlusOneLane(normalizedProgress);
+  const batch = deriveBatchLane(normalizedProgress);
+  const isComplete = nPlusOne.isComplete && batch.isComplete;
 
   return {
-    recordCount: normalizedRecordCount,
     nPlusOne,
     batch,
-    savedQueries: nPlusOne.queryCount - batch.queryCount,
-    maxQueryCount: Math.max(nPlusOne.queryCount, batch.queryCount),
-    maxEstimatedMs: Math.max(nPlusOne.estimatedMs, batch.estimatedMs),
+    isComplete,
+    statusLabel: statusForComparison({ batch, isComplete, nPlusOne }),
   };
 }
 
-function buildNPlusOnePlan(recordCount: number): QueryPlan {
-  const trips: QueryTrip[] = Array.from({ length: recordCount }, (_, index) => {
-    const orderNumber = index + 1;
+function deriveNPlusOneLane(progress: number): QueryLaneSnapshot {
+  const laneProgress = progressInWindow(
+    progress,
+    INTRO_END,
+    N_PLUS_ONE_WINDOW_END,
+  );
+  const isComplete = laneProgress >= 1;
 
+  if (progress < INTRO_END) {
     return {
-      id: `order-${orderNumber}`,
-      label: `Order id ${orderNumber}`,
-      detail: "orders WHERE id = ?",
-      recordCount: 1,
-      role: "individual" as const,
+      kind: "n-plus-one",
+      title: "N+1",
+      queryLabel: "10 sequential queries",
+      elapsedMs: 0,
+      returnedOrders: 0,
+      remainingTrips: ORDER_COUNT,
+      phase: "waiting",
+      isComplete: false,
     };
-  });
+  }
+
+  const segment = Math.min(
+    ORDER_COUNT - FINAL_SEGMENT_EPSILON,
+    laneProgress * ORDER_COUNT,
+  );
+  const tripIndex = Math.floor(segment);
+  const tripProgress = segment - tripIndex;
+  const returnedOrders = Math.min(
+    ORDER_COUNT,
+    tripIndex + (tripProgress >= RESPONSE_END ? 1 : 0),
+  );
 
   return {
     kind: "n-plus-one",
-    title: "Per-id queries",
-    summary: "One order query per known id.",
-    recordsWanted: recordCount,
-    queryCount: trips.length,
-    estimatedMs: estimateMilliseconds(trips.length),
-    trips,
+    title: "N+1",
+    queryLabel: "10 sequential queries",
+    elapsedMs: Math.round(laneProgress * PER_ID_TOTAL_MS),
+    returnedOrders,
+    remainingTrips: ORDER_COUNT - returnedOrders,
+    phase: isComplete ? "settled" : phaseForTrip(tripProgress),
+    packet: isComplete
+      ? undefined
+      : packetForTrip(tripProgress, tripIndex + 1, 1),
+    isComplete,
   };
 }
 
-function buildBatchPlan(recordCount: number): QueryPlan {
-  const trips: QueryTrip[] = [
-    {
-      id: "orders",
-      label: `Fetch ${recordCount} orders once`,
-      detail: "orders WHERE id IN (...)",
-      recordCount,
-      role: "batch",
-    },
-  ];
+function deriveBatchLane(progress: number): QueryLaneSnapshot {
+  const laneProgress = progressInWindow(progress, INTRO_END, BATCH_WINDOW_END);
+  const isComplete = laneProgress >= 1;
+  const returnedOrders = laneProgress >= RESPONSE_END ? ORDER_COUNT : 0;
 
   return {
     kind: "batch",
-    title: "Batch query",
-    summary: "One order query for all known ids.",
-    recordsWanted: recordCount,
-    queryCount: trips.length,
-    estimatedMs: BATCH_QUERY_MS,
-    trips,
+    title: "Batch",
+    queryLabel: "1 grouped query",
+    elapsedMs: Math.round(laneProgress * BATCH_TOTAL_MS),
+    returnedOrders,
+    remainingTrips: isComplete ? 0 : 1,
+    phase:
+      progress < INTRO_END
+        ? "waiting"
+        : isComplete
+          ? "settled"
+          : phaseForTrip(laneProgress),
+    packet:
+      progress < INTRO_END || isComplete
+        ? undefined
+        : packetForTrip(laneProgress, ORDER_COUNT, ORDER_COUNT),
+    isComplete,
   };
 }
 
-function estimateMilliseconds(queryCount: number) {
-  return queryCount * QUERY_TURN_MS;
-}
-
-export function deriveRoundTripSnapshot({
-  progress,
-  recordCount = DEFAULT_RECORD_COUNT,
-}: {
-  progress: number;
-  recordCount?: number;
-}): RoundTripSnapshot {
-  const normalizedRecordCount = Math.max(1, Math.floor(recordCount));
-  const comparison = buildQueryComparison(normalizedRecordCount);
-  const clampedProgress = clamp(progress, 0, 1);
-
-  return {
-    nPlusOne: deriveNPlusOneRoundTrip(
-      comparison.nPlusOne,
-      clampedProgress,
-      normalizedRecordCount,
-    ),
-    batch: deriveBatchRoundTrip(
-      comparison.batch,
-      clampedProgress,
-      normalizedRecordCount,
-    ),
-  };
-}
-
-function deriveNPlusOneRoundTrip(
-  plan: QueryPlan,
+function packetForTrip(
   progress: number,
-  recordCount: number,
-): RoundTripLaneSnapshot {
-  const segment = Math.min(
-    recordCount - FINAL_SEGMENT_EPSILON,
-    progress * recordCount,
-  );
-  const activeIndex = Math.floor(segment);
-  const localProgress = segment - activeIndex;
-  const activeRecord = Math.min(activeIndex + 1, recordCount);
-  const fetchedRecords = Math.min(
-    recordCount,
-    activeIndex + (localProgress >= RESPONSE_END ? 1 : 0),
-  );
-  const elapsedMs = nPlusOneElapsedMs(progress, recordCount);
-  const phase = phaseForLocalProgress(localProgress);
-  const packet = packetForLocalProgress(localProgress, activeRecord, 1);
+  querySize: number,
+  returnedRows: number,
+): QueryPacket | undefined {
+  if (progress < REQUEST_END) {
+    return {
+      direction: "outbound",
+      label: querySize === ORDER_COUNT ? "10 ids" : `id ${querySize}`,
+      progress: clamp(progress / REQUEST_END, 0, 1),
+    };
+  }
 
-  return {
-    kind: plan.kind,
-    title: plan.title,
-    queryCount: plan.queryCount,
-    fetchedRecords,
-    recordCount,
-    activeRecord,
-    elapsedMs,
-    phase,
-    packet,
-    statusLabel: nPlusOneStatusLabel(recordCount),
-  };
+  if (progress < PROCESSING_END) {
+    return {
+      direction: "outbound",
+      label: "SQL",
+      progress: 1,
+    };
+  }
+
+  if (progress < RESPONSE_END) {
+    return {
+      direction: "inbound",
+      label: returnedRows === ORDER_COUNT ? "10 rows" : "1 row",
+      progress: clamp(
+        (progress - PROCESSING_END) / (RESPONSE_END - PROCESSING_END),
+        0,
+        1,
+      ),
+    };
+  }
+
+  return undefined;
 }
 
-function deriveBatchRoundTrip(
-  plan: QueryPlan,
-  progress: number,
-  recordCount: number,
-): RoundTripLaneSnapshot {
-  const fetchedRecords = progress >= BATCH_RESPONSE_END ? recordCount : 0;
-  const elapsedMs = batchElapsedMs(progress);
-  const phase = batchPhaseForProgress(progress);
-  const packet = batchPacketForProgress(progress, recordCount);
-
-  return {
-    kind: plan.kind,
-    title: plan.title,
-    queryCount: plan.queryCount,
-    fetchedRecords,
-    recordCount,
-    activeRecord: fetchedRecords === recordCount ? recordCount : 0,
-    elapsedMs,
-    phase,
-    packet,
-    statusLabel: batchStatusLabel(recordCount),
-  };
-}
-
-function nPlusOneElapsedMs(progress: number, recordCount: number) {
-  return Math.round(clamp(progress, 0, 1) * recordCount * QUERY_TURN_MS);
-}
-
-function batchElapsedMs(progress: number) {
-  if (progress <= BATCH_REQUEST_START) return 0;
-
-  const queryProgress = clamp(
-    (progress - BATCH_REQUEST_START) /
-      (BATCH_RESPONSE_END - BATCH_REQUEST_START),
-    0,
-    1,
-  );
-
-  return Math.round(queryProgress * BATCH_QUERY_MS);
-}
-
-function phaseForLocalProgress(progress: number): RoundTripPhase {
+function phaseForTrip(progress: number): QueryLanePhase {
   if (progress < REQUEST_END) return "request";
-  if (progress < RESPONSE_START) return "processing";
+  if (progress < PROCESSING_END) return "processing";
   if (progress < RESPONSE_END) return "response";
   return "settled";
 }
 
-function packetForLocalProgress(
-  progress: number,
-  activeRecord: number,
-  returnedRecords: number,
-): RoundTripPacket | undefined {
-  if (progress < REQUEST_END) {
-    return {
-      direction: "to-db",
-      progress: clamp(progress / REQUEST_END, 0, 1),
-      label: `id ${activeRecord}?`,
-      tone: "request",
-    };
+function statusForComparison({
+  batch,
+  isComplete,
+  nPlusOne,
+}: {
+  batch: QueryLaneSnapshot;
+  isComplete: boolean;
+  nPlusOne: QueryLaneSnapshot;
+}) {
+  if (isComplete) {
+    return "Same 10 rows. Nine round trips and 215ms of illustrative wait removed.";
   }
 
-  if (progress >= RESPONSE_START && progress < RESPONSE_END) {
-    return {
-      direction: "from-db",
-      progress: clamp(
-        (progress - RESPONSE_START) / (RESPONSE_END - RESPONSE_START),
-        0,
-        1,
-      ),
-      label: `+${returnedRecords}`,
-      tone: "data",
-    };
+  if (batch.isComplete) {
+    const noun = nPlusOne.remainingTrips === 1 ? "trip" : "trips";
+    return `Batch is finished. N+1 still has ${nPlusOne.remainingTrips} ${noun} to make.`;
   }
 
-  if (progress < RESPONSE_START) {
-    return {
-      direction: "to-db",
-      progress: 1,
-      label: "...",
-      tone: "request",
-    };
+  if (batch.phase === "waiting") {
+    return "Both approaches start with the same 10 order ids.";
   }
 
-  return undefined;
+  return "Both approaches cross the same application–database boundary.";
 }
 
-function batchPhaseForProgress(progress: number): RoundTripPhase {
-  if (progress < BATCH_REQUEST_END) return "request";
-  if (progress < BATCH_RESPONSE_START) return "processing";
-  if (progress < BATCH_RESPONSE_END) return "response";
-  return "settled";
-}
-
-function batchPacketForProgress(
-  progress: number,
-  recordCount: number,
-): RoundTripPacket | undefined {
-  if (progress >= BATCH_REQUEST_START && progress < BATCH_REQUEST_END) {
-    return {
-      direction: "to-db",
-      progress: clamp(
-        (progress - BATCH_REQUEST_START) /
-          (BATCH_REQUEST_END - BATCH_REQUEST_START),
-        0,
-        1,
-      ),
-      label: `${recordCount} ids`,
-      tone: "request",
-    };
-  }
-
-  if (progress >= BATCH_RESPONSE_START && progress < BATCH_RESPONSE_END) {
-    return {
-      direction: "from-db",
-      progress: clamp(
-        (progress - BATCH_RESPONSE_START) /
-          (BATCH_RESPONSE_END - BATCH_RESPONSE_START),
-        0,
-        1,
-      ),
-      label: `+${recordCount}`,
-      tone: "data",
-    };
-  }
-
-  if (progress >= BATCH_REQUEST_END && progress < BATCH_RESPONSE_START) {
-    return {
-      direction: "to-db",
-      progress: 1,
-      label: "...",
-      tone: "request",
-    };
-  }
-
-  return undefined;
-}
-
-function nPlusOneStatusLabel(recordCount: number) {
-  return `Each of the ${recordCount} known order ids is requested and fetched individually.`;
-}
-
-function batchStatusLabel(recordCount: number) {
-  return `All ${recordCount} orders are fetched and returned together.`;
+function progressInWindow(progress: number, start: number, end: number) {
+  return clamp((progress - start) / (end - start), 0, 1);
 }
 
 function clamp(value: number, min: number, max: number) {

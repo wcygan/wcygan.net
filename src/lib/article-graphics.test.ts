@@ -17,7 +17,7 @@ describe("article graphic markers", () => {
   it("marks nested figures once with readable metadata", () => {
     const container = articleContent(`
       <section>
-        <figure class="n1-demo n1-round-trip-demo">
+        <figure class="query-race" data-graphic-key="query-race">
           <h3>N+1 round trips</h3>
           <svg role="img"></svg>
         </figure>
@@ -33,7 +33,7 @@ describe("article graphic markers", () => {
     expect(markers).toMatchObject([
       {
         frame: "bare",
-        id: "example-post:n1-round-trip-demo",
+        id: "example-post:query-race",
         index: 1,
         kind: "svg",
         label: "N+1 round trips",
