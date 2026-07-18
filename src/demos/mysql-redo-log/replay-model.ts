@@ -12,8 +12,6 @@ export type LogRecord = {
   operation: Operation;
   recordKey: RecordKey;
   recordLabel: string;
-  summary: string;
-  detail: string;
   balance?: number;
 };
 
@@ -43,6 +41,11 @@ export type ReplaySnapshot = {
   cursorProgress: number;
   phaseLabel: string;
 };
+
+export const REPLAY_DURATION_MS = 16_000;
+
+const INTRO_END = 0.075;
+const REPLAY_END = 0.93;
 
 export const RECORD_LABELS: Record<RecordKey, string> = {
   A: "Account A",
@@ -76,8 +79,6 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     operation: "UPDATE",
     recordKey: "A",
     recordLabel: RECORD_LABELS.A,
-    summary: "UPDATE Account A",
-    detail: "balance 800",
     balance: 800,
   },
   {
@@ -85,8 +86,6 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     operation: "INSERT",
     recordKey: "C",
     recordLabel: RECORD_LABELS.C,
-    summary: "INSERT Account C",
-    detail: "balance 1200",
     balance: 1200,
   },
   {
@@ -94,8 +93,6 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     operation: "UPDATE",
     recordKey: "B",
     recordLabel: RECORD_LABELS.B,
-    summary: "UPDATE Account B",
-    detail: "balance 300",
     balance: 300,
   },
   {
@@ -103,8 +100,6 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     operation: "UPDATE",
     recordKey: "A",
     recordLabel: RECORD_LABELS.A,
-    summary: "UPDATE Account A",
-    detail: "balance 725",
     balance: 725,
   },
   {
@@ -112,16 +107,12 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     operation: "DELETE",
     recordKey: "C",
     recordLabel: RECORD_LABELS.C,
-    summary: "DELETE Account C",
-    detail: "remove record",
   },
   {
     sequence: 106,
     operation: "UPDATE",
     recordKey: "B",
     recordLabel: RECORD_LABELS.B,
-    summary: "UPDATE Account B",
-    detail: "balance 180",
     balance: 180,
   },
 ] as const;
@@ -132,9 +123,34 @@ export const INITIAL_REPLAY_STATE: ReplayState = {
 };
 
 export const REDUCED_MOTION_REPLAY_STATE: ReplayState = {
-  appliedCount: 4,
+  appliedCount: REPLAY_LOG_RECORDS.length,
   stepProgress: 1,
 };
+
+export const INITIAL_REPLAY_SNAPSHOT =
+  deriveReplaySnapshot(INITIAL_REPLAY_STATE);
+
+export function deriveReplayTimelineSnapshot(progress: number) {
+  const normalizedProgress = clamp(progress, 0, 1);
+
+  if (normalizedProgress <= INTRO_END) {
+    return INITIAL_REPLAY_SNAPSHOT;
+  }
+
+  if (normalizedProgress >= REPLAY_END) {
+    return deriveReplaySnapshot(REDUCED_MOTION_REPLAY_STATE);
+  }
+
+  const replayProgress =
+    (normalizedProgress - INTRO_END) / (REPLAY_END - INTRO_END);
+  const scaledStep = replayProgress * REPLAY_LOG_RECORDS.length;
+  const appliedCount = Math.floor(scaledStep);
+
+  return deriveReplaySnapshot({
+    appliedCount,
+    stepProgress: scaledStep - appliedCount,
+  });
+}
 
 export function deriveReplaySnapshot(state: ReplayState): ReplaySnapshot {
   const appliedCount = clampAppliedCount(state.appliedCount);
@@ -159,13 +175,12 @@ export function deriveReplaySnapshot(state: ReplayState): ReplaySnapshot {
       activeRecord === undefined ? undefined : records[appliedCount],
     lastAppliedRecord,
     cursorProgress: deriveCursorProgress(appliedCount, stepProgress),
-    phaseLabel: phaseLabel(appliedCount, lastAppliedRecord),
+    phaseLabel: phaseLabel(appliedCount, stepProgress, activeRecord),
   };
 }
 
 export function nextAppliedCount(appliedCount: number) {
-  if (appliedCount >= REPLAY_LOG_RECORDS.length) return 0;
-  return appliedCount + 1;
+  return Math.min(appliedCount + 1, REPLAY_LOG_RECORDS.length);
 }
 
 export function clamp(value: number, min: number, max: number) {
@@ -211,17 +226,18 @@ function deriveCursorProgress(appliedCount: number, stepProgress: number) {
 
 function phaseLabel(
   appliedCount: number,
-  lastAppliedRecord: ReplayLogRecord | undefined,
+  stepProgress: number,
+  activeRecord: LogRecord | undefined,
 ) {
-  if (appliedCount === 0) {
-    return "Checkpointed data files are on disk; recovery starts at LSN 101.";
-  }
-
   if (appliedCount >= REPLAY_LOG_RECORDS.length) {
-    return "Ordered replay complete; recovered state includes every durable redo record after the checkpoint.";
+    return "All six durable records have been applied in LSN order.";
   }
 
-  if (!lastAppliedRecord) return "InnoDB recovery is ready to replay LSN 101.";
+  if (appliedCount === 0 && stepProgress === 0) {
+    return "Checkpoint loaded. Recovery begins at the first later LSN.";
+  }
 
-  return `Replayed LSN ${lastAppliedRecord.sequence}: ${lastAppliedRecord.operation} ${lastAppliedRecord.recordLabel}.`;
+  if (!activeRecord) return "Recovery has no later durable record to apply.";
+
+  return `Replaying LSN ${activeRecord.sequence}: ${activeRecord.operation} ${activeRecord.recordLabel}.`;
 }

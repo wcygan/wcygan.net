@@ -93,8 +93,9 @@ Rules:
   underline on hover instead of changing to a saturated color.
 - Muted text must remain readable; `#63635e` on `#fdfdfc` meets normal-text
   contrast.
-- Demo-specific semantic colors may live inside the demo boundary. They must not
-  redefine the article shell.
+- Article diagrams default to black, white, and warm gray. Express state through
+  labels, grouping, shape, pattern, line treatment, and motion before introducing
+  saturated color. The blue focus accent remains reserved for keyboard focus.
 - Editorial raster images use a `1px` inset outline of `oklch(0 0 0 / 0.1)`.
   Transparent diagrams and artwork may opt out when an outline damages the
   image.
@@ -218,8 +219,8 @@ Writing-row rules:
 The current article shell, title, date, basic prose, tables, code blocks, direct
 figures, and TOC are a strong first pass. They are not the completion bar.
 Future article work should make every reading primitive feel native to the same
-warm-neutral system while allowing technical demos to keep useful semantic
-color.
+warm-neutral system. Technical diagrams use the same restrained monochrome
+direction unless domain meaning genuinely requires a scoped color exception.
 
 Standardize and verify all of these:
 
@@ -233,14 +234,14 @@ Standardize and verify all of these:
 Important boundaries:
 
 - Direct-child `.post-content > ...` selectors establish top-level MDX rhythm
-  without flattening demo internals. Preserve that boundary, but add explicit
+  without flattening diagram internals. Preserve that boundary, but add explicit
   scoped rules for nested editorial content such as list links, blockquotes, and
   captions.
 - A figure owns its internal spacing. Images inside figures should not retain an
   independent large bottom margin; captions sit close to their media in muted
   type.
 - Article controls must be discoverable without hover and provide at least a
-  `44x44px` touch target. This includes code-copy and demo controls.
+  `44x44px` touch target. This includes code-copy and diagram controls.
 - Tables and code may scroll inside their own container. The page itself must
   never scroll horizontally.
 - The TOC is desktop-only. At `1180px` and wider, the `176px` fixed TOC may sit
@@ -281,27 +282,41 @@ Keep the Idle Toes palette synchronized between
 Code uses Lilex. Preserve syntax contrast, horizontal scrolling, copy feedback,
 and readable wrapping around—not inside—code samples.
 
-## Interactive graphic demos
+## Editorial diagrams and animations
 
-Load the repository's `$wcygan-graphic-demos` skill before creating, editing,
-reviewing, or debugging article demos. Inspect both the component shell in
-`src/components/` and any backing model, engine, renderer, viewport, and tests
-in `src/demos/`.
+Load the repository's `$wcygan-editorial-diagrams` skill before creating,
+editing, reviewing, or debugging article diagrams or explanatory animation.
+Inspect the owning MDX prose, the component shell in `src/components/`, and any
+backing model, engine, renderer, viewport, and tests in `src/demos/`.
 
-Each demo must:
+The approved visual reference is the N+1 query race on
+`/n-plus-one-sql-query`, implemented by `NPlusOneQueryDemos.tsx` and the
+`/* N+1 query race */` styles in `app.css`. Treat it as a craft benchmark, not a
+layout template.
 
-- fit the article measure without page-level horizontal overflow;
-- expose useful accessibility text and semantic controls;
-- preserve meaning when animation is reduced or disabled;
-- use a `44x44px` minimum touch target for controls;
-- use component-owned semantic color without changing the editorial shell; and
-- be verified in its real MDX article on desktop and mobile.
+New or redesigned diagrams must:
+
+- feel like part of the article rather than a miniature dashboard;
+- default to black, white, and warm gray, using structure before color;
+- explain one invariant through direct labels and inspectable state;
+- use grouping, rhythm, line treatment, and persistent settled state to compare
+  alternatives;
+- move slowly enough for the reader to identify each causal beat;
+- end with a concise status or quantified takeaway instead of looping forever;
+- preserve the same lesson in a useful reduced-motion state;
+- keep controls outside the stage with a `44x44px` minimum touch target; and
+- be verified in the real MDX article on desktop and mobile.
+
+Avoid colorful success/failure cards, badge collections, nested control panels,
+decorative server/database illustrations, glossy gradients, ornamental legends,
+and motion whose only purpose is activity. Saturated color requires a domain
+reason that text, shape, position, pattern, or line treatment cannot express.
 
 The shared article route automatically marks every rendered `<figure>` with
 `data-article-graphic`, a route-local `data-graphic-id`, its inferred
 `data-graphic-kind`, and an accessible-text-derived `data-graphic-label`. Open
 an article with `?inspect=graphics` to outline and label the discovered figures,
-or query `[data-article-graphic]` from browser tooling. Keep new article graphics
+or query `[data-article-graphic]` from browser tooling. Keep new article diagrams
 inside a semantic `<figure>` so discovery remains automatic; use
 `data-graphic-key`, `data-graphic-kind`, or `data-graphic-label` only when the
 inferred metadata needs an explicit stable override. Do not maintain a separate
@@ -323,7 +338,7 @@ but does not infer a stage from child order.
 - Keep normal body text at least `16px` and maintain WCAG AA contrast.
 - Use logical properties when introducing directional spacing or alignment.
 - Ensure images and canvases scale within the reading column.
-- Honor `prefers-reduced-motion` in every animated demo and nonessential
+- Honor `prefers-reduced-motion` in every animated diagram and nonessential
   transition.
 - Print may hide navigation, but it must preserve readable article content.
 
@@ -338,7 +353,8 @@ Check at least:
 | ------------------------------- | --------------------------------------------------------------------------- |
 | `/`                             | Canonical shell, header, About, writing rhythm, hover rows, IndieWeb footer |
 | `/talking-to-my-computer`       | Simple prose, figure, caption, post ending                                  |
-| `/change-data-capture`          | Code, lists, desktop TOC, and rich graphic demos                            |
+| `/change-data-capture`          | Code, lists, desktop TOC, and animated editorial diagrams                   |
+| `/n-plus-one-sql-query`         | Canonical monochrome comparison, pacing, Replay, and final summary          |
 | `/sharding-versus-partitioning` | Tables and Canvas behavior                                                  |
 | `/street-maps`                  | Map containment and responsive height                                       |
 | `/mermaid-diagrams`             | Static SVG rendering                                                        |
@@ -354,7 +370,7 @@ breakpoint when article navigation changes. Confirm:
 - shell width, gutters, and left-edge alignment;
 - computed font family, size, weight, line-height, and color;
 - heading and paragraph wrapping;
-- keyboard focus, link, desktop TOC, copy, and demo interactions;
+- keyboard focus, link, desktop TOC, copy, and diagram interactions;
 - responsive images, tables, code, maps, SVG, Canvas, and ASCII; and
 - reduced-motion behavior for animated content.
 

@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveReplaySnapshot,
+  deriveReplayTimelineSnapshot,
   nextAppliedCount,
+  REDUCED_MOTION_REPLAY_STATE,
+  REPLAY_DURATION_MS,
   REPLAY_LOG_RECORDS,
 } from "./replay-model";
 
 describe("deriveReplaySnapshot", () => {
-  it("starts with checkpointed data files and six redo records", () => {
-    const snapshot = deriveReplaySnapshot({
-      appliedCount: 0,
-      stepProgress: 0,
-    });
+  it("starts with checkpointed data files and six ordered redo records", () => {
+    const snapshot = deriveReplayTimelineSnapshot(0);
 
-    expect(REPLAY_LOG_RECORDS).toHaveLength(6);
+    expect(REPLAY_LOG_RECORDS.map((record) => record.sequence)).toEqual([
+      101, 102, 103, 104, 105, 106,
+    ]);
     expect(snapshot.database).toMatchObject([
       { key: "A", status: "present", balance: 900 },
       { key: "B", status: "present", balance: 250 },
@@ -20,25 +22,33 @@ describe("deriveReplaySnapshot", () => {
     ]);
   });
 
-  it("applies the first redo record after the checkpoint", () => {
-    const snapshot = deriveReplaySnapshot({
-      appliedCount: 1,
-      stepProgress: 1,
-    });
+  it("leaves time to establish the checkpoint before replay begins", () => {
+    const snapshot = deriveReplayTimelineSnapshot(0.075);
 
-    expect(
-      snapshot.database.find((record) => record.key === "A"),
-    ).toMatchObject({
-      status: "present",
-      balance: 800,
-      lastOperation: "UPDATE",
-    });
+    expect(REPLAY_DURATION_MS).toBe(16_000);
+    expect(snapshot.appliedCount).toBe(0);
+    expect(snapshot.stepProgress).toBe(0);
+  });
+
+  it("applies records progressively without skipping LSNs", () => {
+    const snapshot = deriveReplayTimelineSnapshot(0.5);
+
+    expect(snapshot.appliedCount).toBe(2);
+    expect(snapshot.activeRecord?.sequence).toBe(103);
+    expect(snapshot.records.map((record) => record.status)).toEqual([
+      "applied",
+      "applied",
+      "active",
+      "pending",
+      "pending",
+      "pending",
+    ]);
   });
 
   it("inserts Account C when its INSERT record is replayed", () => {
     const snapshot = deriveReplaySnapshot({
       appliedCount: 2,
-      stepProgress: 1,
+      stepProgress: 0,
     });
 
     expect(
@@ -53,7 +63,7 @@ describe("deriveReplaySnapshot", () => {
   it("deletes Account C when its DELETE record is replayed", () => {
     const snapshot = deriveReplaySnapshot({
       appliedCount: 5,
-      stepProgress: 1,
+      stepProgress: 0,
     });
 
     expect(
@@ -65,11 +75,8 @@ describe("deriveReplaySnapshot", () => {
     });
   });
 
-  it("finishes with the latest values for all replayed records", () => {
-    const snapshot = deriveReplaySnapshot({
-      appliedCount: 6,
-      stepProgress: 1,
-    });
+  it("finishes with the latest values for every durable record", () => {
+    const snapshot = deriveReplayTimelineSnapshot(1);
 
     expect(snapshot.database).toMatchObject([
       { key: "A", status: "present", balance: 725 },
@@ -77,27 +84,29 @@ describe("deriveReplaySnapshot", () => {
       { key: "C", status: "deleted", balance: undefined },
     ]);
     expect(snapshot.activeRecord).toBeUndefined();
+    expect(
+      snapshot.records.every((record) => record.status === "applied"),
+    ).toBe(true);
   });
 
-  it("loops from the complete replay state back to the checkpoint", () => {
-    const nextCount = nextAppliedCount(REPLAY_LOG_RECORDS.length);
-    const snapshot = deriveReplaySnapshot({
-      appliedCount: nextCount,
-      stepProgress: 0,
-    });
+  it("uses the complete recovered state when motion is reduced", () => {
+    const snapshot = deriveReplaySnapshot(REDUCED_MOTION_REPLAY_STATE);
 
-    expect(nextCount).toBe(0);
-    expect(snapshot.appliedCount).toBe(0);
+    expect(snapshot.appliedCount).toBe(REPLAY_LOG_RECORDS.length);
+    expect(snapshot.cursorProgress).toBe(1);
+  });
+
+  it("holds the completed replay instead of looping to the checkpoint", () => {
+    const nextCount = nextAppliedCount(REPLAY_LOG_RECORDS.length);
+
+    expect(nextCount).toBe(REPLAY_LOG_RECORDS.length);
     expect(
-      snapshot.database.map((record) => ({
-        key: record.key,
-        status: record.status,
-        balance: record.balance,
-      })),
-    ).toEqual([
-      { key: "A", status: "present", balance: 900 },
-      { key: "B", status: "present", balance: 250 },
-      { key: "C", status: "missing", balance: undefined },
+      deriveReplaySnapshot({ appliedCount: nextCount, stepProgress: 1 })
+        .database,
+    ).toMatchObject([
+      { key: "A", balance: 725 },
+      { key: "B", balance: 180 },
+      { key: "C", status: "deleted" },
     ]);
   });
 });
