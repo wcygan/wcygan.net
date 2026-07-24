@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 const ECHO_URL = "https://echo.wcygan.net/";
-const BUSY_DELAY_MS = 120;
-const MIN_BUSY_VISIBLE_MS = 200;
+const ROUTE_PLAYBACK_MS = 1200;
+const REQUEST_ROUTE_STEPS = [
+  { kind: "browser", label: "Browser" },
+  { kind: "cloudflare", label: "Cloudflare" },
+  { kind: "anton", label: "Anton" },
+  { kind: "echo", label: "echo" },
+] as const;
 
 type ProbeState = "idle" | "checking" | "ok" | "opaque" | "error";
+type RouteStepKind = (typeof REQUEST_ROUTE_STEPS)[number]["kind"];
 
 interface EchoResponse {
   path?: string;
@@ -66,7 +72,7 @@ function formatAnnouncement(result: ProbeResult) {
 
 export function EchoLivenessCheck() {
   const [result, setResult] = useState<ProbeResult>({ state: "idle" });
-  const [elapsedMs, setElapsedMs] = useState(0);
+  const [playbackElapsedMs, setPlaybackElapsedMs] = useState(0);
   const [isRequestActive, setIsRequestActive] = useState(false);
   const [showBusy, setShowBusy] = useState(false);
   const [announcement, setAnnouncement] = useState(
@@ -75,23 +81,31 @@ export function EchoLivenessCheck() {
 
   const requestInFlightRef = useRef(false);
   const requestIdRef = useRef(0);
-  const requestStartedAtRef = useRef<number | undefined>(undefined);
-  const busyDelayTimeoutRef = useRef<number | undefined>(undefined);
-  const settleTimeoutRef = useRef<number | undefined>(undefined);
+  const playbackStartedAtRef = useRef<number | undefined>(undefined);
+  const shouldAnimatePlaybackRef = useRef(false);
+  const playbackTimeoutRef = useRef<number | undefined>(undefined);
+  const playbackResolveRef = useRef<(() => void) | undefined>(undefined);
 
   const visualState: ProbeState = showBusy ? "checking" : result.state;
   const isOk = visualState === "ok" || visualState === "opaque";
 
-  // Tick a live elapsed-time counter while a request is in flight — this is
-  // visual only. Final status changes are announced separately for assistive
-  // tech so the live region is not updated on every animation frame.
+  // Route playback is intentionally independent from network timing. The
+  // response duration is captured when fetch settles and revealed only after
+  // this educational route animation completes.
   useEffect(() => {
-    if (!showBusy) return;
+    if (!showBusy || !shouldAnimatePlaybackRef.current) return;
 
-    const startedAt = requestStartedAtRef.current ?? performance.now();
+    const startedAt = playbackStartedAtRef.current ?? performance.now();
     let frame = requestAnimationFrame(function tick() {
-      setElapsedMs(performance.now() - startedAt);
-      frame = requestAnimationFrame(tick);
+      const elapsedMs = Math.min(
+        performance.now() - startedAt,
+        ROUTE_PLAYBACK_MS,
+      );
+      setPlaybackElapsedMs(elapsedMs);
+
+      if (elapsedMs < ROUTE_PLAYBACK_MS) {
+        frame = requestAnimationFrame(tick);
+      }
     });
 
     return () => cancelAnimationFrame(frame);
@@ -100,8 +114,8 @@ export function EchoLivenessCheck() {
   useEffect(() => {
     return () => {
       requestIdRef.current += 1;
-      window.clearTimeout(busyDelayTimeoutRef.current);
-      window.clearTimeout(settleTimeoutRef.current);
+      window.clearTimeout(playbackTimeoutRef.current);
+      playbackResolveRef.current?.();
     };
   }, []);
 
@@ -112,24 +126,20 @@ export function EchoLivenessCheck() {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     const startedAt = performance.now();
-    requestStartedAtRef.current = startedAt;
-    let busyShownAt: number | undefined;
+    playbackStartedAtRef.current = startedAt;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    shouldAnimatePlaybackRef.current = !prefersReducedMotion;
     const probeUrl = new URL(ECHO_URL);
     probeUrl.searchParams.set("probe", Date.now().toString());
+    const playbackFinished = waitForRoutePlayback(prefersReducedMotion);
 
-    setElapsedMs(0);
+    setPlaybackElapsedMs(prefersReducedMotion ? ROUTE_PLAYBACK_MS : 0);
+    setResult({ state: "checking" });
     setIsRequestActive(true);
-    setShowBusy(false);
-    window.clearTimeout(busyDelayTimeoutRef.current);
-    window.clearTimeout(settleTimeoutRef.current);
-
-    busyDelayTimeoutRef.current = window.setTimeout(() => {
-      if (requestIdRef.current !== requestId) return;
-
-      busyShownAt = performance.now();
-      setShowBusy(true);
-      setAnnouncement("Checking echo.wcygan.net.");
-    }, BUSY_DELAY_MS);
+    setShowBusy(true);
+    setAnnouncement("Checking echo.wcygan.net.");
 
     let response: Response;
     let nextResult: ProbeResult;
@@ -163,7 +173,8 @@ export function EchoLivenessCheck() {
               : "Unable to reach echo.wcygan.net.",
         };
       }
-      finishProbe(requestId, nextResult, busyShownAt);
+      await playbackFinished;
+      finishProbe(requestId, nextResult);
       return;
     }
 
@@ -173,7 +184,8 @@ export function EchoLivenessCheck() {
         durationMs: performance.now() - startedAt,
         message: `echo.wcygan.net returned HTTP ${response.status}.`,
       };
-      finishProbe(requestId, nextResult, busyShownAt);
+      await playbackFinished;
+      finishProbe(requestId, nextResult);
       return;
     }
 
@@ -195,36 +207,38 @@ export function EchoLivenessCheck() {
       };
     }
 
-    finishProbe(requestId, nextResult, busyShownAt);
+    await playbackFinished;
+    finishProbe(requestId, nextResult);
   }
 
-  function finishProbe(
-    requestId: number,
-    nextResult: ProbeResult,
-    busyShownAt: number | undefined,
-  ) {
-    window.clearTimeout(busyDelayTimeoutRef.current);
+  function waitForRoutePlayback(prefersReducedMotion: boolean) {
+    window.clearTimeout(playbackTimeoutRef.current);
 
-    const finish = () => {
-      if (requestIdRef.current !== requestId) return;
+    if (prefersReducedMotion) return Promise.resolve();
 
-      requestInFlightRef.current = false;
-      requestStartedAtRef.current = undefined;
-      setResult(nextResult);
-      setShowBusy(false);
-      setIsRequestActive(false);
-      setAnnouncement(formatAnnouncement(nextResult));
-    };
+    return new Promise<void>((resolve) => {
+      playbackResolveRef.current = resolve;
+      playbackTimeoutRef.current = window.setTimeout(() => {
+        playbackResolveRef.current = undefined;
+        playbackTimeoutRef.current = undefined;
+        resolve();
+      }, ROUTE_PLAYBACK_MS);
+    });
+  }
 
-    if (busyShownAt === undefined) {
-      finish();
-      return;
-    }
+  function finishProbe(requestId: number, nextResult: ProbeResult) {
+    if (requestIdRef.current !== requestId) return;
 
-    const visibleDurationMs = performance.now() - busyShownAt;
-    const settleDelayMs = Math.max(MIN_BUSY_VISIBLE_MS - visibleDurationMs, 0);
-
-    settleTimeoutRef.current = window.setTimeout(finish, settleDelayMs);
+    window.clearTimeout(playbackTimeoutRef.current);
+    requestInFlightRef.current = false;
+    playbackStartedAtRef.current = undefined;
+    shouldAnimatePlaybackRef.current = false;
+    playbackResolveRef.current = undefined;
+    playbackTimeoutRef.current = undefined;
+    setResult(nextResult);
+    setShowBusy(false);
+    setIsRequestActive(false);
+    setAnnouncement(formatAnnouncement(nextResult));
   }
 
   const buttonLabel = showBusy
@@ -233,24 +247,33 @@ export function EchoLivenessCheck() {
       ? "Check echo.wcygan.net"
       : "Run check again";
 
-  const displayDurationMs = showBusy ? elapsedMs : result.durationMs;
+  const displayDurationMs = showBusy ? undefined : result.durationMs;
 
   const cfRay = getHeader(result.data, "cf-ray");
   const cloudflareColo = getCloudflareColo(cfRay);
   const podHostname = result.data?.os?.hostname;
   const requestId = getHeader(result.data, "x-request-id");
+  const showReadyPreview = result.state === "idle" && !isRequestActive;
+  const routeState = isRequestActive ? "checking" : visualState;
+  const routeProgress = getRouteProgress(routeState, playbackElapsedMs);
 
   return (
-    <section
+    <figure
       className="anton-probe"
+      data-graphic-frame="workbench"
+      data-graphic-key="live-edge-check"
+      data-graphic-kind="dom"
       data-state={visualState}
       aria-busy={isRequestActive}
       aria-labelledby="anton-probe-title"
+      aria-describedby="anton-probe-description"
     >
-      <div className="anton-probe-header">
+      <header className="anton-probe-header">
         <div>
-          <h2 id="anton-probe-title">Live edge check</h2>
-          <p>
+          <p className="article-graphic-title" id="anton-probe-title">
+            Live edge check
+          </p>
+          <p id="anton-probe-description">
             Pings <a href={ECHO_URL}>echo.wcygan.net</a> straight from this
             browser.
           </p>
@@ -267,91 +290,104 @@ export function EchoLivenessCheck() {
           </span>
           <span className="anton-probe-button-label">{buttonLabel}</span>
         </button>
-      </div>
+      </header>
 
       <div
-        className="anton-probe-track"
-        data-state={visualState}
-        aria-hidden="true"
+        className="anton-probe-stage"
+        data-graphic-stage="padded"
+        data-state={showReadyPreview ? "idle" : routeState}
       >
-        <span className="anton-probe-track-fill" />
-      </div>
+        <RequestRoute progress={routeProgress} state={routeState} />
 
-      <div className="anton-probe-status" data-state={visualState}>
-        <span className="anton-probe-dot" aria-hidden="true" />
-        <strong>{STATUS_LABEL[visualState]}</strong>
-        <span
-          className="anton-probe-latency"
-          data-state={visualState}
-          data-empty={displayDurationMs === undefined ? "true" : undefined}
-          aria-hidden={
-            showBusy || displayDurationMs === undefined ? true : undefined
-          }
-        >
-          {isOk && displayDurationMs !== undefined && (
-            <svg
-              className="anton-probe-check"
-              viewBox="0 0 16 16"
-              width="13"
-              height="13"
-              aria-hidden="true"
-            >
-              <path
-                d="M3.5 8.5l3 3 6-7"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-          {displayDurationMs === undefined
-            ? "000 ms"
-            : formatDuration(displayDurationMs)}
-        </span>
-      </div>
-
-      <div className="anton-probe-result" data-state={result.state}>
-        {result.state === "ok" && (
-          <dl className="anton-probe-details">
-            <div>
-              <dt>Route</dt>
-              <dd>
-                {result.data?.method ?? "GET"}{" "}
-                {result.data?.protocol ?? "https"}://
-                {result.data?.hostname ?? "echo.wcygan.net"}
-                {result.data?.path ?? "/"}
-              </dd>
+        {showReadyPreview ? (
+          <div className="anton-probe-ready anton-probe-state">
+            <div className="anton-probe-ready-summary">
+              <p>Run the check to trace a live request through the cluster.</p>
+              <span className="anton-probe-ready-status">Not checked</span>
             </div>
-            {cloudflareColo && (
-              <div>
-                <dt>Cloudflare colo</dt>
-                <dd>{cloudflareColo}</dd>
-              </div>
-            )}
-            {podHostname && (
-              <div>
-                <dt>Kubernetes pod</dt>
-                <dd>{podHostname}</dd>
-              </div>
-            )}
-            {requestId && (
-              <div>
-                <dt>Request ID</dt>
-                <dd>{requestId}</dd>
-              </div>
-            )}
-          </dl>
-        )}
+          </div>
+        ) : (
+          <div className="anton-probe-state">
+            <div className="anton-probe-status" data-state={visualState}>
+              <span className="anton-probe-dot" aria-hidden="true" />
+              <strong>{STATUS_LABEL[visualState]}</strong>
+              <span
+                className="anton-probe-latency"
+                data-state={visualState}
+                data-empty={
+                  displayDurationMs === undefined ? "true" : undefined
+                }
+                aria-hidden={
+                  showBusy || displayDurationMs === undefined ? true : undefined
+                }
+              >
+                {isOk && displayDurationMs !== undefined && (
+                  <svg
+                    className="anton-probe-check"
+                    viewBox="0 0 16 16"
+                    width="13"
+                    height="13"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3.5 8.5l3 3 6-7"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+                {displayDurationMs === undefined
+                  ? "000 ms"
+                  : formatDuration(displayDurationMs)}
+              </span>
+            </div>
 
-        <p
-          className="anton-probe-message"
-          data-empty={result.message ? undefined : "true"}
-          aria-hidden={result.message ? undefined : true}
-        >
-          {result.message}
-        </p>
+            <div className="anton-probe-result" data-state={result.state}>
+              {result.state === "ok" && (
+                <dl className="anton-probe-details">
+                  <div className="anton-probe-detail-wide">
+                    <dt>Route</dt>
+                    <dd>
+                      {result.data?.method ?? "GET"}{" "}
+                      {result.data?.protocol ?? "https"}://
+                      {result.data?.hostname ?? "echo.wcygan.net"}
+                      {result.data?.path ?? "/"}
+                    </dd>
+                  </div>
+                  {cloudflareColo && (
+                    <div>
+                      <dt>Cloudflare colo</dt>
+                      <dd>{cloudflareColo}</dd>
+                    </div>
+                  )}
+                  {podHostname && (
+                    <div>
+                      <dt>Kubernetes pod</dt>
+                      <dd>{podHostname}</dd>
+                    </div>
+                  )}
+                  {requestId && (
+                    <div className="anton-probe-detail-wide">
+                      <dt>Request ID</dt>
+                      <dd>{requestId}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
+
+              <p
+                className="anton-probe-message"
+                data-empty={result.message ? undefined : "true"}
+                aria-hidden={result.message ? undefined : true}
+              >
+                {result.message}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <p
@@ -361,6 +397,110 @@ export function EchoLivenessCheck() {
       >
         {announcement}
       </p>
-    </section>
+    </figure>
+  );
+}
+
+function getRouteProgress(state: ProbeState, playbackElapsedMs: number) {
+  if (state === "idle") return 0;
+  if (state === "ok" || state === "opaque") return 1;
+  if (state === "error") return 0.88;
+
+  return Math.min(playbackElapsedMs / ROUTE_PLAYBACK_MS, 0.999);
+}
+
+function RequestRoute({
+  progress,
+  state,
+}: {
+  progress: number;
+  state: ProbeState;
+}) {
+  const currentStep = Math.min(
+    REQUEST_ROUTE_STEPS.length - 1,
+    Math.floor(progress * REQUEST_ROUTE_STEPS.length),
+  );
+  const routeStyle = {
+    "--anton-probe-route-progress": `${progress * 100}%`,
+  } as CSSProperties;
+
+  return (
+    <div
+      className="anton-probe-route"
+      data-state={state}
+      style={routeStyle}
+      aria-label="Request route: Browser to Cloudflare to Anton to echo"
+    >
+      <div className="anton-probe-route-rail" aria-hidden="true">
+        <span className="anton-probe-route-fill" />
+      </div>
+      {REQUEST_ROUTE_STEPS.map((step, index) => {
+        const stepState =
+          state === "idle"
+            ? "pending"
+            : state === "ok" || state === "opaque"
+              ? "reached"
+              : index < currentStep
+                ? "reached"
+                : index === currentStep
+                  ? state === "error"
+                    ? "failed"
+                    : "active"
+                  : "pending";
+
+        return (
+          <div
+            className="anton-probe-route-step"
+            data-step-state={stepState}
+            key={step.kind}
+          >
+            <span className="anton-probe-route-icon" aria-hidden="true">
+              <RequestRouteIcon kind={step.kind} />
+            </span>
+            <span>{step.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RequestRouteIcon({ kind }: { kind: RouteStepKind }) {
+  if (kind === "browser") {
+    return (
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect x="3.75" y="5.75" width="24.5" height="18.5" rx="2.25" />
+        <path d="M4 10.25h24M11.5 27.25h9M16 24.5v2.75" />
+        <circle cx="7.25" cy="8" r=".75" fill="currentColor" stroke="none" />
+        <circle cx="10.25" cy="8" r=".75" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+
+  if (kind === "cloudflare") {
+    return (
+      <svg viewBox="0 0 32 32" fill="none">
+        <path d="M8.5 23.5h15.25a4.75 4.75 0 0 0 .42-9.48A7.5 7.5 0 0 0 9.7 12.4a5.6 5.6 0 0 0-1.2 11.1Z" />
+        <path d="M11 19.5h13.5" />
+      </svg>
+    );
+  }
+
+  if (kind === "anton") {
+    return (
+      <svg viewBox="0 0 32 32" fill="none">
+        <rect x="5" y="5.5" width="22" height="6" rx="1.5" />
+        <rect x="5" y="13" width="22" height="6" rx="1.5" />
+        <rect x="5" y="20.5" width="22" height="6" rx="1.5" />
+        <path d="M9 8.5h.01M9 16h.01M9 23.5h.01M13 8.5h9M13 16h9M13 23.5h9" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 32 32" fill="none">
+      <rect x="4.5" y="6" width="23" height="20" rx="2.5" />
+      <path d="m10.5 12 4 4-4 4M17.5 20h5" />
+    </svg>
   );
 }

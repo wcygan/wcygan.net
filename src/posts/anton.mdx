@@ -11,15 +11,11 @@ import { EchoLivenessCheck } from "~/components/EchoLivenessCheck";
   <div className="anton-hero-description">
     <p className="anton-kicker">Homelab Kubernetes</p>
     <p className="anton-hero-lede">
-      Anton is the Kubernetes cluster in my basement. It runs three Talos
-      control-plane nodes and exposes selected services to the internet through
-      Cloudflare Tunnel and Envoy Gateway.
+      {
+        "Anton is the Kubernetes cluster in my basement. It runs three Talos control-plane nodes and exposes selected services to the internet through Cloudflare Tunnel and Envoy Gateway."
+      }
     </p>
   </div>
-
-<div className="anton-hero-liveness">
-  <EchoLivenessCheck />
-</div>
 
 <dl className="anton-metrics anton-hero-stats">
   <div>
@@ -43,6 +39,8 @@ import { EchoLivenessCheck } from "~/components/EchoLivenessCheck";
     </figcaption>
   </figure>
 </section>
+
+<EchoLivenessCheck />
 
 ## Request Topology
 

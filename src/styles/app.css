@@ -2678,7 +2678,6 @@
     display: grid;
     grid-template-areas:
       "description"
-      "liveness"
       "stats"
       "image";
     grid-template-columns: minmax(0, 1fr);
@@ -2738,15 +2737,6 @@
   .post-content .anton-hero-image figcaption {
     font-style: normal;
     letter-spacing: 0;
-  }
-
-  .anton-hero-liveness {
-    grid-area: liveness;
-    min-width: 0;
-  }
-
-  .anton-hero-liveness .anton-probe {
-    margin: 0;
   }
 
   .anton-hero-stats {
@@ -2836,66 +2826,246 @@
   .anton-probe {
     --anton-probe-ease-out: var(--article-demo-ease-out);
     position: relative;
+    display: grid;
+    gap: 14px;
     margin: 28px 0 34px;
-    padding: 18px;
-    border: 1px solid rgb(222, 222, 222);
-    border-radius: 6px;
-    background: rgb(249, 249, 249);
+    color: #21201c;
+    font-family: var(--font-ui);
+  }
+
+  .anton-probe *,
+  .anton-probe *::before,
+  .anton-probe *::after {
+    box-sizing: border-box;
   }
 
   .anton-probe-header {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+    block-size: 52px;
   }
 
   .anton-probe-header > div {
+    display: grid;
+    gap: 4px;
     min-width: 0;
   }
 
-  .anton-probe h2 {
-    margin: 0 0 4px;
-    color: rgb(0, 0, 0);
-    font-size: 20px;
-    line-height: 1.25;
+  .post-content .anton-probe-header p {
+    margin: 0;
   }
 
-  .anton-probe p {
+  .post-content .anton-probe-header p:not(.article-graphic-title) {
+    color: #63635e;
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .post-content .anton-probe-stage {
+    --anton-probe-result-row: 164px;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) var(--anton-probe-result-row);
+    min-width: 0;
+    block-size: 280px;
+    padding: 18px;
+    overflow: auto;
+  }
+
+  .anton-probe-route {
+    --anton-probe-route-progress: 0%;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-self: center;
+    min-width: 0;
+    padding: 4px 0 10px;
+  }
+
+  .anton-probe-route-rail {
+    position: absolute;
+    z-index: 0;
+    top: 25px;
+    right: 12.5%;
+    left: 12.5%;
+    height: 2px;
+    overflow: hidden;
+    background: #e4e3de;
+  }
+
+  .anton-probe-route-fill {
+    display: block;
+    width: var(--anton-probe-route-progress);
+    height: 100%;
+    background: #21201c;
+    transition: width 80ms linear;
+  }
+
+  .anton-probe-route[data-state="ok"] .anton-probe-route-fill,
+  .anton-probe-route[data-state="opaque"] .anton-probe-route-fill {
+    background: rgb(0, 128, 96);
+  }
+
+  .anton-probe-route[data-state="error"] .anton-probe-route-fill {
+    background: rgb(180, 56, 56);
+  }
+
+  .anton-probe-route-step {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 7px;
+    justify-items: center;
+    color: #21201c;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .anton-probe-route-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 1px solid #bcbbb5;
+    border-radius: 999px;
+    background: #f7f6f3;
+    color: #63635e;
+    transition:
+      background-color 160ms ease-out,
+      border-color 160ms ease-out,
+      box-shadow 160ms ease-out,
+      color 160ms ease-out;
+  }
+
+  .anton-probe-route-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 1.65;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .anton-probe-route-step[data-step-state="active"] .anton-probe-route-icon {
+    border-color: #696862;
+    background: #fdfdfc;
+    color: #21201c;
+    box-shadow: 0 0 0 4px rgb(99 99 94 / 12%);
+  }
+
+  .anton-probe-route-step[data-step-state="reached"] .anton-probe-route-icon {
+    border-color: #21201c;
+    background: #21201c;
+    color: #fdfdfc;
+  }
+
+  .anton-probe-route[data-state="ok"]
+    .anton-probe-route-step[data-step-state="reached"]
+    .anton-probe-route-icon,
+  .anton-probe-route[data-state="opaque"]
+    .anton-probe-route-step[data-step-state="reached"]
+    .anton-probe-route-icon {
+    border-color: rgb(0, 128, 96);
+    background: rgb(0, 128, 96);
+  }
+
+  .anton-probe-route-step[data-step-state="failed"] .anton-probe-route-icon {
+    border-color: rgb(180, 56, 56);
+    background: rgb(180 56 56 / 8%);
+    color: rgb(168, 48, 48);
+    box-shadow: 0 0 0 4px rgb(180 56 56 / 10%);
+  }
+
+  .anton-probe-state {
+    min-block-size: 0;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e4e3de;
+  }
+
+  .anton-probe-stage[data-state="idle"] .anton-probe-state {
+    display: grid;
+    align-content: start;
+  }
+
+  .anton-probe-stage[data-state="checking"] .anton-probe-state,
+  .anton-probe-stage[data-state="ok"] .anton-probe-state,
+  .anton-probe-stage[data-state="opaque"] .anton-probe-state,
+  .anton-probe-stage[data-state="error"] .anton-probe-state {
+    display: grid;
+    grid-template-rows: auto auto;
+    align-content: start;
+  }
+
+  .anton-probe-ready-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .post-content .anton-probe-ready-summary p {
     margin: 0;
-    color: rgb(102, 102, 102);
-    font-size: 16px;
-    line-height: 24px;
+    color: #21201c;
+    font-size: 14px;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .anton-probe-ready-status {
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 6px;
+    align-items: center;
+    color: #63635e;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .anton-probe-ready-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #bcbbb5;
   }
 
   .anton-probe-button {
+    position: relative;
     display: inline-flex;
     flex: 0 0 auto;
-    gap: 8px;
+    gap: 0;
     align-items: center;
     justify-content: center;
-    align-self: flex-start;
-    min-width: 220px;
-    min-height: 42px;
-    padding: 9px 14px;
-    border: 1px solid var(--article-demo-blue-dark);
-    border-radius: 4px;
-    background: var(--article-demo-blue-dark);
-    color: rgb(255, 255, 255);
+    inline-size: 220px;
+    min-width: 66px;
+    min-height: 44px;
+    padding: 9px 32px;
+    border: 1px solid #21201c;
+    border-radius: 999px;
+    background: #21201c;
+    color: #fdfdfc;
     cursor: pointer;
     font: inherit;
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 650;
     line-height: 1.2;
     transition:
-      background-color 140ms ease,
-      border-color 140ms ease,
+      background-color 140ms ease-out,
+      border-color 140ms ease-out,
       transform 120ms var(--anton-probe-ease-out);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .anton-probe-button:hover:not(:disabled) {
-      background: rgb(70, 110, 170);
+      border-color: #3d3c37;
+      background: #3d3c37;
     }
   }
 
@@ -2912,6 +3082,8 @@
   }
 
   .anton-probe-button-icon {
+    position: absolute;
+    inset-inline-start: 14px;
     display: inline-flex;
     flex: 0 0 14px;
     align-items: center;
@@ -2920,53 +3092,20 @@
     height: 14px;
   }
 
+  .anton-probe-button-label {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
   .anton-probe-spinner {
     display: block;
     width: 14px;
     height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-top-color: rgb(255, 255, 255);
+    border: 2px solid rgb(253 253 252 / 40%);
+    border-top-color: #fdfdfc;
     border-radius: 999px;
     animation: anton-probe-spin 0.7s linear infinite;
-  }
-
-  /* Progress track — indeterminate while in flight, then fills with the result. */
-  .anton-probe-track {
-    position: relative;
-    overflow: hidden;
-    height: 4px;
-    margin-top: 16px;
-    border-radius: 999px;
-    background: rgb(232, 232, 232);
-  }
-
-  .anton-probe-track-fill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    border-radius: 999px;
-    background: rgb(70, 110, 170);
-    transition:
-      width 180ms var(--anton-probe-ease-out),
-      background-color 140ms ease;
-  }
-
-  .anton-probe-track[data-state="checking"] .anton-probe-track-fill {
-    width: 35%;
-    animation: anton-probe-indeterminate 760ms ease-in-out infinite;
-  }
-
-  .anton-probe-track[data-state="ok"] .anton-probe-track-fill,
-  .anton-probe-track[data-state="opaque"] .anton-probe-track-fill {
-    width: 100%;
-    background: rgb(0, 128, 96);
-  }
-
-  .anton-probe-track[data-state="error"] .anton-probe-track-fill {
-    width: 100%;
-    background: rgb(180, 56, 56);
   }
 
   .anton-probe-status {
@@ -2974,8 +3113,8 @@
     gap: 8px;
     align-items: center;
     min-height: 28px;
-    margin-top: 12px;
-    color: rgb(102, 102, 102);
+    margin-top: 0;
+    color: #63635e;
     font-size: 15px;
     line-height: 1.4;
   }
@@ -2990,7 +3129,7 @@
   }
 
   .anton-probe-status[data-state="checking"] .anton-probe-dot {
-    background: rgb(70, 110, 170);
+    background: #63635e;
     animation: anton-probe-dot-pulse 1.3s ease-out infinite;
   }
 
@@ -3004,7 +3143,7 @@
   }
 
   .anton-probe-status strong {
-    color: rgb(0, 0, 0);
+    color: #21201c;
   }
 
   /* Latency readout — neutral while ticking, green pill on success. */
@@ -3017,8 +3156,8 @@
     margin-left: auto;
     padding: 3px 8px;
     border-radius: 999px;
-    background: rgb(238, 238, 238);
-    color: rgb(102, 102, 102);
+    background: #e4e3de;
+    color: #63635e;
     font-family: var(--font-mono);
     font-size: 13px;
     font-weight: 700;
@@ -3052,6 +3191,9 @@
   }
 
   .anton-probe-result {
+    display: grid;
+    min-height: 0;
+    align-content: end;
     transition: opacity 160ms ease;
   }
 
@@ -3061,22 +3203,25 @@
 
   .anton-probe-details {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: 10px;
     margin: 12px 0 0;
     animation: anton-probe-rise 180ms var(--anton-probe-ease-out);
   }
 
   .anton-probe-details div {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid rgb(222, 222, 222);
     border-radius: 4px;
     background: rgb(255, 255, 255);
   }
 
   .anton-probe-message {
-    min-height: 48px;
+    display: grid;
+    align-content: end;
+    min-height: 64px;
     margin-top: 12px !important;
+    margin-bottom: 0 !important;
     animation: anton-probe-rise 180ms var(--anton-probe-ease-out);
   }
 
@@ -3108,22 +3253,13 @@
     }
   }
 
-  @keyframes anton-probe-indeterminate {
-    0% {
-      transform: translateX(-110%);
-    }
-    100% {
-      transform: translateX(300%);
-    }
-  }
-
   @keyframes anton-probe-dot-pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(70, 110, 170, 0.5);
+      box-shadow: 0 0 0 0 rgb(99 99 94 / 45%);
     }
     70%,
     100% {
-      box-shadow: 0 0 0 7px rgba(70, 110, 170, 0);
+      box-shadow: 0 0 0 7px rgb(99 99 94 / 0%);
     }
   }
 
@@ -3160,7 +3296,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .anton-probe-button,
-    .anton-probe-track-fill,
+    .anton-probe-route-fill,
+    .anton-probe-route-icon,
     .anton-probe-dot,
     .anton-probe-latency,
     .anton-probe-result {
@@ -3168,7 +3305,6 @@
     }
 
     .anton-probe-spinner,
-    .anton-probe-track[data-state="checking"] .anton-probe-track-fill,
     .anton-probe-status[data-state="checking"] .anton-probe-dot,
     .anton-probe-latency,
     .anton-probe-check,
@@ -7458,8 +7594,7 @@ th {
   }
 
   .anton-metrics,
-  .anton-node-grid,
-  .anton-probe-details {
+  .anton-node-grid {
     grid-template-columns: 1fr;
   }
 
@@ -7472,17 +7607,56 @@ th {
   }
 
   .anton-probe-header {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+    block-size: auto;
+  }
+
+  .anton-probe-ready-summary {
+    display: grid;
+    gap: 8px;
   }
 
   .anton-probe-button {
     align-self: stretch;
+    inline-size: 100%;
     width: 100%;
     min-width: 0;
   }
 
+  .post-content .anton-probe-stage {
+    --anton-probe-result-row: 261px;
+    block-size: 376px;
+  }
+
+  .anton-probe-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .anton-probe-detail-wide {
+    grid-column: 1 / -1;
+  }
+
+  .anton-probe-route-step {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .anton-probe-route-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .anton-probe-route-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .anton-probe-route-rail {
+    top: 23px;
+  }
+
   .anton-probe-message {
-    min-height: 72px;
+    min-height: 96px;
   }
 
   .dlq-demo {
