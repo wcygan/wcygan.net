@@ -2623,11 +2623,12 @@
   .anton-hero {
     display: grid;
     grid-template-areas:
-      "description image"
-      "liveness image"
-      "stats image";
-    grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
-    gap: 14px 22px;
+      "description"
+      "liveness"
+      "stats"
+      "image";
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
     align-items: start;
     margin: 4px 0 34px;
   }
@@ -2651,7 +2652,6 @@
     display: flex;
     grid-area: image;
     flex-direction: column;
-    height: 100%;
     min-width: 0;
     margin: 0;
   }
@@ -2661,10 +2661,12 @@
   }
 
   .anton-hero-image img {
-    flex: 1 1 auto;
     width: 100%;
-    min-height: 360px;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
     object-fit: cover;
+    object-position: 50% 35%;
     margin: 0;
     border: 1px solid rgb(222, 222, 222);
     border-radius: 6px;
@@ -7379,32 +7381,9 @@ th {
     @apply ml-0 mt-1;
   }
 
-  .anton-hero {
-    grid-template-areas:
-      "description"
-      "liveness"
-      "stats"
-      "image";
-    grid-template-columns: 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
   .anton-hero-lede {
     font-size: 16px;
     line-height: 1.55;
-  }
-
-  .anton-hero-image {
-    height: auto;
-  }
-
-  .anton-hero-image img {
-    width: 100%;
-    height: auto;
-    min-height: 0;
-    aspect-ratio: 16 / 10;
-    object-position: 50% 35%;
   }
 
   .anton-metrics,

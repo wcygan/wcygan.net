@@ -1,6 +1,6 @@
 ---
 name: wcygan-editorial-diagrams
-description: Use when creating, editing, reviewing, or debugging explanatory diagrams and animations in wcygan.net articles. Applies the site's monochrome editorial visual system, comparison grammar, readable narrative pacing, article-graphic metadata, accessibility, reduced-motion behavior, model architecture, and desktop/mobile browser verification.
+description: Use when creating, editing, reviewing, or debugging explanatory diagrams and animations in wcygan.net articles. Applies the site's restrained editorial visual system, tasteful semantic color cues, comparison grammar, readable narrative pacing, article-graphic metadata, accessibility, reduced-motion behavior, model architecture, and desktop/mobile browser verification.
 ---
 
 # wcygan.net Editorial Diagrams
@@ -9,9 +9,9 @@ Build article-native diagrams that make one software or data-systems idea easier
 to understand. A diagram is part of the writing, not a miniature product UI.
 
 Success means the reader can identify the actors, follow the causal sequence,
-and state the takeaway without decoding a legend or inferring meaning from color.
-Stop when the source, article prose, visible states, motion, accessibility text,
-and browser evidence all teach the same invariant.
+and state the takeaway without decoding a legend or relying on color alone. Stop
+when the source, article prose, visible states, motion, accessibility text, and
+browser evidence all teach the same invariant.
 
 ## Canonical Reference
 
@@ -36,6 +36,12 @@ Treat it as a craft benchmark, not a layout template. Preserve its visual
 language and explanatory clarity while choosing geometry appropriate to the new
 concept.
 
+For an ordered state-replay example, load
+[the commit-log recovery ledger reference](references/commit-log-recovery-ledger.md).
+It shows how a colorful looping Canvas demo became a finite DOM/CSS explanation,
+how the deterministic timeline drives visible state, and how rendered geometry
+exposed an article-CSS specificity bug that source inspection alone missed.
+
 ## Start With The Article
 
 Before editing code:
@@ -51,8 +57,8 @@ lesson before designing it.
 
 ## Visual System
 
-Default to monochrome. Use the approved N+1 stage values when a dark explanatory
-surface fits:
+Begin with the monochrome structure. Use the approved N+1 stage values when a
+dark explanatory surface fits:
 
 | Role        | Value     | Use                                     |
 | ----------- | --------- | --------------------------------------- |
@@ -70,10 +76,38 @@ The article shell remains `#fdfdfc`, `#21201c`, `#63635e`, and `#e4e3de`.
 Keep the blue focus accent `#466eaa` for keyboard visibility; it is not diagram
 chrome.
 
-Use saturated color only when domain meaning cannot remain clear through text,
-shape, position, pattern, grouping, or line treatment. Document that reason in
-the implementation or surrounding prose. Never default to red/green success and
-failure cards, blue source nodes, or gold moving packets.
+### Tasteful Semantic Color
+
+Color may reinforce an important distinction even when text, shape, position,
+grouping, and line treatment already explain it. A restrained green/red pair can
+make accepted versus rejected, healthy versus failed, or fresh versus stale
+states much faster to scan. This redundancy is useful; color dependence is not.
+
+Use semantic color when it reduces time-to-meaning:
+
+- establish the diagram and its hierarchy in neutrals first;
+- add color only to the decision, boundary, token, value, or row whose meaning
+  changed;
+- use one stable hue per meaning and normally no more than two semantic hues in
+  one figure;
+- synchronize the cue across related marks, such as the status sentence,
+  comparison operator, returned row count, and settled ledger row;
+- keep inactive structure, labels, actors, and ornamental surfaces neutral;
+- prefer a quiet tinted surface with a higher-contrast foreground over a fully
+  saturated card; and
+- retain explicit words, operators, symbols, values, and accessible text so the
+  diagram remains complete without color.
+
+Do not reserve color only for cases where monochrome is impossible. Tasteful
+color earns its place when it makes a correct explanation noticeably easier to
+parse. It should feel like editorial annotation, not application chrome or a
+dashboard theme. Avoid rainbow actor palettes, decorative source-node colors,
+gold moving packets, gradients, and legends that exist only to decode hues.
+
+Define new semantic palettes in OKLCH and verify each foreground against the
+surface on which it is rendered. Target at least WCAG AA for text and `3:1` for
+meaningful graphical marks; prefer `7:1` for small labels on a dark stage. Adjust
+OKLCH lightness to fix contrast while preserving hue and chroma intent.
 
 Encode comparison structurally:
 
@@ -106,6 +140,25 @@ For comparisons, prefer this narrative order when it fits:
 
 Do not hide the takeaway until the last frame. The lane names, operation counts,
 or structural difference should already make the premise visible at rest.
+
+### Spacing And Edge Clearance
+
+Treat every divider, stage edge, and inset outline as a real boundary. Characters
+must never touch or visually crowd that boundary.
+
+- Start dense rows with `16px` inline padding and enough block padding to leave
+  roughly `14px` or more between the text box and horizontal rules.
+- `14px` inline padding can work inside narrow mobile cells when rendered
+  inspection proves that labels and values remain clear.
+- Inset progress rails, underlines, and active markers to the same text edge
+  instead of running them from border to border.
+- Give right-aligned counters and values explicit trailing clearance; do not
+  assume a grid track or `text-align: end` creates it.
+- When side-by-side sections share a body, let their rows fill the available
+  height deliberately so one column does not end in an unexplained empty slab.
+
+These values are starting points, not substitutes for inspection. Verify the
+computed boxes in the real article at both required viewports.
 
 ## Motion Contract
 
@@ -224,11 +277,22 @@ and local semantic variables. Reuse the editorial shell primitives for the
 outer title, deck, caption, focus, and figure rhythm.
 
 - One canonical rule owns each primitive.
+- Article prose selectors such as `.post-content ol`, `.post-content li`, and
+  `.post-content code` can override a diagram's low-specificity list or code
+  rules. Inspect computed styles, not just authored declarations.
+- When a prose selector wins, strengthen the existing canonical component rule
+  with the smallest necessary context, for example
+  `.post-content .redo-recovery .redo-recovery-log-row`. Do not add a second
+  duplicate rule later in the file.
+- Explicitly reset `margin`, `padding`, and `list-style` on semantic lists used
+  as diagram geometry.
 - Remove superseded selectors when replacing a diagram.
 - Do not append a stronger override island over retired styles.
 - Do not introduce CSS Modules, CSS-in-JS, or inline layout styles.
 - Inline transform or opacity values are acceptable for model-driven motion.
 - Name every transitioned property explicitly.
+- Apply `will-change` only to the currently moving element. Return settled and
+  reduced-motion elements to `will-change: auto`.
 - Gate hover-only behavior behind
   `@media (hover: hover) and (pointer: fine)`.
 
@@ -248,16 +312,23 @@ frame. Verify:
 - the article header and diagram share the reading column;
 - labels, packets, rails, and summaries remain legible;
 - controls work without layout shift and meet `44x44px`;
+- text adjacent to a border has measured inline and block clearance in computed
+  geometry; a screenshot that merely looks plausible is insufficient;
+- nested semantic lists retain their intended `margin`, `padding`, and
+  `list-style` after the full article stylesheet wins the cascade;
 - the mounted figure has the expected frame, key, label, and exactly one stage;
 - page-level horizontal overflow is zero;
 - browser errors are empty;
 - normal to reduced to normal motion changes remain coherent; and
-- the reduced-motion state teaches the same invariant.
+- the reduced-motion state teaches the same invariant;
+- semantic foregrounds and graphical marks meet their contrast targets; and
+- every color cue remains understandable from its accompanying text, symbol,
+  value, position, or line treatment.
 
 Reject the result if it looks like a colorful admin dashboard, needs color to
 decode, moves too quickly to read, loops without purpose, hides the conclusion,
 or passes tests without rendered desktop/mobile inspection.
 
 Before finishing, report the changed sources, owning article route, source
-checks, browser viewports, reduced-motion result, and any deliberate exception
-to the monochrome system.
+checks, browser viewports, reduced-motion result, and any semantic color choices
+with their contrast evidence.
