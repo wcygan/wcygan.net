@@ -10,7 +10,7 @@ import {
 
 describe("deriveQueryRaceSnapshot", () => {
   it("paces the comparison slowly enough to read each round trip", () => {
-    expect(QUERY_RACE_DURATION_MS).toBe(22_500);
+    expect(QUERY_RACE_DURATION_MS).toBe(32_000);
   });
 
   it("starts both lanes with the same ten-row goal", () => {
@@ -67,7 +67,6 @@ describe("deriveQueryRaceSnapshot", () => {
       isComplete: true,
     });
     expect(snapshot.nPlusOne.isComplete).toBe(false);
-    expect(snapshot.statusLabel).toMatch("Batch is finished");
   });
 
   it("settles with identical rows and different round-trip costs", () => {
@@ -88,7 +87,6 @@ describe("deriveQueryRaceSnapshot", () => {
       phase: "settled",
       packet: undefined,
     });
-    expect(snapshot.statusLabel).toContain("Nine round trips");
   });
 
   it("clamps progress outside the animation range", () => {

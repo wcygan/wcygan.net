@@ -22,6 +22,7 @@ export function NPlusOneQueryDemos() {
       className="query-race"
       data-graphic-frame="workbench"
       data-graphic-key="query-race"
+      data-graphic-kind="dom"
       aria-labelledby="query-race-title"
       aria-describedby="query-race-description query-race-caption"
     >
@@ -31,8 +32,7 @@ export function NPlusOneQueryDemos() {
             Round trips for 10 known order ids
           </p>
           <p id="query-race-description">
-            Both paths need the same rows. The difference is how many times the
-            application waits on the database boundary.
+            The database access pattern can impact application latency
           </p>
         </div>
         <button
@@ -47,7 +47,7 @@ export function NPlusOneQueryDemos() {
 
       <div className="query-race-stage" data-graphic-stage="flush">
         <div className="query-race-input" aria-hidden="true">
-          <span>Same input</span>
+          <span>Order IDs:</span>
           <code className="query-race-input-value">
             [101, 102, 103, …, 110]
           </code>
@@ -58,33 +58,30 @@ export function NPlusOneQueryDemos() {
           <QueryLane snapshot={snapshot.batch} />
         </div>
 
-        <div className="query-race-status" aria-hidden="true">
-          <p key={snapshot.statusLabel}>{snapshot.statusLabel}</p>
-        </div>
-
         <div
           className="query-race-summary"
           data-visible={snapshot.batch.isComplete ? "true" : "false"}
           aria-hidden="true"
         >
-          <ComparisonMetric label="Rows returned" value="10 = 10" />
-          <ComparisonMetric label="Round trips removed" value="9" />
+          <ComparisonMetric label="Rows returned" value="10" />
           <ComparisonMetric
-            label="Illustrative wait"
-            value={`${snapshot.batch.elapsedMs}ms vs 250ms`}
+            label="Round trips"
+            value="1 (Batched) 10 (Individual)"
           />
+          <ComparisonMetric label="Latency" value="35ms vs 250ms" />
         </div>
       </div>
 
       <p className="sr-only" aria-live="polite">
         {snapshot.isComplete
-          ? "Comparison complete. Both approaches returned 10 rows. The batch query used one round trip and 35 milliseconds; the per-id queries used ten round trips and 250 milliseconds."
+          ? "Comparison complete. Both approaches returned 10 rows. The batch lookup used one round trip and 35 milliseconds; individual lookups used ten round trips and 250 milliseconds."
           : ""}
       </p>
 
       <figcaption id="query-race-caption">
-        Illustrative latency: each per-id trip costs 25ms; the grouped lookup
-        costs 35ms. The rows are identical, but batching removes nine waits.
+        Individual lookups cost 25ms while a batch lookup costs 35ms; the rows
+        are identical but batching avoids round-trip latency and database
+        overhead
       </figcaption>
     </figure>
   );
@@ -220,22 +217,21 @@ function QueryLane({ snapshot }: { snapshot: QueryLaneSnapshot }) {
         </time>
       </div>
 
-      <div className="query-race-track">
-        <div className="query-race-endpoints">
-          <span>Application</span>
-          <span>Database</span>
-        </div>
+      <div className="query-race-network">
+        <QueryEndpoint kind="application" label="Application" />
         <div className="query-race-rail" ref={railRef}>
           <span className="query-race-rail-line" />
           <span
             className="query-race-packet"
             data-direction={snapshot.packet?.direction ?? "idle"}
+            data-moving={snapshot.packet ? "true" : "false"}
             ref={packetRef}
             style={packetStyle}
           >
             {snapshot.packet?.label ?? "done"}
           </span>
         </div>
+        <QueryEndpoint kind="database" label="Database" />
       </div>
 
       <div className="query-race-output">
@@ -253,6 +249,53 @@ function QueryLane({ snapshot }: { snapshot: QueryLaneSnapshot }) {
         <span>{snapshot.returnedOrders}/10 rows</span>
       </div>
     </section>
+  );
+}
+
+function QueryEndpoint({
+  kind,
+  label,
+}: {
+  kind: "application" | "database";
+  label: string;
+}) {
+  return (
+    <div className="query-race-endpoint" data-kind={kind}>
+      {kind === "application" ? <ApplicationIcon /> : <DatabaseIcon />}
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function ApplicationIcon() {
+  return (
+    <svg
+      className="query-race-endpoint-icon"
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect x="3.75" y="5.75" width="24.5" height="18.5" rx="2.25" />
+      <path d="M4 10.25h24M11.5 27.25h9M16 24.5v2.75" />
+      <circle cx="7.25" cy="8" r=".75" fill="currentColor" stroke="none" />
+      <circle cx="10.25" cy="8" r=".75" fill="currentColor" stroke="none" />
+      <path d="m11.5 15 2.25 2-2.25 2M16 19h4.5" />
+    </svg>
+  );
+}
+
+function DatabaseIcon() {
+  return (
+    <svg
+      className="query-race-endpoint-icon"
+      viewBox="0 0 32 32"
+      fill="none"
+      aria-hidden="true"
+    >
+      <ellipse cx="16" cy="7.5" rx="10.5" ry="4" />
+      <path d="M5.5 7.5v8c0 2.2 4.7 4 10.5 4s10.5-1.8 10.5-4v-8" />
+      <path d="M5.5 15.5v8c0 2.2 4.7 4 10.5 4s10.5-1.8 10.5-4v-8" />
+    </svg>
   );
 }
 

@@ -1,5 +1,5 @@
 export const ORDER_COUNT = 10;
-export const QUERY_RACE_DURATION_MS = 22_500;
+export const QUERY_RACE_DURATION_MS = 32_000;
 export const PER_ID_TOTAL_MS = 250;
 export const BATCH_TOTAL_MS = 35;
 
@@ -40,7 +40,6 @@ export type QueryLaneSnapshot = {
 export type QueryRaceSnapshot = {
   nPlusOne: QueryLaneSnapshot;
   batch: QueryLaneSnapshot;
-  statusLabel: string;
   isComplete: boolean;
 };
 
@@ -56,7 +55,6 @@ export function deriveQueryRaceSnapshot(progress: number): QueryRaceSnapshot {
     nPlusOne,
     batch,
     isComplete,
-    statusLabel: statusForComparison({ batch, isComplete, nPlusOne }),
   };
 }
 
@@ -174,31 +172,6 @@ function phaseForTrip(progress: number): QueryLanePhase {
   if (progress < PROCESSING_END) return "processing";
   if (progress < RESPONSE_END) return "response";
   return "settled";
-}
-
-function statusForComparison({
-  batch,
-  isComplete,
-  nPlusOne,
-}: {
-  batch: QueryLaneSnapshot;
-  isComplete: boolean;
-  nPlusOne: QueryLaneSnapshot;
-}) {
-  if (isComplete) {
-    return "Same 10 rows. Nine round trips and 215ms of illustrative wait removed.";
-  }
-
-  if (batch.isComplete) {
-    const noun = nPlusOne.remainingTrips === 1 ? "trip" : "trips";
-    return `Batch is finished. N+1 still has ${nPlusOne.remainingTrips} ${noun} to make.`;
-  }
-
-  if (batch.phase === "waiting") {
-    return "Both approaches start with the same 10 order ids.";
-  }
-
-  return "Both approaches cross the same application–database boundary.";
 }
 
 function progressInWindow(progress: number, start: number, end: number) {

@@ -26,10 +26,10 @@ It establishes the direction:
 
 - a restrained article header outside the stage;
 - one black, white, and warm-gray explanatory surface;
-- direct labels instead of decorative node illustrations;
+- direct labels, augmented by restrained actor icons when they make a path or
+  boundary faster to understand;
 - state expressed through grouping, rhythm, line treatment, text, and motion;
 - a persistent completed alternative while the slower path continues;
-- a short status sentence that narrates the current contrast; and
 - a quantified summary that makes the conclusion explicit.
 
 Treat it as a craft benchmark, not a layout template. Preserve its visual
@@ -63,7 +63,7 @@ dark explanatory surface fits:
 | Role        | Value     | Use                                     |
 | ----------- | --------- | --------------------------------------- |
 | Canvas      | `#181817` | Main diagram field                      |
-| Panel       | `#20201e` | Status and supporting bands             |
+| Panel       | `#20201e` | Input and supporting bands              |
 | Raised      | `#292927` | Moving tokens and quiet emphasis        |
 | Line        | `#3f3f3b` | Dividers and inactive structure         |
 | Strong line | `#696862` | Rails, boundaries, and active structure |
@@ -90,7 +90,7 @@ Use semantic color when it reduces time-to-meaning:
   changed;
 - use one stable hue per meaning and normally no more than two semantic hues in
   one figure;
-- synchronize the cue across related marks, such as the status sentence,
+- synchronize the cue across related marks, such as the comparison operator,
   comparison operator, returned row count, and settled ledger row;
 - keep inactive structure, labels, actors, and ornamental surfaces neutral;
 - prefer a quiet tinted surface with a higher-contrast foreground over a fully
@@ -123,11 +123,12 @@ Encode comparison structurally:
 Use two layers:
 
 1. Editorial layer: title, short explanatory deck, and any reader control.
-2. Diagram stage: the visual explanation, current status, and conclusion.
+2. Diagram stage: the visible comparison and conclusion.
 
 Keep the title and deck quiet. Put the explanatory contrast inside exactly one
 authored stage. Avoid nested cards, badge collections, dashboard KPI tiles,
-glossy gradients, illustrated servers/databases, and ornamental legends.
+glossy gradients, large decorative server/database illustrations, and
+ornamental legends.
 
 For comparisons, prefer this narrative order when it fits:
 
@@ -135,11 +136,41 @@ For comparisons, prefer this narrative order when it fits:
 2. Align the alternatives so the same boundary is visually comparable.
 3. Let the efficient path settle and remain visible.
 4. Continue the inefficient or failure-prone path long enough to expose cost.
-5. Narrate the current difference in one sentence.
-6. End with a compact, quantified comparison.
+5. End with a compact, quantified comparison.
 
 Do not hide the takeaway until the last frame. The lane names, operation counts,
 or structural difference should already make the premise visible at rest.
+Avoid running commentary bars that restate state already visible in the
+diagram. Prefer persistent counters, labels, settled geometry, and a concise
+final summary; add narration only when it explains a relationship those marks
+cannot make clear.
+
+### Icons And Logos
+
+Icons and logos may augment a diagram when they reduce actor ambiguity, make a
+network path easier to scan, or connect an unfamiliar label to a recognizable
+system. They support the explanation; they do not replace it.
+
+- Pair every icon with a direct text label so meaning does not depend on symbol
+  recognition.
+- Prefer a simple, single-color glyph with the same visual weight as nearby
+  labels. Keep it static when the relationship or payload is what moves.
+- Use a product logo only when that specific product identity matters to the
+  lesson. Prefer a generic application, database, queue, service, or user icon
+  when the role is the important fact.
+- Preserve official logo geometry. Use brand color only when identity would be
+  materially harder to recognize without it; otherwise adapt the mark to the
+  diagram's neutral ink.
+- Keep icon scale, stroke weight, and label spacing consistent across peers.
+  Optically center asymmetric shapes instead of assuming their view boxes are
+  visually balanced.
+- Do not add icons merely to decorate named boxes, repeat an already obvious
+  label, or turn a causal diagram into an architecture-logo wall.
+
+The N+1 query race demonstrates this exception: a small application-window
+glyph and database-cylinder glyph anchor opposite ends of each network rail,
+while explicit `Application` and `Database` labels remain visible and the query
+packet is still the only moving object.
 
 ### Spacing And Edge Clearance
 
@@ -200,7 +231,7 @@ the document is hidden and resume coherently.
 Choose the simplest representation that keeps labels crisp and state testable:
 
 - DOM/CSS: preferred for label-heavy comparisons, rails, grouped records,
-  counters, status bands, and summaries.
+  counters, supporting bands, and summaries.
 - SVG: fixed vector geometry, paths, connectors, and small topology diagrams.
 - Canvas 2D: dense packet fields, timelines, simulations, or geometry that would
   create excessive DOM/SVG nodes.
@@ -221,7 +252,7 @@ Add an engine, renderer, or viewport module only when the complexity requires
 it. Keep responsibilities clear:
 
 - Component: semantic figure markup, controls, refs, lifecycle, and text.
-- Model: typed phases, snapshots, domain values, clamps, and status labels.
+- Model: typed phases, snapshots, domain values, clamps, and derived labels.
 - Engine: timestamp math, frame scheduling, visibility, observers, and cleanup.
 - Renderer: pure drawing from a model snapshot and named geometry.
 - CSS: visual system, layout, responsive states, and reduced motion.
