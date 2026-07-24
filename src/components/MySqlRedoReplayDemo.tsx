@@ -35,8 +35,8 @@ export function MySqlRedoReplayDemo() {
             Commit log rebuilds the served state
           </p>
           <p id="redo-recovery-description">
-            Each durable record is applied in order. The JSON shows what the
-            database would serve after that step.
+            After each log record is applied, the JSON shows the current state
+            of the database.
           </p>
         </div>
         <button
@@ -102,9 +102,9 @@ export function MySqlRedoReplayDemo() {
       </p>
 
       <figcaption id="redo-recovery-caption">
-        Conceptual row-level view: real InnoDB redo describes lower-level page
-        changes, but the same ordered replay advances the data applications can
-        read.
+        This demo uses row-level changes for clarity. Actual InnoDB redo records
+        lower-level page changes, but replaying them in order produces the same
+        database state.
       </figcaption>
     </figure>
   );
