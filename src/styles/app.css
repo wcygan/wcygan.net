@@ -1331,6 +1331,10 @@
     --redo-muted: #aaa9a2;
     --redo-paper: #efeee9;
     --redo-paper-ink: #20201d;
+    --redo-positive: oklch(0.83 0.1 145);
+    --redo-positive-soft: oklch(0.73 0.1 145 / 0.14);
+    --redo-negative: oklch(0.81 0.09 25);
+    --redo-negative-soft: oklch(0.7 0.12 25 / 0.16);
     --redo-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     display: grid;
     gap: 14px;
@@ -1391,6 +1395,10 @@
       transform 140ms var(--redo-ease-out);
   }
 
+  .redo-recovery-replay:active {
+    transform: scale(0.96);
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .redo-recovery-replay:hover {
       border-color: #4c4b47;
@@ -1417,24 +1425,23 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px 16px;
-    min-block-size: 64px;
-    padding: 15px 18px;
+    min-block-size: 60px;
+    padding: 14px 18px;
     border-block-end: 1px solid var(--redo-line);
     background: var(--redo-panel);
   }
 
   .redo-recovery-checkpoint > div,
-  .redo-recovery-section-header > div,
-  .redo-recovery-status > div {
+  .redo-recovery-log-header > div {
     display: grid;
     gap: 3px;
     min-inline-size: 0;
   }
 
   .redo-recovery-checkpoint span,
-  .redo-recovery-section-header span,
-  .redo-recovery-status span,
-  .redo-recovery-record > div:last-child span {
+  .redo-recovery-log-header span,
+  .redo-recovery-json header span,
+  .redo-recovery-database-actor span {
     color: var(--redo-muted);
     font-size: 10px;
     font-weight: 650;
@@ -1444,21 +1451,20 @@
   }
 
   .redo-recovery-checkpoint strong,
-  .redo-recovery-section-header strong {
+  .redo-recovery-log-header strong {
     color: var(--redo-ink);
     font-size: 14px;
     font-weight: 650;
     line-height: 1.25;
   }
 
-  .redo-recovery .redo-recovery-checkpoint code,
-  .redo-recovery .redo-recovery-section-header code,
-  .redo-recovery .redo-recovery-status code,
-  .redo-recovery-log-row code {
+  .redo-recovery .redo-recovery-stage code {
+    margin: 0;
     padding: 0;
     border: 0;
+    border-radius: 0;
     background: transparent;
-    color: var(--redo-ink);
+    color: inherit;
     font-family: var(--font-mono);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
@@ -1466,271 +1472,312 @@
     line-height: 1.35;
   }
 
-  .redo-recovery-body {
+  .redo-recovery-flow {
     display: grid;
-    grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.84fr);
+    gap: 18px;
+    min-inline-size: 0;
+    padding: 18px;
   }
 
-  .redo-recovery-ledger,
-  .redo-recovery-state {
+  .redo-recovery-log {
+    display: grid;
+    gap: 12px;
     min-inline-size: 0;
   }
 
-  .redo-recovery-ledger {
-    border-inline-end: 1px solid var(--redo-line);
-  }
-
-  .redo-recovery-state {
-    display: grid;
-    grid-template-rows: auto 1fr;
-  }
-
-  .redo-recovery-section-header {
+  .redo-recovery-log-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    min-block-size: 64px;
-    padding: 14px 18px;
-    border-block-end: 1px solid var(--redo-line);
+    min-inline-size: 0;
   }
 
-  .redo-recovery .redo-recovery-section-header > code {
+  .redo-recovery .redo-recovery-log-header > code {
     color: var(--redo-muted);
     white-space: nowrap;
   }
 
-  .post-content .redo-recovery .redo-recovery-log {
-    position: relative;
+  .redo-recovery-tape-viewport {
+    min-inline-size: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    border-radius: 9px;
+    background: var(--redo-panel);
+    box-shadow:
+      0 0 0 1px var(--redo-line),
+      0 10px 24px rgb(0 0 0 / 16%);
+    scrollbar-width: none;
+    scroll-snap-type: inline proximity;
+  }
+
+  .redo-recovery-tape-viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .post-content .redo-recovery .redo-recovery-tape {
     display: grid;
+    grid-auto-columns: 148px;
+    grid-auto-flow: column;
+    min-inline-size: 100%;
+    inline-size: max-content;
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .post-content .redo-recovery .redo-recovery-log-row {
+  .post-content .redo-recovery .redo-recovery-tape-record {
     position: relative;
     display: grid;
-    grid-template-columns: 38px minmax(0, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    min-block-size: 52px;
+    gap: 7px;
+    align-content: center;
+    min-block-size: 92px;
+    min-inline-size: 0;
     margin: 0;
-    padding: 12px 16px;
-    border-block-end: 1px solid var(--redo-line);
+    padding: 12px 13px 14px;
+    border-inline-start: 1px solid var(--redo-line);
+    background: transparent;
     color: var(--redo-muted);
+    scroll-snap-align: center;
     transition:
       background-color 180ms ease,
-      color 180ms ease,
-      opacity 180ms ease;
+      color 180ms ease;
   }
 
-  .redo-recovery-log-row:last-child {
-    border-block-end: 0;
+  .redo-recovery-tape-record {
+    --redo-operation-accent: var(--redo-line-strong);
+    --redo-operation-soft: transparent;
   }
 
-  .redo-recovery-log-row > span:not(.redo-recovery-log-progress) {
-    min-inline-size: 0;
+  .post-content .redo-recovery .redo-recovery-tape-record:first-child {
+    border-inline-start: 0;
+  }
+
+  .redo-recovery-tape-record[data-operation="INSERT"],
+  .redo-recovery-tape-record[data-operation="UPDATE"] {
+    --redo-operation-accent: var(--redo-positive);
+    --redo-operation-soft: var(--redo-positive-soft);
+  }
+
+  .redo-recovery-tape-record[data-operation="DELETE"] {
+    --redo-operation-accent: var(--redo-negative);
+    --redo-operation-soft: var(--redo-negative-soft);
+  }
+
+  .redo-recovery .redo-recovery-tape-lsn {
+    color: var(--redo-muted);
+    font-size: 10px;
+  }
+
+  .redo-recovery-tape-record strong {
+    color: var(--redo-operation-accent);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.055em;
+    line-height: 1.2;
+  }
+
+  .redo-recovery .redo-recovery-tape-effect {
     overflow: hidden;
-    font-size: 12px;
-    line-height: 1.25;
+    color: var(--redo-muted);
+    font-size: 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .redo-recovery-log-row strong {
-    color: inherit;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
-
-  .redo-recovery-log-row > code:last-child {
-    color: inherit;
-    text-align: end;
-    white-space: nowrap;
-  }
-
-  .post-content .redo-recovery .redo-recovery-log-row code {
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-  }
-
-  .redo-recovery-log-row[data-status="pending"] {
-    opacity: 0.52;
-  }
-
-  .redo-recovery-log-row[data-status="active"] {
-    background: var(--redo-raised);
+  .redo-recovery-tape-record[data-reflected="true"] {
+    background: rgb(255 255 255 / 1.5%);
     color: var(--redo-ink);
-    opacity: 1;
   }
 
-  .redo-recovery-log-row[data-status="applied"] {
+  .post-content
+    .redo-recovery
+    .redo-recovery-tape-record[data-status="active"] {
+    background: var(--redo-operation-soft);
     color: var(--redo-ink);
-    opacity: 0.82;
   }
 
-  .redo-recovery-log-progress {
+  .redo-recovery-tape-record[data-status="active"] .redo-recovery-tape-lsn,
+  .redo-recovery-tape-record[data-status="active"] .redo-recovery-tape-effect {
+    color: var(--redo-ink);
+  }
+
+  .redo-recovery-tape-progress {
     position: absolute;
-    inset: auto 16px 0;
-    block-size: 2px;
-    background: var(--redo-paper);
+    inset: auto 0 0;
+    block-size: 3px;
+    background: var(--redo-operation-accent);
+    opacity: 0;
     transform: scaleX(0);
     transform-origin: left center;
     will-change: auto;
+    transition: opacity 180ms ease;
   }
 
-  .redo-recovery-log-row[data-status="active"] .redo-recovery-log-progress {
+  .redo-recovery-tape-record[data-reflected="true"]
+    .redo-recovery-tape-progress {
+    opacity: 0.38;
+  }
+
+  .redo-recovery-tape-record[data-status="active"]
+    .redo-recovery-tape-progress {
+    opacity: 1;
     will-change: transform;
   }
 
-  .redo-recovery-records {
+  .redo-recovery-database {
     display: grid;
-    grid-template-rows: repeat(3, minmax(0, 1fr));
-    gap: 1px;
-    padding: 16px;
-    background: var(--redo-line);
+    grid-template-columns: 92px 44px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-inline-size: 0;
   }
 
-  .redo-recovery-record {
+  .redo-recovery-database-actor {
+    display: grid;
+    gap: 3px;
+    justify-items: center;
+    min-inline-size: 0;
+    text-align: center;
+  }
+
+  .redo-recovery-database-icon {
+    inline-size: 48px;
+    block-size: 48px;
+    overflow: visible;
+    color: var(--redo-ink);
+    stroke: currentColor;
+    stroke-width: 1.35;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .redo-recovery-database-actor strong {
+    color: var(--redo-ink);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.2;
+  }
+
+  .redo-recovery-database-actor span {
+    font-size: 8px;
+    letter-spacing: 0.035em;
+  }
+
+  .redo-recovery .redo-recovery-database-actor code {
+    color: var(--redo-muted);
+    font-size: 10px;
+  }
+
+  .redo-recovery-read-arrow {
+    position: relative;
+    min-inline-size: 0;
+    block-size: 18px;
+  }
+
+  .redo-recovery-read-arrow span {
+    position: absolute;
+    inset: 8px 4px auto 0;
+    block-size: 1px;
+    background: var(--redo-line-strong);
+  }
+
+  .redo-recovery-read-arrow span::after {
+    position: absolute;
+    inset: -3px -1px auto auto;
+    inline-size: 7px;
+    block-size: 7px;
+    border-block-start: 1px solid var(--redo-line-strong);
+    border-inline-end: 1px solid var(--redo-line-strong);
+    content: "";
+    transform: rotate(45deg);
+  }
+
+  .redo-recovery-json {
+    --redo-operation-accent: var(--redo-paper);
+    --redo-operation-soft: transparent;
+    min-inline-size: 0;
+    overflow: hidden;
+    border: 1px solid var(--redo-line-strong);
+    border-radius: 9px;
+    background: var(--redo-panel);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .redo-recovery-json[data-operation="INSERT"],
+  .redo-recovery-json[data-operation="UPDATE"] {
+    --redo-operation-accent: var(--redo-positive);
+    --redo-operation-soft: var(--redo-positive-soft);
+  }
+
+  .redo-recovery-json[data-operation="DELETE"] {
+    --redo-operation-accent: var(--redo-negative);
+    --redo-operation-soft: var(--redo-negative-soft);
+  }
+
+  .redo-recovery-database[data-writing="true"] .redo-recovery-json {
+    border-color: var(--redo-operation-accent);
+    box-shadow: 0 0 0 3px var(--redo-operation-soft);
+  }
+
+  .redo-recovery-json header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    min-block-size: 74px;
-    padding: 16px;
-    background: var(--redo-panel);
+    gap: 12px;
+    min-block-size: 36px;
+    padding: 9px 14px;
+    border-block-end: 1px solid var(--redo-line);
+  }
+
+  .redo-recovery .redo-recovery-json header code {
+    color: var(--redo-muted);
+    white-space: nowrap;
+  }
+
+  .post-content .redo-recovery .redo-recovery-json-blob {
+    display: grid;
+    gap: 2px;
+    min-block-size: 148px;
+    align-content: start;
+    padding: 12px 14px;
+    color: var(--redo-ink);
+    font-size: 10.5px;
+    line-height: 1.42;
+    white-space: nowrap;
+  }
+
+  .redo-recovery-json-blob > span {
+    display: block;
+    min-inline-size: 0;
+  }
+
+  .redo-recovery-json-indent {
+    padding-inline-start: 8px;
+  }
+
+  .redo-recovery-json-row {
+    margin-inline: 8px -6px;
+    padding-inline: 6px;
+    border-radius: 4px;
+    color: var(--redo-ink);
     transition:
       background-color 180ms ease,
       box-shadow 180ms ease,
       color 180ms ease;
   }
 
-  .redo-recovery-record[data-target="true"] {
-    background: var(--redo-raised);
-    box-shadow: inset 2px 0 var(--redo-paper);
-  }
-
-  .redo-recovery-record > div {
-    display: grid;
-    gap: 3px;
-    min-inline-size: 0;
-  }
-
-  .redo-recovery-record > div:first-child {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
-  }
-
-  .redo-recovery .redo-recovery-record > div:first-child code {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 25px;
-    block-size: 25px;
-    padding: 0;
-    border: 1px solid var(--redo-line-strong);
-    border-radius: 50%;
-    background: transparent;
+  .redo-recovery-json-row[data-highlighted="true"] {
+    background: var(--redo-operation-soft);
+    box-shadow: inset 3px 0 var(--redo-operation-accent);
     color: var(--redo-ink);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1;
-  }
-
-  .redo-recovery-record > div:first-child span {
-    overflow: hidden;
-    color: var(--redo-ink);
-    font-size: 12px;
-    line-height: 1.25;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .redo-recovery-record > div:last-child {
-    justify-items: end;
-    text-align: end;
-  }
-
-  .redo-recovery-record strong {
-    color: var(--redo-ink);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-variant-numeric: tabular-nums;
-    font-weight: 500;
-    line-height: 1.2;
-  }
-
-  .redo-recovery-record[data-status="missing"] strong,
-  .redo-recovery-record[data-status="deleted"] strong {
-    color: var(--redo-muted);
-  }
-
-  .redo-recovery-status {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 20px;
-    min-block-size: 72px;
-    padding: 15px 18px;
-    border-block-start: 1px solid var(--redo-line);
-    background: var(--redo-panel);
-    transition:
-      background-color 220ms ease,
-      color 220ms ease;
-  }
-
-  .post-content .redo-recovery-status p {
-    margin: 0;
-    color: var(--redo-ink);
-    font-size: 13px;
-    line-height: 1.4;
-    animation: redo-recovery-status-enter 180ms var(--redo-ease-out) both;
-  }
-
-  .redo-recovery .redo-recovery-status > code {
-    color: var(--redo-muted);
-    opacity: 0;
-    text-align: end;
-    white-space: nowrap;
-    transition: opacity 220ms ease;
-  }
-
-  .redo-recovery .redo-recovery-status > code[data-visible="true"] {
-    opacity: 1;
-  }
-
-  .redo-recovery[data-phase="complete"] .redo-recovery-status {
-    background: var(--redo-paper);
-    color: var(--redo-paper-ink);
-  }
-
-  .redo-recovery[data-phase="complete"] .redo-recovery-status span,
-  .redo-recovery[data-phase="complete"] .redo-recovery-status p,
-  .redo-recovery[data-phase="complete"] .redo-recovery-status > code {
-    color: var(--redo-paper-ink);
   }
 
   .post-content .redo-recovery > figcaption {
     margin: 0;
-  }
-
-  @keyframes redo-recovery-status-enter {
-    from {
-      opacity: 0.45;
-      transform: translateY(4px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   @media (max-width: 560px) {
@@ -1743,69 +1790,76 @@
       padding-inline: 14px;
     }
 
-    .redo-recovery-body {
-      grid-template-columns: 1fr;
-    }
-
-    .redo-recovery-ledger {
-      border-block-end: 1px solid var(--redo-line);
-      border-inline-end: 0;
-    }
-
-    .redo-recovery-section-header {
-      padding-inline: 16px;
-    }
-
-    .redo-recovery-records {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-template-rows: 1fr;
+    .redo-recovery-flow {
       padding: 14px;
     }
 
-    .redo-recovery-record {
-      display: grid;
-      align-content: space-between;
-      min-block-size: 120px;
-      padding: 14px;
+    .post-content .redo-recovery .redo-recovery-tape {
+      grid-auto-columns: 136px;
     }
 
-    .redo-recovery-record > div:last-child {
-      justify-items: start;
-      text-align: start;
+    .post-content .redo-recovery .redo-recovery-tape-record {
+      min-block-size: 88px;
+      padding: 11px 12px 13px;
     }
 
-    .redo-recovery-record > div:first-child span {
-      display: none;
+    .redo-recovery-database {
+      grid-template-columns: 64px 26px minmax(0, 1fr);
+      gap: 8px;
     }
 
-    .redo-recovery-status {
-      display: grid;
-      padding-inline: 16px;
+    .redo-recovery-database-icon {
+      inline-size: 40px;
+      block-size: 40px;
     }
 
-    .redo-recovery .redo-recovery-status > code {
-      text-align: start;
-      white-space: normal;
+    .redo-recovery-database-actor strong {
+      font-size: 11px;
+    }
+
+    .redo-recovery-json header {
+      gap: 8px;
+      padding-inline: 10px;
+    }
+
+    .redo-recovery-json header span {
+      font-size: 8px;
+      letter-spacing: 0.035em;
+    }
+
+    .post-content .redo-recovery .redo-recovery-json-blob {
+      min-block-size: 142px;
+      padding: 12px;
+      font-size: 9.5px;
+    }
+
+    .redo-recovery-json-indent {
+      padding-inline-start: 6px;
+    }
+
+    .redo-recovery-json-row {
+      margin-inline: 6px -4px;
+      padding-inline: 4px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .redo-recovery-replay,
     .redo-recovery-replay:active,
-    .redo-recovery-log-row,
-    .redo-recovery-record,
-    .redo-recovery-status,
-    .redo-recovery-status > code {
-      transform: none;
+    .redo-recovery-tape-record,
+    .redo-recovery-tape-progress,
+    .redo-recovery-json,
+    .redo-recovery-json-row {
       transition: none;
     }
 
-    .redo-recovery-log-progress {
-      will-change: auto;
+    .redo-recovery-replay,
+    .redo-recovery-replay:active {
+      transform: none;
     }
 
-    .post-content .redo-recovery-status p {
-      animation: none;
+    .redo-recovery-tape-progress {
+      will-change: auto;
     }
   }
 

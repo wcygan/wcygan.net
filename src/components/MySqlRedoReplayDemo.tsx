@@ -1,4 +1,10 @@
-import { type CSSProperties, useCallback, useEffect, useState } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   deriveReplayTimelineSnapshot,
   INITIAL_REPLAY_SNAPSHOT,
@@ -10,25 +16,27 @@ import {
 
 export function MySqlRedoReplayDemo() {
   const { replay, snapshot } = useRedoReplayPlayback();
-  const phase = replayPhase(snapshot);
+  const latestSequence = snapshot.lastAppliedRecord?.sequence ?? 100;
+  const servedRowCount = presentRecords(snapshot.database).length;
 
   return (
     <figure
       className="redo-recovery"
       data-graphic-frame="workbench"
       data-graphic-key="redo-recovery"
-      data-phase={phase}
+      data-graphic-kind="dom"
+      data-phase={snapshot.phase}
       aria-labelledby="redo-recovery-title"
       aria-describedby="redo-recovery-description redo-recovery-caption"
     >
       <header className="redo-recovery-header">
         <div>
           <p className="article-graphic-title" id="redo-recovery-title">
-            Crash recovery follows the durable log
+            Commit log rebuilds the served state
           </p>
           <p id="redo-recovery-description">
-            InnoDB starts from the checkpoint and applies each later record
-            once, in increasing log sequence number order.
+            Each durable record is applied in order. The JSON shows what the
+            database would serve after that step.
           </p>
         </div>
         <button
@@ -44,85 +52,59 @@ export function MySqlRedoReplayDemo() {
       <div className="redo-recovery-stage" data-graphic-stage="flush">
         <div className="redo-recovery-checkpoint" aria-hidden="true">
           <div>
-            <span>Start point</span>
-            <strong>Checkpoint on disk</strong>
+            <span>Checkpoint loaded</span>
+            <strong>Data files through LSN 100</strong>
           </div>
-          <code>A 900 · B 250 · C —</code>
         </div>
 
-        <div className="redo-recovery-body" aria-hidden="true">
-          <section className="redo-recovery-ledger">
-            <div className="redo-recovery-section-header">
+        <div className="redo-recovery-flow" aria-hidden="true">
+          <section className="redo-recovery-log">
+            <header className="redo-recovery-log-header">
               <div>
-                <span>Durable redo</span>
+                <span>Commit log</span>
                 <strong>LSN 101 → 106</strong>
               </div>
-              <code>{snapshot.appliedCount}/6 applied</code>
-            </div>
+              <code>{snapshot.databaseAppliedCount}/6 reflected</code>
+            </header>
 
-            <ol className="redo-recovery-log">
-              {snapshot.records.map((record) => (
-                <RedoLogRow
-                  key={record.sequence}
-                  record={record}
-                  progress={
-                    record.status === "applied"
-                      ? 1
-                      : record.status === "active"
-                        ? snapshot.stepProgress
-                        : 0
-                  }
-                />
-              ))}
-            </ol>
+            <CommitLogTape snapshot={snapshot} />
           </section>
 
-          <section className="redo-recovery-state">
-            <div className="redo-recovery-section-header">
-              <div>
-                <span>Recovered state</span>
-                <strong>Checkpoint + applied redo</strong>
-              </div>
-              <code>+{snapshot.appliedCount}</code>
+          <section
+            className="redo-recovery-database"
+            data-writing={snapshot.phase === "write" ? "true" : "false"}
+            data-operation={snapshot.highlightedOperation ?? "NONE"}
+          >
+            <div className="redo-recovery-database-actor">
+              <DatabaseIcon />
+              <strong>Database</strong>
+              <span>Serving LSN {latestSequence}</span>
+              <code>
+                {servedRowCount} {servedRowCount === 1 ? "row" : "rows"}
+              </code>
             </div>
-
-            <div className="redo-recovery-records">
-              {snapshot.database.map((record) => (
-                <RecoveredRecord
-                  key={record.key}
-                  record={record}
-                  isTarget={
-                    snapshot.stepProgress > 0 &&
-                    snapshot.activeRecord?.recordKey === record.key
-                  }
-                />
-              ))}
+            <div className="redo-recovery-read-arrow">
+              <span />
             </div>
+            <JsonReadModel
+              highlightedOperation={snapshot.highlightedOperation}
+              highlightedRecordKey={snapshot.highlightedRecordKey}
+              records={snapshot.database}
+            />
           </section>
-        </div>
-
-        <div className="redo-recovery-status" aria-hidden="true">
-          <div>
-            <span>
-              {phase === "complete" ? "Recovered result" : "Replay cursor"}
-            </span>
-            <p key={snapshot.phaseLabel}>{snapshot.phaseLabel}</p>
-          </div>
-          <code data-visible={phase === "complete" ? "true" : "false"}>
-            A 725 · B 180 · C deleted
-          </code>
         </div>
       </div>
 
       <p className="sr-only" aria-live="polite">
-        {phase === "complete"
-          ? "Recovery complete. Six durable redo records were applied in increasing log sequence number order. Account A has balance 725, Account B has balance 180, and Account C is deleted."
+        {snapshot.phase === "complete"
+          ? "Recovery complete. Six durable redo records were applied in increasing log sequence number order. The database now serves JSON containing Account A with balance 725 and Account B with balance 180. Account C is absent after its delete record."
           : ""}
       </p>
 
       <figcaption id="redo-recovery-caption">
-        Conceptual model: the account rows make ordered replay visible; real
-        InnoDB redo describes lower-level page changes.
+        Conceptual row-level view: real InnoDB redo describes lower-level page
+        changes, but the same ordered replay advances the data applications can
+        read.
       </figcaption>
     </figure>
   );
@@ -209,10 +191,57 @@ function useRedoReplayPlayback(): {
   return { replay, snapshot };
 }
 
-function RedoLogRow({
+function CommitLogTape({ snapshot }: { snapshot: ReplaySnapshot }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const activeSequence = snapshot.activeRecord?.sequence;
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const activeRecord = viewport.querySelector<HTMLElement>(
+      '[data-status="active"]',
+    );
+    const viewportBounds = viewport.getBoundingClientRect();
+    const activeBounds = activeRecord?.getBoundingClientRect();
+    const activeLeft = activeBounds
+      ? activeBounds.left - viewportBounds.left + viewport.scrollLeft
+      : 0;
+    const left = activeBounds
+      ? activeLeft - (viewport.clientWidth - activeBounds.width) / 2
+      : viewport.scrollWidth - viewport.clientWidth;
+
+    viewport.scrollTo({
+      behavior: reducedMotion ? "auto" : "smooth",
+      left: Math.max(0, left),
+    });
+  }, [activeSequence]);
+
+  return (
+    <div className="redo-recovery-tape-viewport" ref={viewportRef}>
+      <ol className="redo-recovery-tape">
+        {snapshot.records.map((record, index) => (
+          <CommitLogTapeRecord
+            key={record.sequence}
+            record={record}
+            isReflected={index < snapshot.databaseAppliedCount}
+            progress={record.status === "active" ? snapshot.stepProgress : 1}
+          />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function CommitLogTapeRecord({
+  isReflected,
   progress,
   record,
 }: {
+  isReflected: boolean;
   progress: number;
   record: ReplaySnapshot["records"][number];
 }) {
@@ -221,64 +250,93 @@ function RedoLogRow({
   } satisfies CSSProperties;
 
   return (
-    <li className="redo-recovery-log-row" data-status={record.status}>
-      <span className="redo-recovery-log-progress" style={progressStyle} />
-      <code>{record.sequence}</code>
-      <span>
-        <strong>{record.operation}</strong> {record.recordLabel}
-      </span>
-      <code>{recordEffect(record)}</code>
+    <li
+      className="redo-recovery-tape-record"
+      data-operation={record.operation}
+      data-reflected={isReflected ? "true" : "false"}
+      data-status={record.status}
+    >
+      <code className="redo-recovery-tape-lsn">LSN {record.sequence}</code>
+      <strong>{record.operation}</strong>
+      <code className="redo-recovery-tape-effect">{tapeEffect(record)}</code>
+      <span className="redo-recovery-tape-progress" style={progressStyle} />
     </li>
   );
 }
 
-function RecoveredRecord({
-  isTarget,
-  record,
+function JsonReadModel({
+  highlightedOperation,
+  highlightedRecordKey,
+  records,
 }: {
-  isTarget: boolean;
-  record: MemoryRecord;
+  highlightedOperation?: ReplaySnapshot["highlightedOperation"];
+  highlightedRecordKey?: MemoryRecord["key"];
+  records: MemoryRecord[];
 }) {
+  const present = presentRecords(records);
+
   return (
     <div
-      className="redo-recovery-record"
-      data-status={record.status}
-      data-target={isTarget ? "true" : "false"}
+      className="redo-recovery-json"
+      data-operation={highlightedOperation ?? "NONE"}
     >
-      <div>
-        <code>{record.key}</code>
-        <span>{record.label}</span>
-      </div>
-      <div>
-        <span>{recordStateLabel(record)}</span>
-        <strong>{recordValue(record)}</strong>
-      </div>
+      <header>
+        <span>Current query result</span>
+        <code>{present.length} rows</code>
+      </header>
+      <code className="redo-recovery-json-blob">
+        <span>{"{"}</span>
+        <span className="redo-recovery-json-indent">{'"accounts": {'}</span>
+        {present.map((record, index) => (
+          <span
+            className="redo-recovery-json-row"
+            data-highlighted={
+              record.key === highlightedRecordKey ? "true" : "false"
+            }
+            data-operation={
+              record.key === highlightedRecordKey
+                ? highlightedOperation
+                : "NONE"
+            }
+            key={record.key}
+          >
+            {`"${record.key}": { "balance": ${record.balance} }${
+              index === present.length - 1 ? "" : ","
+            }`}
+          </span>
+        ))}
+        <span className="redo-recovery-json-indent">{"}"}</span>
+        <span>{"}"}</span>
+      </code>
     </div>
   );
 }
 
-function recordEffect(record: LogRecord) {
-  if (record.operation === "DELETE") return "remove";
-  if (record.operation === "INSERT") return `+${record.balance}`;
-  return `→ ${record.balance}`;
+function DatabaseIcon() {
+  return (
+    <svg
+      className="redo-recovery-database-icon"
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+    >
+      <ellipse cx="24" cy="11" rx="15.5" ry="6" />
+      <path d="M8.5 11v13c0 3.3 6.9 6 15.5 6s15.5-2.7 15.5-6V11" />
+      <path d="M8.5 24v13c0 3.3 6.9 6 15.5 6s15.5-2.7 15.5-6V24" />
+    </svg>
+  );
 }
 
-function recordStateLabel(record: MemoryRecord) {
-  if (record.lastOperation) return record.lastOperation.toLowerCase();
-  if (record.status === "missing") return "not on disk";
-  return "checkpoint";
-}
-
-function recordValue(record: MemoryRecord) {
-  if (record.status === "missing") return "—";
-  if (record.status === "deleted") return "deleted";
-  return record.balance;
-}
-
-function replayPhase(snapshot: ReplaySnapshot) {
-  if (snapshot.appliedCount >= snapshot.records.length) return "complete";
-  if (snapshot.appliedCount === 0 && snapshot.stepProgress === 0) {
-    return "checkpoint";
+function tapeEffect(record: LogRecord) {
+  if (record.operation === "INSERT") {
+    return `${record.recordKey}.balance = ${record.balance}`;
   }
-  return "replay";
+  if (record.operation === "DELETE") {
+    return `${record.recordKey} removed`;
+  }
+  return `${record.recordKey}.balance → ${record.balance}`;
+}
+
+function presentRecords(records: MemoryRecord[]) {
+  return records.filter((record) => record.status === "present");
 }

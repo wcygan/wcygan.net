@@ -21,6 +21,14 @@ export type ReplayLogRecord = LogRecord & {
   status: LogRecordStatus;
 };
 
+export type ReplayPhase =
+  | "checkpoint"
+  | "select"
+  | "transfer"
+  | "write"
+  | "settle"
+  | "complete";
+
 export type MemoryRecordStatus = "missing" | "present" | "deleted";
 
 export type MemoryRecord = {
@@ -33,19 +41,24 @@ export type MemoryRecord = {
 
 export type ReplaySnapshot = {
   appliedCount: number;
+  databaseAppliedCount: number;
   stepProgress: number;
+  phase: ReplayPhase;
   records: ReplayLogRecord[];
   database: MemoryRecord[];
   activeRecord?: ReplayLogRecord;
   lastAppliedRecord?: ReplayLogRecord;
-  cursorProgress: number;
-  phaseLabel: string;
+  highlightedRecordKey?: RecordKey;
+  highlightedOperation?: Operation;
 };
 
-export const REPLAY_DURATION_MS = 16_000;
+export const REPLAY_DURATION_MS = 20_000;
 
-const INTRO_END = 0.075;
-const REPLAY_END = 0.93;
+const INTRO_END = 0.07;
+const REPLAY_END = 0.94;
+const TRANSFER_START = 0.18;
+const DATABASE_WRITE_AT = 0.58;
+const WRITE_END = 0.82;
 
 export const RECORD_LABELS: Record<RecordKey, string> = {
   A: "Account A",
@@ -156,7 +169,14 @@ export function deriveReplaySnapshot(state: ReplayState): ReplaySnapshot {
   const appliedCount = clampAppliedCount(state.appliedCount);
   const stepProgress = clamp(state.stepProgress, 0, 1);
   const activeRecord = REPLAY_LOG_RECORDS[appliedCount];
-  const appliedRecords = REPLAY_LOG_RECORDS.slice(0, appliedCount);
+  const phase = replayPhase(appliedCount, stepProgress, activeRecord);
+  const activeRecordWasWritten =
+    activeRecord !== undefined && stepProgress >= DATABASE_WRITE_AT;
+  const databaseAppliedCount = Math.min(
+    REPLAY_LOG_RECORDS.length,
+    appliedCount + (activeRecordWasWritten ? 1 : 0),
+  );
+  const appliedRecords = REPLAY_LOG_RECORDS.slice(0, databaseAppliedCount);
   const records = REPLAY_LOG_RECORDS.map(
     (record, index): ReplayLogRecord => ({
       ...record,
@@ -164,18 +184,27 @@ export function deriveReplaySnapshot(state: ReplayState): ReplaySnapshot {
     }),
   );
   const lastAppliedRecord =
-    appliedCount === 0 ? undefined : records[appliedCount - 1];
+    databaseAppliedCount === 0 ? undefined : records[databaseAppliedCount - 1];
+  const highlightedOperation = operationHighlightedDuring(phase)
+    ? activeRecord?.operation
+    : undefined;
 
   return {
     appliedCount,
+    databaseAppliedCount,
     stepProgress,
+    phase,
     records,
     database: applyLogRecords(appliedRecords),
     activeRecord:
       activeRecord === undefined ? undefined : records[appliedCount],
     lastAppliedRecord,
-    cursorProgress: deriveCursorProgress(appliedCount, stepProgress),
-    phaseLabel: phaseLabel(appliedCount, stepProgress, activeRecord),
+    highlightedRecordKey: highlightedRecordKey(
+      activeRecord,
+      phase,
+      activeRecordWasWritten,
+    ),
+    highlightedOperation,
   };
 }
 
@@ -219,25 +248,36 @@ function applyLogRecords(records: readonly LogRecord[]): MemoryRecord[] {
   return database;
 }
 
-function deriveCursorProgress(appliedCount: number, stepProgress: number) {
-  if (appliedCount >= REPLAY_LOG_RECORDS.length) return 1;
-  return (appliedCount + stepProgress) / REPLAY_LOG_RECORDS.length;
+function highlightedRecordKey(
+  activeRecord: LogRecord | undefined,
+  phase: ReplayPhase,
+  activeRecordWasWritten: boolean,
+) {
+  if (!activeRecord || !operationHighlightedDuring(phase)) return undefined;
+  if (activeRecord.operation === "INSERT" && !activeRecordWasWritten) {
+    return undefined;
+  }
+  if (activeRecord.operation === "DELETE" && activeRecordWasWritten) {
+    return undefined;
+  }
+  return activeRecord.recordKey;
 }
 
-function phaseLabel(
+function operationHighlightedDuring(phase: ReplayPhase) {
+  return phase !== "checkpoint" && phase !== "complete";
+}
+
+function replayPhase(
   appliedCount: number,
   stepProgress: number,
   activeRecord: LogRecord | undefined,
-) {
-  if (appliedCount >= REPLAY_LOG_RECORDS.length) {
-    return "All six durable records have been applied in LSN order.";
+): ReplayPhase {
+  if (appliedCount >= REPLAY_LOG_RECORDS.length || !activeRecord) {
+    return "complete";
   }
-
-  if (appliedCount === 0 && stepProgress === 0) {
-    return "Checkpoint loaded. Recovery begins at the first later LSN.";
-  }
-
-  if (!activeRecord) return "Recovery has no later durable record to apply.";
-
-  return `Replaying LSN ${activeRecord.sequence}: ${activeRecord.operation} ${activeRecord.recordLabel}.`;
+  if (appliedCount === 0 && stepProgress === 0) return "checkpoint";
+  if (stepProgress < TRANSFER_START) return "select";
+  if (stepProgress < DATABASE_WRITE_AT) return "transfer";
+  if (stepProgress < WRITE_END) return "write";
+  return "settle";
 }

@@ -23,11 +23,12 @@ describe("deriveReplaySnapshot", () => {
   });
 
   it("leaves time to establish the checkpoint before replay begins", () => {
-    const snapshot = deriveReplayTimelineSnapshot(0.075);
+    const snapshot = deriveReplayTimelineSnapshot(0.07);
 
-    expect(REPLAY_DURATION_MS).toBe(16_000);
+    expect(REPLAY_DURATION_MS).toBe(20_000);
     expect(snapshot.appliedCount).toBe(0);
     expect(snapshot.stepProgress).toBe(0);
+    expect(snapshot.phase).toBe("checkpoint");
   });
 
   it("applies records progressively without skipping LSNs", () => {
@@ -43,6 +44,71 @@ describe("deriveReplaySnapshot", () => {
       "pending",
       "pending",
     ]);
+  });
+
+  it("changes the served state only after the active record reaches the database", () => {
+    const inTransit = deriveReplaySnapshot({
+      appliedCount: 0,
+      stepProgress: 0.57,
+    });
+    const written = deriveReplaySnapshot({
+      appliedCount: 0,
+      stepProgress: 0.58,
+    });
+
+    expect(inTransit.phase).toBe("transfer");
+    expect(inTransit.databaseAppliedCount).toBe(0);
+    expect(inTransit.database[0]).toMatchObject({ key: "A", balance: 900 });
+    expect(written.phase).toBe("write");
+    expect(written.databaseAppliedCount).toBe(1);
+    expect(written.highlightedRecordKey).toBe("A");
+    expect(written.highlightedOperation).toBe("UPDATE");
+    expect(written.database[0]).toMatchObject({ key: "A", balance: 800 });
+  });
+
+  it("highlights an inserted row only after it becomes queryable", () => {
+    const inTransit = deriveReplaySnapshot({
+      appliedCount: 1,
+      stepProgress: 0.57,
+    });
+    const written = deriveReplaySnapshot({
+      appliedCount: 1,
+      stepProgress: 0.58,
+    });
+
+    expect(inTransit.highlightedOperation).toBe("INSERT");
+    expect(inTransit.highlightedRecordKey).toBeUndefined();
+    expect(written.highlightedRecordKey).toBe("C");
+    expect(written.database[2]).toMatchObject({
+      key: "C",
+      status: "present",
+      balance: 1200,
+    });
+  });
+
+  it("highlights a deleted row before removing it from the query result", () => {
+    const inTransit = deriveReplaySnapshot({
+      appliedCount: 4,
+      stepProgress: 0.57,
+    });
+    const written = deriveReplaySnapshot({
+      appliedCount: 4,
+      stepProgress: 0.58,
+    });
+
+    expect(inTransit.highlightedOperation).toBe("DELETE");
+    expect(inTransit.highlightedRecordKey).toBe("C");
+    expect(inTransit.database[2]).toMatchObject({
+      key: "C",
+      status: "present",
+      balance: 1200,
+    });
+    expect(written.highlightedOperation).toBe("DELETE");
+    expect(written.highlightedRecordKey).toBeUndefined();
+    expect(written.database[2]).toMatchObject({
+      key: "C",
+      status: "deleted",
+    });
   });
 
   it("inserts Account C when its INSERT record is replayed", () => {
@@ -93,7 +159,8 @@ describe("deriveReplaySnapshot", () => {
     const snapshot = deriveReplaySnapshot(REDUCED_MOTION_REPLAY_STATE);
 
     expect(snapshot.appliedCount).toBe(REPLAY_LOG_RECORDS.length);
-    expect(snapshot.cursorProgress).toBe(1);
+    expect(snapshot.databaseAppliedCount).toBe(REPLAY_LOG_RECORDS.length);
+    expect(snapshot.phase).toBe("complete");
   });
 
   it("holds the completed replay instead of looping to the checkpoint", () => {
