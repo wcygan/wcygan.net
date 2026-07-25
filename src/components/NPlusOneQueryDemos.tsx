@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 import {
   deriveQueryRaceSnapshot,
   INITIAL_QUERY_RACE_SNAPSHOT,
@@ -261,7 +262,11 @@ function QueryEndpoint({
 }) {
   return (
     <div className="query-race-endpoint" data-kind={kind}>
-      {kind === "application" ? <ApplicationIcon /> : <DatabaseIcon />}
+      {kind === "application" ? (
+        <ApplicationIcon />
+      ) : (
+        <DatabaseIcon className="query-race-endpoint-icon" aria-hidden="true" />
+      )}
       <span>{label}</span>
     </div>
   );
@@ -280,21 +285,6 @@ function ApplicationIcon() {
       <circle cx="7.25" cy="8" r=".75" fill="currentColor" stroke="none" />
       <circle cx="10.25" cy="8" r=".75" fill="currentColor" stroke="none" />
       <path d="m11.5 15 2.25 2-2.25 2M16 19h4.5" />
-    </svg>
-  );
-}
-
-function DatabaseIcon() {
-  return (
-    <svg
-      className="query-race-endpoint-icon"
-      viewBox="0 0 32 32"
-      fill="none"
-      aria-hidden="true"
-    >
-      <ellipse cx="16" cy="7.5" rx="10.5" ry="4" />
-      <path d="M5.5 7.5v8c0 2.2 4.7 4 10.5 4s10.5-1.8 10.5-4v-8" />
-      <path d="M5.5 15.5v8c0 2.2 4.7 4 10.5 4s10.5-1.8 10.5-4v-8" />
     </svg>
   );
 }

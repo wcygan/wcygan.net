@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 import {
   deriveReplayTimelineSnapshot,
   INITIAL_REPLAY_SNAPSHOT,
@@ -76,7 +77,10 @@ export function MySqlRedoReplayDemo() {
             data-operation={snapshot.highlightedOperation ?? "NONE"}
           >
             <div className="redo-recovery-database-actor">
-              <DatabaseIcon />
+              <DatabaseIcon
+                className="redo-recovery-database-icon"
+                aria-hidden="true"
+              />
               <strong>Database</strong>
               <span>Serving LSN {latestSequence}</span>
               <code>
@@ -309,21 +313,6 @@ function JsonReadModel({
         <span>{"}"}</span>
       </code>
     </div>
-  );
-}
-
-function DatabaseIcon() {
-  return (
-    <svg
-      className="redo-recovery-database-icon"
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden="true"
-    >
-      <ellipse cx="24" cy="11" rx="15.5" ry="6" />
-      <path d="M8.5 11v13c0 3.3 6.9 6 15.5 6s15.5-2.7 15.5-6V11" />
-      <path d="M8.5 24v13c0 3.3 6.9 6 15.5 6s15.5-2.7 15.5-6V24" />
-    </svg>
   );
 }
 
