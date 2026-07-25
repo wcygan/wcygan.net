@@ -2900,7 +2900,6 @@
     width: var(--anton-probe-route-progress);
     height: 100%;
     background: #21201c;
-    transition: width 80ms linear;
   }
 
   .anton-probe-route[data-state="ok"] .anton-probe-route-fill,
