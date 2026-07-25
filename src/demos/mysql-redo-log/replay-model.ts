@@ -1,3 +1,5 @@
+import { changeHighlightDurationMs } from "../shared/change-highlight";
+
 export type ReplayState = {
   appliedCount: number;
   stepProgress: number;
@@ -58,7 +60,6 @@ const INTRO_END = 0.07;
 const REPLAY_END = 0.94;
 const TRANSFER_START = 0.18;
 const DATABASE_WRITE_AT = 0.58;
-const WRITE_END = 0.82;
 
 export const RECORD_LABELS: Record<RecordKey, string> = {
   A: "Account A",
@@ -129,6 +130,15 @@ export const REPLAY_LOG_RECORDS: readonly LogRecord[] = [
     balance: 180,
   },
 ] as const;
+
+const REPLAY_RECORD_DURATION_MS =
+  (REPLAY_DURATION_MS * (REPLAY_END - INTRO_END)) / REPLAY_LOG_RECORDS.length;
+export const DATABASE_WRITE_HIGHLIGHT_DURATION_MS = changeHighlightDurationMs(
+  0.24 * REPLAY_RECORD_DURATION_MS,
+);
+const WRITE_END =
+  DATABASE_WRITE_AT +
+  DATABASE_WRITE_HIGHLIGHT_DURATION_MS / REPLAY_RECORD_DURATION_MS;
 
 export const INITIAL_REPLAY_STATE: ReplayState = {
   appliedCount: 0,

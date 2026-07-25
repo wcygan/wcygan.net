@@ -1,3 +1,5 @@
+import { changeHighlightProgressSpan } from "../shared/change-highlight";
+
 export type WorkerKey = "workerA" | "workerB";
 
 export type RacePhase =
@@ -84,6 +86,17 @@ const WORKER_B_STALE_CHECK_AT = 0.55;
 const WORKER_B_REREAD_START = 0.62;
 const WORKER_B_RETRY_APPLY_AT = 0.84;
 
+export const OPTIMISTIC_LOCKING_DURATION_MS = 22_400;
+
+const WORKER_A_CHANGE_HIGHLIGHT_RADIUS = changeHighlightProgressSpan(
+  OPTIMISTIC_LOCKING_DURATION_MS,
+  0.05,
+);
+const WORKER_B_CHANGE_HIGHLIGHT_RADIUS = changeHighlightProgressSpan(
+  OPTIMISTIC_LOCKING_DURATION_MS,
+  0.055,
+);
+
 export const REDUCED_MOTION_PROGRESS = 0.9;
 
 export function deriveRaceSnapshot(state: RaceDemoState): RaceSnapshot {
@@ -102,8 +115,16 @@ export function deriveRaceSnapshot(state: RaceDemoState): RaceSnapshot {
     },
     packets: derivePackets(progress),
     tableFlash: Math.max(
-      flashAround(progress, WORKER_A_APPLY_AT, 0.05),
-      flashAround(progress, WORKER_B_RETRY_APPLY_AT, 0.055),
+      flashAround(
+        progress,
+        WORKER_A_APPLY_AT,
+        WORKER_A_CHANGE_HIGHLIGHT_RADIUS,
+      ),
+      flashAround(
+        progress,
+        WORKER_B_RETRY_APPLY_AT,
+        WORKER_B_CHANGE_HIGHLIGHT_RADIUS,
+      ),
     ),
     mismatch: deriveMismatch(progress),
     phaseLabel: phaseLabel(phase, progress),
@@ -403,7 +424,11 @@ function deriveMismatch(progress: number): VersionMismatch | undefined {
     expected: 7,
     current: 8,
     intensity: Math.max(
-      flashAround(progress, WORKER_B_STALE_CHECK_AT, 0.055),
+      flashAround(
+        progress,
+        WORKER_B_STALE_CHECK_AT,
+        WORKER_B_CHANGE_HIGHLIGHT_RADIUS,
+      ),
       progress >= WORKER_B_CONFLICT_END ? 0.55 : 0.2,
     ),
   };

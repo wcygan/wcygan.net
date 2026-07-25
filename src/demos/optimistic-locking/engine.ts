@@ -1,5 +1,6 @@
 import {
   deriveRaceSnapshot,
+  OPTIMISTIC_LOCKING_DURATION_MS,
   REDUCED_MOTION_PROGRESS,
   type RaceDemoState,
   type RaceSnapshot,
@@ -7,8 +8,6 @@ import {
 import { drawOptimisticLockingRaceDemo } from "./render-canvas";
 import { createLoopingCanvasEngine } from "../shared/looping-canvas-engine";
 import { resizeCanvas } from "../shared/viewport";
-
-const LOOP_MS = 22400;
 
 export type OptimisticLockingRaceDemoEngine = {
   start(): void;
@@ -47,7 +46,8 @@ export function createOptimisticLockingRaceDemo(
     snapshot: currentSnapshot,
     shouldPlay: () => state.playing,
     advance(deltaMs) {
-      state.progress = (state.progress + deltaMs / LOOP_MS) % 1;
+      state.progress =
+        (state.progress + deltaMs / OPTIMISTIC_LOCKING_DURATION_MS) % 1;
     },
     onMotionPreferenceChange(prefersReducedMotion) {
       state.playing = !prefersReducedMotion;

@@ -40,8 +40,8 @@ describe("deriveQueryRaceSnapshot", () => {
   });
 
   it("returns the batch rows together", () => {
-    const inFlight = deriveQueryRaceSnapshot(0.16).batch;
-    const returned = deriveQueryRaceSnapshot(0.2).batch;
+    const inFlight = deriveQueryRaceSnapshot(0.13).batch;
+    const returned = deriveQueryRaceSnapshot(0.16).batch;
 
     expect(inFlight.packet).toMatchObject({
       direction: "inbound",
@@ -56,6 +56,16 @@ describe("deriveQueryRaceSnapshot", () => {
     expect(deriveQueryRaceSnapshot(0.13).nPlusOne.returnedOrders).toBe(1);
     expect(deriveQueryRaceSnapshot(0.5).nPlusOne.returnedOrders).toBe(5);
     expect(deriveQueryRaceSnapshot(0.87).nPlusOne.returnedOrders).toBe(9);
+  });
+
+  it("advances both wall timers at the same synthetic rate", () => {
+    const sharedTimelineSamples = [0.05, 0.08, 0.1, 0.13, 0.16];
+
+    for (const progress of sharedTimelineSamples) {
+      const snapshot = deriveQueryRaceSnapshot(progress);
+
+      expect(snapshot.batch.elapsedMs).toBe(snapshot.nPlusOne.elapsedMs);
+    }
   });
 
   it("holds the batch lane while N plus one keeps crossing the boundary", () => {

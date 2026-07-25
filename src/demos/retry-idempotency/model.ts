@@ -11,6 +11,8 @@
 // and the provider dedupes it. The blind track sends NO key, so the provider has
 // nothing to match on and ships a fresh email on every attempt, a duplicate.
 
+import { changeHighlightProgressSpan } from "../shared/change-highlight";
+
 export type TrackKey = "stable" | "blind";
 
 export type RetryPhase = "send" | "crash" | "retry" | "resolve";
@@ -99,8 +101,16 @@ const SEND_END = 0.3;
 const CRASH_END = 0.5;
 const RETRY_END = 0.66;
 
-const PACKET_FLASH = 0.05;
-const CRASH_FLASH_RADIUS = 0.06;
+export const RETRY_IDEMPOTENCY_DURATION_MS = 15_000;
+
+const PACKET_FLASH = changeHighlightProgressSpan(
+  RETRY_IDEMPOTENCY_DURATION_MS,
+  0.05,
+);
+const CRASH_FLASH_RADIUS = changeHighlightProgressSpan(
+  RETRY_IDEMPOTENCY_DURATION_MS,
+  0.06,
+);
 
 export const REDUCED_MOTION_PROGRESS = 0.93;
 

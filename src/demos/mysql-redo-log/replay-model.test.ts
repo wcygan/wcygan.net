@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  DATABASE_WRITE_HIGHLIGHT_DURATION_MS,
   deriveReplaySnapshot,
   deriveReplayTimelineSnapshot,
   nextAppliedCount,
@@ -26,6 +27,7 @@ describe("deriveReplaySnapshot", () => {
     const snapshot = deriveReplayTimelineSnapshot(0.07);
 
     expect(REPLAY_DURATION_MS).toBe(20_000);
+    expect(DATABASE_WRITE_HIGHLIGHT_DURATION_MS).toBe(750);
     expect(snapshot.appliedCount).toBe(0);
     expect(snapshot.stepProgress).toBe(0);
     expect(snapshot.phase).toBe("checkpoint");

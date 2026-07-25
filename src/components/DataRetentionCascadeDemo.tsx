@@ -19,6 +19,7 @@
 // Tier: interactive canvas, time-driven loop, no controls. Single file because
 // every frame is derived from one phase value, like CdcPropagationAnimation.
 import { useEffect, useRef } from "react";
+import { changeHighlightProgressSpan } from "~/demos/shared/change-highlight";
 
 const LOOP_MS = 11500;
 
@@ -30,7 +31,7 @@ const SHIPMENT_DEATH = 0.64;
 const REVIVE_START = 0.86;
 
 const DEATH_FADE = 0.05; // phase width of the live -> tombstoned color cross-fade
-const PULSE_WINDOW = 0.13; // phase width of the gold "delete received" pulse
+const PULSE_WINDOW = changeHighlightProgressSpan(LOOP_MS, 0.13);
 
 const UI_FONT =
   '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif';

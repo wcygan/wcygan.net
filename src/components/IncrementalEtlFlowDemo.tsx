@@ -20,6 +20,7 @@
 // column is always vertical so it reads the same on phones and desktop; the
 // canvas is a fixed-height portrait centered in the figure.
 import { useEffect, useRef } from "react";
+import { changeHighlightProgressSpan } from "~/demos/shared/change-highlight";
 
 const LOOP_MS = 14000;
 
@@ -35,7 +36,7 @@ const ARRIVALS = [0.25, 0.41, 0.55, 0.69, 0.85] as const;
 const LAND_FADE = 0.06; // Opal row flips free -> pro on arrival
 const ACTIVATE_FADE = 0.05; // transport stage glow ramp
 const HOLD_END = 0.94; // whole pipeline lit, then reset
-const PULSE_WINDOW = 0.12; // gold "event received" pulse width
+const PULSE_WINDOW = changeHighlightProgressSpan(LOOP_MS, 0.12);
 const TOKEN_FADE = 0.03; // event pill fades in on emit and out as it lands
 
 // MySQL pulses when it commits the change; every other stage pulses the moment

@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DemoReplayButton } from "~/components/DemoReplayButton";
 import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 import {
   deriveReplayTimelineSnapshot,
@@ -40,14 +41,11 @@ export function MySqlRedoReplayDemo() {
             of the database.
           </p>
         </div>
-        <button
-          className="redo-recovery-replay"
-          type="button"
-          onClick={replay}
-          aria-label="Replay ordered redo recovery"
-        >
-          Replay
-        </button>
+        <DemoReplayButton
+          ariaLabel="Replay ordered redo recovery"
+          isComplete={snapshot.phase === "complete"}
+          onReplay={replay}
+        />
       </header>
 
       <div className="redo-recovery-stage" data-graphic-stage="flush">

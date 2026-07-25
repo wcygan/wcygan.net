@@ -1,5 +1,6 @@
 import {
   deriveDurableTaskLoopSnapshot,
+  DURABLE_TASK_LOOP_DURATION_MS,
   type DurableTaskLoopSnapshot,
   type DurableTaskLoopState,
   REDUCED_MOTION_PROGRESS,
@@ -7,8 +8,6 @@ import {
 import { drawDurableTaskLoopDemo } from "./render-canvas";
 import { createLoopingCanvasEngine } from "../shared/looping-canvas-engine";
 import { resizeCanvas } from "../shared/viewport";
-
-const LOOP_MS = 34000;
 
 export type DurableTaskLoopDemoEngine = {
   start(): void;
@@ -47,7 +46,8 @@ export function createDurableTaskLoopDemo(
     snapshot: currentSnapshot,
     shouldPlay: () => state.playing,
     advance(deltaMs) {
-      state.progress = (state.progress + deltaMs / LOOP_MS) % 1;
+      state.progress =
+        (state.progress + deltaMs / DURABLE_TASK_LOOP_DURATION_MS) % 1;
     },
     onMotionPreferenceChange(prefersReducedMotion) {
       state.playing = !prefersReducedMotion;

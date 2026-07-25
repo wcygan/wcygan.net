@@ -1,3 +1,5 @@
+import { changeHighlightProgressSpan } from "../shared/change-highlight";
+
 export type NodeKey = "service" | "queue" | "worker";
 
 export type ServiceStatus = "idle" | "scheduling" | "storing";
@@ -114,7 +116,12 @@ const FAIL_FRACTION = 0.55;
 const OUTCOME_HOLD = 0.025;
 // Retry backoff the Worker waits out before a failed activity runs again.
 const RETRY_BACKOFF = 0.06;
-const FLASH_RADIUS = 0.05;
+export const DURABLE_TASK_LOOP_DURATION_MS = 34_000;
+
+const FLASH_RADIUS = changeHighlightProgressSpan(
+  DURABLE_TASK_LOOP_DURATION_MS,
+  0.05,
+);
 
 export const REDUCED_MOTION_PROGRESS = 0.95;
 

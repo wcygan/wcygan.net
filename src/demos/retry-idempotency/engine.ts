@@ -1,14 +1,13 @@
 import {
   deriveRetrySnapshot,
   REDUCED_MOTION_PROGRESS,
+  RETRY_IDEMPOTENCY_DURATION_MS,
   type RetryDemoState,
   type RetrySnapshot,
 } from "./model";
 import { drawRetryIdempotencyDemo } from "./render-canvas";
 import { createLoopingCanvasEngine } from "../shared/looping-canvas-engine";
 import { resizeCanvas } from "../shared/viewport";
-
-const LOOP_MS = 15000;
 
 export type RetryIdempotencyDemoEngine = {
   start(): void;
@@ -47,7 +46,8 @@ export function createRetryIdempotencyDemo(
     snapshot: currentSnapshot,
     shouldPlay: () => state.playing,
     advance(deltaMs) {
-      state.progress = (state.progress + deltaMs / LOOP_MS) % 1;
+      state.progress =
+        (state.progress + deltaMs / RETRY_IDEMPOTENCY_DURATION_MS) % 1;
     },
     onMotionPreferenceChange(prefersReducedMotion) {
       state.playing = !prefersReducedMotion;

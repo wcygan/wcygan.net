@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DemoReplayButton } from "~/components/DemoReplayButton";
 import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 import {
   CDC_PROPAGATION_DURATION_MS,
@@ -90,14 +91,11 @@ export function CdcPropagationAnimation() {
         <p className="article-graphic-title" id="cdc-propagation-title">
           A committed update reaches Redis
         </p>
-        <button
-          className="cdc-propagation-replay"
-          type="button"
-          onClick={replay}
-          aria-label="Replay change data propagation"
-        >
-          Replay
-        </button>
+        <DemoReplayButton
+          ariaLabel="Replay change data propagation"
+          isComplete={snapshot.isComplete}
+          onReplay={replay}
+        />
       </header>
 
       <p className="sr-only" id="cdc-propagation-description">

@@ -9,7 +9,7 @@ import {
 describe("deriveCdcPropagationSnapshot", () => {
   it("uses a finite ten-second explanatory timeline", () => {
     expect(CDC_PROPAGATION_DURATION_MS).toBe(10_000);
-    expect(CDC_ACCEPTANCE_FLASH_DURATION_MS).toBe(500);
+    expect(CDC_ACCEPTANCE_FLASH_DURATION_MS).toBe(750);
   });
 
   it("starts with the SQL in its origin and both stores serving free", () => {
@@ -59,13 +59,13 @@ describe("deriveCdcPropagationSnapshot", () => {
 
   it("briefly highlights each accepted plan update", () => {
     const postgresAccepted = deriveCdcPropagationSnapshot(0.26);
-    const postgresFlashHolding = deriveCdcPropagationSnapshot(0.294);
-    const postgresFlashFading = deriveCdcPropagationSnapshot(0.3025);
-    const postgresFlashFinished = deriveCdcPropagationSnapshot(0.31);
+    const postgresFlashHolding = deriveCdcPropagationSnapshot(0.309);
+    const postgresFlashFading = deriveCdcPropagationSnapshot(0.3225);
+    const postgresFlashFinished = deriveCdcPropagationSnapshot(0.335);
     const redisAccepted = deriveCdcPropagationSnapshot(0.82);
-    const redisFlashHolding = deriveCdcPropagationSnapshot(0.854);
-    const redisFlashFading = deriveCdcPropagationSnapshot(0.8625);
-    const redisFlashFinished = deriveCdcPropagationSnapshot(0.87);
+    const redisFlashHolding = deriveCdcPropagationSnapshot(0.869);
+    const redisFlashFading = deriveCdcPropagationSnapshot(0.8825);
+    const redisFlashFinished = deriveCdcPropagationSnapshot(0.895);
 
     expect(postgresAccepted.postgresAcceptanceFlash).toBe(1);
     expect(postgresFlashHolding.postgresAcceptanceFlash).toBe(1);

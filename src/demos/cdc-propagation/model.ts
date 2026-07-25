@@ -1,12 +1,14 @@
+import { changeHighlightDurationMs } from "../shared/change-highlight";
+
 export const CDC_PROPAGATION_DURATION_MS = 10_000;
-export const CDC_ACCEPTANCE_FLASH_DURATION_MS = 500;
+export const CDC_ACCEPTANCE_FLASH_DURATION_MS = changeHighlightDurationMs();
 
 const INTRO_END = 0.08;
 const SQL_TRAVEL_END = 0.26;
 const CDC_TRAVEL_START = 0.36;
 const EVENT_TRAVEL_END = 0.82;
 const REDIS_SETTLE_END = 0.87;
-const ACCEPTANCE_FLASH_HOLD_MS = 350;
+const ACCEPTANCE_FLASH_HOLD_MS = 500;
 
 export type CdcPropagationPhase =
   | "establishing"

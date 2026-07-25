@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { DemoReplayButton } from "~/components/DemoReplayButton";
 import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 import {
   deriveQueryRaceSnapshot,
@@ -36,14 +37,11 @@ export function NPlusOneQueryDemos() {
             The database access pattern can impact application latency
           </p>
         </div>
-        <button
-          className="query-race-replay"
-          type="button"
-          onClick={replay}
-          aria-label="Replay query round trip comparison"
-        >
-          Replay
-        </button>
+        <DemoReplayButton
+          ariaLabel="Replay query round trip comparison"
+          isComplete={snapshot.isComplete}
+          onReplay={replay}
+        />
       </header>
 
       <div className="query-race-stage" data-graphic-stage="flush">
