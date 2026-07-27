@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import { type SVGProps, useId } from "react";
 
 type KafkaIconProps = Omit<
   SVGProps<SVGSVGElement>,
@@ -10,6 +10,8 @@ export function KafkaIcon({
   "aria-hidden": ariaHidden = true,
   ...props
 }: KafkaIconProps) {
+  const cutoutMaskId = useId();
+
   return (
     <svg
       {...props}
@@ -23,7 +25,7 @@ export function KafkaIcon({
     >
       <defs>
         <mask
-          id="kafka-icon-cutouts"
+          id={cutoutMaskId}
           x="210"
           y="-5"
           width="384"
@@ -45,7 +47,7 @@ export function KafkaIcon({
           <circle cx="317" cy="521" r="37" fill="black" stroke="none" />
         </mask>
       </defs>
-      <g mask="url(#kafka-icon-cutouts)" fill="currentColor" stroke="none">
+      <g mask={`url(#${cutoutMaskId})`} fill="currentColor" stroke="none">
         <path
           d="M317 76v445m0-222 190-111M317 299l190 111"
           fill="none"

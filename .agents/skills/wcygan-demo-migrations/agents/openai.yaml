@@ -1,0 +1,4 @@
+interface:
+  display_name: "wcygan.net Demo Migrations"
+  short_description: "Migrate legacy demos into editorial workbenches"
+  default_prompt: "Use $wcygan-demo-migrations to migrate this legacy article demo into the current editorial design system."

@@ -1,23 +1,121 @@
 ---
 title: Optimistic Locking
 date: May 28, 2026
-description: Preventing lost updates without holding database locks
+description: Preventing lost updates with version guards
 tags: [Data, Databases, Concurrency]
 ---
 
 import { OptimisticLockingRaceDemo } from "~/components/OptimisticLockingRaceDemo";
 
-[Optimistic Locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control) prevents a stale write from silently overwriting newer state
-by storing a version beside the row, reading that version with the data, and
-requiring the version to still match when the write commits. If the update
-affects one row, the worker saved fresh state; if it affects zero rows, another
-worker changed the row first and the application should reread the latest row
-before retrying.
+Imagine two shoppers reserving the final two seats for the same event at nearly
+the same time. Both see "2 seats available." Shopper A checks out first. When
+Shopper B checks out, their reservation request still carries the older snapshot
+even though one seat remains.
+
+[**Optimistic Locking**](https://en.wikipedia.org/wiki/Optimistic_concurrency_control) handles this race by storing a version alongside the inventory row and
+requiring each write to match the version it read. It is "optimistic" because no
+database lock is held across a shopper's checkout: each worker assumes the row
+will stay unchanged and lets the version guard detect when that assumption was
+wrong. The guarded `UPDATE` still takes an ordinary row lock for the duration of
+its short write transaction.
+
+The version token crosses transaction boundaries. In this example, `sku` is a
+unique key and each read or write attempt runs in its own short transaction.
+Worker A commits before Worker B submits its stale update. After a conflict,
+Worker B starts a new transaction, rereads the current row, recomputes the
+reservation, and retries with the new version.
+
+<figure
+  className="optimistic-locking-sql-trace-figure"
+  data-graphic-frame="plate"
+  data-graphic-key="optimistic-locking-sql-outcomes"
+  aria-labelledby="optimistic-locking-sql-trace-title"
+  aria-describedby="optimistic-locking-sql-trace-description"
+>
+  <header className="optimistic-locking-sql-trace-header">
+    <p
+      id="optimistic-locking-sql-trace-title"
+      className="article-graphic-title"
+    >
+      {"Optimistic locking SQL outcomes"}
+    </p>
+    <p id="optimistic-locking-sql-trace-description">
+      {
+        "After a stale write is rejected, its worker must reread the current version before constructing a successful retry."
+      }
+    </p>
+  </header>
+  <div
+    className="optimistic-locking-sql-trace-stage"
+    data-graphic-stage="flush"
+  >
+    <ol className="optimistic-locking-sql-trace">
+      <li data-result="success">
+        <span className="optimistic-locking-sql-trace-worker">Worker A</span>
+        <span>
+          {"read "}
+          <code>v7</code>
+        </span>
+        <span>
+          {"expected "}
+          <code>v7</code>
+        </span>
+        <strong>
+          <code>ROW_COUNT() = 1</code>
+        </strong>
+        <span className="optimistic-locking-sql-trace-outcome">
+          {"reservation saved"}
+        </span>
+      </li>
+      <li data-result="conflict">
+        <span className="optimistic-locking-sql-trace-worker">Worker B</span>
+        <span>
+          {"also read "}
+          <code>v7</code>
+        </span>
+        <span>
+          {"expected "}
+          <code>v7</code>
+        </span>
+        <strong>
+          <code>ROW_COUNT() = 0</code>
+        </strong>
+        <span className="optimistic-locking-sql-trace-outcome">
+          {"stale write rejected"}
+        </span>
+      </li>
+      <li data-result="success">
+        <span className="optimistic-locking-sql-trace-worker">Worker B</span>
+        <span>
+          {"reread "}
+          <code>v8</code>
+        </span>
+        <span>
+          {"expected "}
+          <code>v8</code>
+        </span>
+        <strong>
+          <code>ROW_COUNT() = 1</code>
+        </strong>
+        <span className="optimistic-locking-sql-trace-outcome">
+          {"retry saved"}
+        </span>
+      </li>
+    </ol>
+  </div>
+</figure>
+
+Those row counts are the decision points. The replay below follows the inventory
+row itself: the rejected attempt leaves `available 1 · version 8` untouched, and
+only the reread enables the second decrement.
 
 <OptimisticLockingRaceDemo />
 
-The `UPDATE` SQL carries the row version you read into the `WHERE` clause.
-This makes the `UPDATE` behave like a [compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap) on one row:
+## The version guard
+
+The guarded `UPDATE` carries the version from the earlier read into the `WHERE`
+clause, making the write a [compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap) on one row. It either changes both `available` and `version`, or
+changes nothing:
 
 ```sql
 UPDATE inventory_items
@@ -28,74 +126,54 @@ WHERE sku = 'SKU-42'
   AND available > 0
   AND version = :version;
 
+-- Same connection, immediately after the UPDATE.
 SELECT ROW_COUNT();
 ```
 
-In this example, <code>ROW_COUNT() = 0</code> means the version guard missed.
-Because <code>available &gt; 0</code> is also part of the guard, production code
-should reread the row before deciding whether the failed update was a stale
-version, no remaining stock, or a missing SKU.
+MySQL's `ROW_COUNT()` reports the number of rows changed by the preceding
+statement. Application code can usually read the same affected-row count from
+its database driver instead of issuing the extra `SELECT`. A result of `1` means
+the reservation was saved. A result of `0` means no row matched every guard, so
+the worker must reread before deciding whether the cause was a stale version, no
+remaining stock, or a missing SKU.
 
-<ol
-  className="optimistic-locking-sql-trace"
-  aria-label="Optimistic locking SQL outcomes"
->
-  <li data-result="success">
-    <span className="optimistic-locking-sql-trace-worker">Worker A</span>
-    <span>
-      read <code>v7</code>
-    </span>
-    <span>
-      expected <code>v7</code>
-    </span>
-    <strong>
-      <code>ROW_COUNT() = 1</code>
-    </strong>
-    <span>reservation saved</span>
-  </li>
-  <li data-result="conflict">
-    <span className="optimistic-locking-sql-trace-worker">Worker B</span>
-    <span>
-      also read <code>v7</code>
-    </span>
-    <span>
-      expected <code>v7</code>
-    </span>
-    <strong>
-      <code>ROW_COUNT() = 0</code>
-    </strong>
-    <span>stale write rejected</span>
-  </li>
-  <li data-result="success">
-    <span className="optimistic-locking-sql-trace-worker">Worker B</span>
-    <span>
-      reread <code>v8</code>
-    </span>
-    <span>
-      expected <code>v8</code>
-    </span>
-    <strong>
-      <code>ROW_COUNT() = 1</code>
-    </strong>
-    <span>retry saved</span>
-  </li>
-</ol>
-
-It is "optimistic" because each worker proceeds as if the row will stay
-unchanged, then uses the version check to detect when that bet was wrong.
-
-With pessimistic row locking (`SELECT ... FOR UPDATE`), Worker A would lock the inventory row before
-thinking about the reservation. Worker B would wait for A to commit or roll
-back, then read the newer `available` and `version` values before deciding
-whether to reserve anything. That avoids the stale-write retry path, but it
-keeps a database lock open while application work happens.
+With pessimistic row locking, Worker A would begin a short transaction, read the
+inventory row with `SELECT ... FOR UPDATE`, make the reservation decision,
+update the row, and commit. Worker B would wait for that transaction to finish,
+then read the current `available` and `version` values before deciding whether
+to reserve anything. This avoids the stale-write retry path, but holds the row
+lock until the transaction ends, so the transaction should not span shopper
+checkout, network calls, or other slow application work.
 
 <details className="optimistic-locking-sql-transcript">
-  <summary>Full SQL transcript</summary>
+  <summary>Complete two-worker SQL sequence</summary>
 
 ```sql
--- Worker A read v7.
--- available 2.
+-- Assume sku is PRIMARY KEY or UNIQUE.
+
+-- Worker A reads the row in a short transaction.
+START TRANSACTION READ ONLY;
+
+SELECT available, version
+FROM inventory_items
+WHERE sku = 'SKU-42';
+-- available 2, version 7
+
+COMMIT;
+
+-- Worker B independently reads the same version.
+START TRANSACTION READ ONLY;
+
+SELECT available, version
+FROM inventory_items
+WHERE sku = 'SKU-42';
+-- available 2, version 7
+
+COMMIT;
+
+-- Worker A's guarded write succeeds.
+START TRANSACTION;
+
 UPDATE inventory_items
 SET
   available = available - 1,
@@ -107,8 +185,11 @@ WHERE sku = 'SKU-42'
 SELECT ROW_COUNT();
 -- 1 row
 
--- Worker B also read v7.
--- Its stale write is rejected.
+COMMIT;
+
+-- Worker B's stale write changes nothing.
+START TRANSACTION;
+
 UPDATE inventory_items
 SET
   available = available - 1,
@@ -120,8 +201,21 @@ WHERE sku = 'SKU-42'
 SELECT ROW_COUNT();
 -- 0 rows
 
--- Worker B rereads v8.
--- It recomputes and retries.
+COMMIT;
+
+-- Worker B starts a fresh transaction and rereads.
+START TRANSACTION READ ONLY;
+
+SELECT available, version
+FROM inventory_items
+WHERE sku = 'SKU-42';
+-- available 1, version 8
+
+COMMIT;
+
+-- Worker B recomputes the reservation and retries with v8.
+START TRANSACTION;
+
 UPDATE inventory_items
 SET
   available = available - 1,
@@ -132,13 +226,34 @@ WHERE sku = 'SKU-42'
 
 SELECT ROW_COUNT();
 -- 1 row
+
+COMMIT;
+
+-- Settled state.
+START TRANSACTION READ ONLY;
+
+SELECT available, version
+FROM inventory_items
+WHERE sku = 'SKU-42';
+-- available 0, version 9
+
+COMMIT;
 ```
 
 </details>
 
 ## At LinkedIn
 
-We use [Temporal Workflows](/durable-execution#at-linkedin) to orchestrate order placement. Some of these steps may execute in parallel and update state in the order database. This implies that there is a potential for a [data race](https://en.wikipedia.org/wiki/Race_condition), where, with optimistic locking, one writer will win, and others will lose. The combination of Temporal Retries and Optimistic Locking allow for workflows to proceed even if failures are encountered.
+We use [Temporal Workflows](/durable-execution#at-linkedin) to orchestrate order
+placement. Some steps can execute in parallel and create a
+[race condition](https://en.wikipedia.org/wiki/Race_condition) when they update
+the same order state. Optimistic locking makes that conflict explicit: one
+guarded attempt commits, while stale attempts change zero rows.
+
+A retrying activity must reread the latest row and recompute its change before
+trying again; replaying the same stale version cannot succeed. Temporal gives us
+durable retry orchestration, while the version guard prevents those retries from
+overwriting newer state.
 
 ## References
 
