@@ -16,7 +16,7 @@ deno task build       # Production build and prerendering
 ```
 
 `just dev` runs Vite through Portless. It uses `portless.json` and
-`scripts/ensure-portless-443.sh` to provide a stable HTTPS `.localhost` URL. Use
+`scripts/ensure-portless-proxy.sh` to provide a stable HTTPS `.localhost` URL. Use
 the active worktree's assigned Portless URL when another checkout is already
 using `wcygan.localhost`.
 
