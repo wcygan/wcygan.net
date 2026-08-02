@@ -1,0 +1,98 @@
+---
+title: LLM Tool Calling
+date: August 2, 2026
+description: A practical guide to model-driven APIs
+tags: [AI, LLMs, APIs]
+---
+
+Tool calling lets an LLM request an action from application code.
+
+The application gives the model a system prompt describing the available tool and the exact shape of a tool request:
+
+```text
+You can use `list_directory` to list files in an approved directory.
+When the user asks for a directory listing, respond with only JSON in this shape:
+{"name":"list_directory","arguments":{"path":"..."}}
+After the tool result arrives, answer the user in plain language.
+```
+
+The user prompts the model:
+
+```text
+What files are in src/components?
+```
+
+The LLM emits a simplified tool request that the harness recognizes:
+
+```json
+{
+  "name": "list_directory",
+  "arguments": {
+    "path": "src/components"
+  }
+}
+```
+
+> **Note:** This JSON is a simplified application-level protocol. Pi and Rig
+> expose the same conceptual stages through framework-specific tool definitions
+> and execution results.
+
+The harness calls the tool like this:
+
+```rust
+use serde_json::json;
+use std::{error::Error, fs, io};
+
+fn list_directory(directory: &str) -> io::Result<Vec<String>> {
+    let mut entries = fs::read_dir(directory)?
+        .map(|entry| Ok(entry?.file_name().to_string_lossy().into_owned()))
+        .collect::<io::Result<Vec<_>>>()?;
+    entries.sort();
+    Ok(entries)
+}
+
+fn list_directory_tool(directory: &str) -> Result<String, Box<dyn Error>> {
+    let entries = list_directory(directory)?;
+    Ok(serde_json::to_string_pretty(&json!({ "entries": entries }))?)
+}
+
+fn harness() -> Result<(), Box<dyn Error>> {
+    println!("{}", list_directory_tool("src/components")?);
+    Ok(())
+}
+```
+
+In the fixture used by this example, the directory contains these three entries:
+
+```bash
+$ ls -1 src/components
+DemoReplayButton.tsx
+NPlusOneQueryDemos.tsx
+TableOfContents.tsx
+```
+
+The harness appends this tool result to the conversation. The model can then answer the user's question in plain language.
+
+```json
+{
+  "entries": [
+    "DemoReplayButton.tsx",
+    "NPlusOneQueryDemos.tsx",
+    "TableOfContents.tsx"
+  ]
+}
+```
+
+The LLM can then give the user a concise final answer:
+
+```text
+The src/components directory contains three files:
+- DemoReplayButton.tsx
+- NPlusOneQueryDemos.tsx
+- TableOfContents.tsx
+```
+
+## Sources
+
+- [Pi extensions: Custom Tools](https://pi.dev/docs/latest/extensions#custom-tools)
+- [Rig: Tools](https://rig.rs/docs/concepts/tools/)

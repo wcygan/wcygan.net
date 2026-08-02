@@ -38,3 +38,6 @@ build-stats.html
 
 # Logs
 dev.log
+
+# Rust fixture build output
+/tests/fixtures/llm-tool-calling/target
