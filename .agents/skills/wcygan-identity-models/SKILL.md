@@ -1,6 +1,6 @@
 ---
 name: wcygan-identity-models
-description: Use when creating, editing, reviewing, or debugging the animated GitHub, LinkedIn, and Projects 3D model links in the wcygan.net homepage IdentityCard. Preserves the transparent poster-to-WebM renderer, optical centering, readable starting orientation, playback lifecycle, reduced motion, icon quality, and desktop/mobile visual verification.
+description: Use when creating, editing, reviewing, or debugging the animated GitHub, LinkedIn, and Projects 3D model links in the wcygan.net homepage IdentityCard. Preserves the cross-browser transparent poster-to-video renderer, VP9-alpha and HEVC-alpha delivery, optical centering, readable starting orientation, playback lifecycle, reduced motion, icon quality, and desktop/mobile visual verification.
 ---
 
 # wcygan.net Identity Models
@@ -27,13 +27,16 @@ Read these sources before changing model behavior:
   phase, playback rate, poster/video handoff, and full-versus-compact rendering;
 - `src/styles/app.css`: model grid, media size, optical centering, hover/focus
   scale, and reduced-motion rules;
-- `public/identity-card/`: transparent posters and VP9 WebM loops; and
+- `src/lib/identity-model-video.ts`: browser-specific transparent-video format
+  selection;
+- `public/identity-card/`: transparent posters, VP9-alpha WebM loops, and
+  HEVC-alpha MOV loops;
 - `scripts/render-identity-die.py`: reproducible Projects geometry, materials,
   camera, lighting, face artwork, and motion path; and
 - `AGENTS.md`: homepage composition and visual-validation contract.
 
-The compact article identity remains text-only. Do not add model media to it.
-Do not create a second homepage header or model grid.
+The compact article identity remains text-only. Do not add model media to it. Do
+not create a second homepage header or model grid.
 
 At `560px` and below, the accepted full-card baseline uses `163.8px` model
 media, `16px` labels, a `201px` link-grid height, and a `520px` card height. The
@@ -48,11 +51,11 @@ masses do not.
 
 Treat the checked-in transparent assets as the implementation baseline:
 
-| Model    | Poster               | Animation            | Encoded canvas | Frame rate | Playback rate |
-| -------- | -------------------- | -------------------- | -------------- | ---------- | ------------- |
-| GitHub   | `github-still.png`   | `github-spin.webm`   | 560×560        | 120 fps    | `0.82`        |
-| LinkedIn | `linkedin-still.png` | `linkedin-spin.webm` | 1120×1120      | 60 fps     | `1`           |
-| Projects | `die-still.png`      | `die-spin.webm`      | 560×560        | 120 fps    | `1.04`        |
+| Model    | Poster               | VP9-alpha WebM       | HEVC-alpha MOV             | Encoded canvas | Frame rate | Playback rate |
+| -------- | -------------------- | -------------------- | -------------------------- | -------------- | ---------- | ------------- |
+| GitHub   | `github-still.png`   | `github-spin.webm`   | `github-spin-safari.mov`   | 560×560        | 120 fps    | `0.82`        |
+| LinkedIn | `linkedin-still.png` | `linkedin-spin.webm` | `linkedin-spin-safari.mov` | 1120×1120      | 60 fps     | `1`           |
+| Projects | `die-still.png`      | `die-spin.webm`      | `die-spin-safari.mov`      | 560×560        | 120 fps    | `1.04`        |
 
 At the time this skill was authored:
 
@@ -70,16 +73,35 @@ model path.
 
 ### Use One Renderer Per Animated Model
 
-Every animated tile has exactly two representations:
+Every animated tile has exactly two visual layers:
 
 1. a transparent PNG poster while the video is unavailable or intentionally
    paused; and
-2. the matching transparent VP9 WebM after the browser fires `playing`.
+2. one browser-selected transparent video after the browser fires `playing`.
 
 The poster becomes fully hidden only after playback starts. Never show a
 standstill and animation simultaneously. Do not replace a checked-in model with
 a DOM/CSS reconstruction, a stack of transformed faces, or a second animation
 layer.
+
+The repository stores two encodings of the same animation:
+
+- Apple Safari, iOS browsers, and embedded Apple WebKit receive HEVC-alpha MOV;
+  and
+- Chromium and Firefox receive VP9-alpha WebM.
+
+Use `preferredTransparentIdentityVideoFormat` to mount exactly one source after
+hydration. Do not mount both encodings and depend on `<source>` order or
+`canPlayType()`: Chromium on macOS may claim HEVC support without providing the
+alpha behavior this component needs. Keep the static poster through SSR and
+hydration so an unsupported or failed video never becomes a black or empty tile.
+
+WebKit can decode a VP9-alpha WebM while painting its transparent pixels black.
+That failure looks like a rotating model on an opaque black square, even though
+the video is otherwise healthy. Treat it as an alpha-decoding incompatibility,
+not a CSS background, blend-mode, z-index, or 3D-rendering problem. Do not add a
+white matte, `mix-blend-mode`, or a Safari-only static fallback when matching
+HEVC-alpha motion is available.
 
 Projects is intentionally rendered by `scripts/render-identity-die.py`. A
 six-face CSS cube is not an equivalent fallback: it changes the geometry,
@@ -88,8 +110,7 @@ texture, rounding, anti-aliasing, scale, and coordinate system.
 ### Preserve Optical Centering
 
 The encoded square canvas is not the visible model boundary. Transparent source
-padding makes the apparent center different from the element's geometric
-center.
+padding makes the apparent center different from the element's geometric center.
 
 - Keep the poster and video inside the same `.identity-card__model-media` box.
 - Keep the same width, height, and `--identity-model-center-x/y` translation on
@@ -120,7 +141,7 @@ the Projects die appearing vertically above GitHub and LinkedIn.
 The outer `.identity-card__model-motion` animation is accepted for GitHub and
 LinkedIn. A Projects repair must not change those two animations. Projects uses
 the wrapper as a transparent layout container; its 3D motion comes from the
-WebM.
+selected alpha video.
 
 ## Quality Baseline
 
@@ -129,7 +150,7 @@ WebM.
 The current higher-resolution LinkedIn pair is the quality reference for a
 recognizable logo model:
 
-- keep the 1120×1120 transparent poster and WebM together;
+- keep the 1120×1120 transparent poster, WebM, and MOV together;
 - start at the readable `in` orientation;
 - do not mirror the logo or choose a random starting frame;
 - preserve crisp edges, the blue body, and neutral lettering; and
@@ -157,24 +178,40 @@ camera over time. Do not replace it with random axis changes, eased keyframes,
 piecewise turns, or runtime direction changes.
 
 Do not approximate the die with rounded CSS squares. Rounded face corners expose
-the page background at 3D joins; square face corners remove the desired rounding;
-and a solid CSS core still cannot reproduce the source bevels, shading, or
-anti-aliasing.
+the page background at 3D joins; square face corners remove the desired
+rounding; and a solid CSS core still cannot reproduce the source bevels,
+shading, or anti-aliasing.
 
 ## Failure Signatures And Recovery
 
 ### Correct For A Split Second, Then Broken
 
-This means the static poster is correct and a different renderer takes over
-when activity begins.
+This means the static poster is correct and a different renderer takes over when
+activity begins.
 
 1. Inspect the active Projects DOM for its `<video>` and `currentSrc`.
-2. Confirm the source is `/identity-card/die-spin.webm`.
+2. Confirm the source is `/identity-card/die-spin-safari.mov` in Safari or an
+   iOS browser, and `/identity-card/die-spin.webm` in Chromium or Firefox.
 3. Confirm the video reaches `playing`, becomes opaque, and hides the poster.
 4. Search for substitute cube/face DOM and CSS, especially `top/left: 50%`,
    `translateZ`, `rotate3d`, and manual pips.
 5. Remove the substitute renderer and restore the normal video path before
    adjusting size, radius, or motion.
+
+### Black Rectangle In Safari Or iOS
+
+This is the characteristic VP9-alpha failure in Apple WebKit.
+
+1. Inspect each model video's `currentSrc`. Safari and every iOS browser must
+   use the matching `*-spin-safari.mov` asset, never `*-spin.webm`.
+2. Confirm the mounted source has type `video/quicktime; codecs="hvc1"` and that
+   only one source is present.
+3. Confirm the MOV uses HEVC with alpha. A normal HEVC or H.264 MOV can play but
+   cannot preserve the transparent canvas.
+4. Confirm `play()` resolves, `readyState` reaches `4`, and `currentTime`
+   advances. Hide the poster only after `playing` fires.
+5. If playback is unsupported, retain the transparent poster. Do not reveal a
+   broken video or repair it with a matte or blend mode.
 
 ### Projects Appears Above The Other Models
 
@@ -219,11 +256,12 @@ When a new 3D render is genuinely required:
   from the flattened poster or WebM;
 - export the poster and animation from the same camera, framing, materials,
   lighting, and readable initial orientation;
-- use a transparent PNG poster and alpha VP9 WebM with no white matte;
+- produce a transparent PNG poster, VP9-alpha WebM, and HEVC-alpha MOV with no
+  matte;
 - use enough resolution and frame rate to stay crisp at hover scale;
 - keep the visible object proportional to its peers despite transparent padding;
 - preserve rounded geometry and connected surfaces in the source renderer; and
-- replace the poster and video as one atomic visual pair.
+- replace the poster and both video encodings as one atomic visual set.
 
 For Projects, use the checked-in procedural source rather than rebuilding the
 scene by eye:
@@ -236,6 +274,22 @@ ffmpeg -framerate 120 -i /tmp/identity-die-frames/%04d.png \
   -c:v libvpx-vp9 -pix_fmt yuva420p -crf 18 -b:v 0 \
   -row-mt 1 -auto-alt-ref 0 -an public/identity-card/die-spin.webm
 ```
+
+Encode the Apple copy with AVFoundation's `AVVideoCodecType.hevcWithAlpha`. Do
+not substitute ordinary HEVC or H.264. If the starting animation is a WebM,
+first preserve its alpha in a ProRes 4444 intermediate:
+
+```bash
+ffmpeg -c:v libvpx-vp9 -i public/identity-card/<model>-spin.webm \
+  -an -c:v prores_ks -profile:v 4 -pix_fmt yuva444p10le \
+  /tmp/<model>-alpha-master.mov
+```
+
+Feed that intermediate to an `AVAssetReader`/`AVAssetWriter` pipeline configured
+for BGRA input and `AVVideoCodecType.hevcWithAlpha` output. Preserve the source
+dimensions, frame rate, duration, start frame, and loop point. Direct FFmpeg
+VideoToolbox HEVC commands are not sufficient proof: a file may report `hvc1`
+without containing an alpha channel.
 
 Generate `die-still.png` from frame `0000.png` so its camera, lighting, scale,
 and starting orientation match the animation exactly. The render script reports
@@ -258,6 +312,11 @@ ffprobe -v error -select_streams v:0 \
 sips -g pixelWidth -g pixelHeight public/identity-card/<model>-still.png
 ```
 
+For the MOV, also require `codec_name=hevc`, `codec_tag_string=hvc1`, matching
+dimensions/frame rate/duration, and an AVFoundation video track with the
+`.containsAlphaChannel` media characteristic. Reject the asset if any of those
+checks fail.
+
 ## Required Verification
 
 Render `/` at `1440×900` and `390×844`. Check at least the poster frame and two
@@ -266,7 +325,8 @@ separated active frames.
 For all three models, verify:
 
 - the media center-y coordinates and label-top coordinates match within `1px`;
-- the expected WebM is the active `currentSrc`;
+- the expected `*-spin-safari.mov` is the active `currentSrc` in Safari and iOS,
+  while the expected WebM is active in Chromium and Firefox;
 - `readyState` is sufficient, playback is not paused, opacity is `1`, and the
   configured playback rate is applied;
 - the poster disappears only after the matching video plays;
@@ -279,10 +339,17 @@ For all three models, verify:
 At `prefers-reduced-motion: reduce`, confirm videos are hidden and transparent
 posters remain recognizable and aligned.
 
+Use real Safari for the Apple path. Chromium inspection cannot prove that an
+HEVC asset contains alpha or that WebKit selected it. In Safari, verify all
+three MOV sources reach `readyState === 4`, `play()` resolves, and `currentTime`
+advances without a black rectangle. Repeat the visual row and motion checks in
+Chromium or Firefox to prove the WebM path still rotates.
+
 Inspect browser console warnings and errors, then run:
 
 ```bash
 deno task pre-commit
+deno task build
 git diff --check
 ```
 

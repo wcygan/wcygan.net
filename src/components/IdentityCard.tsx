@@ -1,6 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import {
+  preferredTransparentIdentityVideoFormat,
+  type TransparentIdentityVideoFormat,
+} from "~/lib/identity-model-video";
 import { socials } from "~/lib/socials";
 
 type AnimatedModelId = "github" | "linkedin" | "projects";
@@ -14,6 +18,7 @@ type IdentityModel = {
   poster: string;
   rel?: string;
   target?: "_blank";
+  videoHevc?: string;
   videoWebm?: string;
 };
 
@@ -44,6 +49,7 @@ const IDENTITY_MODELS: readonly IdentityModel[] = [
     poster: "/identity-card/github-still.png",
     rel: "noopener noreferrer me",
     target: "_blank",
+    videoHevc: "/identity-card/github-spin-safari.mov",
     videoWebm: "/identity-card/github-spin.webm",
   },
   {
@@ -54,6 +60,7 @@ const IDENTITY_MODELS: readonly IdentityModel[] = [
     poster: "/identity-card/linkedin-still.png",
     rel: "noopener noreferrer me",
     target: "_blank",
+    videoHevc: "/identity-card/linkedin-spin-safari.mov",
     videoWebm: "/identity-card/linkedin-spin.webm",
   },
   {
@@ -64,6 +71,7 @@ const IDENTITY_MODELS: readonly IdentityModel[] = [
     poster: "/identity-card/die-still.png",
     rel: "noopener noreferrer",
     target: "_blank",
+    videoHevc: "/identity-card/die-spin-safari.mov",
     videoWebm: "/identity-card/die-spin.webm",
   },
 ];
@@ -124,6 +132,18 @@ function useSceneActivity(hostRef: RefObject<HTMLElement | null>) {
   }, [hostRef]);
 
   return isActive;
+}
+
+function useTransparentIdentityVideoFormat() {
+  const [format, setFormat] = useState<TransparentIdentityVideoFormat | null>(
+    null,
+  );
+
+  useEffect(() => {
+    setFormat(preferredTransparentIdentityVideoFormat(window.navigator));
+  }, []);
+
+  return format;
 }
 
 function AsciiWordmark() {
@@ -412,6 +432,7 @@ function IdentityLinks({ variant }: Pick<IdentityCardProps, "variant">) {
     ReadonlySet<AnimatedModelId>
   >(new Set());
   const isSceneActive = useSceneActivity(hostRef);
+  const transparentVideoFormat = useTransparentIdentityVideoFormat();
   const models =
     variant === "full"
       ? IDENTITY_MODELS.filter((model) =>
@@ -449,7 +470,7 @@ function IdentityLinks({ variant }: Pick<IdentityCardProps, "variant">) {
       configureModel(id, video);
       void video.play().catch(() => undefined);
     });
-  }, [isSceneActive]);
+  }, [isSceneActive, transparentVideoFormat]);
 
   return (
     <nav
@@ -458,7 +479,15 @@ function IdentityLinks({ variant }: Pick<IdentityCardProps, "variant">) {
       ref={hostRef}
     >
       {models.map((model) => {
-        const hasVideo = ANIMATED_MODEL_IDS.has(model.id as AnimatedModelId);
+        const videoSource =
+          transparentVideoFormat === "hevc"
+            ? model.videoHevc
+            : transparentVideoFormat === "webm"
+              ? model.videoWebm
+              : undefined;
+        const hasVideo =
+          Boolean(videoSource) &&
+          ANIMATED_MODEL_IDS.has(model.id as AnimatedModelId);
         const isPlaying =
           hasVideo && playingModels.has(model.id as AnimatedModelId);
 
@@ -535,7 +564,14 @@ function IdentityLinks({ variant }: Pick<IdentityCardProps, "variant">) {
                           else delete videoRefs.current[id];
                         }}
                       >
-                        <source src={model.videoWebm} type="video/webm" />
+                        <source
+                          src={videoSource}
+                          type={
+                            transparentVideoFormat === "hevc"
+                              ? 'video/quicktime; codecs="hvc1"'
+                              : "video/webm"
+                          }
+                        />
                       </video>
                     ) : null}
                   </span>
