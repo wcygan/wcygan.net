@@ -14,19 +14,6 @@ function HomePage() {
 
   return (
     <div className="home-page">
-      <section className="home-section home-intro" aria-labelledby="about">
-        <h2 className="home-section-title" id="about">
-          About
-        </h2>
-        <p className="p-note">
-          I work on the Checkout team at LinkedIn building mission-critical
-          systems for our E-Commerce platform. My background includes designing
-          and building distributed systems involving APIs, databases, stream
-          processing systems, and data pipelines. Outside of work, I run a
-          Kubernetes homelab in my basement to host projects with my friends.
-        </p>
-      </section>
-
       <section className="home-section" aria-labelledby="writing">
         <h2 className="home-section-title" id="writing">
           Writing

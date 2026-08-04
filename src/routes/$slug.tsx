@@ -207,6 +207,9 @@ function BlogPostPage() {
   return (
     <div className={showToc ? "post-shell post-shell-with-toc" : "post-shell"}>
       <article className="blog-post h-entry">
+        <Link className="post-back-link" to="/">
+          ← Back
+        </Link>
         <h1 id={postTitleTocId} className="post-title p-name">
           <Link to="/$slug" params={{ slug }} className="post-permalink">
             {meta.title}

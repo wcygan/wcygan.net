@@ -1,0 +1,4 @@
+interface:
+  display_name: "wcygan.net Identity Models"
+  short_description: "Preserve and debug homepage 3D model links"
+  default_prompt: "Use $wcygan-identity-models to create, edit, review, or debug the homepage GitHub, LinkedIn, and Projects model links."

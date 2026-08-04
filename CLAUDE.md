@@ -104,19 +104,21 @@ Rules:
 
 ### Font roles
 
-| Role           | Stack                              | Use                                                                                                      |
-| -------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Editorial sans | `Inter`, `system-ui`, sans-serif   | Homepage, article prose, header, navigation, titles, headings, metadata, captions, controls, blockquotes |
-| Monospace      | `Lilex`, `ui-monospace`, monospace | Code, terminals, SQL traces, and ASCII art                                                               |
+| Role                  | Stack                                                           | Use                                                                                         |
+| --------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Homepage hero display | `TWK Lausanne Pan Preview`, `Helvetica Neue`, Arial, sans-serif | Full homepage identity line only                                                            |
+| Editorial sans        | `Inter`, `system-ui`, sans-serif                                | Compact article identity, article prose, titles, headings, metadata, captions, and controls |
+| Monospace             | `Lilex`, `ui-monospace`, monospace                              | Code, terminals, SQL traces, and ASCII art                                                  |
 
 Use local `.woff2` assets for Lilex. Keep `font-synthesis: none` so missing
 weights fail visibly instead of producing fake bold or italic. Apply font
 smoothing once at the document root. `font-body`, `font-sans`, and `font-ui`
 all select Inter; keep the role aliases until the stylesheet is consolidated.
 
-The homepage, shared header, and editorial article text use Inter with `"cv01"`
-and `"ss03"` enabled and ligatures disabled. Reset that feature policy at the
-Lilex boundary so code and ASCII retain their own ligatures.
+The compact article identity and editorial article text use Inter with `"cv01"`
+and `"ss03"` enabled and ligatures disabled. The full homepage hero is the
+intentional Lausanne exception. Reset that feature policy at the Lilex boundary
+so code and ASCII retain their own ligatures.
 
 ### Shared shell and homepage scale
 
@@ -169,38 +171,78 @@ and `64px`. Introduce a new value only when the component's geometry requires
 it. Avoid stacking parent and child margins that create accidental double
 spacing.
 
-All routes share the same shell and header. The site name always links home. The
-homepage owns the site-name `h1`; article pages reserve `h1` for the article
-title and render the site name as non-heading text. There is no `/posts` index:
-the homepage writing list is the index. The IndieWeb Webring footer closes every
-route, including the homepage.
+The site name always links home. The homepage owns the only page `h1`; article
+pages reserve `h1` for the article title and use the compact identity variant.
+There is no `/posts` index: the homepage writing list is the index. The IndieWeb
+Webring footer closes every route, including the homepage.
 
-## Header and navigation
+## Homepage hero and identity
 
-Keep this shared order on every route:
+`src/routes/__root.tsx` selects `IdentityCard` from
+`src/components/IdentityCard.tsx`: the homepage receives `variant="full"` and
+every other route receives `variant="compact"`. `src/styles/app.css` owns the
+shared hero and compact-card rules; do not create a second header implementation.
 
-1. `Will Cygan`
-2. `Software Engineer`
-3. Resume, Email, GitHub, LinkedIn, Projects
+Load the repository's `$wcygan-identity-models` skill before creating, editing,
+reviewing, or debugging the homepage GitHub, LinkedIn, or Projects model links.
+It owns the asset-quality, optical-centering, poster/video handoff, playback,
+failure-recovery, and rendered-verification contract for these models.
 
-Navigation uses natural case, wraps when necessary, and sits below the role.
-Every nav link has a minimum `44px` height. Hover changes only color and
-underline color over `150ms ease-out`; focus remains independently visible. Do
-not restore uppercase navigation, a separate Posts link, a header border,
-profile artwork, newsletter UI, or a More section.
+### Full homepage hero
+
+The hero replaces the retired header and About section. It is a single expressive
+card on the established `#fdfdfc` canvas, followed directly by Writing and the
+IndieWeb footer. Keep the card as the homepage visual reference, while article
+pages remain quiet and editorial.
+
+- `AsciiWordmark` is a Canvas particle field. It creates its text points from
+  `Will Cygan`, responds to pointer movement, redraws with `ResizeObserver`, and
+  stops its nonessential animation off-screen or under reduced motion. Keep it
+  decorative (`aria-hidden`) and preserve its readable, settled reduced-motion
+  frame.
+- The `h1` is one baseline-aligned three-column row: `Will /wɪl/ Cygan
+/tsɪˈɡɑːn/ • Software Engineer`. Keep the phonetics interleaved with the name,
+  the bullet and role in the same row, and the identity link accessible as
+  `Will Cygan`. Its sizing uses card-relative `cqi` units so the full phrase
+  remains visible inside the 644px reading column; preserve the mobile override.
+- `IdentityLinks` renders Resume, Email, GitHub, LinkedIn, and Projects. The
+  full card uses a five-column/two-row model grid; each model link is a centered
+  media-plus-label stack, with its label in normal flow underneath and a 44px
+  minimum touch target. Do not absolutely position labels over the media.
+- The encoded source canvases vary in size and are intentionally off-center;
+  their geometric centers are not the visible model centers. Treat
+  `--identity-model-center-x/y`, clipping, and the shared poster/video media
+  transform as load-bearing when changing models or their dimensions.
+- GitHub, LinkedIn, and Projects use transparent PNG posters and alpha VP9 WebM
+  loops from `public/identity-card/`. The poster is visible only until playback
+  starts, then it becomes fully hidden so the rotating model never doubles with
+  its standstill frame. Do not restore opaque MP4 fallbacks, white mattes, or
+  `mix-blend-mode` compensation. An unsupported animation format must leave the
+  transparent still visible instead.
+- Play animated models only while the link grid is in view, the document is
+  visible, and reduced motion is not requested. Pause and restore the poster
+  otherwise. At `prefers-reduced-motion: reduce`, hide the videos and keep the
+  static transparent posters. Hover and focus may scale the media, but must not
+  move labels or overlap other targets.
+
+### Compact article identity
+
+The compact variant is the only shared article header: a small Inter name/role
+line followed by the five text links. It does not render the Canvas wordmark or
+model media. Article pages place the visible 44px `← Back` link before the post
+title; keep the page `h1` exclusively for that title.
 
 ## Homepage composition
 
 The homepage is intentionally simple:
 
-1. Shared name, role, and navigation
-2. About section
-3. Writing section
-4. IndieWeb Webring footer
+1. Full identity hero
+2. Writing section
+3. IndieWeb Webring footer
 
-The About and Writing sections use semantic headings and `aria-labelledby`. Keep
-the copy direct and concrete. The whole writing row is the link; title and
-description stack without dates or additional metadata.
+Writing uses a semantic heading and `aria-labelledby`. Keep the copy direct and
+concrete. The whole writing row is the link; title and description stack without
+dates or additional metadata.
 
 Writing-row rules:
 
@@ -349,16 +391,16 @@ diff or passing test suite is not enough.
 
 Check at least:
 
-| Route                           | Purpose                                                                     |
-| ------------------------------- | --------------------------------------------------------------------------- |
-| `/`                             | Canonical shell, header, About, writing rhythm, hover rows, IndieWeb footer |
-| `/talking-to-my-computer`       | Simple prose, figure, caption, post ending                                  |
-| `/change-data-capture`          | Code, lists, desktop TOC, and animated editorial diagrams                   |
-| `/n-plus-one-sql-query`         | Canonical monochrome comparison, pacing, Replay, and final summary          |
-| `/sharding-versus-partitioning` | Tables and Canvas behavior                                                  |
-| `/street-maps`                  | Map containment and responsive height                                       |
-| `/mermaid-diagrams`             | Static SVG rendering                                                        |
-| `/ascii-animation`              | Monospace art and overflow                                                  |
+| Route                           | Purpose                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| `/`                             | Full hero wordmark, inline identity row, alpha model media, Writing rhythm, IndieWeb footer |
+| `/talking-to-my-computer`       | Simple prose, figure, caption, post ending                                                  |
+| `/change-data-capture`          | Code, lists, desktop TOC, and animated editorial diagrams                                   |
+| `/n-plus-one-sql-query`         | Canonical monochrome comparison, pacing, Replay, and final summary                          |
+| `/sharding-versus-partitioning` | Tables and Canvas behavior                                                                  |
+| `/street-maps`                  | Map containment and responsive height                                                       |
+| `/mermaid-diagrams`             | Static SVG rendering                                                                        |
+| `/ascii-animation`              | Monospace art and overflow                                                                  |
 
 For routine shell work, `/`, one simple post, and one rich post are the minimum.
 Add the relevant specialized route whenever its primitive changes.

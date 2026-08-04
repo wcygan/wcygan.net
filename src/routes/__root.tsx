@@ -7,7 +7,7 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { socials } from "~/lib/socials";
+import { IdentityCard } from "~/components/IdentityCard";
 import "~/styles/app.css";
 
 export const Route = createRootRoute({
@@ -79,7 +79,7 @@ function RootDocument() {
       <body>
         <div className="site-shell min-h-screen">
           <div className="container site-container">
-            <SiteHeader isHomePage={isHomePage} />
+            {isHomePage ? <IdentityCard variant="full" /> : null}
 
             <main
               className={
@@ -95,74 +95,6 @@ function RootDocument() {
         <Scripts />
       </body>
     </html>
-  );
-}
-
-function SiteHeader({ isHomePage }: { isHomePage: boolean }) {
-  const siteNameLink = (
-    <Link className={isHomePage ? "u-url" : undefined} to="/">
-      Will Cygan
-    </Link>
-  );
-
-  return (
-    <header className={isHomePage ? "site-header h-card" : "site-header"}>
-      {isHomePage ? (
-        <h1 className="site-title p-name">{siteNameLink}</h1>
-      ) : (
-        <p className="site-title">{siteNameLink}</p>
-      )}
-      <p className="site-role">Software Engineer</p>
-      <nav className="site-nav" aria-label="Primary">
-        <ul>
-          <li>
-            <a
-              href="/will_cygan_resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Resume
-            </a>
-          </li>
-          <li>
-            <a
-              href="mailto:wcygan.io@gmail.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Email
-            </a>
-          </li>
-          <li>
-            <a
-              href={socials.github}
-              target="_blank"
-              rel="noopener noreferrer me"
-            >
-              GitHub
-            </a>
-          </li>
-          <li>
-            <a
-              href={socials.linkedin}
-              target="_blank"
-              rel="noopener noreferrer me"
-            >
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://nu-sync.net/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Projects
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </header>
   );
 }
 
