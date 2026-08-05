@@ -11,7 +11,9 @@ import {
   type FlowRoute,
   type FlowSegment,
   INITIAL_TOOL_CALLING_SNAPSHOT,
+  type JsonValue,
   TOOL_CALLING_DURATION_MS,
+  type ToolCallingPayload,
   type ToolCallingSnapshot,
 } from "~/demos/llm-tool-calling/model";
 
@@ -42,10 +44,7 @@ type RouteRefs = Partial<
 export function ToolCallingFlowDemo() {
   const { actorRefs, replay, routeRefs, snapshot, stageRef, tokenRef } =
     useToolCallingPlayback();
-  const activeSegment =
-    snapshot.segment ??
-    (snapshot.phase === "validating" ? "tool-request" : undefined) ??
-    (snapshot.isComplete ? "delivery" : undefined);
+  const activeSegment = snapshot.segment;
 
   return (
     <figure
@@ -60,9 +59,9 @@ export function ToolCallingFlowDemo() {
       <header className="tool-calling-network-header">
         <div>
           <p className="article-graphic-title" id="tool-calling-network-title">
-            One tool call crosses two trust boundaries
+            Agent Harness: Tool Call Flow
           </p>
-          <p>The LLM API requests work; the local harness decides what runs</p>
+          <p>LLMs request real-world information from the harness</p>
         </div>
         <button
           className="tool-calling-network-replay"
@@ -76,8 +75,10 @@ export function ToolCallingFlowDemo() {
       <p className="sr-only" id="tool-calling-network-description">
         A keyboard sends a question to a local computer running the application
         harness. The harness calls an external LLM API, receives a tool request,
-        validates it, executes the local list_directory tool, sends the result
-        back to the API, and presents the final answer to the person.
+        validates that list_directory is available in its local tool registry,
+        runs ls src/components, sends the three returned filenames back to the
+        API, and presents DemoReplayButton.tsx, NPlusOneQueryDemos.tsx, and
+        TableOfContents.tsx to the person.
       </p>
 
       <div
@@ -126,7 +127,9 @@ export function ToolCallingFlowDemo() {
           detail="list_directory"
         />
 
-        <p className="tool-calling-network-message">{snapshot.message}</p>
+        {snapshot.payload ? (
+          <PayloadCard key={snapshot.phase} payload={snapshot.payload} />
+        ) : null}
       </div>
 
       <p className="sr-only" aria-live="polite">
@@ -136,11 +139,211 @@ export function ToolCallingFlowDemo() {
       </p>
 
       <figcaption id="tool-calling-network-caption">
-        The API never touches the local tool directly: the computer mediates the
-        request, validation, execution, and final response
+        Tools are programs that run in the agent harness; they aren't executed
+        by the LLM directly
       </figcaption>
     </figure>
   );
+}
+
+function PayloadCard({ payload }: { payload: ToolCallingPayload }) {
+  if (payload.kind === "json") {
+    return (
+      <div className="tool-calling-network-payload" data-kind="json">
+        <JsonPayload value={payload.value} />
+      </div>
+    );
+  }
+
+  if (payload.kind === "terminal") {
+    return (
+      <div className="tool-calling-network-payload" data-kind="terminal">
+        <pre>
+          <span data-token="validation">✓ {payload.validation}</span>
+          {"\n"}
+          <span data-token="prompt">$ {payload.command}</span>
+          {"\n"}
+          {payload.files.map((file) => (
+            <span className="tool-calling-network-code-line" key={file}>
+              {file}
+            </span>
+          ))}
+        </pre>
+      </div>
+    );
+  }
+
+  if (payload.kind === "result") {
+    return (
+      <div className="tool-calling-network-payload" data-kind="result">
+        <pre>
+          {payload.lines.map((line) => (
+            <span className="tool-calling-network-code-line" key={line}>
+              {line}
+            </span>
+          ))}
+        </pre>
+      </div>
+    );
+  }
+
+  return (
+    <div className="tool-calling-network-payload" data-kind="prompt">
+      <pre>
+        <span data-token="prompt">&gt; {payload.text}</span>
+      </pre>
+    </div>
+  );
+}
+
+type JsonTokenKind =
+  | "boolean"
+  | "key"
+  | "null"
+  | "number"
+  | "punctuation"
+  | "string";
+
+type JsonToken = { kind: JsonTokenKind; text: string };
+
+export function JsonPayload({ value }: { value: JsonValue }) {
+  return (
+    <pre className="tool-calling-network-json">
+      {formatJsonLines(value).map((line, lineIndex) => (
+        <span className="tool-calling-network-code-line" key={lineIndex}>
+          {line.map((token, tokenIndex) => (
+            <span data-token={token.kind} key={`${token.text}-${tokenIndex}`}>
+              {token.text}
+            </span>
+          ))}
+        </span>
+      ))}
+    </pre>
+  );
+}
+
+function formatJsonLines(
+  value: JsonValue,
+  depth = 0,
+  allowCompactObject = true,
+): JsonToken[][] {
+  if (isPrimitive(value)) return [[literal(value)]];
+
+  if (Array.isArray(value)) {
+    const items = value.map((item) => formatJsonLines(item, depth + 1));
+    if (items.every((item) => item.length === 1)) {
+      return compactArrayLines(
+        items.map((item) => item[0][0]),
+        depth,
+      );
+    }
+
+    return multilineValueLines("[", "]", items, depth);
+  }
+
+  const entries = Object.entries(value);
+  if (allowCompactObject && canCompactObject(entries)) {
+    return [compactObject(entries)];
+  }
+
+  const lines: JsonToken[][] = [[punctuation("{")]];
+  for (const [entryIndex, [key, item]] of entries.entries()) {
+    const formattedItem = formatJsonLines(item, depth + 1);
+    const itemLines =
+      entryIndex < entries.length - 1
+        ? withTrailingComma(formattedItem)
+        : formattedItem;
+
+    lines.push([
+      indentation(depth + 1),
+      { kind: "key", text: JSON.stringify(key) },
+      punctuation(": "),
+      ...itemLines[0],
+    ]);
+    lines.push(...itemLines.slice(1));
+  }
+  lines.push([indentation(depth), punctuation("}")]);
+  return lines;
+}
+
+function compactArrayLines(items: JsonToken[], depth: number): JsonToken[][] {
+  const lines: JsonToken[][] = [[punctuation("[")]];
+  for (let index = 0; index < items.length; index += 2) {
+    const row = [indentation(depth + 1), items[index]];
+    if (index + 1 < items.length) {
+      row.push(punctuation(", "), items[index + 1]);
+    }
+    if (index + 2 < items.length) row.push(punctuation(","));
+    lines.push(row);
+  }
+  lines.push([indentation(depth), punctuation("]")]);
+  return lines;
+}
+
+function multilineValueLines(
+  opening: string,
+  closing: string,
+  items: JsonToken[][][],
+  depth: number,
+): JsonToken[][] {
+  const lines: JsonToken[][] = [[punctuation(opening)]];
+  for (const [index, item] of items.entries()) {
+    const itemLines = index < items.length - 1 ? withTrailingComma(item) : item;
+    lines.push(...itemLines);
+  }
+  lines.push([indentation(depth), punctuation(closing)]);
+  return lines;
+}
+
+function compactObject(entries: [string, JsonValue][]): JsonToken[] {
+  const tokens: JsonToken[] = [punctuation("{ ")];
+  for (const [index, [key, value]] of entries.entries()) {
+    if (!isPrimitive(value)) continue;
+    tokens.push(
+      { kind: "key", text: JSON.stringify(key) },
+      punctuation(": "),
+      literal(value),
+    );
+    if (index < entries.length - 1) tokens.push(punctuation(", "));
+  }
+  tokens.push(punctuation(" }"));
+  return tokens;
+}
+
+function canCompactObject(entries: [string, JsonValue][]) {
+  return (
+    entries.every(([, value]) => isPrimitive(value)) &&
+    JSON.stringify(Object.fromEntries(entries)).length <= 48
+  );
+}
+
+function isPrimitive(
+  value: JsonValue,
+): value is boolean | null | number | string {
+  return value === null || typeof value !== "object";
+}
+
+function literal(value: boolean | null | number | string): JsonToken {
+  if (value === null) return { kind: "null", text: "null" };
+  if (typeof value === "boolean") {
+    return { kind: "boolean", text: String(value) };
+  }
+  if (typeof value === "number") return { kind: "number", text: String(value) };
+  return { kind: "string", text: JSON.stringify(value) };
+}
+
+function punctuation(text: string): JsonToken {
+  return { kind: "punctuation", text };
+}
+
+function indentation(depth: number): JsonToken {
+  return punctuation("  ".repeat(depth));
+}
+
+function withTrailingComma(lines: JsonToken[][]): JsonToken[][] {
+  const result = lines.map((line) => [...line]);
+  result.at(-1)?.push(punctuation(","));
+  return result;
 }
 
 function Route({
@@ -273,10 +476,7 @@ function useToolCallingPlayback(): {
   const placeToken = useCallback((next: ToolCallingSnapshot) => {
     const token = tokenRef.current;
     if (!token) return;
-    const segment =
-      next.segment ??
-      (next.phase === "validating" ? "tool-request" : undefined) ??
-      (next.isComplete ? "delivery" : undefined);
+    const segment = next.segment ?? (next.isComplete ? "delivery" : undefined);
     const route = segment ? ROUTES_BY_SEGMENT[segment] : undefined;
     const path = route
       ? routeRefs.current[route.name]?.[route.direction]
@@ -286,8 +486,7 @@ function useToolCallingPlayback(): {
       return;
     }
 
-    const progress =
-      next.isComplete || next.phase === "validating" ? 1 : next.segmentProgress;
+    const progress = next.isComplete ? 1 : next.segmentProgress;
     const point = path.getPointAtLength(path.getTotalLength() * progress);
     token.setAttribute("transform", `translate(${point.x} ${point.y})`);
     token.style.opacity = "1";

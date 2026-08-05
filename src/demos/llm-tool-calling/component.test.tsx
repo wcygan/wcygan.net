@@ -4,7 +4,10 @@
 
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ToolCallingFlowDemo } from "~/components/ToolCallingFlowDemo";
+import {
+  JsonPayload,
+  ToolCallingFlowDemo,
+} from "~/components/ToolCallingFlowDemo";
 
 class IntersectionObserverStub {
   constructor(private readonly callback: IntersectionObserverCallback) {}
@@ -86,7 +89,31 @@ describe("ToolCallingFlowDemo", () => {
     ).toHaveLength(0);
     expect(container.textContent).toContain("External API");
     expect(container.textContent).toContain("Local computer");
+    expect(container.textContent).toContain("DemoReplayButton.tsx");
+    expect(container.textContent).toContain("NPlusOneQueryDemos.tsx");
+    expect(container.textContent).toContain("TableOfContents.tsx");
     fireEvent.click(replay!);
     expect(figure?.dataset.phase).toBe("complete");
+  });
+
+  it("renders structured JSON with semantic syntax tokens", () => {
+    const { container } = render(
+      <JsonPayload
+        value={{
+          name: "list_directory",
+          arguments: { path: "src/components" },
+        }}
+      />,
+    );
+
+    expect(container.querySelectorAll('[data-token="key"]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-token="string"]')).toHaveLength(2);
+    expect(
+      container.querySelector('[data-token="punctuation"]'),
+    ).not.toBeNull();
+    expect(container.textContent).toContain('"name": "list_directory"');
+    expect(container.textContent).toContain(
+      '"arguments": { "path": "src/components" }',
+    );
   });
 });

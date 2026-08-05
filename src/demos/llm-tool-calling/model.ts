@@ -1,16 +1,3 @@
-export type ToolCallingPhase =
-  | "establishing"
-  | "input"
-  | "prompt"
-  | "tool-request"
-  | "validating"
-  | "tool-execution"
-  | "tool-result"
-  | "context"
-  | "answer"
-  | "delivery"
-  | "complete";
-
 export type FlowSegment =
   | "input"
   | "prompt"
@@ -21,32 +8,144 @@ export type FlowSegment =
   | "answer"
   | "delivery";
 
+export type ToolCallingPhase = "establishing" | FlowSegment | "complete";
 export type FlowRoute = "human" | "remote" | "tool";
-
 export type ActorState = "idle" | "active" | "complete";
+
+export type JsonValue =
+  | boolean
+  | null
+  | number
+  | string
+  | readonly JsonValue[]
+  | { readonly [key: string]: JsonValue };
+
+export type ToolCallingPayload =
+  | { kind: "json"; value: JsonValue }
+  | { kind: "prompt"; text: string }
+  | { kind: "result"; lines: readonly string[] }
+  | {
+      command: string;
+      files: readonly string[];
+      kind: "terminal";
+      validation: string;
+    };
 
 export type ToolCallingSnapshot = {
   actorStates: Record<"keyboard" | "computer" | "api" | "tool", ActorState>;
   elapsedMs: number;
   isComplete: boolean;
-  message: string;
+  payload?: ToolCallingPayload;
   phase: ToolCallingPhase;
   segment?: FlowSegment;
   segmentProgress: number;
 };
 
-export const TOOL_CALLING_DURATION_MS = 12_600;
+const ESTABLISHING_END_MS = 1_000;
+const TRAVEL_MS = 3_000;
 
-const ESTABLISHING_END_MS = 1_200;
-const INPUT_END_MS = 2_100;
-const PROMPT_END_MS = 3_300;
-const TOOL_REQUEST_END_MS = 4_500;
-const VALIDATION_END_MS = 5_900;
-const TOOL_EXECUTION_END_MS = 6_800;
-const TOOL_RESULT_END_MS = 7_700;
-const CONTEXT_END_MS = 8_900;
-const ANSWER_END_MS = 10_100;
-const DELIVERY_END_MS = 11_000;
+const prompt = "What files are in src/components?";
+const files = [
+  "DemoReplayButton.tsx",
+  "NPlusOneQueryDemos.tsx",
+  "TableOfContents.tsx",
+] as const;
+
+const finalAnswer = [...files] as const;
+
+const PAYLOADS: Record<FlowSegment, ToolCallingPayload> = {
+  answer: { kind: "result", lines: finalAnswer },
+  context: {
+    kind: "json",
+    value: { entries: files },
+  },
+  delivery: { kind: "result", lines: finalAnswer },
+  input: { kind: "prompt", text: prompt },
+  prompt: {
+    kind: "json",
+    value: { prompt },
+  },
+  "tool-execution": {
+    kind: "terminal",
+    validation: "list_directory available",
+    command: "ls src/components",
+    files,
+  },
+  "tool-request": {
+    kind: "json",
+    value: {
+      name: "list_directory",
+      arguments: { path: "src/components" },
+    },
+  },
+  "tool-result": {
+    kind: "json",
+    value: { entries: files },
+  },
+};
+
+const sequence: ReadonlyArray<{
+  actorStates: Partial<ToolCallingSnapshot["actorStates"]>;
+  segment: FlowSegment;
+}> = [
+  { segment: "input", actorStates: { keyboard: "active", computer: "active" } },
+  {
+    segment: "prompt",
+    actorStates: { keyboard: "complete", computer: "active", api: "active" },
+  },
+  {
+    segment: "tool-request",
+    actorStates: { keyboard: "complete", computer: "active", api: "active" },
+  },
+  {
+    segment: "tool-execution",
+    actorStates: {
+      keyboard: "complete",
+      computer: "active",
+      api: "complete",
+      tool: "active",
+    },
+  },
+  {
+    segment: "tool-result",
+    actorStates: {
+      keyboard: "complete",
+      computer: "active",
+      api: "complete",
+      tool: "active",
+    },
+  },
+  {
+    segment: "context",
+    actorStates: {
+      keyboard: "complete",
+      computer: "active",
+      api: "active",
+      tool: "complete",
+    },
+  },
+  {
+    segment: "answer",
+    actorStates: {
+      keyboard: "complete",
+      computer: "active",
+      api: "active",
+      tool: "complete",
+    },
+  },
+  {
+    segment: "delivery",
+    actorStates: {
+      keyboard: "active",
+      computer: "active",
+      api: "complete",
+      tool: "complete",
+    },
+  },
+];
+
+export const TOOL_CALLING_DURATION_MS =
+  ESTABLISHING_END_MS + TRAVEL_MS * sequence.length;
 
 export const INITIAL_TOOL_CALLING_SNAPSHOT = deriveToolCallingSnapshot(0);
 export const COMPLETE_TOOL_CALLING_SNAPSHOT = deriveToolCallingSnapshot(
@@ -57,184 +156,45 @@ export function deriveToolCallingSnapshot(
   elapsedMs: number,
 ): ToolCallingSnapshot {
   const elapsed = clamp(elapsedMs, 0, TOOL_CALLING_DURATION_MS);
+  if (elapsed < ESTABLISHING_END_MS) return snapshot(elapsed, "establishing");
 
-  if (elapsed < ESTABLISHING_END_MS) {
-    return snapshot(
-      elapsed,
-      "establishing",
-      "A local application mediates every tool call",
-    );
-  }
-  if (elapsed < INPUT_END_MS) {
-    return moving(
-      elapsed,
-      "input",
-      "input",
-      ESTABLISHING_END_MS,
-      INPUT_END_MS,
-      "A question enters the local computer",
-      {
-        keyboard: "active",
-        computer: "active",
-      },
-    );
-  }
-  if (elapsed < PROMPT_END_MS) {
-    return moving(
-      elapsed,
-      "prompt",
-      "prompt",
-      INPUT_END_MS,
-      PROMPT_END_MS,
-      "The harness sends the conversation to the LLM API",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "active",
-      },
-    );
-  }
-  if (elapsed < TOOL_REQUEST_END_MS) {
-    return moving(
-      elapsed,
-      "tool-request",
-      "tool-request",
-      PROMPT_END_MS,
-      TOOL_REQUEST_END_MS,
-      "The API returns a requested tool call",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "active",
-      },
-    );
-  }
-  if (elapsed < VALIDATION_END_MS) {
-    return snapshot(
-      elapsed,
-      "validating",
-      "The harness validates the tool and path",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "complete",
-      },
-    );
-  }
-  if (elapsed < TOOL_EXECUTION_END_MS) {
-    return moving(
-      elapsed,
-      "tool-execution",
-      "tool-execution",
-      VALIDATION_END_MS,
-      TOOL_EXECUTION_END_MS,
-      "Only the local harness executes list_directory",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "complete",
-        tool: "active",
-      },
-    );
-  }
-  if (elapsed < TOOL_RESULT_END_MS) {
-    return moving(
-      elapsed,
-      "tool-result",
-      "tool-result",
-      TOOL_EXECUTION_END_MS,
-      TOOL_RESULT_END_MS,
-      "The local tool returns directory entries",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "complete",
-        tool: "active",
-      },
-    );
-  }
-  if (elapsed < CONTEXT_END_MS) {
-    return moving(
-      elapsed,
-      "context",
-      "context",
-      TOOL_RESULT_END_MS,
-      CONTEXT_END_MS,
-      "The harness appends that result to the conversation",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "active",
-        tool: "complete",
-      },
-    );
-  }
-  if (elapsed < ANSWER_END_MS) {
-    return moving(
-      elapsed,
-      "answer",
-      "answer",
-      CONTEXT_END_MS,
-      ANSWER_END_MS,
-      "The API returns a plain-language answer",
-      {
-        keyboard: "complete",
-        computer: "active",
-        api: "active",
-        tool: "complete",
-      },
-    );
-  }
-  if (elapsed < DELIVERY_END_MS) {
-    return moving(
-      elapsed,
-      "delivery",
-      "delivery",
-      ANSWER_END_MS,
-      DELIVERY_END_MS,
-      "The local computer presents the answer",
-      {
-        keyboard: "active",
-        computer: "active",
-        api: "complete",
-        tool: "complete",
-      },
-    );
+  const sequenceElapsed = elapsed - ESTABLISHING_END_MS;
+  const stepIndex = Math.floor(sequenceElapsed / TRAVEL_MS);
+  const step = sequence[stepIndex];
+  if (!step) {
+    return settledComplete(elapsed);
   }
 
-  return snapshot(
-    elapsed,
-    "complete",
-    "The LLM requested work; the local harness executed it",
-    {
+  return {
+    ...snapshot(elapsed, step.segment, step.actorStates),
+    payload: PAYLOADS[step.segment],
+    segment: step.segment,
+    segmentProgress: clamp(
+      (sequenceElapsed - stepIndex * TRAVEL_MS) / TRAVEL_MS,
+      0,
+      1,
+    ),
+  };
+}
+
+function settledComplete(elapsedMs: number): ToolCallingSnapshot {
+  return {
+    ...snapshot(elapsedMs, "complete", {
       keyboard: "complete",
       computer: "complete",
       api: "complete",
       tool: "complete",
-    },
-  );
-}
-
-function moving(
-  elapsedMs: number,
-  phase: ToolCallingPhase,
-  segment: FlowSegment,
-  startMs: number,
-  endMs: number,
-  message: string,
-  actorStates: Partial<ToolCallingSnapshot["actorStates"]>,
-) {
-  return {
-    ...snapshot(elapsedMs, phase, message, actorStates),
-    segment,
-    segmentProgress: clamp((elapsedMs - startMs) / (endMs - startMs), 0, 1),
+    }),
+    isComplete: true,
+    payload: PAYLOADS.delivery,
+    segment: "delivery",
+    segmentProgress: 1,
   };
 }
 
 function snapshot(
   elapsedMs: number,
   phase: ToolCallingPhase,
-  message: string,
   actorStates: Partial<ToolCallingSnapshot["actorStates"]> = {},
 ): ToolCallingSnapshot {
   return {
@@ -246,8 +206,7 @@ function snapshot(
       ...actorStates,
     },
     elapsedMs,
-    isComplete: phase === "complete",
-    message,
+    isComplete: false,
     phase,
     segmentProgress: 0,
   };

@@ -6951,17 +6951,17 @@
       color 180ms var(--article-demo-ease-out);
   }
   .tool-calling-network-actor--keyboard {
-    inset: 21% auto auto 3%;
+    inset: 31% auto auto 3%;
   }
   .tool-calling-network-actor--computer {
-    inset: 21% auto auto 50%;
+    inset: 31% auto auto 50%;
     transform: translateX(-50%);
   }
   .tool-calling-network-actor--api {
-    inset: 21% 3% auto auto;
+    inset: 31% 3% auto auto;
   }
   .tool-calling-network-actor--tool {
-    inset: auto auto 21% 50%;
+    inset: auto auto 14% 50%;
     transform: translateX(-50%);
   }
   .tool-calling-network-actor svg {
@@ -6996,18 +6996,78 @@
     color: var(--tool-network-ink);
   }
 
-  .tool-calling-network-message {
+  .tool-calling-network-payload {
     position: absolute;
-    z-index: 1;
-    inset: 5% 50% auto auto;
-    inline-size: min(320px, 48%);
+    z-index: 2;
+    display: grid;
+    align-content: center;
+    inset: 4% 50% auto auto;
+    inline-size: min(432px, 88%);
+    block-size: 92px;
     margin: 0;
+    padding: 10px 12px;
+    overflow: hidden;
+    border: 1px solid var(--tool-network-line);
+    border-radius: 6px;
+    background: var(--tool-network-raised);
     color: var(--tool-network-ink);
-    font-size: 13px;
-    font-weight: 550;
-    line-height: 1.35;
-    text-align: end;
+    font-family: var(--font-mono);
+    animation: tool-calling-network-payload-enter 180ms
+      var(--article-demo-ease-out) both;
     transform: translateX(50%);
+  }
+  .post-content .tool-calling-network-payload pre {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow-wrap: anywhere;
+    color: inherit;
+    font: inherit;
+    font-size: 10px;
+    line-height: 1.32;
+    text-align: start;
+    white-space: pre-wrap;
+  }
+  .tool-calling-network-code-line {
+    display: block;
+  }
+  .tool-calling-network-payload[data-kind="json"] pre {
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  .tool-calling-network-payload [data-token="key"] {
+    color: #bed6ff;
+  }
+  .tool-calling-network-payload [data-token="string"],
+  .tool-calling-network-payload [data-token="validation"] {
+    color: #7fe173;
+  }
+  .tool-calling-network-payload [data-token="number"],
+  .tool-calling-network-payload [data-token="boolean"],
+  .tool-calling-network-payload [data-token="null"] {
+    color: #ffc66d;
+  }
+  .tool-calling-network-payload [data-token="punctuation"] {
+    color: #eeeeec;
+  }
+  .tool-calling-network-payload [data-token="prompt"] {
+    color: #bed6ff;
+  }
+  .tool-calling-network-payload[data-kind="result"] {
+    background: #272724;
+  }
+  @keyframes tool-calling-network-payload-enter {
+    from {
+      opacity: 0;
+      transform: translate(50%, -6px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(50%) scale(1);
+    }
   }
 
   @media (max-width: 540px) {
@@ -7040,10 +7100,19 @@
     .tool-calling-network-actor span {
       font-size: 8px;
     }
-    .tool-calling-network-message {
+    .tool-calling-network-payload {
       inset-block-start: 4%;
-      inline-size: 70%;
-      font-size: 11px;
+      inline-size: 88%;
+      block-size: 88px;
+      padding: 9px 10px;
+    }
+    .post-content .tool-calling-network-payload pre {
+      font-size: 9px;
+      line-height: 1.3;
+    }
+    .tool-calling-network-payload[data-kind="json"] pre {
+      font-size: 8px;
+      line-height: 1.25;
     }
   }
 
@@ -7051,6 +7120,10 @@
     .tool-calling-network-token,
     .tool-calling-network-actor {
       transition-duration: 140ms;
+    }
+    .tool-calling-network-payload {
+      animation: none;
+      transform: translateX(50%);
     }
     .tool-calling-network-token {
       opacity: 1;
@@ -9996,6 +10069,12 @@ th {
   font-family: "TWK Lausanne Pan Preview", "Helvetica Neue", Arial, sans-serif;
 }
 
+@media (min-width: 640px) {
+  .site-container .identity-card--full {
+    min-height: max(590px, calc(100svh - 64px));
+  }
+}
+
 .identity-card__wordmark {
   position: absolute;
   z-index: 1;
@@ -11014,20 +11093,20 @@ th {
 }
 
 .site-container .post-content .tool-calling-network-actor--keyboard {
-  inset: 21% auto auto 3%;
+  inset: 31% auto auto 3%;
 }
 
 .site-container .post-content .tool-calling-network-actor--computer {
-  inset: 21% auto auto 50%;
+  inset: 31% auto auto 50%;
   transform: translateX(-50%);
 }
 
 .site-container .post-content .tool-calling-network-actor--api {
-  inset: 21% 3% auto auto;
+  inset: 31% 3% auto auto;
 }
 
 .site-container .post-content .tool-calling-network-actor--tool {
-  inset: auto auto 21% 50%;
+  inset: auto auto 14% 50%;
   transform: translateX(-50%);
 }
 
