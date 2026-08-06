@@ -10474,6 +10474,16 @@ th {
     font-size: 16px;
   }
 
+  .identity-card__links--full .identity-card__model:hover {
+    transform: translateY(0);
+  }
+
+  .identity-card__links--full
+    .identity-card__model:hover
+    .identity-card__model-media {
+    transform: scale(1);
+  }
+
   .identity-card__links--compact {
     margin-top: 16px;
   }
