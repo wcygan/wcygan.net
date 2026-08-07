@@ -1,0 +1,24 @@
+---
+title: Fanout
+date: August 6, 2026
+description: When service calls multiply downstream
+tags: [Architecture, Microservices]
+---
+
+import { FanoutGraphDemo } from "~/components/FanoutGraphDemo";
+import { FanoutMultiplierDemo } from "~/components/FanoutMultiplierDemo";
+import { FanoutWarStoryDemo } from "~/components/FanoutWarStoryDemo";
+
+Fan-out happens when a microservice handling one request calls several other services, which may call still more services and cascade work down the stack.
+
+<FanoutGraphDemo />
+
+Sometimes a service may accrue tech debt in such a way that the read path ends up calling the same downstream multiple times. The downstream may make multiple queries against its database per request. These translate into database reads that add up (and multiply) very quickly!
+
+<FanoutMultiplierDemo />
+
+## War story: redundant fanout
+
+Now for the motivation of this post: at work I identified a codepath that ran at ~8,000 queries per second and found that each request sent 2-3 requests to the same downstream service. 99% of these requests weren't needed, and their results were discarded. We were DDOSing a partner team! Traffic settled near 10 QPS after fixing the issue.
+
+<FanoutWarStoryDemo />

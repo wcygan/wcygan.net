@@ -7603,6 +7603,631 @@
     }
   }
 
+  /* Fanout service graph */
+  .fanout-graph {
+    --fanout-canvas: #181817;
+    --fanout-panel: #20201e;
+    --fanout-line: #4d4c47;
+    --fanout-line-strong: #696862;
+    --fanout-ink: #f4f3ee;
+    --fanout-muted: #aaa9a2;
+    --fanout-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    display: grid;
+    gap: 14px;
+    margin: 30px 0;
+    color: #21201c;
+    font-family: var(--font-ui);
+  }
+
+  .fanout-graph *,
+  .fanout-graph *::before,
+  .fanout-graph *::after {
+    box-sizing: border-box;
+  }
+
+  .fanout-graph-header {
+    display: block;
+  }
+
+  .fanout-graph-header > div {
+    display: grid;
+    gap: 4px;
+    min-inline-size: 0;
+  }
+
+  .post-content .fanout-graph-header p {
+    margin: 0;
+  }
+
+  .post-content .fanout-graph-header p:not(.article-graphic-title) {
+    color: #63635e;
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .post-content .fanout-graph-stage {
+    min-inline-size: 0;
+    overflow: hidden;
+    padding: 18px;
+    border: 1px solid #2d2d2a;
+    border-radius: 12px;
+    background: var(--fanout-canvas);
+    box-shadow:
+      inset 0 1px rgb(255 255 255 / 4%),
+      0 18px 42px rgb(33 32 28 / 9%);
+  }
+
+  .fanout-graph-svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  .fanout-graph-edge {
+    fill: none;
+    stroke: var(--fanout-line);
+    stroke-width: 1.15;
+    opacity: 0.9;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-arrowhead {
+    fill: var(--fanout-line-strong);
+  }
+
+  .fanout-graph-column-labels {
+    fill: var(--fanout-muted);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+  }
+
+  .fanout-graph-node {
+    color: var(--fanout-ink);
+  }
+
+  .fanout-graph-node-circle {
+    fill: var(--fanout-node-color);
+    stroke: rgb(255 255 255 / 58%);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-browser-window {
+    fill: var(--fanout-node-color);
+    stroke: rgb(255 255 255 / 58%);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-browser-toolbar {
+    stroke: rgb(23 23 22 / 35%);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-browser-dot {
+    stroke: rgb(23 23 22 / 16%);
+    stroke-width: 0.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-browser-dot-red {
+    fill: #ff5f57;
+  }
+
+  .fanout-graph-browser-dot-yellow {
+    fill: #febc2e;
+  }
+
+  .fanout-graph-browser-dot-green {
+    fill: #28c840;
+  }
+
+  .fanout-graph-browser-address-bar {
+    fill: #ffffff;
+    stroke: #c6cad2;
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-browser-address-mark {
+    fill: none;
+    stroke: #9da3ad;
+    stroke-linecap: round;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-safari-compass {
+    fill: #f8fafc;
+    stroke: #c5cad3;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-graph-safari-compass-red {
+    fill: #e34d5b;
+  }
+
+  .fanout-graph-safari-compass-blue {
+    fill: #1672ed;
+  }
+
+  .fanout-graph-safari-compass-center {
+    fill: #1c2736;
+  }
+
+  .fanout-graph-node-label {
+    fill: #171716;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .fanout-graph-node[data-node="browser"] .fanout-graph-node-label {
+    fill: var(--fanout-ink);
+  }
+
+  .fanout-graph-node-rate {
+    fill: var(--fanout-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 450;
+  }
+
+  .fanout-graph-request-orb {
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .fanout-graph-request-orb-glow {
+    fill: #f4f3ee;
+    opacity: 0.14;
+  }
+
+  .fanout-graph-request-orb-core {
+    fill: #ffffff;
+    stroke: #f4f3ee;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .post-content .fanout-graph > figcaption {
+    margin: 0;
+  }
+
+  @media (max-width: 540px) {
+    .post-content .fanout-graph-stage {
+      padding: 10px;
+    }
+
+    .fanout-graph-node-rate {
+      font-size: 11px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fanout-graph-request-orb {
+      display: none;
+      will-change: auto;
+    }
+  }
+
+  /* Fanout multiplier explanation */
+  .fanout-multiplier-graph {
+    --fanout-multiplier-canvas: #181817;
+    --fanout-multiplier-panel: #20201e;
+    --fanout-multiplier-raised: #292927;
+    --fanout-multiplier-line: #4d4c47;
+    --fanout-multiplier-line-strong: #696862;
+    --fanout-multiplier-ink: #f4f3ee;
+    --fanout-multiplier-muted: #aaa9a2;
+    display: grid;
+    gap: 14px;
+    margin: 30px 0;
+    color: #21201c;
+    font-family: var(--font-ui);
+  }
+
+  .fanout-multiplier-graph *,
+  .fanout-multiplier-graph *::before,
+  .fanout-multiplier-graph *::after {
+    box-sizing: border-box;
+  }
+
+  .fanout-multiplier-graph-header {
+    display: grid;
+    gap: 4px;
+  }
+
+  .post-content .fanout-multiplier-graph-header p {
+    margin: 0;
+  }
+
+  .post-content .fanout-multiplier-graph-header p:not(.article-graphic-title) {
+    color: #63635e;
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .post-content .fanout-multiplier-graph-stage {
+    min-inline-size: 0;
+    overflow: hidden;
+    padding: 18px;
+    border: 1px solid #2d2d2a;
+    border-radius: 12px;
+    background: var(--fanout-multiplier-canvas);
+    box-shadow:
+      inset 0 1px rgb(255 255 255 / 4%),
+      0 18px 42px rgb(33 32 28 / 9%);
+  }
+
+  .fanout-multiplier-graph-svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  .fanout-multiplier-graph-column-label {
+    fill: var(--fanout-multiplier-muted);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.14em;
+  }
+
+  .fanout-multiplier-graph-rail {
+    fill: none;
+    stroke: var(--fanout-multiplier-line);
+    stroke-width: 1.2;
+    opacity: 0.82;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-multiplier-graph-service rect {
+    stroke: var(--fanout-multiplier-line-strong);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-multiplier-graph-service-upstream rect {
+    fill: var(--fanout-multiplier-panel);
+  }
+
+  .fanout-multiplier-graph-service-downstream rect {
+    fill: var(--fanout-multiplier-raised);
+  }
+
+  .fanout-multiplier-graph-service-label,
+  .fanout-multiplier-graph-database-label {
+    fill: var(--fanout-multiplier-ink);
+    font-size: 14px;
+    font-weight: 650;
+    text-anchor: middle;
+  }
+
+  .fanout-multiplier-graph-service-rate,
+  .fanout-multiplier-graph-database-rate {
+    fill: var(--fanout-multiplier-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-anchor: middle;
+  }
+
+  .fanout-multiplier-graph-database-rate {
+    fill: #e8b66e;
+  }
+
+  .fanout-multiplier-graph-database-body {
+    fill: var(--fanout-multiplier-panel);
+    stroke: var(--fanout-multiplier-line-strong);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-multiplier-graph-database-top {
+    fill: var(--fanout-multiplier-raised);
+    stroke: var(--fanout-multiplier-line-strong);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-multiplier-graph-flow-label {
+    fill: var(--fanout-multiplier-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fanout-multiplier-graph-multiplier {
+    fill: var(--fanout-multiplier-ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fanout-multiplier-graph-summary {
+    fill: var(--fanout-multiplier-ink);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .fanout-multiplier-graph-packet {
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .fanout-multiplier-graph-packet-core {
+    fill: #f4f3ee;
+    stroke: #ffffff;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-multiplier-graph-packet-db-read .fanout-multiplier-graph-packet-core {
+    fill: #e8b66e;
+    stroke: #f6d49b;
+  }
+
+  .post-content .fanout-multiplier-graph > figcaption {
+    margin: 0;
+  }
+
+  @media (max-width: 540px) {
+    .post-content .fanout-multiplier-graph-stage {
+      padding: 10px;
+    }
+
+    .fanout-multiplier-graph-service-label,
+    .fanout-multiplier-graph-database-label {
+      font-size: 16px;
+    }
+
+    .fanout-multiplier-graph-service-rate,
+    .fanout-multiplier-graph-database-rate,
+    .fanout-multiplier-graph-flow-label {
+      font-size: 13px;
+    }
+
+    .fanout-multiplier-graph-multiplier {
+      font-size: 14px;
+    }
+
+    .fanout-multiplier-graph-summary {
+      font-size: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fanout-multiplier-graph-packet {
+      display: none;
+      will-change: auto;
+    }
+  }
+
+  /* Fanout war story */
+  .fanout-war-story {
+    --fanout-war-story-canvas: #181817;
+    --fanout-war-story-line: #3f3f3b;
+    --fanout-war-story-line-strong: #696862;
+    --fanout-war-story-muted: #aaa9a2;
+    --fanout-war-story-hot: #e8b66e;
+    --fanout-war-story-fixed: oklch(0.82 0.08 145);
+    display: grid;
+    gap: 14px;
+    margin: 30px 0;
+    color: #21201c;
+    font-family: var(--font-ui);
+  }
+
+  .fanout-war-story *,
+  .fanout-war-story *::before,
+  .fanout-war-story *::after {
+    box-sizing: border-box;
+  }
+
+  .fanout-war-story-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .fanout-war-story-header > div {
+    display: grid;
+    gap: 4px;
+    min-inline-size: 0;
+  }
+
+  .post-content .fanout-war-story-header p {
+    margin: 0;
+  }
+
+  .post-content .fanout-war-story-header p:not(.article-graphic-title) {
+    color: #63635e;
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .post-content .fanout-war-story-stage {
+    min-inline-size: 0;
+    overflow: hidden;
+    padding: 18px;
+    border: 1px solid #2d2d2a;
+    border-radius: 12px;
+    background: var(--fanout-war-story-canvas);
+    box-shadow:
+      inset 0 1px rgb(255 255 255 / 4%),
+      0 18px 42px rgb(33 32 28 / 9%);
+  }
+
+  .fanout-war-story-svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    overflow: visible;
+  }
+
+  .fanout-war-story-axis-title,
+  .fanout-war-story-axis-label,
+  .fanout-war-story-time-label {
+    fill: var(--fanout-war-story-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fanout-war-story-axis-title {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+
+  .fanout-war-story-time-label {
+    font-size: 11px;
+  }
+
+  .fanout-war-story-grid-line {
+    stroke: var(--fanout-war-story-line);
+    stroke-width: 1;
+    opacity: 0.7;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-axis-line {
+    stroke: var(--fanout-war-story-line-strong);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-series {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-series-input {
+    stroke: var(--fanout-war-story-muted);
+    stroke-dasharray: 6 5;
+    opacity: 0.9;
+  }
+
+  .fanout-war-story-series-hot {
+    stroke: var(--fanout-war-story-hot);
+  }
+
+  .fanout-war-story-series-fixed {
+    stroke: var(--fanout-war-story-fixed);
+    stroke-width: 3;
+  }
+
+  .fanout-war-story-deploy-marker,
+  .fanout-war-story-deploy-drop {
+    fill: none;
+    stroke: var(--fanout-war-story-fixed);
+    stroke-width: 1.4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-deploy-marker {
+    stroke-dasharray: 4 5;
+    opacity: 1;
+  }
+
+  .fanout-war-story-deploy-label {
+    fill: var(--fanout-war-story-fixed);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 650;
+    opacity: 1;
+  }
+
+  .fanout-war-story-legend {
+    fill: var(--fanout-war-story-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fanout-war-story-legend-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 2.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-legend-input {
+    stroke: var(--fanout-war-story-muted);
+    stroke-dasharray: 6 5;
+  }
+
+  .fanout-war-story-legend-hot {
+    stroke: var(--fanout-war-story-hot);
+  }
+
+  .fanout-war-story-outcome line {
+    fill: none;
+    stroke: var(--fanout-war-story-fixed);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .fanout-war-story-outcome-label,
+  .fanout-war-story-outcome-detail {
+    fill: var(--fanout-war-story-fixed);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fanout-war-story-outcome-label {
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .fanout-war-story-outcome-detail {
+    font-size: 11px;
+  }
+
+  .post-content .fanout-war-story > figcaption {
+    margin: 0;
+  }
+
+  @media (max-width: 540px) {
+    .fanout-war-story-header {
+      grid-template-columns: 1fr;
+    }
+
+    .post-content .fanout-war-story-stage {
+      padding: 10px;
+    }
+
+    .fanout-war-story-axis-label,
+    .fanout-war-story-time-label,
+    .fanout-war-story-legend {
+      font-size: 14px;
+    }
+
+    .fanout-war-story-deploy-label,
+    .fanout-war-story-outcome-label {
+      font-size: 15px;
+    }
+
+    .fanout-war-story-outcome-detail {
+      font-size: 13px;
+    }
+  }
+
   /* Sharding versus partitioning prototype demos */
   .sp-demo {
     --sp-ink: var(--article-demo-ink);
