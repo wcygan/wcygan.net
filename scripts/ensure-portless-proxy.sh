@@ -79,5 +79,34 @@ fi
 
 if ! port_is_listening "$PROXY_PORT"; then
   echo "Portless proxy did not start on port $PROXY_PORT." >&2
-  exit 1
+
+diagnose_hidden_port_holder() {
+  if [[ "$PROXY_PORT" != "443" ]]; then
+    return 0
+  fi
+  if command -v tailscale >/dev/null 2>&1; then
+    local serve_target
+    serve_target="$(tailscale serve status 2>/dev/null | /usr/bin/awk '
+      /^https:\/\// { hold = ($0 ~ /\.ts\.net[ :]/ && $0 !~ /:[0-9]+ /) ? "1" : ""; next }
+      hold == "1" && /proxy / { print $NF; exit }
+    ')"
+    if [[ -n "$serve_target" ]]; then
+      echo "" >&2
+      echo "Root cause: Tailscale Serve is bound to local port 443 (target: $serve_target)." >&2
+      echo "Its network extension holds the socket, so lsof shows no listener." >&2
+      echo "Move Serve to port 8443, then retry this command:" >&2
+      echo "  tailscale serve --https=8443 --bg $serve_target" >&2
+      echo "  tailscale serve --https=443 off" >&2
+      return 0
+    fi
+  fi
+  echo "" >&2
+  echo "Port $PROXY_PORT is unavailable, but lsof shows no listener." >&2
+  echo "A macOS system extension (VPN or network filter) can hold ports invisibly." >&2
+  echo "Check installed extensions:" >&2
+  echo "  systemextensionsctl list" >&2
+}
+
+diagnose_hidden_port_holder
+exit 1
 fi

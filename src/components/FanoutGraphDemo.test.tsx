@@ -30,7 +30,7 @@ describe("FanoutGraphDemo", () => {
     expect(container.querySelectorAll(".fanout-graph-node")).toHaveLength(8);
     expect(container.querySelectorAll(".fanout-graph-edge")).toHaveLength(7);
     expect(
-      container.querySelector(".fanout-graph-safari-compass"),
+      container.querySelector(".fanout-graph-browser-content"),
     ).not.toBeNull();
     expect(
       container.querySelectorAll(".fanout-graph-request-orb"),

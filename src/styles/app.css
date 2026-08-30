@@ -8403,7 +8403,7 @@
     vector-effect: non-scaling-stroke;
   }
 
-  .fanout-graph-browser-address-mark {
+  .fanout-graph-browser-url-text {
     fill: none;
     stroke: #9da3ad;
     stroke-linecap: round;
@@ -8411,23 +8411,33 @@
     vector-effect: non-scaling-stroke;
   }
 
-  .fanout-graph-safari-compass {
-    fill: #f8fafc;
-    stroke: #c5cad3;
+  .fanout-graph-browser-content {
+    fill: #ffffff;
+  }
+
+  .fanout-graph-browser-grid {
+    stroke: #e2e7ee;
     stroke-width: 1;
     vector-effect: non-scaling-stroke;
   }
 
-  .fanout-graph-safari-compass-red {
-    fill: #e34d5b;
+  .fanout-graph-browser-axis {
+    stroke: #c3ccd9;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
   }
 
-  .fanout-graph-safari-compass-blue {
-    fill: #1672ed;
+  .fanout-graph-browser-chart {
+    fill: none;
+    stroke: #466eaa;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
   }
 
-  .fanout-graph-safari-compass-center {
-    fill: #1c2736;
+  .fanout-graph-browser-chart-dot {
+    fill: #466eaa;
   }
 
   .fanout-graph-node-label {

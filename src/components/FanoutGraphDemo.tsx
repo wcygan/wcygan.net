@@ -313,6 +313,7 @@ function Node({ node }: { node: FanoutNode }) {
   const style = {
     "--fanout-node-color": node.color,
   } as CSSProperties;
+  const browserClipId = `fanout-browser-clip-${useId().replaceAll(":", "")}`;
 
   return (
     <g
@@ -332,6 +333,65 @@ function Node({ node }: { node: FanoutNode }) {
             height="54"
             rx="8"
           />
+          <defs>
+            <clipPath id={browserClipId}>
+              <rect x="-36" y="-27" width="72" height="54" rx="8" />
+            </clipPath>
+          </defs>
+          <g clipPath={`url(#${browserClipId})`}>
+            <rect
+              className="fanout-graph-browser-content"
+              x="-36"
+              y="-14"
+              width="72"
+              height="41"
+            />
+            <line
+              className="fanout-graph-browser-grid"
+              x1="-28"
+              y1="-4"
+              x2="28"
+              y2="-4"
+            />
+            <line
+              className="fanout-graph-browser-grid"
+              x1="-28"
+              y1="4"
+              x2="28"
+              y2="4"
+            />
+            <line
+              className="fanout-graph-browser-grid"
+              x1="-28"
+              y1="12"
+              x2="28"
+              y2="12"
+            />
+            <line
+              className="fanout-graph-browser-axis"
+              x1="-28"
+              y1="20"
+              x2="28"
+              y2="20"
+            />
+            <line
+              className="fanout-graph-browser-axis"
+              x1="-28"
+              y1="-9"
+              x2="-28"
+              y2="20"
+            />
+            <path
+              className="fanout-graph-browser-chart"
+              d="M-28 17 L-16 15 L-6 12 L2 7 L10 1 L18 -4 L26 -8"
+            />
+            <circle
+              className="fanout-graph-browser-chart-dot"
+              cx="26"
+              cy="-8"
+              r="2"
+            />
+          </g>
           <line
             className="fanout-graph-browser-toolbar"
             x1="-36"
@@ -359,33 +419,13 @@ function Node({ node }: { node: FanoutNode }) {
           />
           <rect
             className="fanout-graph-browser-address-bar"
-            x="-2"
+            x="-4"
             y="-24"
-            width="28"
+            width="34"
             height="7"
             rx="3.5"
           />
-          <path className="fanout-graph-browser-address-mark" d="M7 -20.5h5" />
-          <circle
-            className="fanout-graph-safari-compass"
-            cx="0"
-            cy="4"
-            r="15"
-          />
-          <path
-            className="fanout-graph-safari-compass-red"
-            d="M0 -8 L4 0 L0 -2 Z"
-          />
-          <path
-            className="fanout-graph-safari-compass-blue"
-            d="M0 16 L-4 4 L0 6 Z"
-          />
-          <circle
-            className="fanout-graph-safari-compass-center"
-            cx="0"
-            cy="4"
-            r="2"
-          />
+          <path className="fanout-graph-browser-url-text" d="M6.5 -20.5h13" />
         </>
       ) : (
         <circle className="fanout-graph-node-circle" r={NODE_RADIUS} />
