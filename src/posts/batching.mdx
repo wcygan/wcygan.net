@@ -1,8 +1,8 @@
 ---
 title: Batching (LLM Inference)
 date: August 30, 2026
-description: Using the OpenRouter Batch API to save money
-tags: [LLM, AI]
+description: Using the OpenRouter Batch API to save money, and the openrouter-batch crate to do it from Rust
+tags: [LLM, AI, Rust]
 ---
 
 [OpenRouter](https://openrouter.ai/) allows you to batch requests[^batch-docs]. Providers discount batch traffic to fill idle capacity, and OpenRouter passes the discount through to the client. The examples use Claude Sonnet 5, where batched requests costs 50% of the regular API pricing.
@@ -71,6 +71,30 @@ The [batch endpoint](https://openrouter.ai/docs/batch-quickstart#embeddings) als
 covers `/v1/embeddings`, with inputs as strings or token arrays. The
 [Embeddings API reference](https://openrouter.ai/docs/api_reference/embeddings)
 documents the request and response shape.
+
+## In Rust: openrouter-batch
+
+I packaged this flow as [openrouter-batch](https://crates.io/crates/openrouter-batch), a small Rust client for the Batch API, structured output, and embeddings ([docs.rs](https://docs.rs/openrouter-batch)).
+
+The demo is two questions, one shared strict JSON Schema, submitted as a batch to a `:batch` model. The [`examples/cli.rs`](https://github.com/wcygan/openrouter-batch/blob/36ff529334d37f561ad55a39a4eecfc625e7befb/examples/cli.rs) binary runs it against the live API:
+
+```bash
+cargo run --release --example cli -- batch
+```
+
+Output from my run — status transitions, counts, usage, then each decoded result line keyed by `custom_id`:
+
+```text
+submitted: batch-1788203224-A92OrCi1hb82JNrfN6M1 status: Validating
+status: InProgress
+status: Completed
+request_counts: Some(RequestCounts { total: 2, completed: 2, failed: 0 })
+usage: Some(BatchUsage { prompt_tokens: Some(52), completion_tokens: Some(27), total_tokens: Some(79), cost: Some(2.13e-5), is_byok: Some(false) })
+req-1: {"answer": "4", "confidence": 99}
+req-2: { "answer": "21", "confidence": 1 }
+```
+
+The whole run cost $0.0000213.
 
 [^batch-docs]:
     OpenRouter's
