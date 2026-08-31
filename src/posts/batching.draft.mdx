@@ -1,0 +1,78 @@
+---
+title: Batching
+date: August 30, 2026
+description: Using the OpenRouter Batch API to save money
+tags: [LLM, AI]
+---
+
+[OpenRouter](https://openrouter.ai/) allows you to batch requests[^batch-docs]. Providers discount batch traffic to fill idle capacity, and OpenRouter passes the discount through to the client. The examples use Claude Sonnet 5, where batched requests costs 50% of the regular API pricing.
+
+## Synchronous API
+
+| Page                                                    | In / Out per 1M |
+| ------------------------------------------------------- | --------------- |
+| [Sync](https://openrouter.ai/anthropic/claude-sonnet-5) | $2.00 / $10.00  |
+
+```python
+results = []
+for doc in docs:
+    response = client.chat.completions.create(
+        model="anthropic/claude-sonnet-5",
+        messages=[{"role": "user", "content": f"Summarize: {doc}"}],
+    )
+    results.append(response.choices[0].message.content)
+```
+
+## Asynchronous Batch API
+
+| Page                                                           | In / Out per 1M |
+| -------------------------------------------------------------- | --------------- |
+| [Batch](https://openrouter.ai/anthropic/claude-sonnet-5:batch) | $1.00 / $5.00   |
+
+The batch route bills at exactly half the sync rate.
+
+```python
+batch = requests.post(
+    "https://openrouter.ai/api/beta/batches",
+    headers={"Authorization": f"Bearer {key}"},
+    json={
+        "endpoint": "/v1/chat/completions",
+        "model": "anthropic/claude-sonnet-5",
+        "requests": [
+            {
+                "custom_id": f"doc-{i}",
+                "body": {"messages": [{"role": "user", "content": doc}]},
+            }
+            for i, doc in enumerate(docs)
+        ],
+    },
+)
+
+# Poll GET /api/beta/batches/:id until status == "completed".
+# The finished results come back inline, matched by custom_id.
+```
+
+## What the same workload costs
+
+For example, classifying 10,000 support tickets at 1,000 input tokens
+and 200 output tokens each lands us at 10M input tokens and 2M output tokens:
+
+| Route | In $/1M | Out $/1M | Cost (10M in + 2M out) |
+| ----- | ------- | -------- | ---------------------- |
+| Sync  | $2.00   | $10.00   | $40.00                 |
+| Batch | $1.00   | $5.00    | **$20.00**             |
+
+The batch route costs 50% of the sync price and saves $20.00 on one job.
+Run the same job weekly and batch saves $1,040 a year on this model alone.
+
+## Embeddings
+
+The [batch endpoint](https://openrouter.ai/docs/batch-quickstart#embeddings) also
+covers `/v1/embeddings`, with inputs as strings or token arrays. The
+[Embeddings API reference](https://openrouter.ai/docs/api_reference/embeddings)
+documents the request and response shape.
+
+[^batch-docs]:
+    OpenRouter's
+    [Batch API Quickstart](https://openrouter.ai/docs/batch-quickstart) covers
+    submission, polling, limits, and pricing.
