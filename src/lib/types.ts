@@ -3,6 +3,10 @@ export interface PostMetadata {
   title: string;
   date: string;
   description: string;
+  /** Optional hero image, 16:9. Path served from `public/`, e.g. `/batching/muffins.jpg`. */
+  image?: string;
+  imageAlt?: string;
+  imageCaption?: string;
   tags?: string[];
   draft?: boolean;
   published?: boolean;

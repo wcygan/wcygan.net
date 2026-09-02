@@ -16,6 +16,7 @@ import {
   type TableOfContentsItem,
 } from "~/lib/table-of-contents";
 import { toIsoDate } from "~/lib/utils/formatDate";
+import { SITE_URL } from "~/lib/sitemap/generators";
 
 const mdxModules = import.meta.glob<MdxModule>([
   "/src/posts/*.mdx",
@@ -131,6 +132,9 @@ export const Route = createFileRoute("/$slug")({
         title: post.title,
         date: post.date,
         description: post.description,
+        image: post.image,
+        imageAlt: post.imageAlt,
+        imageCaption: post.imageCaption,
         tags: post.tags,
         readingTime: post.readingTime ?? 1,
       },
@@ -145,6 +149,14 @@ export const Route = createFileRoute("/$slug")({
         name: "description",
         content: loaderData?.meta?.description ?? "",
       },
+      ...(loaderData?.meta?.image
+        ? [
+            {
+              property: "og:image",
+              content: new URL(loaderData.meta.image, SITE_URL).href,
+            },
+          ]
+        : []),
     ],
   }),
   component: BlogPostPage,
@@ -221,6 +233,14 @@ function BlogPostPage() {
           </time>
         </p>
 
+        {meta.image ? (
+          <figure className="post-hero-image">
+            <img src={meta.image} alt={meta.imageAlt ?? meta.title} />
+            {meta.imageCaption ? (
+              <figcaption>{meta.imageCaption}</figcaption>
+            ) : null}
+          </figure>
+        ) : null}
         <div ref={postContentRef} className="post-content e-content">
           {Content ? <Content /> : <p>Loading...</p>}
         </div>

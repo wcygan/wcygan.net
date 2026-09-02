@@ -410,6 +410,30 @@
     color: inherit;
   }
 
+  /* Optional frontmatter-driven hero image, 16:9, below the post date */
+  .post-hero-image {
+    margin: 0 0 26px;
+  }
+
+  .post-hero-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin: 0;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 6px;
+  }
+
+  .post-hero-image figcaption {
+    margin: 8px 0 0;
+    color: rgb(102, 102, 102);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
   .post-shell {
     --post-toc-gap: 24px;
     --post-toc-width: 176px;

@@ -344,6 +344,26 @@ table {
 - Proper content spacing
 - Blue underlined links throughout
 
+### Post Hero Image (Optional)
+
+Each post may show one 16:9 hero image between the date and the content. Posts
+opt in with frontmatter. Posts without `image` render exactly as before.
+
+```yaml
+# frontmatter — put the file in public/<slug>/
+image: /batching/muffins.jpg
+imageAlt: A batch of fresh muffins
+imageCaption: Optional one-line caption. # omit to render no caption
+```
+
+**Styling Requirements**:
+
+- Full container width, `aspect-ratio: 16 / 9`, `object-fit: cover`
+- `1px` light border (`rgb(222, 222, 222)`), `6px` radius, no shadow
+- Quote the value when it contains a colon (`imageCaption: "A: B"`)
+- Muted caption (`rgb(102, 102, 102)`), 13px, below the image
+- Emit `og:image` (absolute URL against `SITE_URL`) when set
+
 ## Interactive Elements
 
 ### Links
