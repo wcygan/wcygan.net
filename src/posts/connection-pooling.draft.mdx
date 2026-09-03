@@ -12,9 +12,9 @@ import { PlanetScaleConnectionPoolDemo } from "~/components/PlanetScaleConnectio
 import { ConnectionScalingCurveDemo } from "~/components/ConnectionScalingCurveDemo";
 import { ConnectionServerBoardDemo } from "~/components/ConnectionServerBoardDemo";
 
-Every query sent to MySQL requires a network transport channel. Establishing a new TCP connection for each incoming web request quickly causes connection overhead to overtake query execution time.
+Every query sent to MySQL requires a network transport channel. Establishing a new TCP connection for each incoming web request quickly causes connection overhead, resulting in worse application performance.
 
-Connection pooling solves this bottleneck by keeping a fixed pool of pre-warmed, established connections ready in application memory. Incoming client requests borrow an idle connection, send their SQL query over the existing socket, and return the connection to the pool upon completion.
+Connection pooling solves this bottleneck by keeping a fixed pool of established connections ready in application memory. Incoming client requests borrow an idle connection, send their SQL query over the existing socket, and return the connection to the pool upon completion.
 
 <PlanetScaleConnectionPoolDemo />
 
@@ -22,27 +22,13 @@ Connection pooling solves this bottleneck by keeping a fixed pool of pre-warmed,
 
 A connection is not free. Each one costs MySQL a thread and several megabytes of memory, so a big pool makes every query slower instead of faster.
 
-### One connection, one thread
+**Threads**: MySQL runs one operating-system thread per connection. Two hundred connections means two hundred threads, and every running query competes for CPU time. Once the number of running queries passes the number of CPU cores, the operating system spends its time switching between threads instead of running queries. Throughput falls.
 
-MySQL runs one operating-system thread per connection. Two hundred connections means two hundred threads, and every running query competes for CPU time. Once the number of running queries passes the number of CPU cores, the operating system spends its time switching between threads instead of running queries. Throughput falls.
+**Memory**: Each connection allocates buffers for sorting, joining, and reading data — often several megabytes. These buffers are allocated only when a query needs them, so memory use is spiky. Four hundred idle connections may fit comfortably in memory, then one busy period with large sorts on many connections at once can exhaust the server's memory.
 
-### Each connection holds memory
+## How many connections is realistic?
 
-Each connection allocates buffers for sorting, joining, and reading data — often several megabytes. These buffers are allocated only when a query needs them, so memory use is spiky. Four hundred idle connections may fit comfortably in memory, then one busy period with large sorts on many connections at once can exhaust the server's memory.
-
-### More connections mean more lock contention
-
-Concurrent queries compete for the same rows. With hundreds of connections, lock queues grow, deadlocks become more common, and each transaction holds its locks longer. Blocked connections wait, hold their resources, and block other connections in turn.
-
-### The server enforces a hard limit
-
-MySQL's `max_connections` setting defaults to 151. Past that limit, MySQL rejects new connections with the `Too many connections` error — your application gets hard failures, not slow queries. You can raise the limit, but that only spends more memory and adds the thread and lock problems above.
-
-### How many connections is realistic?
-
-A common starting point for online transaction workloads is `pool size = CPU cores × 2–10`, tuned up for workloads that wait on disk or network. On a 4-core server, tens of connections doing useful work beats hundreds of connections fighting each other.
-
-This is exactly what the demo above shows: as the pool grows, waiting for a free connection gets shorter, but each query runs slower, and total throughput stops improving — then falls.
+A common starting point for transactional workloads is `pool size = CPU cores × 2–10`, tuned up for workloads that wait on disk or network. On a 4-core server, tens of connections doing useful work beats hundreds of connections fighting each other.
 
 <ConnectionScalingCurveDemo />
 
