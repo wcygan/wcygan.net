@@ -2384,15 +2384,13 @@ class Zt extends E {
       { shardIndex: r, point: s } = this.rowTarget(t.value),
       n = this.highlightedRoutes[r],
       o = this.incomingPath(),
-      d = y
-        .timeline()
-        .set(`#${i}`, {
-          x: o[0].x,
-          y: o[0].y,
-          scale: 1,
-          opacity: 0,
-          transformOrigin: "0 0",
-        });
+      d = y.timeline().set(`#${i}`, {
+        x: o[0].x,
+        y: o[0].y,
+        scale: 1,
+        opacity: 0,
+        transformOrigin: "0 0",
+      });
     return (
       d.to(`#${i}`, { opacity: 1, duration: 0.12, ease: "power1.out" }),
       this.addEasedRowTravel(d, i, o, 1),

@@ -334,10 +334,6 @@ Inspect the owning MDX prose, the component shell in `src/components/`, any
 backing model, engine, renderer, viewport, and tests in `src/demos/`, and the
 vendored PlanetScale reference library in
 `.agents/skills/planet-scale-animation-design-system/references/`.
-Load the repository's `$wcygan-editorial-diagrams` skill before creating,
-editing, reviewing, or debugging article diagrams or explanatory animation.
-Inspect the owning MDX prose, the component shell in `src/components/`, and any
-backing model, engine, renderer, viewport, and tests in `src/demos/`.
 
 The approved visual reference is the N+1 query race on
 `/n-plus-one-sql-query`, implemented by `NPlusOneQueryDemos.tsx` and the

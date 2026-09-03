@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   derivePoolSimulationSnapshot,
-  INITIAL_POOL_SNAPSHOT,
+  MAX_POOL_SIZE,
+  MIN_POOL_SIZE,
   POOL_SIZE,
+  ROUND_TRIP,
   SIMULATION_DURATION_MS,
   type PoolSimulationSnapshot,
 } from "~/demos/connection-pool/model";
+
 const PS_COLORS = {
   accent: "#F35815",
   blue: "#0E73CC",
@@ -20,8 +23,54 @@ const PS_COLORS = {
 const VIEWBOX_W = 1000;
 const VIEWBOX_H = 680;
 
+// Request column geometry
+const REQ_EDGE_X = 253; // right edge of the request boxes
+const REQ_ROW_TOP = 160;
+const REQ_ROW_PITCH = 60;
+const REQ_ROW_H = 48;
+const REQ_ROW_CY = (i: number) =>
+  REQ_ROW_TOP + i * REQ_ROW_PITCH + REQ_ROW_H / 2;
+
+// Pool slot geometry
+const POOL_X = 340;
+const POOL_W = 320;
+const POOL_EDGE_X = POOL_X + POOL_W; // 660
+const MYSQL_X = 745;
+const SLOT_TOP = 160;
+const SLOT_BOTTOM = 570;
+
+function slotMetrics(poolSize: number) {
+  const slotH =
+    poolSize <= 4
+      ? 86
+      : Math.round((SLOT_BOTTOM - SLOT_TOP - (poolSize - 1) * 10) / poolSize);
+  const pitch = (SLOT_BOTTOM - SLOT_TOP - slotH) / Math.max(1, poolSize - 1);
+  return { slotH, slotY: (index: number) => SLOT_TOP + index * pitch };
+}
+
+// PlanetScale multi-point elbow routing (drawConnector pattern, midPoint 0.62)
+const ELBOW_MID = REQ_EDGE_X + (POOL_X - REQ_EDGE_X) * 0.62;
+
+/** Point at fraction t (0..1) along the 3-segment elbow path. */
+function elbowPoint(t: number, startY: number, endY: number, endX: number) {
+  const seg1 = Math.abs(ELBOW_MID - REQ_EDGE_X);
+  const seg2 = Math.abs(endY - startY);
+  const seg3 = Math.abs(endX - ELBOW_MID);
+  const total = seg1 + seg2 + seg3;
+  let d = Math.max(0, Math.min(1, t)) * total;
+  if (d <= seg1) return { x: REQ_EDGE_X + d, y: startY };
+  d -= seg1;
+  if (d <= seg2)
+    return { x: ELBOW_MID, y: startY + Math.sign(endY - startY || 1) * d };
+  d -= seg2;
+  return { x: ELBOW_MID + d, y: endY };
+}
+
 export function PlanetScaleConnectionPoolDemo() {
-  const { replay, snapshot } = usePlanetScalePoolPlayback();
+  const [poolSize, setPoolSize] = useState(POOL_SIZE);
+  const { replay, snapshot } = usePlanetScalePoolPlayback(poolSize);
+
+  const { slotH, slotY } = slotMetrics(poolSize);
 
   return (
     <figure
@@ -38,7 +87,7 @@ export function PlanetScaleConnectionPoolDemo() {
             MySQL Connection Pool Architecture
           </p>
           <p className="ps-diagram-subtitle" id="ps-conn-pool-description">
-            Four pre-allocated TCP sockets multiplexing concurrent transactions
+            Pre-allocated TCP sockets multiplexing concurrent transactions
           </p>
         </div>
         <button
@@ -66,7 +115,6 @@ export function PlanetScaleConnectionPoolDemo() {
         </button>
       </header>
 
-      {/* PlanetScale Stage with authentic brand diagram SVG */}
       <div className="ps-diagram-stage" data-graphic-stage="flush">
         <svg
           className="brand-diagram-svg"
@@ -76,27 +124,26 @@ export function PlanetScaleConnectionPoolDemo() {
           aria-hidden="true"
         >
           <defs>
-            {/* Defs for connection progress fill clipping */}
-            {snapshot.connections.map((c) => (
+            {snapshot.connections.map((c, index) => (
               <clipPath key={`clip-conn-${c.id}`} id={`ps-conn-clip-${c.id}`}>
                 <rect
-                  x="340"
-                  y={170 + (c.id - 1) * 110}
-                  width="320"
-                  height="86"
+                  x={POOL_X}
+                  y={slotY(index)}
+                  width={POOL_W}
+                  height={slotH}
                   rx="6"
                 />
               </clipPath>
             ))}
           </defs>
 
-          {/* Background Grid Lines (Engineered Blueprint Style) */}
+          {/* Background Grid Lines */}
           <line
             x1="20"
-            y1="64"
+            y1="76"
             x2="980"
-            y2="64"
-            stroke="var(--diagram-connector, #818181)"
+            y2="76"
+            stroke={PS_COLORS.connector}
             strokeWidth="1"
             strokeDasharray="4 4"
             strokeOpacity="0.35"
@@ -106,19 +153,19 @@ export function PlanetScaleConnectionPoolDemo() {
             y1="610"
             x2="980"
             y2="610"
-            stroke="var(--diagram-connector, #818181)"
+            stroke={PS_COLORS.connector}
             strokeWidth="1"
             strokeDasharray="4 4"
             strokeOpacity="0.35"
           />
 
-          {/* TOP METRICS HUD - Pure PlanetScale JetBrains Mono Uppercase */}
+          {/* TOP METRICS HUD */}
           <g className="ps-hud-group">
             <text x="30" y="38" className="ps-hud-label">
               CAPACITY
             </text>
             <text x="30" y="56" className="ps-hud-val">
-              {POOL_SIZE} CONNS
+              {poolSize} CONNS
             </text>
 
             <text x="240" y="38" className="ps-hud-label">
@@ -134,7 +181,7 @@ export function PlanetScaleConnectionPoolDemo() {
                   : "var(--diagram-fg)"
               }
             >
-              {snapshot.metrics.activeConnections} / {POOL_SIZE}
+              {snapshot.metrics.activeConnections} / {poolSize}
             </text>
 
             <text x="470" y="38" className="ps-hud-label">
@@ -153,11 +200,12 @@ export function PlanetScaleConnectionPoolDemo() {
               {snapshot.metrics.waitingRequests} WAITING
             </text>
 
-            <text x="730" y="38" className="ps-hud-label">
+            <text x="745" y="38" className="ps-hud-label">
               QUERIES COMPLETED
             </text>
-            <text x="730" y="56" className="ps-hud-val">
-              {snapshot.metrics.completedRequests} / 7
+            <text x="745" y="56" className="ps-hud-val">
+              {snapshot.metrics.completedRequests} /{" "}
+              {snapshot.requests.length || 7}
             </text>
           </g>
 
@@ -165,16 +213,43 @@ export function PlanetScaleConnectionPoolDemo() {
           <text x="30" y="102" className="ps-col-title">
             APPLICATION INGRESS
           </text>
-          <text x="340" y="102" className="ps-col-title">
+          <text x={POOL_X} y="102" className="ps-col-title">
             CONNECTION POOL (TCP SLOTS)
           </text>
           <text x="760" y="102" className="ps-col-title">
             MYSQL SERVER 8.0
           </text>
 
+          {/* INTERACTIVE POOL CAPACITY STEPPER */}
+          <g
+            className="ps-pool-stepper"
+            role="group"
+            aria-label="Adjust connection pool size"
+          >
+            <text x="645" y="34" className="ps-hud-label" textAnchor="middle">
+              POOL SIZE
+            </text>
+            <PoolStepperButton
+              x={602}
+              label="−"
+              disabled={poolSize <= MIN_POOL_SIZE}
+              onClick={() => setPoolSize((s) => Math.max(MIN_POOL_SIZE, s - 1))}
+              ariaLabel="Remove one pool connection"
+            />
+            <text x="645" y="56" className="ps-hud-val" textAnchor="middle">
+              {poolSize}
+            </text>
+            <PoolStepperButton
+              x={662}
+              label="+"
+              disabled={poolSize >= MAX_POOL_SIZE}
+              onClick={() => setPoolSize((s) => Math.min(MAX_POOL_SIZE, s + 1))}
+              ariaLabel="Add one pool connection"
+            />
+          </g>
+
           {/* LEFT: Application Request Queue */}
           <g className="ps-requests-column">
-            {/* Ingress container box */}
             <rect
               x="25"
               y="120"
@@ -183,19 +258,19 @@ export function PlanetScaleConnectionPoolDemo() {
               rx="8"
               fill="var(--diagram-fg)"
               fillOpacity="0.03"
-              stroke="var(--diagram-connector, #818181)"
+              stroke={PS_COLORS.connector}
               strokeWidth="1.5"
             />
             <text x="40" y="146" className="ps-box-header">
               CONCURRENT INCOMING
             </text>
 
-            {/* List of 7 requests */}
-            {snapshot.requests.slice(0, 6).map((req, i) => {
-              const yPos = 165 + i * 68;
-              let statusFill = "var(--diagram-connector, #818181)";
+            {snapshot.requests.map((req, i) => {
+              const yPos = REQ_ROW_TOP + i * REQ_ROW_PITCH;
+              const cy = yPos + REQ_ROW_H / 2;
+              let statusFill = PS_COLORS.connector;
               let statusText = "WAITING";
-              let statusColor = "var(--diagram-connector, #818181)";
+              let statusColor = PS_COLORS.connector;
 
               if (req.status === "executing") {
                 statusFill = PS_COLORS.green;
@@ -217,14 +292,13 @@ export function PlanetScaleConnectionPoolDemo() {
                     x="37"
                     y={yPos}
                     width="216"
-                    height="56"
+                    height={REQ_ROW_H}
                     rx="6"
                     fill={statusFill}
                     fillOpacity={req.status === "executing" ? "0.15" : "0.06"}
                     stroke={statusFill}
                     strokeWidth={req.status === "executing" ? "2" : "1"}
                   />
-                  {/* Status dot */}
                   <circle cx="52" cy={yPos + 18} r="4" fill={statusColor} />
                   <text
                     x="64"
@@ -245,23 +319,93 @@ export function PlanetScaleConnectionPoolDemo() {
                   </text>
                   <text
                     x="48"
-                    y={yPos + 44}
+                    y={yPos + 42}
                     className="ps-req-sql"
                     fill="var(--diagram-fg)"
                     fillOpacity="0.7"
                   >
                     {formatSqlCompact(req.query)}
                   </text>
+
+                  {/* Pulsing yellow dot while queued at the pool door */}
+                  {req.status === "queued" && (
+                    <circle
+                      className="ps-queued-dot"
+                      cx={REQ_EDGE_X + 8}
+                      cy={cy}
+                      r="4"
+                      fill={PS_COLORS.yellow}
+                    />
+                  )}
                 </g>
               );
             })}
           </g>
 
-          {/* MIDDLE: 4 Reusable Connection Slots */}
+          {/* MULTIPLEXING BUS: all in-flight requests share one trunk line */}
+          {(() => {
+            const links = snapshot.connections
+              .map((conn, index) => ({
+                conn,
+                startCy: REQ_ROW_CY((conn.activeRequestId || 1) - 1),
+                endY: slotY(index) + slotH / 2,
+              }))
+              .filter(
+                (l) =>
+                  l.conn.state === "active" || l.conn.state === "returning",
+              );
+            if (links.length === 0) return null;
+
+            const ys = links.flatMap((l) => [l.startCy, l.endY]);
+            const top = Math.min(...ys);
+            const bottom = Math.max(...ys);
+            const trunkColor = links.every((l) => l.conn.state === "returning")
+              ? PS_COLORS.blue
+              : PS_COLORS.green;
+
+            return (
+              <g className="ps-mux-bus">
+                {bottom > top && (
+                  <line
+                    x1={ELBOW_MID}
+                    y1={top}
+                    x2={ELBOW_MID}
+                    y2={bottom}
+                    stroke={trunkColor}
+                    strokeWidth="2"
+                    strokeDasharray="6 4"
+                  />
+                )}
+                {links.map((l) => {
+                  const color =
+                    l.conn.state === "returning"
+                      ? PS_COLORS.blue
+                      : PS_COLORS.green;
+                  return (
+                    <g key={`mux-${l.conn.id}`}>
+                      <path
+                        d={`M ${REQ_EDGE_X} ${l.startCy} L ${ELBOW_MID} ${l.startCy}`}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2"
+                        strokeDasharray="6 4"
+                      />
+                      <path
+                        d={`M ${ELBOW_MID} ${l.endY} L ${POOL_X} ${l.endY}`}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2"
+                        strokeDasharray="6 4"
+                      />
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })()}
           <g className="ps-pool-column">
-            {/* Main Pool Frame */}
             <rect
-              x="320"
+              x={POOL_X - 20}
               y="120"
               width="360"
               height="470"
@@ -271,48 +415,91 @@ export function PlanetScaleConnectionPoolDemo() {
               stroke={
                 snapshot.metrics.activeConnections > 0
                   ? PS_COLORS.accent
-                  : "var(--diagram-connector, #818181)"
+                  : PS_COLORS.connector
               }
               strokeWidth="2"
             />
-            <text x="340" y="146" className="ps-box-header">
+            <text x={POOL_X + 20} y="146" className="ps-box-header">
               REUSABLE PRE-WARMED SOCKETS
             </text>
 
-            {snapshot.connections.map((conn) => {
-              const y = 170 + (conn.id - 1) * 110;
+            {snapshot.connections.map((conn, index) => {
+              const y = slotY(index);
               const isBusy =
                 conn.state === "active" || conn.state === "returning";
               const strokeCol = isBusy
                 ? conn.state === "returning"
                   ? PS_COLORS.blue
                   : PS_COLORS.green
-                : "var(--diagram-connector, #818181)";
+                : PS_COLORS.connector;
               const stateLabel = isBusy
                 ? conn.state === "returning"
                   ? "RETURNING"
                   : "ACTIVE"
                 : "IDLE";
+              const reqIndex = conn.activeRequestId
+                ? conn.activeRequestId - 1
+                : -1;
+              const cy = y + slotH / 2;
+              const startCy = reqIndex >= 0 ? REQ_ROW_CY(reqIndex) : cy;
+              // Traffic dots follow the full round trip:
+              // leg 1 request -> pool (acquire), leg 2 fast send pool ->
+              // MySQL, leg 3 parked at MySQL while the query executes,
+              // leg 4 fast return MySQL -> pool, leg 5 response back to the
+              // client (reverse elbow).
+              const p = conn.progress;
+              let dot: { x: number; y: number; fill: string } | null = null;
+              if (isBusy) {
+                if (p <= ROUND_TRIP.acquireEnd) {
+                  const pt = elbowPoint(
+                    p / ROUND_TRIP.acquireEnd,
+                    startCy,
+                    cy,
+                    POOL_X,
+                  );
+                  dot = { ...pt, fill: PS_COLORS.green };
+                } else if (p <= ROUND_TRIP.sendEnd) {
+                  const t =
+                    (p - ROUND_TRIP.acquireEnd) /
+                    (ROUND_TRIP.sendEnd - ROUND_TRIP.acquireEnd);
+                  dot = {
+                    x: POOL_EDGE_X + (MYSQL_X - POOL_EDGE_X) * t,
+                    y: cy,
+                    fill: PS_COLORS.green,
+                  };
+                } else if (p <= ROUND_TRIP.execEnd) {
+                  // Request waits at the server while mysqld executes.
+                  dot = { x: MYSQL_X, y: cy, fill: PS_COLORS.green };
+                } else if (p <= ROUND_TRIP.mysqlReturnEnd) {
+                  const t =
+                    (p - ROUND_TRIP.execEnd) /
+                    (ROUND_TRIP.mysqlReturnEnd - ROUND_TRIP.execEnd);
+                  dot = {
+                    x: MYSQL_X - (MYSQL_X - POOL_EDGE_X) * t,
+                    y: cy,
+                    fill: PS_COLORS.blue,
+                  };
+                } else {
+                  const pt = elbowPoint(
+                    1 -
+                      (p - ROUND_TRIP.mysqlReturnEnd) /
+                        (1 - ROUND_TRIP.mysqlReturnEnd),
+                    startCy,
+                    cy,
+                    POOL_X,
+                  );
+                  dot = { ...pt, fill: PS_COLORS.blue };
+                }
+              }
 
               return (
                 <g key={conn.id} className="ps-conn-slot">
-                  {/* Connector elbow line from request if active */}
-                  {isBusy && (
-                    <path
-                      d={`M 253 ${195 + ((conn.activeRequestId || 1) - 1) * 68} L 300 ${195 + ((conn.activeRequestId || 1) - 1) * 68} L 300 ${y + 43} L 340 ${y + 43}`}
-                      fill="none"
-                      stroke={PS_COLORS.accent}
-                      strokeWidth="2"
-                      strokeDasharray="6 4"
-                    />
-                  )}
-
                   {/* Slot base rect */}
                   <rect
-                    x="340"
+                    x={POOL_X}
                     y={y}
-                    width="320"
-                    height="86"
+                    width={POOL_W}
+                    height={slotH}
                     rx="6"
                     fill="var(--diagram-fg)"
                     fillOpacity="0.05"
@@ -320,13 +507,13 @@ export function PlanetScaleConnectionPoolDemo() {
                     strokeWidth="1.5"
                   />
 
-                  {/* Animated Progress Fill clipped inside slot */}
+                  {/* Animated progress fill clipped inside slot */}
                   {isBusy && (
                     <rect
-                      x="340"
+                      x={POOL_X}
                       y={y}
-                      width={320 * conn.progress}
-                      height="86"
+                      width={POOL_W * conn.progress}
+                      height={slotH}
                       fill={
                         conn.state === "returning"
                           ? PS_COLORS.blue
@@ -338,9 +525,9 @@ export function PlanetScaleConnectionPoolDemo() {
                   )}
 
                   {/* Slot header */}
-                  <circle cx="360" cy={y + 24} r="5" fill={strokeCol} />
+                  <circle cx={POOL_X + 20} cy={y + 24} r="5" fill={strokeCol} />
                   <text
-                    x="376"
+                    x={POOL_X + 36}
                     y={y + 28}
                     className="ps-slot-title"
                     fill="var(--diagram-fg)"
@@ -348,8 +535,8 @@ export function PlanetScaleConnectionPoolDemo() {
                     CONNECTION #{conn.id}
                   </text>
                   <text
-                    x="644"
-                    y={y + 28}
+                    x={POOL_X + POOL_W - 16}
+                    y={y + 24}
                     className="ps-slot-status"
                     textAnchor="end"
                     fill={strokeCol}
@@ -360,63 +547,46 @@ export function PlanetScaleConnectionPoolDemo() {
                   {/* Query info / progress */}
                   {isBusy && conn.query ? (
                     <>
-                      <text
-                        x="360"
-                        y={y + 54}
-                        className="ps-slot-query"
-                        fill="var(--diagram-fg)"
-                      >
-                        {formatSqlCompact(conn.query)}
-                      </text>
-                      {/* Sub-bar progress indicator */}
-                      <rect
-                        x="360"
-                        y={y + 68}
-                        width="280"
-                        height="4"
-                        rx="2"
-                        fill="var(--diagram-connector, #818181)"
-                        fillOpacity="0.3"
-                      />
-                      <rect
-                        x="360"
-                        y={y + 68}
-                        width={280 * conn.progress}
-                        height="4"
-                        rx="2"
-                        fill={
-                          conn.state === "returning"
-                            ? PS_COLORS.blue
-                            : PS_COLORS.green
-                        }
-                      />
+                      {slotH >= 74 && (
+                        <text
+                          x={POOL_X + 20}
+                          y={y + slotH - 18}
+                          className="ps-slot-query"
+                          fill="var(--diagram-fg)"
+                        >
+                          {formatSqlCompact(conn.query)}
+                        </text>
+                      )}
                     </>
                   ) : (
-                    <text
-                      x="360"
-                      y={y + 56}
-                      className="ps-slot-idle"
-                      fill="var(--diagram-connector, #818181)"
-                    >
-                      READY TO SERVE (0ms HANDSHAKE)
-                    </text>
+                    slotH >= 74 && (
+                      <text
+                        x={POOL_X + 20}
+                        y={y + 52}
+                        className="ps-slot-idle"
+                        fill={PS_COLORS.connector}
+                      >
+                        READY TO SERVE (0ms HANDSHAKE)
+                      </text>
+                    )
                   )}
 
                   {/* Wire right to MySQL */}
                   <line
-                    x1="660"
-                    y1={y + 43}
-                    x2="745"
-                    y2={y + 43}
-                    stroke={
-                      isBusy
-                        ? PS_COLORS.accent
-                        : "var(--diagram-connector, #818181)"
-                    }
+                    x1={POOL_EDGE_X}
+                    y1={cy}
+                    x2={MYSQL_X}
+                    y2={cy}
+                    stroke={isBusy ? PS_COLORS.accent : PS_COLORS.connector}
                     strokeWidth="2"
                     strokeDasharray={isBusy ? undefined : "5 5"}
                     strokeOpacity={isBusy ? 1 : 0.4}
                   />
+
+                  {/* Traffic dot */}
+                  {dot && (
+                    <circle cx={dot.x} cy={dot.y} r="5" fill={dot.fill} />
+                  )}
                 </g>
               );
             })}
@@ -432,20 +602,19 @@ export function PlanetScaleConnectionPoolDemo() {
               rx="8"
               fill="var(--diagram-fg)"
               fillOpacity="0.03"
-              stroke="var(--diagram-connector, #818181)"
+              stroke={PS_COLORS.connector}
               strokeWidth="1.5"
             />
             <text x="765" y="146" className="ps-box-header">
-              ENGINE & THREADS
+              ENGINE &amp; THREADS
             </text>
 
-            {/* MySQL Server Cylinder / DB Graphic */}
             <g transform="translate(765, 175)">
               <rect
                 x="0"
                 y="0"
                 width="190"
-                height="80"
+                height="96"
                 rx="6"
                 fill="var(--diagram-fg)"
                 fillOpacity="0.05"
@@ -460,116 +629,11 @@ export function PlanetScaleConnectionPoolDemo() {
               >
                 MYSQLD (PORT 3306)
               </text>
-              <text x="14" y="52" className="ps-db-sub" fill={PS_COLORS.green}>
-                ● 4 ESTABLISHED THREADS
+              <text x="14" y="54" className="ps-db-sub" fill={PS_COLORS.green}>
+                ● {poolSize} ESTABLISHED THREADS
               </text>
-              <text
-                x="14"
-                y="68"
-                className="ps-db-sub"
-                fill="var(--diagram-connector, #818181)"
-              >
-                MAX POOL CONCURRENCY
-              </text>
-            </g>
-
-            {/* Connection Reuse Stats Callout */}
-            <g transform="translate(765, 280)">
-              <rect
-                x="0"
-                y="0"
-                width="190"
-                height="130"
-                rx="6"
-                fill="var(--diagram-fg)"
-                fillOpacity="0.04"
-                stroke="var(--diagram-connector, #818181)"
-                strokeWidth="1"
-              />
-              <text x="14" y="24" className="ps-hud-label">
-                ZERO HANDSHAKE OVERHEAD
-              </text>
-              <text
-                x="14"
-                y="48"
-                className="ps-stat-lead"
-                fill={PS_COLORS.accent}
-              >
-                100% REUSED
-              </text>
-              <text
-                x="14"
-                y="70"
-                className="ps-stat-desc"
-                fill="var(--diagram-fg)"
-              >
-                No TCP 3-way syn/ack
-              </text>
-              <text
-                x="14"
-                y="88"
-                className="ps-stat-desc"
-                fill="var(--diagram-fg)"
-              >
-                No TLS cert exchange
-              </text>
-              <text
-                x="14"
-                y="106"
-                className="ps-stat-desc"
-                fill="var(--diagram-fg)"
-              >
-                No auth negotiation
-              </text>
-            </g>
-
-            {/* Throughput meter */}
-            <g transform="translate(765, 435)">
-              <rect
-                x="0"
-                y="0"
-                width="190"
-                height="130"
-                rx="6"
-                fill="var(--diagram-fg)"
-                fillOpacity="0.04"
-                stroke="var(--diagram-connector, #818181)"
-                strokeWidth="1"
-              />
-              <text x="14" y="24" className="ps-hud-label">
-                QUERY EXECUTION TIME
-              </text>
-              <text
-                x="14"
-                y="52"
-                className="ps-stat-lead"
-                fill={PS_COLORS.blue}
-              >
-                ~ 2.5ms / QRY
-              </text>
-              <text
-                x="14"
-                y="76"
-                className="ps-stat-desc"
-                fill="var(--diagram-fg)"
-              >
-                Versus ~45ms without
-              </text>
-              <text
-                x="14"
-                y="94"
-                className="ps-stat-desc"
-                fill="var(--diagram-fg)"
-              >
-                persistent pool
-              </text>
-              <text
-                x="14"
-                y="112"
-                className="ps-stat-desc"
-                fill={PS_COLORS.green}
-              >
-                18× LATENCY REDUCTION
+              <text x="14" y="76" className="ps-db-sub" fill={PS_COLORS.accent}>
+                100% CONNECTION REUSE
               </text>
             </g>
           </g>
@@ -582,23 +646,49 @@ export function PlanetScaleConnectionPoolDemo() {
               className="ps-bottom-summary"
               fill="var(--diagram-fg)"
             >
-              POOLED ARCHITECTURE: Incoming web requests borrow from 4
+              POOLED ARCHITECTURE: Incoming web requests borrow from {poolSize}{" "}
               pre-warmed sockets. Sockets return immediately to pool.
             </text>
           </g>
         </svg>
       </div>
-
-      <figcaption className="ps-diagram-caption" id="ps-conn-pool-caption">
-        <strong>PlanetScale Animation Design System:</strong> Clean SVG
-        geometry, JetBrains Mono uppercase typography, live connection clipping
-        progress bars, and high-visibility status tokens (
-        <span style={{ color: PS_COLORS.accent }}>accent</span>,{" "}
-        <span style={{ color: PS_COLORS.green }}>active</span>,{" "}
-        <span style={{ color: PS_COLORS.yellow }}>queued</span>, and{" "}
-        <span style={{ color: PS_COLORS.blue }}>returning</span>).
-      </figcaption>
     </figure>
+  );
+}
+
+function PoolStepperButton({
+  x,
+  label,
+  disabled,
+  onClick,
+  ariaLabel,
+}: {
+  x: number;
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  ariaLabel: string;
+}) {
+  return (
+    <g
+      className={`ps-step-btn${disabled ? " is-disabled" : ""}`}
+      onClick={disabled ? undefined : onClick}
+      role="button"
+      aria-label={ariaLabel}
+      aria-disabled={disabled}
+      tabIndex={disabled ? -1 : 0}
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <rect x={x} y="42" width="26" height="20" rx="5" />
+      <text x={x + 13} y="56" textAnchor="middle">
+        {label}
+      </text>
+    </g>
   );
 }
 
@@ -607,16 +697,16 @@ function formatSqlCompact(sql: string): string {
   return sql.slice(0, 26) + "…";
 }
 
-function usePlanetScalePoolPlayback() {
-  const [snapshot, setSnapshot] = useState<PoolSimulationSnapshot>(
-    INITIAL_POOL_SNAPSHOT,
+function usePlanetScalePoolPlayback(poolSize: number) {
+  const [snapshot, setSnapshot] = useState<PoolSimulationSnapshot>(() =>
+    derivePoolSimulationSnapshot(0, poolSize),
   );
   const [playbackId, setPlaybackId] = useState(0);
 
   const replay = useCallback(() => {
-    setSnapshot(INITIAL_POOL_SNAPSHOT);
+    setSnapshot(derivePoolSimulationSnapshot(0, poolSize));
     setPlaybackId((c) => c + 1);
-  }, []);
+  }, [poolSize]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -629,7 +719,7 @@ function usePlanetScalePoolPlayback() {
     const renderSettled = () => {
       window.cancelAnimationFrame(animationFrame);
       previousFrame = undefined;
-      setSnapshot(derivePoolSimulationSnapshot(1));
+      setSnapshot(derivePoolSimulationSnapshot(1, poolSize));
     };
 
     const tick = (now: number) => {
@@ -639,7 +729,7 @@ function usePlanetScalePoolPlayback() {
       previousFrame = now;
 
       const progress = Math.min(1, elapsedMs / SIMULATION_DURATION_MS);
-      setSnapshot(derivePoolSimulationSnapshot(progress));
+      setSnapshot(derivePoolSimulationSnapshot(progress, poolSize));
 
       if (progress < 1) {
         animationFrame = window.requestAnimationFrame(tick);
@@ -649,6 +739,7 @@ function usePlanetScalePoolPlayback() {
     const start = () => {
       window.cancelAnimationFrame(animationFrame);
       previousFrame = undefined;
+      setSnapshot(derivePoolSimulationSnapshot(0, poolSize));
 
       if (reducedMotion.matches) {
         renderSettled();
@@ -660,7 +751,7 @@ function usePlanetScalePoolPlayback() {
 
     const handleMotionPreference = () => {
       elapsedMs = 0;
-      setSnapshot(INITIAL_POOL_SNAPSHOT);
+      setSnapshot(derivePoolSimulationSnapshot(0, poolSize));
       start();
     };
 
@@ -681,7 +772,7 @@ function usePlanetScalePoolPlayback() {
       reducedMotion.removeEventListener("change", handleMotionPreference);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [playbackId]);
+  }, [playbackId, poolSize]);
 
   return { replay, snapshot };
 }

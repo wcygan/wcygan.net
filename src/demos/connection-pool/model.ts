@@ -1,6 +1,22 @@
+export const MIN_POOL_SIZE = 2;
 export const POOL_SIZE = 4;
+export const MAX_POOL_SIZE = 6;
 export const TOTAL_REQUESTS = 7;
 export const SIMULATION_DURATION_MS = 24_000;
+
+// A request's progress covers its FULL round trip, not just the query leg:
+//   0.00-0.15  request travels from the client and borrows a pooled socket
+//              (no TCP/TLS/auth handshake — the socket is already warm)
+//   0.15-0.25  request is sent quickly over the wire to mysqld
+//   0.25-0.75  query executes at mysqld — the request WAITS at the server
+//   0.75-0.85  result set travels quickly back to the connection
+//   0.85-1.00  connection released to the pool; response returns to the client
+export const ROUND_TRIP = {
+  acquireEnd: 0.15,
+  sendEnd: 0.25,
+  execEnd: 0.75,
+  mysqlReturnEnd: 0.85,
+} as const;
 
 export type ConnectionState = "idle" | "active" | "returning";
 
@@ -106,13 +122,18 @@ const SCHEDULE: RequestSchedule[] = [
 
 export function derivePoolSimulationSnapshot(
   progress: number,
+  poolSize: number = POOL_SIZE,
 ): PoolSimulationSnapshot {
   const p = Math.max(0, Math.min(1, progress));
   const elapsedMs = Math.round(p * SIMULATION_DURATION_MS);
 
   // Initialize pool connections
+  const size = Math.max(
+    MIN_POOL_SIZE,
+    Math.min(MAX_POOL_SIZE, Math.round(poolSize)),
+  );
   const connections: ConnectionSnapshot[] = Array.from(
-    { length: POOL_SIZE },
+    { length: size },
     (_, idx) => ({
       id: idx + 1,
       state: "idle",
@@ -131,13 +152,13 @@ export function derivePoolSimulationSnapshot(
   };
 
   const allocations: LiveAlloc[] = [];
-  const connFreeTime: number[] = Array(POOL_SIZE).fill(0);
+  const connFreeTime: number[] = Array(size).fill(0);
 
   for (const item of SCHEDULE) {
     // Find earliest available connection at or after item.startRatio
     let bestConn = 0;
     let earliestAvailable = connFreeTime[0];
-    for (let c = 1; c < POOL_SIZE; c++) {
+    for (let c = 1; c < size; c++) {
       if (connFreeTime[c] < earliestAvailable) {
         earliestAvailable = connFreeTime[c];
         bestConn = c;
@@ -154,6 +175,16 @@ export function derivePoolSimulationSnapshot(
       actualStart,
       actualEnd,
     });
+  }
+
+  // A smaller pool can push the last request past the horizon. Rescale the
+  // whole timeline so every request still finishes within progress 0..1.
+  const horizon = Math.max(1, ...allocations.map((a) => a.actualEnd));
+  if (horizon > 1) {
+    for (const alloc of allocations) {
+      alloc.actualStart /= horizon;
+      alloc.actualEnd /= horizon;
+    }
   }
 
   // Determine current status of each request and connection at progress p
@@ -178,7 +209,7 @@ export function derivePoolSimulationSnapshot(
       if (connId !== undefined) {
         const conn = connections[connId - 1];
         const reqProgress = (p - actualStart) / (actualEnd - actualStart);
-        conn.state = reqProgress > 0.9 ? "returning" : "active";
+        conn.state = reqProgress > ROUND_TRIP.execEnd ? "returning" : "active";
         conn.activeRequestId = req.id;
         conn.query = req.query;
         conn.progress = Math.max(0, Math.min(1, reqProgress));
@@ -199,7 +230,7 @@ export function derivePoolSimulationSnapshot(
     });
   }
 
-  const idleCount = POOL_SIZE - activeConnCount;
+  const idleCount = size - activeConnCount;
 
   let phase: PoolSimulationSnapshot["phase"] = "initial";
   if (p >= 0.95 || completedCount === TOTAL_REQUESTS) {
