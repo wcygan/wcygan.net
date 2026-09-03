@@ -119,29 +119,30 @@ const PEAK_N = peakN();
 
 const TOUR_BEATS: TourBeat[] = [
   {
+    value: 1,
+    holdMs: 3000,
+    caption: "One connection — the baseline: 40 qps, 25 ms per query",
+  },
+  {
     value: 24,
-    holdMs: 2600,
+    holdMs: 3000,
     caption: "24 connections on 4 cores — peak throughput, all queries running",
   },
   {
     value: 64,
-    holdMs: 2600,
-    caption: "Past cores × 10 — context switching starts to bend the curve",
+    holdMs: 3000,
+    caption:
+      "64 connections — past cores × 10, context switching bends the curve",
   },
   {
     value: 150,
-    holdMs: 2600,
+    holdMs: 3000,
     caption: "150 connections — lock queues form and latency triples",
   },
   {
-    value: 151,
-    holdMs: 2600,
-    caption: "One more: past MySQL's default max_connections of 151",
-  },
-  {
-    value: 500,
+    value: 300,
     holdMs: 3200,
-    caption: "500 connections — less throughput than 1, at 440× the latency",
+    caption: "300 connections — half the peak throughput, 4 seconds per query",
   },
 ];
 
@@ -149,7 +150,7 @@ export function ConnectionScalingCurveDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
   const { value, caption, playing, start, onManualChange } = useDemoTour(
     TOUR_BEATS,
-    12,
+    1,
   );
   usePlayOnceOnVisible(rootRef, start);
   const connections = Math.round(value);

@@ -115,31 +115,31 @@ const PANEL_Y = 90;
 
 const TOUR_BEATS: TourBeat[] = [
   {
+    value: 1,
+    holdMs: 3000,
+    caption: "One connection — 3 idle cores, tiny memory footprint",
+  },
+  {
     value: 24,
-    holdMs: 2600,
-    caption: "Pool healthy, cores running — the server is keeping up",
+    holdMs: 3000,
+    caption: "24 connections — all cores running, the server is keeping up",
   },
   {
     value: 64,
-    holdMs: 2600,
+    holdMs: 3000,
     caption:
-      "Thread chips flip to CTX SWITCH — the kernel schedules instead of serving",
+      "64 connections — thread chips flip to CTX SWITCH, the kernel schedules instead of serving",
   },
   {
     value: 150,
-    holdMs: 2600,
-    caption: "Lock waits appear — a context-switch storm, latency triples",
+    holdMs: 3000,
+    caption: "150 connections — lock waits appear, a context-switch storm",
   },
   {
-    value: 151,
-    holdMs: 2600,
-    caption: "One more: MySQL's default max_connections is 151",
-  },
-  {
-    value: 500,
+    value: 300,
     holdMs: 3200,
     caption:
-      "Memory near OOM, throughput below baseline — and the pool still says healthy",
+      "300 connections — memory climbing, throughput below peak, and the pool still says healthy",
   },
 ];
 
@@ -147,7 +147,7 @@ export function ConnectionServerBoardDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
   const { value, caption, playing, start, onManualChange } = useDemoTour(
     TOUR_BEATS,
-    24,
+    1,
   );
   usePlayOnceOnVisible(rootRef, start);
   const connections = Math.round(value);
