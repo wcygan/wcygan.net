@@ -14025,7 +14025,7 @@ th {
   margin: 36px 0;
   padding: 14px 16px 16px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--diagram-bg) 55%, transparent);
+  background: #1e293b; /* dark slate — white text pops, matches diagram tokens */
   font-family:
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
@@ -14353,6 +14353,53 @@ th {
 @media (prefers-reduced-motion: reduce) {
   .ps-server-board .ps-chip {
     animation: none;
+  }
+}
+
+/* Countdown bar: drains during tweens and holds. */
+.ps-countdown {
+  position: relative;
+  height: 20px;
+  border: 1px solid var(--diagram-connector, #818181);
+  border-radius: 4px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--diagram-bg, #111111) 60%, transparent);
+}
+
+.ps-countdown-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: color-mix(in srgb, var(--diagram-fg, #fafafa) 30%, transparent);
+  transition: width 80ms linear;
+}
+
+.ps-countdown-fill.is-transition {
+  background: color-mix(
+    in srgb,
+    var(--diagram-accent, #f35815) 55%,
+    transparent
+  );
+}
+
+.ps-countdown-fill.is-wait {
+  background: color-mix(in srgb, var(--diagram-blue, #0e73cc) 55%, transparent);
+}
+
+.ps-countdown-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--diagram-fg, #fafafa);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-countdown-fill {
+    transition: none;
   }
 }
 

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Scripted tour playback for the connection-pool demos.
  *
  * A tour walks a numeric value (the pool size) through narrative beats:
- * tween to each beat's value (~1.5s ease), then hold so the reader can
- * read the gauges and the caption. Any user input on the real control
- * cancels the tour permanently until "Replay". Respects
+ * tween to each beat's value, then hold. It reports live tween/hold
+ * progress via `phase` for the countdown bar. Any user input on the real
+ * control cancels the tour permanently until "Replay". Respects
  * prefers-reduced-motion by jumping between beats without tweens.
  */
 
@@ -16,7 +16,13 @@ export interface TourBeat {
   caption: string;
 }
 
-const TWEEN_MS = 1500;
+export interface TourPhase {
+  kind: "transition" | "wait";
+  /** 0 → 1 elapsed fraction of the current tween or hold. */
+  progress: number;
+}
+
+const TWEEN_MS = 3750;
 
 function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -26,11 +32,9 @@ function prefersReducedMotion(): boolean {
   return globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-function tweenValue(
-  from: number,
-  to: number,
+function runTimed(
   durationMs: number,
-  onFrame: (value: number) => void,
+  onProgress: (fraction: number) => void,
   isCancelled: () => boolean,
 ): Promise<void> {
   const { promise, resolve } = Promise.withResolvers<void>();
@@ -41,7 +45,7 @@ function tweenValue(
       return;
     }
     const t = Math.min(1, (now - start) / durationMs);
-    onFrame(from + (to - from) * easeInOutCubic(t));
+    onProgress(t);
     if (t < 1) {
       requestAnimationFrame(step);
     } else {
@@ -52,16 +56,11 @@ function tweenValue(
   return promise;
 }
 
-function sleep(ms: number, isCancelled: () => boolean): Promise<void> {
-  const { promise, resolve } = Promise.withResolvers<void>();
-  globalThis.setTimeout(() => resolve(), isCancelled() ? 0 : ms);
-  return promise;
-}
-
 export function useDemoTour(beats: TourBeat[], initialValue: number) {
   const [value, setValue] = useState(initialValue);
   const [caption, setCaption] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [phase, setPhase] = useState<TourPhase | null>(null);
   const tokenRef = useRef(0);
   const valueRef = useRef(initialValue);
   valueRef.current = value;
@@ -75,6 +74,7 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
     tokenRef.current += 1;
     setPlaying(false);
     setCaption(null);
+    setPhase(null);
   }, []);
 
   const start = useCallback(() => {
@@ -90,16 +90,26 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
         if (i === 0 || reduced) {
           setValue(beat.value);
         } else {
-          await tweenValue(
-            valueRef.current,
-            beat.value,
+          const from = valueRef.current;
+          setPhase({ kind: "transition", progress: 0 });
+          await runTimed(
             TWEEN_MS,
-            setValue,
+            (fraction) => {
+              setValue(from + (beat.value - from) * easeInOutCubic(fraction));
+              setPhase({ kind: "transition", progress: fraction });
+            },
             () => cancelled(token),
           );
         }
         if (cancelled(token)) return;
-        await sleep(beat.holdMs, () => cancelled(token));
+        setPhase({ kind: "wait", progress: 0 });
+        await runTimed(
+          beat.holdMs,
+          (fraction) => {
+            setPhase({ kind: "wait", progress: fraction });
+          },
+          () => cancelled(token),
+        );
         if (cancelled(token)) return;
       }
       if (!cancelled(token)) setPlaying(false);
@@ -117,7 +127,7 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
     [stop],
   );
 
-  return { value, caption, playing, start, onManualChange };
+  return { value, caption, phase, playing, start, onManualChange };
 }
 
 /** Play the tour once, the first time the element scrolls into view. */

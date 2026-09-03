@@ -10,6 +10,7 @@
 
 import { useMemo, useRef, useState } from "react";
 
+import { TourCountdownBar } from "~/components/TourCountdownBar";
 import {
   useDemoTour,
   usePlayOnceOnVisible,
@@ -148,13 +149,12 @@ const TOUR_BEATS: TourBeat[] = [
 
 export function ConnectionScalingCurveDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { value, caption, playing, start, onManualChange } = useDemoTour(
+  const { value, caption, phase, playing, start, onManualChange } = useDemoTour(
     TOUR_BEATS,
     1,
   );
   usePlayOnceOnVisible(rootRef, start);
   const connections = Math.round(value);
-
   const qps = useMemo(() => throughputQps(connections), [connections]);
   const lat = useMemo(() => latencyMs(connections), [connections]);
   const regime = regimeFor(connections);
@@ -432,6 +432,8 @@ export function ConnectionScalingCurveDemo() {
           <span>500</span>
         </i>
       </label>
+
+      <TourCountdownBar phase={phase} />
     </div>
   );
 }

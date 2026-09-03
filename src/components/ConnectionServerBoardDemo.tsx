@@ -1,3 +1,5 @@
+import { TourCountdownBar } from "~/components/TourCountdownBar";
+
 import { useMemo, useRef, useState } from "react";
 
 import {
@@ -145,7 +147,7 @@ const TOUR_BEATS: TourBeat[] = [
 
 export function ConnectionServerBoardDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { value, caption, playing, start, onManualChange } = useDemoTour(
+  const { value, caption, phase, playing, start, onManualChange } = useDemoTour(
     TOUR_BEATS,
     1,
   );
@@ -549,6 +551,8 @@ export function ConnectionServerBoardDemo() {
           <span>500</span>
         </i>
       </label>
+
+      <TourCountdownBar phase={phase} />
     </div>
   );
 }
