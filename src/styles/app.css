@@ -14010,13 +14010,15 @@ th {
 
 /* PlanetScale Animation Design System Workbench */
 .ps-diagram-workbench {
-  --diagram-bg: #111111;
-  --diagram-fg: #fafafa;
+  /* Light-only, matching the site theme. The dark variant rendered white
+     titles on the light post page when the OS used dark mode. */
+  --diagram-bg: #fafafa;
+  --diagram-fg: #111111;
   --diagram-accent: #f35815;
-  --diagram-blue: #0e73cc;
-  --diagram-green: #27b648;
-  --diagram-red: #ff455d;
-  --diagram-yellow: #f2b600;
+  --diagram-blue: #144eb6;
+  --diagram-green: #13862e;
+  --diagram-red: #d92038;
+  --diagram-yellow: #a78103;
   --diagram-connector: #818181;
   display: grid;
   gap: 12px;
@@ -14025,17 +14027,6 @@ th {
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
   color: var(--diagram-fg);
-}
-
-@media (prefers-color-scheme: light) {
-  .ps-diagram-workbench {
-    --diagram-bg: #fafafa;
-    --diagram-fg: #111111;
-    --diagram-blue: #144eb6;
-    --diagram-green: #13862e;
-    --diagram-red: #d92038;
-    --diagram-yellow: #a78103;
-  }
 }
 
 .ps-diagram-workbench *,
@@ -14291,6 +14282,42 @@ th {
   .ps-diagram-replay-btn {
     justify-self: start;
   }
+}
+
+.ps-scaling-control {
+  display: grid;
+  gap: 6px;
+  padding-inline: 4px;
+}
+
+.ps-scaling-control > span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--diagram-connector, #818181);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ps-scaling-control strong {
+  color: var(--diagram-fg, #fafafa);
+  font-variant-numeric: tabular-nums;
+}
+
+.ps-scaling-control input[type="range"] {
+  inline-size: 100%;
+  margin: 0;
+  accent-color: var(--diagram-accent, #f35815);
+  cursor: pointer;
+}
+
+.ps-scaling-control > i {
+  display: flex;
+  justify-content: space-between;
+  color: var(--diagram-connector, #818181);
+  font-size: 10px;
+  font-style: normal;
 }
 
 /* Print styles */

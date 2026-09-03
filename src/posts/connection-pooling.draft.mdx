@@ -9,6 +9,7 @@ imageCaption: "Partying in Széchenyi."
 ---
 
 import { PlanetScaleConnectionPoolDemo } from "~/components/PlanetScaleConnectionPoolDemo";
+import { ConnectionScalingCurveDemo } from "~/components/ConnectionScalingCurveDemo";
 
 Every query sent to MySQL requires a network transport channel. Establishing a new TCP connection for each incoming web request quickly causes connection overhead to overtake query execution time.
 
@@ -41,3 +42,5 @@ MySQL's `max_connections` setting defaults to 151. Past that limit, MySQL reject
 A common starting point for online transaction workloads is `pool size = CPU cores × 2–10`, tuned up for workloads that wait on disk or network. On a 4-core server, tens of connections doing useful work beats hundreds of connections fighting each other.
 
 This is exactly what the demo above shows: as the pool grows, waiting for a free connection gets shorter, but each query runs slower, and total throughput stops improving — then falls.
+
+<ConnectionScalingCurveDemo />
