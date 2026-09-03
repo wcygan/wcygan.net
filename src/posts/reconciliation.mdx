@@ -1,0 +1,43 @@
+---
+title: Reconciliation
+date: September 3, 2026
+description: Repairing bad data with scheduled jobs
+tags: [Data, Databases, Architecture]
+image: /reconciliation/spill-cleanup.webp
+imageAlt: A store employee sweeping up a broken bottle of wine
+imageCaption: "Cleaning up a mess."
+---
+
+If your data gets into a messy state, you can reconcile it.
+
+The reconciliation pattern is:
+
+1. Schedule a job on an interval (daily, hourly, etc).
+2. Query trusted data to identify records in a bad state.
+3. Publish repair events to a log.
+4. Let a log processor apply each repair idempotently.
+
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame static-mermaid-frame-pan">
+    <img
+      className="static-mermaid-diagram"
+      src="/reconciliation/reconciliation-flow.svg"
+      alt="Airflow schedules a job that uses Trino to find bad records in a data lake built on Ceph object storage with Apache Iceberg tables. The job publishes repair events to Kafka, and Flink applies each repair idempotently to MySQL. Debezium captures the changed rows from MySQL and publishes change events to Kafka. An indexer consumes the change events and writes them into the Iceberg tables, so the next scheduled run no longer finds the bad records."
+      width={880}
+      height={842}
+    />
+  </div>
+  <figcaption>The reconciliation loop</figcaption>
+</figure>
+
+One way to apply this pattern is to have [Airflow](https://airflow.apache.org/) schedule a job that uses
+[Trino](https://trino.io/) to identify the bad records from your data lake (e.g., [Ceph](https://ceph.io/en/) object storage with [Apache Iceberg](https://iceberg.apache.org/) tables), then publish repair events into [Kafka](https://kafka.apache.org/), and have an online processor like [Flink](https://flink.apache.org/) reconcile the datastore (e.g., [MySQL](https://www.mysql.com/)). Change data capture closes the loop: [Debezium](https://debezium.io/) streams the repaired rows from the datastore through Kafka, and an indexer writes them back into the lake.
+
+## References
+
+- [Trino: How to use Airflow with Trino](https://trino.io/blog/2022/07/13/how-to-use-airflow-to-schedule-trino-jobs.html)
+- [Debezium: Documentation](https://debezium.io/documentation/)
+- [Apache Airflow: Trino provider](https://airflow.apache.org/docs/apache-airflow-providers-trino/stable/index.html)
+- [Apache Flink: Documentation](https://nightlies.apache.org/flink/flink-docs-stable/)
+- [Apache Flink: Kafka Connector](https://nightlies.apache.org/flink/flink-docs-stable/docs/connectors/datastream/kafka/)
+- [Idempotent Consumer pattern](https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html)
