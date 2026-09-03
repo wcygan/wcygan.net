@@ -118,28 +118,28 @@ const PANEL_Y = 90;
 const TOUR_BEATS: TourBeat[] = [
   {
     value: 1,
-    holdMs: 3000,
+    holdMs: 6000,
     caption: "One connection — 3 idle cores, tiny memory footprint",
   },
   {
     value: 24,
-    holdMs: 3000,
+    holdMs: 6000,
     caption: "24 connections — all cores running, the server is keeping up",
   },
   {
     value: 64,
-    holdMs: 3000,
+    holdMs: 6000,
     caption:
       "64 connections — thread chips flip to CTX SWITCH, the kernel schedules instead of serving",
   },
   {
     value: 150,
-    holdMs: 3000,
+    holdMs: 6000,
     caption: "150 connections — lock waits appear, a context-switch storm",
   },
   {
     value: 300,
-    holdMs: 3200,
+    holdMs: 6400,
     caption:
       "300 connections — memory climbing, throughput below peak, and the pool still says healthy",
   },
