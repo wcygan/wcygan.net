@@ -1,5 +1,3 @@
-import { useMemo, useState } from "react";
-
 /**
  * Idea 1: throughput-vs-connections curve that rises, plateaus, then inverts.
  *
@@ -9,6 +7,14 @@ import { useMemo, useState } from "react";
  * Latency via Little's law with zero think time: L(n) = n / X(n).
  * alpha = contention (lock queues), beta = coherency/context-switch overhead.
  */
+
+import { useMemo, useRef, useState } from "react";
+
+import {
+  useDemoTour,
+  usePlayOnceOnVisible,
+  type TourBeat,
+} from "~/lib/use-demo-tour";
 
 const PS_COLORS = {
   accent: "#F35815",
@@ -111,8 +117,42 @@ const CURVE_PATH = curvePoints()
 
 const PEAK_N = peakN();
 
+const TOUR_BEATS: TourBeat[] = [
+  {
+    value: 24,
+    holdMs: 2600,
+    caption: "24 connections on 4 cores — peak throughput, all queries running",
+  },
+  {
+    value: 64,
+    holdMs: 2600,
+    caption: "Past cores × 10 — context switching starts to bend the curve",
+  },
+  {
+    value: 150,
+    holdMs: 2600,
+    caption: "150 connections — lock queues form and latency triples",
+  },
+  {
+    value: 151,
+    holdMs: 2600,
+    caption: "One more: past MySQL's default max_connections of 151",
+  },
+  {
+    value: 500,
+    holdMs: 3200,
+    caption: "500 connections — less throughput than 1, at 440× the latency",
+  },
+];
+
 export function ConnectionScalingCurveDemo() {
-  const [connections, setConnections] = useState(12);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { value, caption, playing, start, onManualChange } = useDemoTour(
+    TOUR_BEATS,
+    12,
+  );
+  usePlayOnceOnVisible(rootRef, start);
+  const connections = Math.round(value);
 
   const qps = useMemo(() => throughputQps(connections), [connections]);
   const lat = useMemo(() => latencyMs(connections), [connections]);
@@ -129,11 +169,8 @@ export function ConnectionScalingCurveDemo() {
         ? PS_COLORS.yellow
         : PS_COLORS.red;
 
-  const formatLatency = (ms: number) =>
-    ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`;
-
   return (
-    <div className="ps-diagram-workbench ps-scaling-curve">
+    <div className="ps-diagram-workbench ps-scaling-curve" ref={rootRef}>
       <div className="ps-diagram-header">
         <div>
           <p className="ps-diagram-title">Connections vs throughput</p>
@@ -142,6 +179,9 @@ export function ConnectionScalingCurveDemo() {
             then falls
           </p>
         </div>
+        <button type="button" className="ps-diagram-replay-btn" onClick={start}>
+          REPLAY TOUR
+        </button>
       </div>
 
       <div className="ps-diagram-stage">
@@ -369,6 +409,10 @@ export function ConnectionScalingCurveDemo() {
         </svg>
       </div>
 
+      <p className="ps-tour-caption" aria-live="polite">
+        {caption ?? (playing ? "" : "Drag the slider — or replay the tour")}
+      </p>
+
       <label className="ps-scaling-control">
         <span>
           Pool size <strong>{connections}</strong>
@@ -379,7 +423,7 @@ export function ConnectionScalingCurveDemo() {
           max={N_MAX}
           step={1}
           value={connections}
-          onChange={(e) => setConnections(Number(e.target.value))}
+          onChange={(e) => onManualChange(Number(e.target.value))}
           aria-label="Number of pooled connections"
         />
         <i>

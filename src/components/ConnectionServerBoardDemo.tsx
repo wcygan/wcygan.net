@@ -1,4 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+
+import {
+  useDemoTour,
+  usePlayOnceOnVisible,
+  type TourBeat,
+} from "~/lib/use-demo-tour";
 
 /**
  * Idea 2: the server board drowns while the pool stays healthy.
@@ -107,8 +113,44 @@ const SERVER_X = 580;
 const COL_W = 380;
 const PANEL_Y = 90;
 
+const TOUR_BEATS: TourBeat[] = [
+  {
+    value: 24,
+    holdMs: 2600,
+    caption: "Pool healthy, cores running — the server is keeping up",
+  },
+  {
+    value: 64,
+    holdMs: 2600,
+    caption:
+      "Thread chips flip to CTX SWITCH — the kernel schedules instead of serving",
+  },
+  {
+    value: 150,
+    holdMs: 2600,
+    caption: "Lock waits appear — a context-switch storm, latency triples",
+  },
+  {
+    value: 151,
+    holdMs: 2600,
+    caption: "One more: MySQL's default max_connections is 151",
+  },
+  {
+    value: 500,
+    holdMs: 3200,
+    caption:
+      "Memory near OOM, throughput below baseline — and the pool still says healthy",
+  },
+];
+
 export function ConnectionServerBoardDemo() {
-  const [connections, setConnections] = useState(24);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { value, caption, playing, start, onManualChange } = useDemoTour(
+    TOUR_BEATS,
+    24,
+  );
+  usePlayOnceOnVisible(rootRef, start);
+  const connections = Math.round(value);
 
   const regime = regimeFor(connections);
   const color = regimeColor(regime);
@@ -131,7 +173,7 @@ export function ConnectionServerBoardDemo() {
   const barY = 520;
 
   return (
-    <div className="ps-diagram-workbench ps-server-board">
+    <div className="ps-diagram-workbench ps-server-board" ref={rootRef}>
       <div className="ps-diagram-header">
         <div>
           <p className="ps-diagram-title">What the server feels</p>
@@ -140,6 +182,9 @@ export function ConnectionServerBoardDemo() {
             the MySQL board drown
           </p>
         </div>
+        <button type="button" className="ps-diagram-replay-btn" onClick={start}>
+          REPLAY TOUR
+        </button>
       </div>
 
       <div className="ps-diagram-stage">
@@ -311,7 +356,7 @@ export function ConnectionServerBoardDemo() {
             const col = i % GRID_COLS;
             const row = Math.floor(i / GRID_COLS);
             return (
-              <g key={i}>
+              <g key={i} className="ps-chip">
                 <rect
                   x={GRID_X + col * (CHIP_W + CHIP_GAP_X)}
                   y={GRID_Y + row * (CHIP_H + CHIP_GAP_Y)}
@@ -483,6 +528,9 @@ export function ConnectionServerBoardDemo() {
         </svg>
       </div>
 
+      <p className="ps-tour-caption" aria-live="polite">
+        {caption ?? (playing ? "" : "Drag the slider — or replay the tour")}
+      </p>
       <label className="ps-scaling-control">
         <span>
           Pool size <strong>{connections}</strong>
@@ -493,7 +541,7 @@ export function ConnectionServerBoardDemo() {
           max={N_MAX}
           step={1}
           value={connections}
-          onChange={(e) => setConnections(Number(e.target.value))}
+          onChange={(e) => onManualChange(Number(e.target.value))}
           aria-label="Number of pooled connections"
         />
         <i>

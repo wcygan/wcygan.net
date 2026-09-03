@@ -14323,6 +14323,39 @@ th {
   font-style: normal;
 }
 
+.ps-tour-caption {
+  margin: 0;
+  padding-inline: 4px;
+  min-height: 18px;
+  font-size: 12px;
+  line-height: 18px;
+  color: color-mix(in srgb, var(--diagram-fg, #fafafa) 80%, transparent);
+}
+
+/* Chips pop in as the pool grows so the grid visibly spills over. */
+.ps-server-board .ps-chip {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ps-chip-in 220ms ease-out both;
+}
+
+@keyframes ps-chip-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ps-server-board .ps-chip {
+    animation: none;
+  }
+}
+
 /* Print styles */
 @media print {
   body {
