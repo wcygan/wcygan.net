@@ -14069,25 +14069,24 @@ th {
 .ps-diagram-replay-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid var(--diagram-accent);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--diagram-accent);
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  background: var(--diagram-accent);
+  color: #fff;
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
   transition:
-    background-color 150ms ease,
-    color 150ms ease,
+    filter 150ms ease,
     transform 100ms ease;
 }
 
 .ps-diagram-replay-btn:hover {
-  background: var(--diagram-accent);
+  filter: brightness(1.15);
   color: #fff;
 }
 
