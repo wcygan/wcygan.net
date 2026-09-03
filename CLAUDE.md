@@ -93,9 +93,16 @@ Rules:
   underline on hover instead of changing to a saturated color.
 - Muted text must remain readable; `#63635e` on `#fdfdfc` meets normal-text
   contrast.
-- Article diagrams default to black, white, and warm gray. Express state through
-  labels, grouping, shape, pattern, line treatment, and motion before introducing
-  saturated color. The blue focus accent remains reserved for keyboard focus.
+- Article diagrams and animations lean on the PlanetScale animation design system:
+  vibrant semantic accents (`--diagram-accent: #F35815`, `--diagram-blue: #0E73CC`,
+  `--diagram-green: #27B648`, `--diagram-yellow: #F2B600`, `--diagram-red: #FF455D`),
+  JetBrains Mono uppercase tracked typography, dashed connectors, and runtime SVG or
+  Canvas geometry with stateful progress simulation. The repository vendors a rich library
+  of production-grade reference examples under
+  `.agents/skills/planet-scale-animation-design-system/` covering OS processes & threads,
+  multi-tier caching & stampede mitigation, storage IO latency & device physics, horizontal
+  database sharding, B-trees & B+trees, 768-server cluster routing, PostgreSQL large table
+  degradation, and Neki declarative data topologies.
 - Editorial raster images use a `1px` inset outline of `oklch(0 0 0 / 0.1)`.
   Transparent diagrams and artwork may opt out when an outline damages the
   image.
@@ -260,9 +267,8 @@ Writing-row rules:
 
 The current article shell, title, date, basic prose, tables, code blocks, direct
 figures, and TOC are a strong first pass. They are not the completion bar.
-Future article work should make every reading primitive feel native to the same
-warm-neutral system. Technical diagrams use the same restrained monochrome
-direction unless domain meaning genuinely requires a scoped color exception.
+warm-neutral system. Visualizations and interactive animations embrace the PlanetScale
+animation design system as the standard aesthetic for clear, engaging systems diagrams.
 
 Standardize and verify all of these:
 
@@ -321,11 +327,13 @@ Keep the Idle Toes palette synchronized between
 - ANSI 8-15: `#606060`, `#f07070`, `#9dff91`, `#ffe48b`, `#5eb7f7`, `#ff9dff`,
   `#dcf4ff`, `#ffffff`
 
-Code uses Lilex. Preserve syntax contrast, horizontal scrolling, copy feedback,
-and readable wrapping around—not inside—code samples.
-
-## Editorial diagrams and animations
-
+Load the repository's `$wcygan-editorial-diagrams` and
+`$planet-scale-animation-design-system` skills before creating, editing,
+reviewing, or debugging article diagrams or explanatory animation.
+Inspect the owning MDX prose, the component shell in `src/components/`, any
+backing model, engine, renderer, viewport, and tests in `src/demos/`, and the
+vendored PlanetScale reference library in
+`.agents/skills/planet-scale-animation-design-system/references/`.
 Load the repository's `$wcygan-editorial-diagrams` skill before creating,
 editing, reviewing, or debugging article diagrams or explanatory animation.
 Inspect the owning MDX prose, the component shell in `src/components/`, and any

@@ -1,0 +1,26 @@
+---
+title: Connection Pooling
+date: September 2, 2026
+description: Reusing database connections to cut latency and resource cost
+tags: [Databases, Performance, Architecture]
+image: /connection-pooling/night-spa.webp
+imageAlt: A crowded thermal bath at night, lit in red and blue, full of swimmers
+imageCaption: "Partying in Széchenyi."
+---
+
+import { ConnectionPoolVisualization } from "~/components/ConnectionPoolVisualization";
+import { PlanetScaleConnectionPoolDemo } from "~/components/PlanetScaleConnectionPoolDemo";
+
+Every query sent to MySQL requires a network transport channel. Establishing a new TCP connection involves a three-way handshake, TLS negotiation, authentication, and backend server thread allocation. When an application creates a new database connection for each incoming web request, connection overhead quickly overtakes actual query execution time.
+
+Connection pooling solves this bottleneck by keeping a fixed pool of pre-warmed, established connections ready in application memory. Incoming client requests borrow an idle connection, send their SQL query over the existing socket, and return the connection to the pool upon completion.
+
+<ConnectionPoolVisualization />
+
+When request arrival rate spikes beyond the configured pool capacity (here, four connections), subsequent requests queue in application memory rather than overwhelming the MySQL database with hundreds of concurrent connections and memory exhaustion.
+
+## PlanetScale Animation Design System
+
+Below is the same connection pool architecture visualized with the PlanetScale animation design system: runtime SVG geometry, engineered blueprint line weights, high-contrast role tokens (`--diagram-accent`, `--diagram-green`, `--diagram-yellow`, `--diagram-blue`), and JetBrains Mono tracked uppercase typography.
+
+<PlanetScaleConnectionPoolDemo />

@@ -40,7 +40,9 @@ const mermaidConfig = {
   startOnLoad: false,
   securityLevel: "loose",
   logLevel: "error",
-  htmlLabels: false,
+  // Icon-badge diagrams embed base64 SVG nodes; the source text can exceed
+  // mermaid's default 50,000-char maxTextSize and silently render an error box.
+  maxTextSize: 200000,
   theme: "base",
   themeVariables: {
     background: "#ffffff",
