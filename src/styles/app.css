@@ -11283,18 +11283,47 @@ th {
   font-variant-ligatures: normal;
 }
 
+.site-container .post-content > h1,
 .site-container .post-content > h2,
 .site-container .post-content > h3,
 .site-container .post-content > h4 {
   color: #21201c;
   font-family: var(--font-ui);
   font-feature-settings: "cv01", "ss03";
-  font-size: 16px;
   font-variant-ligatures: none;
-  font-weight: 550;
   letter-spacing: normal;
-  line-height: 24px;
   text-wrap: balance;
+}
+
+/* Modular heading scale: size + weight + line-height step down per level.
+   h2 is the workhorse section heading; h3/h4 stay near body size and lean on
+   weight + color for hierarchy. */
+.site-container .post-content > h1 {
+  color: #21201c;
+  font-size: 24px;
+  font-weight: 650;
+  line-height: 32px;
+}
+
+.site-container .post-content > h2 {
+  color: #21201c;
+  font-size: 20px;
+  font-weight: 650;
+  line-height: 28px;
+}
+
+.site-container .post-content > h3 {
+  color: #4a4842;
+  font-size: 17px;
+  font-weight: 550;
+  line-height: 24px;
+}
+
+.site-container .post-content > h4 {
+  color: #66645e;
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 24px;
 }
 
 .site-container .post-content > h2 {
