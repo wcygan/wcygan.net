@@ -75,8 +75,8 @@ function regimeColor(regime: Regime): string {
 function throughputQps(connections: number): number {
   const n = Math.max(1, connections);
   const x1 = 1000 / 25; // 25 ms uncontended service time
-  const alpha = 0.08;
-  const beta = 0.0016;
+  const alpha = 0.25; // serialization/lock share of service time
+  const beta = 0.0013; // coherency: peak at n* = sqrt((1-α)/β) ≈ 24 = cores × 6
   return (x1 * n) / (1 + alpha * (n - 1) + beta * n * (n - 1));
 }
 

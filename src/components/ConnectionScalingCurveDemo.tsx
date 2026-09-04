@@ -33,8 +33,8 @@ const VIEWBOX_H = 460;
 
 const CPU_CORES = 4;
 const SERVICE_MS = 25; // uncontended server-side time per query at n=1
-const ALPHA = 0.08;
-const BETA = 0.0016;
+const ALPHA = 0.25; // serialization/lock share of service time
+const BETA = 0.0013; // coherency: sets peak at n* = sqrt((1-α)/β) ≈ 24 = cores × 6
 
 const N_MIN = 1;
 const N_MAX = 500;
@@ -133,17 +133,17 @@ const TOUR_BEATS: TourBeat[] = [
     value: 64,
     holdMs: 6000,
     caption:
-      "64 connections — past cores × 10, context switching bends the curve",
+      "64 connections — past cores × 10, context switching bends the curve below peak",
   },
   {
     value: 150,
     holdMs: 6000,
-    caption: "150 connections — lock queues form and latency triples",
+    caption: "150 connections — lock queues form, latency is 9× the sweet spot",
   },
   {
     value: 300,
     holdMs: 6400,
-    caption: "300 connections — half the peak throughput, 4 seconds per query",
+    caption: "300 connections — half the peak throughput, 5 seconds per query",
   },
 ];
 
