@@ -1,6 +1,6 @@
 ---
 title: Connection Pooling
-date: September 2, 2026
+date: September 4, 2026
 description: Reusing database connections to cut latency and resource cost
 tags: [Databases, Performance, Architecture]
 image: /connection-pooling/night-spa.webp
@@ -9,6 +9,7 @@ imageCaption: "Partying in Széchenyi."
 ---
 
 import { PlanetScaleConnectionPoolDemo } from "~/components/PlanetScaleConnectionPoolDemo";
+import { ConnectionPoolExhaustionDemo } from "~/components/ConnectionPoolExhaustionDemo";
 import { ConnectionScalingCurveDemo } from "~/components/ConnectionScalingCurveDemo";
 import { ConnectionServerBoardDemo } from "~/components/ConnectionServerBoardDemo";
 
@@ -37,3 +38,5 @@ A common starting point for transactional workloads is `pool size = CPU cores ×
 ## War Story: Connection Pool Exhaustion
 
 Some microservice at work had a `SELECT * FROM table;` hidden inside it on an infrequently used codepath. This service eventually received a traffic surge that led to connection pool exhaustion and service disruption. This was due to the [full table scan](https://en.wikipedia.org/wiki/Full_table_scan) taking 30+ seconds against a very large table, and the same query began hogging all connections in the pool.
+
+<ConnectionPoolExhaustionDemo />
