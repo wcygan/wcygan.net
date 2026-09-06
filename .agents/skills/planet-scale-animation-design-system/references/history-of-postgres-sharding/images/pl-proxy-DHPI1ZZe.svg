@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1504" height="540" viewBox="0 0 1504 540" fill="none" role="img">
+<rect width="1504" height="540" fill="#FAFAFA"/>
+<rect x="272" y="190" width="260" height="160" fill="none" stroke="#818181" stroke-width="2"/>
+<rect x="280" y="198" width="244" height="144" fill="#818181" fill-opacity="0.1" stroke="#818181" stroke-width="2" stroke-dasharray="8 8"/>
+<text fill="#111111" font-family="JetBrains Mono, monospace" font-size="30" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="402" y="280.5">APP</tspan>
+  </text>
+<path d="M 612 194.76 L 612 345.24 A 140 34.76 0 0 0 892 345.24 L 892 194.76 A 140 34.76 0 0 1 612 194.76" fill="#FAFAFA" stroke="#13862E" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="752" cy="194.76" rx="140" ry="34.76" fill="#FAFAFA" stroke="#13862E" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="proxy-lid">
+    <ellipse cx="752" cy="194.76" rx="140" ry="34.76"/>
+  </clipPath>
+<g clip-path="url(#proxy-lid)">
+    <line x1="587.67" y1="160" x2="497.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="615.67" y1="160" x2="525.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="643.67" y1="160" x2="553.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="671.67" y1="160" x2="581.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="699.67" y1="160" x2="609.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="727.67" y1="160" x2="637.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="755.67" y1="160" x2="665.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="783.67" y1="160" x2="693.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="811.67" y1="160" x2="721.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="839.67" y1="160" x2="749.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="867.67" y1="160" x2="777.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="895.67" y1="160" x2="805.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="923.67" y1="160" x2="833.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="951.67" y1="160" x2="861.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="979.67" y1="160" x2="889.30" y2="229.52" stroke="#13862E" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#111111" font-family="JetBrains Mono, monospace" font-size="30" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="752" y="315.26">PL/PROXY</tspan>
+  </text>
+<path d="M 532 270 H 612" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 612 270 L 604 264 M 612 270 L 604 276" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<path d="M 892 270 H 932" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 932 115 V 425" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 972 69.79 L 972 160.21 A 120 29.79 0 0 0 1212 160.21 L 1212 69.79 A 120 29.79 0 0 1 972 69.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="1092" cy="69.79" rx="120" ry="29.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="s0-lid">
+    <ellipse cx="1092" cy="69.79" rx="120" ry="29.79"/>
+  </clipPath>
+<g clip-path="url(#s0-lid)">
+    <line x1="951.14" y1="40" x2="873.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="975.14" y1="40" x2="897.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="999.14" y1="40" x2="921.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1023.14" y1="40" x2="945.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1047.14" y1="40" x2="969.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1071.14" y1="40" x2="993.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1095.14" y1="40" x2="1017.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1119.14" y1="40" x2="1041.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1143.14" y1="40" x2="1065.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1167.14" y1="40" x2="1089.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1191.14" y1="40" x2="1113.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1215.14" y1="40" x2="1137.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1239.14" y1="40" x2="1161.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1263.14" y1="40" x2="1185.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1287.14" y1="40" x2="1209.68" y2="99.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#111111" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="1092" y="153.19">SHARD 1</tspan>
+  </text>
+<path d="M 932 115 H 972" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 972 115 L 964 109 M 972 115 L 964 121" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<path d="M 972 224.79 L 972 315.21 A 120 29.79 0 0 0 1212 315.21 L 1212 224.79 A 120 29.79 0 0 1 972 224.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="1092" cy="224.79" rx="120" ry="29.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="s1-lid">
+    <ellipse cx="1092" cy="224.79" rx="120" ry="29.79"/>
+  </clipPath>
+<g clip-path="url(#s1-lid)">
+    <line x1="951.14" y1="195" x2="873.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="975.14" y1="195" x2="897.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="999.14" y1="195" x2="921.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1023.14" y1="195" x2="945.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1047.14" y1="195" x2="969.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1071.14" y1="195" x2="993.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1095.14" y1="195" x2="1017.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1119.14" y1="195" x2="1041.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1143.14" y1="195" x2="1065.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1167.14" y1="195" x2="1089.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1191.14" y1="195" x2="1113.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1215.14" y1="195" x2="1137.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1239.14" y1="195" x2="1161.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1263.14" y1="195" x2="1185.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1287.14" y1="195" x2="1209.68" y2="254.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#111111" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="1092" y="308.19">SHARD 2</tspan>
+  </text>
+<path d="M 932 270 H 972" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 972 270 L 964 264 M 972 270 L 964 276" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<path d="M 972 379.79 L 972 470.21 A 120 29.79 0 0 0 1212 470.21 L 1212 379.79 A 120 29.79 0 0 1 972 379.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="1092" cy="379.79" rx="120" ry="29.79" fill="#FAFAFA" stroke="#144EB6" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="s2-lid">
+    <ellipse cx="1092" cy="379.79" rx="120" ry="29.79"/>
+  </clipPath>
+<g clip-path="url(#s2-lid)">
+    <line x1="951.14" y1="350" x2="873.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="975.14" y1="350" x2="897.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="999.14" y1="350" x2="921.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1023.14" y1="350" x2="945.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1047.14" y1="350" x2="969.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1071.14" y1="350" x2="993.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1095.14" y1="350" x2="1017.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1119.14" y1="350" x2="1041.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1143.14" y1="350" x2="1065.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1167.14" y1="350" x2="1089.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1191.14" y1="350" x2="1113.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1215.14" y1="350" x2="1137.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1239.14" y1="350" x2="1161.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1263.14" y1="350" x2="1185.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1287.14" y1="350" x2="1209.68" y2="409.59" stroke="#144EB6" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#111111" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="1092" y="463.19">SHARD 3</tspan>
+  </text>
+<path d="M 932 425 H 972" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 972 425 L 964 419 M 972 425 L 964 431" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlanetScale Technical Visuals — Gallery</title>
+<style>
+  :root { color-scheme: light dark; }
+  body{background:#fafafa;color:#1a1a1a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin:0;padding:40px 16px;}
+  main{max-width:1080px;margin:0 auto;}
+  h1{font-size:22px;letter-spacing:.02em;}
+  header p{font-size:13px;line-height:1.6;opacity:.75;max-width:70ch;}
+  figure{margin:0 0 64px;position:relative;}
+  figure iframe{width:100%;border:1px solid rgba(128,128,128,.25);background:var(--diagram-bg,#FAFAFA);display:block;border-radius:4px;overflow:hidden;}
+  figcaption{margin-top:10px;}
+  figcaption b{display:block;font-size:14px;}
+  figcaption span{font-size:11px;letter-spacing:.08em;opacity:.5;text-transform:uppercase;}
+  figcaption p{font-size:12px;line-height:1.6;opacity:.7;margin:6px 0 0;max-width:78ch;}
+  figcaption code{font-size:11px;background:rgba(128,128,128,.12);padding:1px 5px;border-radius:3px;}
+  @media (prefers-color-scheme: dark){
+    body{background:#111;color:#fafafa;}
+    figure iframe{border-color:rgba(128,128,128,.2);}
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>PlanetScale Technical Visuals — Gallery</h1>
+    <p>Five diagrams that carry the design language of PlanetScale's engineering blog:
+    the pixel-letterboard brand moment, the cache hit-ratio simulation, B+tree page splits,
+    the 768-server matrix, and the Universal Scalability Law curve. Each demo is the real
+    bundle, inlined and self-contained. Open this file in a browser; every animation runs offline.</p>
+  </header>
+  <figure>
+    <iframe src="demos/cache-title.html" height="260" loading="lazy" title="Caching pixel title"></iframe>
+    <figcaption>
+      <span>blog/caching &middot; #title</span>
+      <b>Pixel letterboard — the brand moment</b>
+      <p>Every demo in the system opens with this: the word rendered as colored pixel cells that
+      pop in letter by letter, then randomly swap neighbors forever. Canvas of JetBains-free
+      palette cells; the one asset every post shares.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/cache-hit-ratio.html#cache-hr-high" height="320" loading="lazy" title="Cache hit ratio simulation"></iframe>
+    <figcaption>
+      <span>blog/caching &middot; #cache-hr-high</span>
+      <b>Cache hit ratio at 99% — the load argument</b>
+      <p>The core teaching visual of the caching post: requesters on the left, a thin fast cache
+      in the middle, the slow database on the right. Colored requests resolve as hits (green path)
+      or miss into the database (orange), with live hit/miss counters. Change the ratio and the
+      origin load story tells itself.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/bplustree-random.html" height="1200" loading="lazy" title="B+tree random inserts"></iframe>
+    <figcaption>
+      <span>blog/btrees-and-database-indexes &middot; #bplustree-random</span>
+      <b>B+tree page splits under random keys</b>
+      <p>Insert keys and watch the tree grow: random (UUID-like) keys split pages everywhere and
+      keep the tree shallow and wide, while the sequential twin fills pages to 93% before splitting.
+      The single best argument for monotonic primary keys.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/servers.html" height="300" loading="lazy" title="768 servers"></iframe>
+    <figcaption>
+      <span>blog/many-servers-appear-as-one &middot; #servers</span>
+      <b>768 servers that look like one</b>
+      <p>A live Canvas matrix of 768 database nodes processing traffic in real time. It is the
+      scale claim of the whole post made physical: individual nodes disappear into one endpoint.</p>
+    </figcaption>
+  </figure>
+
+  <figure>
+    <iframe src="demos/usl-curve.html" height="620" loading="lazy" title="Universal Scalability Law curve"></iframe>
+    <figcaption>
+      <span>blog/doing-more-with-less &middot; #usl-curve</span>
+      <b>Universal Scalability Law — throughput vs load</b>
+      <p>Throughput rises, peaks, then collapses as contention (&alpha;) and coherency (&beta;)
+      take over. Drag the sliders and the curve reshapes; the peak is why unlimited connection
+      pools hurt.</p>
+    </figcaption>
+  </figure>
+</main>
+<script>
+  // Auto-fit each demo iframe so nothing ever scrolls inside.
+  const fit = (frame) => {
+    try {
+      const doc = frame.contentWindow.document;
+      let bottom = 0;
+      const walk = (n) => {
+        for (const c of n.children) {
+          const cs = frame.contentWindow.getComputedStyle(c);
+          const r = c.getBoundingClientRect();
+          if (cs.position !== 'fixed' && r.height > 0 && r.bottom > bottom) bottom = r.bottom;
+          walk(c);
+        }
+      };
+      walk(doc.body);
+      if (bottom > 50) frame.style.height = Math.ceil(bottom + 8) + 'px';
+    } catch (e) { /* keep attribute height until same-origin (http) allows measuring */ }
+  };
+  const fitAll = () => document.querySelectorAll('figure iframe').forEach(fit);
+  window.addEventListener('load', () => setTimeout(fitAll, 1500));
+  window.addEventListener('resize', () => setTimeout(fitAll, 400));
+  document.addEventListener('click', () => setTimeout(fitAll, 600));
+</script>
+</body>
+</html>

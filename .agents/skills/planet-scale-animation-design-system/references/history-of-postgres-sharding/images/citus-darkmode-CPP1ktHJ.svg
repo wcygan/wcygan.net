@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1504" height="640" viewBox="0 0 1504 640" fill="none" role="img">
+<rect width="1504" height="640" fill="#111111"/>
+<rect x="572" y="24" width="360" height="260" fill="none" stroke="#27B648" stroke-width="2"/>
+<rect x="580" y="32" width="344" height="244" fill="#27B648" fill-opacity="0.25" stroke="#27B648" stroke-width="2" stroke-dasharray="8 8"/>
+<text fill="#27B648" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="752" y="56">CITUS</tspan>
+  </text>
+<path d="M 612 114.76 L 612 225.24 A 140 34.76 0 0 0 892 225.24 L 892 114.76 A 140 34.76 0 0 1 612 114.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="752" cy="114.76" rx="140" ry="34.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="coord-lid">
+    <ellipse cx="752" cy="114.76" rx="140" ry="34.76"/>
+  </clipPath>
+<g clip-path="url(#coord-lid)">
+    <line x1="587.67" y1="80" x2="497.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="615.67" y1="80" x2="525.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="643.67" y1="80" x2="553.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="671.67" y1="80" x2="581.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="699.67" y1="80" x2="609.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="727.67" y1="80" x2="637.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="755.67" y1="80" x2="665.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="783.67" y1="80" x2="693.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="811.67" y1="80" x2="721.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="839.67" y1="80" x2="749.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="867.67" y1="80" x2="777.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="895.67" y1="80" x2="805.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="923.67" y1="80" x2="833.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="951.67" y1="80" x2="861.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="979.67" y1="80" x2="889.3" y2="149.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#FAFAFA" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="752" y="213.16">COORDINATOR</tspan>
+  </text>
+<path d="M 752 284 V 330" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 380 330 H 1124" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 380 330 V 360" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 380 360 L 374 352 M 380 360 L 386 352" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<rect x="212" y="360" width="336" height="260" fill="none" stroke="#27B648" stroke-width="2"/>
+<rect x="220" y="368" width="320" height="244" fill="#27B648" fill-opacity="0.25" stroke="#27B648" stroke-width="2" stroke-dasharray="8 8"/>
+<text fill="#27B648" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="380" y="392">CITUS</tspan>
+  </text>
+<path d="M 240 454.76 L 240 565.24 A 140 34.76 0 0 0 520 565.24 L 520 454.76 A 140 34.76 0 0 1 240 454.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="380" cy="454.76" rx="140" ry="34.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="w-0-lid">
+    <ellipse cx="380" cy="454.76" rx="140" ry="34.76"/>
+  </clipPath>
+<g clip-path="url(#w-0-lid)">
+    <line x1="215.67" y1="420" x2="125.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="243.67" y1="420" x2="153.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="271.67" y1="420" x2="181.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="299.67" y1="420" x2="209.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="327.67" y1="420" x2="237.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="355.67" y1="420" x2="265.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="383.67" y1="420" x2="293.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="411.67" y1="420" x2="321.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="439.67" y1="420" x2="349.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="467.67" y1="420" x2="377.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="495.67" y1="420" x2="405.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="523.67" y1="420" x2="433.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="551.67" y1="420" x2="461.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="579.67" y1="420" x2="489.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="607.67" y1="420" x2="517.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#FAFAFA" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="380" y="553.16">WORKER</tspan>
+  </text>
+<path d="M 752 330 V 360" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 752 360 L 746 352 M 752 360 L 758 352" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<rect x="584" y="360" width="336" height="260" fill="none" stroke="#27B648" stroke-width="2"/>
+<rect x="592" y="368" width="320" height="244" fill="#27B648" fill-opacity="0.25" stroke="#27B648" stroke-width="2" stroke-dasharray="8 8"/>
+<text fill="#27B648" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="752" y="392">CITUS</tspan>
+  </text>
+<path d="M 612 454.76 L 612 565.24 A 140 34.76 0 0 0 892 565.24 L 892 454.76 A 140 34.76 0 0 1 612 454.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="752" cy="454.76" rx="140" ry="34.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="w-1-lid">
+    <ellipse cx="752" cy="454.76" rx="140" ry="34.76"/>
+  </clipPath>
+<g clip-path="url(#w-1-lid)">
+    <line x1="587.67" y1="420" x2="497.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="615.67" y1="420" x2="525.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="643.67" y1="420" x2="553.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="671.67" y1="420" x2="581.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="699.67" y1="420" x2="609.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="727.67" y1="420" x2="637.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="755.67" y1="420" x2="665.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="783.67" y1="420" x2="693.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="811.67" y1="420" x2="721.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="839.67" y1="420" x2="749.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="867.67" y1="420" x2="777.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="895.67" y1="420" x2="805.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="923.67" y1="420" x2="833.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="951.67" y1="420" x2="861.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="979.67" y1="420" x2="889.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#FAFAFA" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="752" y="553.16">WORKER</tspan>
+  </text>
+<path d="M 1124 330 V 360" fill="none" stroke="#818181" stroke-width="2" stroke-dasharray="8 6" stroke-linecap="round"/>
+<path d="M 1124 360 L 1118 352 M 1124 360 L 1130 352" fill="none" stroke="#818181" stroke-width="2" stroke-linecap="round"/>
+<rect x="956" y="360" width="336" height="260" fill="none" stroke="#27B648" stroke-width="2"/>
+<rect x="964" y="368" width="320" height="244" fill="#27B648" fill-opacity="0.25" stroke="#27B648" stroke-width="2" stroke-dasharray="8 8"/>
+<text fill="#27B648" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="1124" y="392">CITUS</tspan>
+  </text>
+<path d="M 984 454.76 L 984 565.24 A 140 34.76 0 0 0 1264 565.24 L 1264 454.76 A 140 34.76 0 0 1 984 454.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<ellipse cx="1124" cy="454.76" rx="140" ry="34.76" fill="#111111" stroke="#0E73CC" stroke-width="1.35" stroke-linecap="round"/>
+<clipPath id="w-2-lid">
+    <ellipse cx="1124" cy="454.76" rx="140" ry="34.76"/>
+  </clipPath>
+<g clip-path="url(#w-2-lid)">
+    <line x1="959.67" y1="420" x2="869.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="987.67" y1="420" x2="897.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1015.67" y1="420" x2="925.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1043.67" y1="420" x2="953.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1071.67" y1="420" x2="981.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1099.67" y1="420" x2="1009.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1127.67" y1="420" x2="1037.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1155.67" y1="420" x2="1065.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1183.67" y1="420" x2="1093.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1211.67" y1="420" x2="1121.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1239.67" y1="420" x2="1149.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1267.67" y1="420" x2="1177.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1295.67" y1="420" x2="1205.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1323.67" y1="420" x2="1233.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+    <line x1="1351.67" y1="420" x2="1261.3" y2="489.52" stroke="#0E73CC" stroke-width="0.5" stroke-linecap="round"/>
+  </g>
+<text fill="#FAFAFA" font-family="JetBrains Mono, monospace" font-size="24" font-weight="500" letter-spacing="0em" text-anchor="middle" dominant-baseline="alphabetic">
+    <tspan x="1124" y="553.16">WORKER</tspan>
+  </text>
+</svg>
