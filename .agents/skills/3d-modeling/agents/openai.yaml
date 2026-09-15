@@ -1,0 +1,4 @@
+interface:
+  display_name: "3D Modeling"
+  short_description: "Build interactive 3D technical blog demos"
+  default_prompt: "Use $3d-modeling to build or refine a 3D technical demo in this application."

@@ -95,8 +95,8 @@ export function KafkaPartitioningDemo() {
     if (state.done) setPlaying(false);
   }, [state.done]);
 
-  function reset(nextMode = mode) {
-    setPlaying(false);
+  function reset(nextMode = mode, autoplay = false) {
+    setPlaying(autoplay && !reduced);
     setStepping(false);
     setMode(nextMode);
     setStep(0);
@@ -129,14 +129,14 @@ export function KafkaPartitioningDemo() {
           <button
             type="button"
             aria-pressed={mode === "keyed"}
-            onClick={() => reset("keyed")}
+            onClick={() => reset("keyed", true)}
           >
             By key
           </button>
           <button
             type="button"
             aria-pressed={mode === "round-robin"}
-            onClick={() => reset("round-robin")}
+            onClick={() => reset("round-robin", true)}
           >
             Round-robin
           </button>
