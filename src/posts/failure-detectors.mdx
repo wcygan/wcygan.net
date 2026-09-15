@@ -1,0 +1,14 @@
+---
+title: Failure Detectors
+date: September 14, 2026
+description: Exploring suspicion when messages stop arriving
+tags: [Distributed Systems]
+---
+
+import { FailureDetectorDemo } from "~/components/FailureDetectorDemo";
+
+Discussed in [Database Internals: Chapter 9 — Failure Detection](https://www.databass.dev/).
+
+A [failure detector](https://en.wikipedia.org/wiki/Failure_detector#:~:text=a%20failure%20detector%20is%20a%20computer%20application%20or%20a%20subsystem%20that%20is%20responsible%20for%20the%20detection%20of%20node%20failures%20or%20crashes) uses messages (and their absence) to reason about other nodes. In [Raft](https://raft.github.io/raft.pdf), each follower [watches for leader heartbeats](<https://en.wikipedia.org/wiki/Raft_(algorithm)#:~:text=Each%20follower%20has%20a%20timeout%20(typically%20between%20150%20and%20300%20ms)%20in%20which%20it%20expects%20the%20heartbeat%20from%20the%20leader>) and has its own randomized election timeout. If its timer expires, it suspects the leader has died and [starts an election](<https://en.wikipedia.org/wiki/Raft_(algorithm)#:~:text=When%20the%20existing%20leader%20fails%20or%20when%20the%20algorithm%20initializes%2C%20a%20new%20leader%20needs%20to%20be%20elected>).
+
+<FailureDetectorDemo />
