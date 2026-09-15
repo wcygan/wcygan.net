@@ -16,15 +16,15 @@ describe("heartbeat playback clock", () => {
       commits.mockClear();
       const start = performance.now();
       let previous = 0;
-      for (let frame = 0; frame < hz; frame++) {
+      for (let frame = 0; frame < hz * 2; frame++) {
         vi.advanceTimersByTime(1000 / hz);
         const time = playback.getTime();
         expect(time).toBeCloseTo((performance.now() - start) * 0.5, 6);
         expect(time).toBeGreaterThan(previous);
         previous = time;
       }
-      // One delivered heartbeat, rather than 20 React updates per second.
-      expect(commits).toHaveBeenCalledTimes(1);
+      // One broadcast and one delivery across two seconds of playback.
+      expect(commits).toHaveBeenCalledTimes(2);
       expect(playback.getSnapshot().followers.A.received).toBe(1);
       playback.setActive(false);
     },
@@ -62,7 +62,7 @@ describe("heartbeat playback clock", () => {
     playback.dispatch({ type: "crash" });
     expect(playback.getTime()).toBe(49);
     expect(playback.getSnapshot().transport.crashed).toBe(true);
-    vi.advanceTimersByTime(500);
+    vi.advanceTimersByTime(1500);
     expect(playback.getSnapshot().followers.A.received).toBe(1);
     playback.setActive(false);
   });

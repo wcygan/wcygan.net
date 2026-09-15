@@ -9,10 +9,10 @@ import {
 
 export const DEFAULT_CONFIG: Config = {
   nodeCount: 5,
-  interval: 1000,
-  delay: 200,
-  jitter: 50,
-  electionMin: 3000,
+  interval: 650,
+  delay: 700,
+  jitter: 0,
+  electionMin: 1500,
 };
 const LIMITS: Record<keyof Config, [number, number]> = {
   nodeCount: [2, 5],

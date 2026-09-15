@@ -14705,7 +14705,8 @@ th {
   color: #914931;
   font-style: normal;
 }
-.fd-node-timer {
+.fd-node-timer,
+.raft-node-timer {
   display: block;
   width: 80px;
   height: 4px;
@@ -14715,13 +14716,16 @@ th {
   border-radius: 0;
   background: #d7d4cc;
 }
-.fd-node-timer::-webkit-progress-bar {
+.fd-node-timer::-webkit-progress-bar,
+.raft-node-timer::-webkit-progress-bar {
   background: #d7d4cc;
 }
-.fd-node-timer::-webkit-progress-value {
+.fd-node-timer::-webkit-progress-value,
+.raft-node-timer::-webkit-progress-value {
   background: #736f64;
 }
-.fd-node-timer::-moz-progress-bar {
+.fd-node-timer::-moz-progress-bar,
+.raft-node-timer::-moz-progress-bar {
   background: #736f64;
 }
 .fd-node-label[data-expired="true"] .fd-node-countdown {
@@ -14824,5 +14828,123 @@ th {
 @media (prefers-reduced-motion: reduce) {
   .fd-demo button {
     transition: none;
+  }
+}
+
+/* Raft election: an article-native, inspectable network. */
+.raft-demo {
+  margin-block: 28px;
+}
+.raft-scenario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.raft-scenario select,
+.raft-controls button {
+  min-height: 44px;
+  border: 1px solid #e4e3de;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+}
+.raft-stage {
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  margin-block: 16px;
+}
+.raft-canvas {
+  height: 100%;
+  width: 100%;
+}
+.raft-node-label {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 112px;
+  gap: 3px;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  font:
+    12px/1.4 Inter,
+    sans-serif;
+  color: #21201c;
+  background: rgb(253 253 252 / 55%);
+  border-radius: 4px;
+  padding: 4px;
+}
+.raft-node-label[data-crashed="true"] .raft-node-countdown {
+  color: #b42338;
+  font-weight: 600;
+}
+.raft-node-label[data-crashed="true"] .raft-node-timer::-webkit-progress-value {
+  background: #b42338;
+}
+.raft-node-label[data-crashed="true"] .raft-node-timer::-moz-progress-bar {
+  background: #b42338;
+}
+.raft-node-heading,
+.raft-node-metadata {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.raft-metadata-chip {
+  display: inline-block;
+  padding: 2px 5px;
+  border: 1px solid rgb(33 32 28 / 12%);
+  border-radius: 5px;
+  background: #eeede8;
+  color: #21201c;
+  font-variant-numeric: tabular-nums;
+}
+.raft-node-label strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.raft-packet {
+  font:
+    11px/1.2 Inter,
+    sans-serif;
+  white-space: nowrap;
+  background: #fdfdfc;
+  padding: 2px 4px;
+  color: #21201c;
+}
+.raft-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.raft-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.raft-controls button:not(:disabled):hover {
+  background: #f7f6f3;
+}
+.raft-fallback ul {
+  padding-inline-start: 20px;
+}
+.raft-fallback {
+  padding: 20px;
+  font-size: 14px;
+}
+@media (max-width: 639px) {
+  .raft-stage {
+    height: 440px;
+  }
+  .raft-node-label {
+    min-width: 94px;
+    font-size: 10px;
+  }
+  .raft-node-label strong {
+    font-size: 11px;
   }
 }

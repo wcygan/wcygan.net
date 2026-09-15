@@ -116,3 +116,28 @@ describe("buildPostIndex", () => {
     ).toThrow(/\.draft\.mdx/);
   });
 });
+
+it("orders same-day posts by full timestamps", () => {
+  const posts = buildPostIndex([
+    [
+      "/src/posts/failure-detectors.mdx",
+      postModule({
+        title: "Failure Detectors",
+        date: "2026-09-15T08:00:00-05:00",
+        description: "",
+      }),
+    ],
+    [
+      "/src/posts/leader-election.mdx",
+      postModule({
+        title: "Leader Election",
+        date: "2026-09-15T12:00:00-05:00",
+        description: "",
+      }),
+    ],
+  ]);
+  expect(posts.map((post) => post.slug)).toEqual([
+    "leader-election",
+    "failure-detectors",
+  ]);
+});

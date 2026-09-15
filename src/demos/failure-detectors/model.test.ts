@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  createSimulation,
+  createSimulation as createDefaultSimulation,
   candidates,
   deadline,
   electionTimeout,
@@ -9,7 +9,41 @@ import {
   transition,
 } from "./model";
 import { outcome } from "./presentation";
-import type { Simulation } from "./types";
+import type { Config, Simulation } from "./types";
+
+// Protocol edge cases use an explicit schedule independent of presentation defaults.
+const createSimulation = (config: Partial<Config> = {}, seed?: number) =>
+  createDefaultSimulation(
+    {
+      interval: 1000,
+      delay: 200,
+      jitter: 50,
+      electionMin: 3000,
+      ...config,
+    },
+    seed,
+  );
+
+it("uses slower packets and quicker randomized timeouts by default", () => {
+  let s = createDefaultSimulation();
+  expect(s.config.interval).toBe(650);
+  expect(s.packets.every((p) => p.arrivesAt - p.sentAt === 700)).toBe(true);
+  s = transition(s, { type: "crash" });
+  s = transition(s, { type: "advance", to: 700 });
+  for (const id of ["A", "C", "D", "E"] as const) {
+    expect(s.followers[id]!.received).toBe(1);
+    expect(electionTimeout(s, id)).toBeGreaterThanOrEqual(1500);
+    expect(electionTimeout(s, id)).toBeLessThanOrEqual(3000);
+  }
+  const firstDeadline = Math.min(
+    ...Object.values(s.followers).map(
+      (p) => p.timerStartedAt + Math.round(1500 * (1 + p.timeoutFraction)),
+    ),
+  );
+  s = transition(s, { type: "advance", to: 10000 });
+  expect(s.now).toBe(firstDeadline);
+  expect(isSettled(s)).toBe(true);
+});
 
 const start = () => createSimulation({ nodeCount: 2, jitter: 0 });
 const advance = (s: Simulation, to: number) =>

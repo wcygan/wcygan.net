@@ -15,7 +15,7 @@ import {
   shouldShowTableOfContents,
   type TableOfContentsItem,
 } from "~/lib/table-of-contents";
-import { toIsoDate } from "~/lib/utils/formatDate";
+import { toIsoDate, toDisplayDate } from "~/lib/utils/formatDate";
 import { SITE_URL } from "~/lib/sitemap/generators";
 
 const mdxModules = import.meta.glob<MdxModule>([
@@ -229,7 +229,7 @@ function BlogPostPage() {
         </h1>
         <p className="post-footnote">
           <time className="dt-published" dateTime={toIsoDate(meta.date)}>
-            {meta.date}
+            {toDisplayDate(meta.date)}
           </time>
         </p>
 

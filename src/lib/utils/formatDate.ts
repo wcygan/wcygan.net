@@ -1,9 +1,5 @@
-// Date helpers for conroy-style post dates.
-//
-// Posts store their date in human-readable form in MDX frontmatter
-// (e.g. "November 1, 2025"). For semantics we also want the machine-readable
-// ISO form (e.g. "2025-11-01") inside `<time datetime="…">`, and for display
-// an uppercase variant (e.g. "NOVEMBER 1, 2025").
+// Posts accept readable dates or quoted ISO timestamps with timezone offsets.
+// Timestamps order same-day posts; article headers display only the calendar date.
 
 export function toIsoDate(date: string): string {
   const parsed = new Date(date);
@@ -17,6 +13,15 @@ export function toIsoDate(date: string): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/** Hide optional timestamp precision while preserving the author's calendar date. */
 export function toDisplayDate(date: string): string {
-  return date.toUpperCase();
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(date)) return date;
+  const day = new Date(date.slice(0, 10) + "T00:00:00Z");
+  if (Number.isNaN(day.getTime())) return date;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(day);
 }

@@ -157,9 +157,9 @@ function Message({
       a[1] + (b[1] - a[1]) * t,
       a[2] + (b[2] - a[2]) * t,
     );
-    // Keep the silhouette readable when orbiting, with a slight turn to show depth.
-    mesh.current.quaternion.copy(camera.quaternion);
-    mesh.current.rotateY(-0.5);
+    // Match camera azimuth only: vertical orbit never tilts the hearts.
+    const facing = camera.matrixWorld.elements;
+    mesh.current.rotation.y = Math.atan2(facing[8], facing[10]);
     mesh.current.visible = clock < packet.arrivesAt;
   });
   return (

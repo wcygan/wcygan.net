@@ -174,9 +174,13 @@ describe("heartbeat scene controls", () => {
     render(<FailureDetectorDemo />);
     await view(true);
     fireEvent.click(screen.getByRole("button", { name: "Crash leader" }));
-    tick(500); // Deliver the already-sent broadcast.
+    tick(1400); // Deliver the already-sent broadcast.
     const deadlines = Object.values(scene.state!.followers)
-      .map((p) => p.timerStartedAt + Math.round(3000 * (1 + p.timeoutFraction)))
+      .map(
+        (p) =>
+          p.timerStartedAt +
+          Math.round(scene.state!.config.electionMin * (1 + p.timeoutFraction)),
+      )
       .sort((a, b) => a - b);
     tick(Math.ceil(((deadlines[0] - clock()) * 2) / 50) * 50);
     const dialog = screen.getByRole("dialog", {
