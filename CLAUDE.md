@@ -327,8 +327,7 @@ Keep the Idle Toes palette synchronized between
 - ANSI 8-15: `#606060`, `#f07070`, `#9dff91`, `#ffe48b`, `#5eb7f7`, `#ff9dff`,
   `#dcf4ff`, `#ffffff`
 
-Load the repository's `$wcygan-editorial-diagrams` and
-`$planet-scale-animation-design-system` skills before creating, editing,
+Load the repository's `$planet-scale-animation-design-system` skill before creating, editing,
 reviewing, or debugging article diagrams or explanatory animation.
 Inspect the owning MDX prose, the component shell in `src/components/`, any
 backing model, engine, renderer, viewport, and tests in `src/demos/`, and the

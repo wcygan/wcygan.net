@@ -10,8 +10,7 @@ the real rendered demo in a testing browser before writing code, and let the
 frame trace decide the representation — reimplement from scratch only when the
 demo's own artifact cannot be vendored.
 
-Load `$wcygan-editorial-diagrams` for the article shell, figure contract, and
-verification bar. Load `$agent-browser` for the rendered work on both sides —
+Read `AGENTS.md` for the article shell, figure contract, and verification bar. Load `$agent-browser` for the rendered work on both sides —
 tracing the source and verifying the copy. Load `$wcygan-demo-migrations` when
 replacing a first-pass demo that already exists in the repository.
 
@@ -40,7 +39,7 @@ replacing a first-pass demo that already exists in the repository.
    timings, and content strings are extracted — not eyeballed.
 5. **Choose the representation.** Vendor when the demo ships as a
    self-contained bundle and the user accepts the dependency; reimplement
-   under `$wcygan-editorial-diagrams` when the lesson must be re-taught in the
+   under the `AGENTS.md` diagram guidelines when the lesson must be re-taught in the
    editorial system or the bundle cannot be reused. State the choice and
    reason before building. Completion: the decision is recorded.
 6. **Build.**

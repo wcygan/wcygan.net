@@ -76,10 +76,6 @@ as the current component-level entrypoint inventory when auditing or editing
 these demos. Some files are supporting article UI rather than demos, so verify
 post imports before changing behavior.
 
-Load `$wcygan-graphic-demos` before creating, editing, reviewing, or debugging
-any of these demos. That repo-local skill captures the local model, renderer,
-lifecycle, accessibility, styling, and verification patterns.
-
 These are the current component files:
 
 ```text

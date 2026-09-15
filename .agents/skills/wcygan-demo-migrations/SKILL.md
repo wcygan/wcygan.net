@@ -10,7 +10,7 @@ teaches. Preserve the owning prose and causal invariant, then replace only the
 representation, lifecycle, and visual system needed to make that lesson
 article-native, inspectable, and accessible.
 
-Load `$wcygan-editorial-diagrams` before acting. Load `$agent-browser` for
+Load `$agent-browser` for
 rendered verification and `$better-ui` or `$better-typography` when available
 and relevant. Read `AGENTS.md`; it remains authoritative when this skill and the
 repository differ.

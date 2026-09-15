@@ -8,9 +8,8 @@ Use these sources in order:
 
 1. The owning MDX prose and its technical invariant.
 2. `AGENTS.md` and the rendered article shell.
-3. `$wcygan-editorial-diagrams`.
-4. The closest accepted explanatory pattern below.
-5. The legacy demo only as behavioral evidence.
+3. The closest accepted explanatory pattern below.
+4. The legacy demo only as behavioral evidence.
 
 Do not preserve old geometry, aspect ratio, colors, or loop timing merely
 because they already exist.

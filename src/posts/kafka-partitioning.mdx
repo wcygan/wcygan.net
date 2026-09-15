@@ -1,0 +1,12 @@
+---
+title: Kafka Partitioning
+date: September 14, 2026
+description: Following keys into ordered logs
+tags: [Data, Distributed Systems]
+---
+
+import { KafkaPartitioningDemo } from "~/components/KafkaPartitioningDemo";
+
+A Kafka topic is [split into partitions](https://kafka.apache.org/43/design/protocol/#partitioning-and-bootstrapping). Each partition is an ordered [log](https://kafka.apache.org/43/implementation/log/), with its own offsets. The [producer chooses](https://kafka.apache.org/43/configuration/producer-configs/#producerconfigs_partitioner.class) which log receives a record.
+
+<KafkaPartitioningDemo />
