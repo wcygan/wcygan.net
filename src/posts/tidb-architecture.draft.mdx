@@ -1,0 +1,51 @@
+---
+title: TiDB Architecture
+date: "2026-09-16T21:00:00-05:00"
+description: Explore SQL, coordination, and replicated storage
+tags: [Data, Distributed Systems]
+---
+
+import { TidbArchitectureDemo } from "~/components/TidbArchitectureDemo";
+import { TidbSecondaryIndexDemo } from "~/components/TidbSecondaryIndexDemo";
+
+[TiDB separates SQL compute, cluster coordination, and storage](https://docs.pingcap.com/tidb/stable/tidb-architecture/):
+
+1. [TiDB Server](https://docs.pingcap.com/tidb/stable/tidb-computing/)
+2. [Placement Driver](https://docs.pingcap.com/tidb/stable/tidb-scheduling/)
+3. [TiKV Server](https://docs.pingcap.com/tidb/stable/tidb-storage/)
+
+Choose **Read** or **Write** below to follow a request from the application to storage.
+
+<TidbArchitectureDemo />
+
+## Reading through a secondary index
+
+A secondary index can find a row’s handle without containing the full record. With a clustered integer primary key, that handle is the row’s ID. Follow TiDB’s [IndexLookUp](https://docs.pingcap.com/tidb/stable/explain-indexes/) plan: an `IndexRangeScan` finds matching handles in the email index, then a `TableRowIDScan` fetches their records. This query needs the second phase because `name` is not in the email index. A query covered by the index can skip it.
+
+Both the secondary index and the rows are stored in TiKV as separate [key ranges](https://docs.pingcap.com/tidb/stable/tidb-computing/), divided into [Regions](https://docs.pingcap.com/tidb/stable/tidb-storage/#region). The trays below show two example Regions with leaders on different TiKV nodes; actual placement varies, and either index can span many Regions. With a [clustered primary key](https://docs.pingcap.com/tidb/stable/clustered-indexes/), the primary-index entry contains the row itself.
+
+TiKV reads these keys through [RocksDB](https://docs.pingcap.com/tidb/stable/rocksdb-overview/), which combines in-memory data with immutable sorted files called SSTs. Each SST has its own [block index](https://github.com/facebook/rocksdb/wiki/Index-Block-Format); a SQL index does not have one global set of block pointers. The ordered lists below show a **logical snapshot view**, not the layout of a file. A nonunique email-index key contains both the email and row handle.
+
+Both phases use the same [read timestamp](https://tikv.org/blog/how-tikv-reads-writes/). Here it is 120: row 427’s name at commit 100 is “Will”, while a later update at commit 140 changes it to “William”. TiKV returns “Will” to this query even though the newer version is already in memory. The timestamps are illustrative, and the example assumes no conflicting transaction locks.
+
+<TidbSecondaryIndexDemo />
+
+## Appendix
+
+### Reads
+
+- **Secondary-index read:** TiDB first retrieves the matching ID from the email index, then fetches the full record by its clustered primary key. This [index lookup](https://docs.pingcap.com/tidb/stable/explain-indexes/) has two logical read phases.
+
+- **Leader read:** The request goes to the Region’s leader, which returns the row using its valid leader lease. This is the [fast path](https://tikv.org/blog/lease-read/) shown in the demo.
+- **Caught-up follower read:** A follower checks with the leader to establish a safe read position, then returns the row because it has already applied the required changes. See [Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/).
+- **Lagging follower read:** The follower performs the same check but must catch up before returning the row. It waits for the required changes rather than serving outdated data.
+- **Snapshots and stale reads:** All three scenarios read the transaction’s [snapshot](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/), which can predate a newer write. TiDB’s separate [Stale Read](https://docs.pingcap.com/tidb/stable/stale-read/) feature intentionally requests historical data and is not shown here.
+
+### Writes
+
+- **Random write:** The leader copies a change to its followers and commits it once a majority has stored it: the leader plus two followers in this five-replica example. It then applies the change before replying; [storing and applying](https://tikv.org/blog/how-tikv-reads-writes/) are separate steps.
+- **Random write with failure:** One follower misses a delivery, but the other replicas still form a majority and allow the write to proceed. [Raft](https://raft.github.io/raft.pdf) retries delivery so the follower can catch up; the demo shows this recovery after the application receives its response.
+
+### What this demo simplifies
+
+The first architecture demo follows one row and its Region’s replicas; it omits secondary indexes and the full [transaction commit protocol](https://docs.pingcap.com/tidb/stable/transaction-overview/). Message timing, key ranges, and replication positions are illustrative, and real requests and retries can overlap.
