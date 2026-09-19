@@ -130,10 +130,12 @@ export function DatabaseLogReplicationDemo() {
       data-graphic-frame="workbench"
       data-graphic-key="database-log-replication"
       data-graphic-kind="canvas"
-      aria-label="Log replication from a leader database to a follower"
+      aria-label="Log replication from a primary database to a replica"
     >
       <header className="database-log-demo-header">
-        <p className="article-graphic-title">One write, two ordered logs</p>
+        <p className="article-graphic-title">
+          Logs are replicated across nodes
+        </p>
       </header>
       <div
         ref={stage}
@@ -145,7 +147,7 @@ export function DatabaseLogReplicationDemo() {
         {pending && <DemoSceneLoading />}
         {unavailable ? (
           <p className="database-log-scene-fallback">
-            3D is unavailable. Follow the leader, received, and applied counts
+            3D is unavailable. Follow the primary, received, and applied counts
             below.
           </p>
         ) : loaded ? (
@@ -153,7 +155,7 @@ export function DatabaseLogReplicationDemo() {
             <Suspense
               fallback={
                 <p className="database-log-scene-fallback">
-                  Loading leader and follower…
+                  Loading primary and replica…
                 </p>
               }
             >
@@ -170,7 +172,7 @@ export function DatabaseLogReplicationDemo() {
           </SceneBoundary>
         ) : (
           <p className="database-log-scene-fallback">
-            Leader log → replication pipeline → follower log
+            Primary log → replication pipeline → replica log
           </p>
         )}
       </div>
@@ -192,7 +194,7 @@ export function DatabaseLogReplicationDemo() {
             type="button"
             disabled={pending || !sceneReady}
             onClick={() => {
-              setReadOffset(state.leader.length - 1);
+              setReadOffset(state.primary.length - 1);
               setReadVersion((current) => current + 1);
             }}
           >
@@ -211,15 +213,15 @@ export function DatabaseLogReplicationDemo() {
       <div className="database-log-status" role="status" aria-live="polite">
         <p>{concurrentStatus(state)}</p>
         <code>
-          Leader {state.leader.length} · Received {state.follower.length} ·
+          Primary {state.primary.length} · Received {state.replica.length} ·
           Applied {state.applied.length} · Lag {state.lag}
         </code>
         <p className="database-log-replication-read">
           {readOffset === null
-            ? "Reads and writes → leader only"
+            ? "Reads and writes → primary only"
             : readOffset < 0
-              ? "Read served by leader: no committed entries yet."
-              : `Read served by leader at log offset ${readOffset}.`}
+              ? "Read served by primary: no committed entries yet."
+              : `Read served by primary at log offset ${readOffset}.`}
         </p>
       </div>
     </figure>

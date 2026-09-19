@@ -17,11 +17,11 @@ export type Flight = {
 };
 
 export function concurrentSnapshot(starts: readonly number[], now: number) {
-  const leader = LOG_RECORDS.slice(
+  const primary = LOG_RECORDS.slice(
     0,
     starts.filter((t) => now - t >= COMMIT).length,
   );
-  const follower = LOG_RECORDS.slice(
+  const replica = LOG_RECORDS.slice(
     0,
     starts.filter((t) => now - t >= RECEIVE).length,
   );
@@ -50,11 +50,11 @@ export function concurrentSnapshot(starts: readonly number[], now: number) {
     ];
   });
   return {
-    leader,
-    follower,
+    primary,
+    replica,
     applied,
     flights,
-    lag: leader.length - applied.length,
+    lag: primary.length - applied.length,
     cooling:
       starts.length > 0 && now - starts[starts.length - 1] < WRITE_COOLDOWN,
     full: starts.length === LOG_RECORDS.length,
@@ -67,12 +67,12 @@ export function concurrentStatus(state: ReturnType<typeof concurrentSnapshot>) {
     return `${state.flights.length} writes in flight. Entries commit, replicate, and apply in order.`;
   const flight = state.flights[0];
   if (flight?.phase === "writing")
-    return `Leader writes ${flight.record.operation} ${flight.record.key} to log offset ${flight.record.id - 1}.`;
+    return `Primary writes ${flight.record.operation} ${flight.record.key} to log offset ${flight.record.id - 1}.`;
   if (flight?.phase === "replicating")
-    return `Write committed on the leader. Sending entry ${flight.record.id} to the follower.`;
+    return `Write committed on the primary. Sending entry ${flight.record.id} to the replica.`;
   if (flight)
-    return `Follower received entry ${flight.record.id} and is applying the write locally.`;
+    return `Replica received entry ${flight.record.id} and is applying the write locally.`;
   return state.applied.length
-    ? `${state.applied.length} ${state.applied.length === 1 ? "write" : "writes"} replicated in order. The follower is caught up.`
-    : "All reads and writes go to the leader. Write an entry to replicate it.";
+    ? `${state.applied.length} ${state.applied.length === 1 ? "write" : "writes"} replicated in order. The replica is caught up.`
+    : "All reads and writes go to the primary. Write an entry to replicate it.";
 }

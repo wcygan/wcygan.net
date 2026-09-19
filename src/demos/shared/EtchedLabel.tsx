@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useThree } from "@react-three/fiber";
 import { CanvasTexture, SRGBColorSpace } from "three";
 
 type Point = [number, number, number];
@@ -17,24 +18,32 @@ export function EtchedLabel({
   size: number;
   radius?: number;
 }) {
+  const gl = useThree((state) => state.gl);
   const label = useMemo(() => {
+    // Supersample the lettering without changing its model-space dimensions.
+    const scale = 4;
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d")!;
     const font = "600 64px Arial, sans-serif";
     context.font = font;
-    canvas.width = Math.ceil(context.measureText(children).width) + 12;
-    canvas.height = 80;
+    const width = Math.ceil(context.measureText(children).width) + 12;
+    const height = 80;
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+    context.scale(scale, scale);
     context.font = font;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "rgba(255, 255, 255, 0.65)";
-    context.fillText(children, canvas.width / 2, 42);
+    context.fillText(children, width / 2, 42);
     context.fillStyle = "#37333e";
-    context.fillText(children, canvas.width / 2, 40);
+    context.fillText(children, width / 2, 40);
     const texture = new CanvasTexture(canvas);
     texture.colorSpace = SRGBColorSpace;
-    return { texture, width: canvas.width / 64, height: canvas.height / 64 };
-  }, [children]);
+    // Preserve detail on the curved database and oblique log faces.
+    texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+    return { texture, width: width / 64, height: height / 64 };
+  }, [children, gl]);
   useEffect(() => () => label.texture.dispose(), [label]);
   return (
     <mesh position={position} rotation={rotation}>

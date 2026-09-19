@@ -183,9 +183,7 @@ export function DatabaseLogDemo() {
       aria-label="Database cylinder connected to an append-only log"
     >
       <header className="database-log-demo-header">
-        <p className="article-graphic-title">
-          A database write becomes an ordered log entry
-        </p>
+        <p className="article-graphic-title">Writes are appended to a log</p>
       </header>
       <div
         className="database-log-stage"

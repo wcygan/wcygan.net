@@ -247,7 +247,12 @@ function NodeLabel({
     <Html position={position} zIndexRange={[1, 0]}>
       <div className="fd-node-label" data-node={id} data-expired={expired}>
         <div className="fd-node-heading">
-          <strong>{id}</strong>
+          <strong
+            className="fd-node-chip"
+            style={{ backgroundColor: NODE_COLORS[id] }}
+          >
+            {id}
+          </strong>
           <span>{leader ? "Leader" : expired ? "Timed out" : "Follower"}</span>
         </div>
         {!leader && (

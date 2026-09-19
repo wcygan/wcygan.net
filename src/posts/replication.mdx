@@ -1,0 +1,55 @@
+---
+title: Replication
+date: September 19, 2026
+description: "Moving data between replicas"
+tags: []
+---
+
+import { DatabaseLogDemo } from "~/components/DatabaseLogDemo";
+import { DatabaseLogReplicationDemo } from "~/components/DatabaseLogReplicationDemo";
+import { GroupReplicationLagDemo } from "~/components/GroupReplicationLagDemo";
+
+## Database Log
+
+Databases can record changes in an ordered [log](https://wcygan.net/commit-log).
+Replicas use those records to reproduce the changes.
+
+<DatabaseLogDemo />
+
+## Replicating the log
+
+In this simplified model, the primary records a write in its log and sends a copy
+of that entry to the replica. Starting from the same data, the replica
+records and applies each entry in order, building the same state from the same
+writes.
+
+<DatabaseLogReplicationDemo />
+
+## Replication lag
+
+Replication lag is the delay between a write committing on the primary and
+becoming visible to reads on a replica.
+
+[MySQL Group Replication](https://dev.mysql.com/doc/refman/9.7/en/group-replication-summary.html)
+adds coordination: the group agrees on transaction order before a write commits.
+
+Replicas can still be catching up when a write finishes, so reads may return
+older data. [Stronger consistency settings](https://dev.mysql.com/doc/refman/9.7/en/group-replication-consistency-guarantees.html)
+can make transactions wait for synchronization.
+
+Receiving a write is not the same as making it visible to reads.
+The demo shows two places lag can build up: **writes are still traveling**, or
+**received writes are waiting to be applied**.
+
+<GroupReplicationLagDemo />
+
+### Recovering from lag
+
+- **Slow processing:** select **Speed up B**, or stop writing and let B drain its queue.
+- **Slow delivery:** lower **Link 2 latency** so writes reach B sooner.
+- **Brief disconnection:** interrupt and reconnect Link 2. If B reconnects before
+  being removed, it can retrieve missed messages still available in another
+  member’s [XCom cache](https://dev.mysql.com/doc/refman/9.7/en/group-replication-performance-xcom-cache.html).
+- **Long disconnection:** after removal, B must rejoin and
+  [recover missing data](https://dev.mysql.com/doc/refman/9.7/en/group-replication-distributed-recovery.html)
+  before returning online.

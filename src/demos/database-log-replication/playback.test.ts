@@ -39,7 +39,7 @@ it("settles every in-flight write under reduced motion and resets safely", () =>
   playback.write();
   expect(playback.getSnapshot().applied).toHaveLength(3);
   playback.reset();
-  expect(playback.getSnapshot().leader).toHaveLength(0);
+  expect(playback.getSnapshot().primary).toHaveLength(0);
   expect(vi.getTimerCount()).toBe(0);
   playback.setActive(false);
 });

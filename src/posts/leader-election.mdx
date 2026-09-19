@@ -14,3 +14,5 @@ A [failure detector](/failure-detectors) tells a node when to suspect its leader
 [Each node votes for at most one candidate per term](<https://en.wikipedia.org/wiki/Raft_(algorithm)#:~:text=A%20server%20will,new%20election%20begins.>). In this five-node cluster, a candidate needs **three votes**, including its own. Two candidates cannot both win a majority in the same term because their majorities would need to share a voter.
 
 <RaftElectionDemo />
+
+When a leader crashes and rejoins the cluster, it starts as a follower.

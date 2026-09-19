@@ -1,13 +1,20 @@
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
+import {
+  DATABASE_COLORS,
+  LOG_ENTRY_OUTLINE,
+} from "~/demos/shared/replication-palette";
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
-import { CylinderGeometry, Mesh, OrthographicCamera, Vector3 } from "three";
+import { Mesh, OrthographicCamera, Vector3 } from "three";
 import { LOG_RECORDS, PHASE_DURATION } from "./model";
 import type { ReplicationPlayback } from "./playback";
 import type { Flight } from "./model";
 
-import { DatabaseSideLabel, LogSideLabels } from "~/demos/shared/EtchedLabel";
+import {
+  DatabaseCylinderGeometry,
+  LogTrayGeometry,
+} from "~/demos/shared/DatabaseLogGeometry";
 
 type Point = [number, number, number];
 interface SceneProps {
@@ -21,8 +28,8 @@ interface SceneProps {
 }
 
 // Preserve the cylinder, log, and record proportions of DatabaseLogDemo.
-const LEADER_Z = -3;
-const FOLLOWER_Z = 3;
+const PRIMARY_Z = -3;
+const REPLICA_Z = 3;
 const DATABASE_X = -3.2;
 const LOG_X = 1.15;
 const LOG_Y = -0.75;
@@ -33,10 +40,10 @@ const SLOT_GAP =
 const SLOT_START = LOG_X - LOG_SIZE[0] / 2 + SLOT_GAP + ENTRY_SIZE[0] / 2;
 const PIPE_X = 4.55;
 const PIPELINE: Point[] = [
-  [LOG_X + LOG_SIZE[0] / 2, 0.1, LEADER_Z],
-  [PIPE_X, 0.1, LEADER_Z],
-  [PIPE_X, 0.1, FOLLOWER_Z],
-  [LOG_X + LOG_SIZE[0] / 2, 0.1, FOLLOWER_Z],
+  [LOG_X + LOG_SIZE[0] / 2, 0.1, PRIMARY_Z],
+  [PIPE_X, 0.1, PRIMARY_Z],
+  [PIPE_X, 0.1, REPLICA_Z],
+  [LOG_X + LOG_SIZE[0] / 2, 0.1, REPLICA_Z],
 ];
 
 function entryPosition(index: number, z: number): Point {
@@ -91,21 +98,13 @@ function DatabaseCylinder({
   color: string;
   edgeColor: string;
 }) {
-  const geometry = useMemo(() => new CylinderGeometry(0.9, 0.9, 1.55, 40), []);
-  useEffect(() => () => geometry.dispose(), [geometry]);
   return (
     <group position={[DATABASE_X, -0.375, z]}>
-      <mesh geometry={geometry}>
-        <meshStandardMaterial color={color} roughness={0.86} />
-        <Edges color={edgeColor} threshold={15} />
-      </mesh>
-      {[-0.76, -0.26, 0.26, 0.76].map((y) => (
-        <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[0.84, 0.085, 12, 48]} />
-          <meshStandardMaterial color={edgeColor} roughness={0.78} />
-        </mesh>
-      ))}
-      <DatabaseSideLabel>{name}</DatabaseSideLabel>
+      <DatabaseCylinderGeometry
+        name={name}
+        color={color}
+        edgeColor={edgeColor}
+      />
       <Html
         center
         position={[0, 1.65, top ? -1.6 : -0.95]}
@@ -132,13 +131,8 @@ function NodeLog({
 }) {
   return (
     <group>
-      <mesh position={[LOG_X, LOG_Y, z]}>
-        <boxGeometry args={LOG_SIZE} />
-        <meshStandardMaterial color="#e4e1d8" roughness={1} />
-        <Edges color="#8f8c83" threshold={15} />
-      </mesh>
       <group position={[LOG_X, LOG_Y, z]}>
-        <LogSideLabels>{label}</LogSideLabels>
+        <LogTrayGeometry label={label} />
       </group>
       <Line
         points={[
@@ -164,7 +158,7 @@ function NodeLog({
                 emissive={highlighted ? "#fff2a8" : "#000000"}
                 emissiveIntensity={highlighted ? 0.8 : 0}
               />
-              <Edges color={highlighted ? "#b88900" : "#393833"} />
+              <Edges color={highlighted ? "#b88900" : LOG_ENTRY_OUTLINE} />
             </mesh>
             <Html
               center
@@ -206,14 +200,14 @@ function Packet({
   const invalidate = useThree((value) => value.invalidate);
   const route = useMemo(() => {
     const index = flight.record.id - 1;
-    const leader = entryPosition(index, LEADER_Z);
-    const follower = entryPosition(index, FOLLOWER_Z);
+    const primary = entryPosition(index, PRIMARY_Z);
+    const replica = entryPosition(index, REPLICA_Z);
     const points: Point[] =
       flight.phase === "writing"
-        ? [[DATABASE_X, 0.85, LEADER_Z], leader]
+        ? [[DATABASE_X, 0.85, PRIMARY_Z], primary]
         : flight.phase === "replicating"
-          ? [leader, ...PIPELINE, follower]
-          : [follower, [DATABASE_X, 0.85, FOLLOWER_Z]];
+          ? [primary, ...PIPELINE, replica]
+          : [replica, [DATABASE_X, 0.85, REPLICA_Z]];
     const vectors = points.map((point) => new Vector3(...point));
     const distances = vectors
       .slice(1)
@@ -262,7 +256,7 @@ function Packet({
     >
       <boxGeometry args={ENTRY_SIZE} />
       <meshStandardMaterial color={flight.record.color} roughness={0.9} />
-      <Edges color="#393833" />
+      <Edges color={LOG_ENTRY_OUTLINE} />
     </mesh>
   );
 }
@@ -285,31 +279,31 @@ function World({
       <directionalLight position={[-3, 8, 5]} intensity={2} />
       <DatabaseCylinder
         name="Primary"
-        color="#9cc9e9"
-        edgeColor="#3f77b1"
+        color={DATABASE_COLORS.primary.fill}
+        edgeColor={DATABASE_COLORS.primary.outline}
         top={top}
-        z={LEADER_Z}
-        applied={state.leader.length}
+        z={PRIMARY_Z}
+        applied={state.primary.length}
       />
       <NodeLog
-        z={LEADER_Z}
-        count={state.leader.length}
+        z={PRIMARY_Z}
+        count={state.primary.length}
         highlightedIds={readOffset === null ? [] : [readOffset + 1]}
         label="Primary Log"
       />
       <DatabaseCylinder
-        name="Follower"
-        color="#c2afd9"
-        edgeColor="#8060a5"
+        name="Replica"
+        color={DATABASE_COLORS.replica.fill}
+        edgeColor={DATABASE_COLORS.replica.outline}
         top={top}
-        z={FOLLOWER_Z}
+        z={REPLICA_Z}
         applied={state.applied.length}
       />
       <NodeLog
-        z={FOLLOWER_Z}
-        count={state.follower.length}
+        z={REPLICA_Z}
+        count={state.replica.length}
         highlightedIds={[]}
-        label="Follower Log"
+        label="Replica Log"
       />
       <Line
         points={PIPELINE}
@@ -350,12 +344,13 @@ export default function DatabaseLogReplicationScene(props: SceneProps) {
       onUnavailable={props.onUnavailable}
       orthographic
       camera={{ position: [1.8, 8.5, 10], zoom: 45, near: 0.1, far: 100 }}
-      dpr={[1, 2]}
+      // Supersample small surface labels; cap high-density screens at 3×.
+      dpr={[2, 3]}
       frameloop="demand"
       gl={{ antialias: true, alpha: true }}
       fallback={
         <p className="database-log-scene-fallback">
-          Leader log → follower log. Follow replication below.
+          Primary log → replica log. Follow replication below.
         </p>
       }
     >

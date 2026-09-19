@@ -1,4 +1,8 @@
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
+import {
+  DATABASE_COLORS,
+  LOG_ENTRY_OUTLINE,
+} from "~/demos/shared/replication-palette";
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Line, OrbitControls } from "@react-three/drei";
@@ -79,13 +83,19 @@ function DatabaseCylinder() {
   return (
     <group position={DATABASE_POSITION}>
       <mesh geometry={geometry}>
-        <meshStandardMaterial color="#9cc9e9" roughness={0.86} />
-        <Edges color="#3f77b1" threshold={15} />
+        <meshStandardMaterial
+          color={DATABASE_COLORS.primary.fill}
+          roughness={0.86}
+        />
+        <Edges color={DATABASE_COLORS.primary.outline} threshold={15} />
       </mesh>
       {DATABASE_RUNG_LEVELS.map((y) => (
         <mesh key={y} position={[0, y, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.84, 0.085, 12, 48]} />
-          <meshStandardMaterial color="#3f77b1" roughness={0.78} />
+          <meshStandardMaterial
+            color={DATABASE_COLORS.primary.outline}
+            roughness={0.78}
+          />
         </mesh>
       ))}
       <DatabaseSideLabel>Database</DatabaseSideLabel>
@@ -143,7 +153,7 @@ function AppendedEntry({
           emissive={highlighted ? "#fff2a8" : "#000000"}
           emissiveIntensity={highlighted ? 0.8 : 0}
         />
-        <Edges color={highlighted ? "#b88900" : "#393833"} />
+        <Edges color={highlighted ? "#b88900" : LOG_ENTRY_OUTLINE} />
       </mesh>
       <SceneLabel
         position={[
@@ -153,7 +163,7 @@ function AppendedEntry({
         ]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={0.16}
-        color="#393833"
+        color={LOG_ENTRY_OUTLINE}
       >
         {record.id}
       </SceneLabel>
@@ -202,7 +212,7 @@ function Packet({
     <mesh ref={mesh} position={[DATABASE_POSITION[0], DATABASE_ENTRY_Y, 0]}>
       <boxGeometry args={[ENTRY_WIDTH, ENTRY_HEIGHT, ENTRY_DEPTH]} />
       <meshStandardMaterial color={record.color} roughness={0.9} />
-      <Edges color="#393833" />
+      <Edges color={LOG_ENTRY_OUTLINE} />
     </mesh>
   );
 }
@@ -298,7 +308,8 @@ export default function DatabaseLogScene(props: SceneProps) {
       onUnavailable={props.onUnavailable}
       orthographic
       camera={{ position: [3.6, 6.8, 9.2], zoom: 45, near: 0.1, far: 100 }}
-      dpr={[1, 2]}
+      // Supersample small surface labels; cap high-density screens at 3×.
+      dpr={[2, 3]}
       frameloop="demand"
       gl={{ antialias: true, alpha: true }}
       fallback={

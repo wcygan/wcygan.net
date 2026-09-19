@@ -96,22 +96,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it("allows leader reads after commit while the follower is still behind", async () => {
+it("allows primary reads after commit while the replica is still behind", async () => {
   await mount();
   expect(button("Read").disabled).toBe(false);
   advance(950);
-  expect(status()).toContain("Leader 1 · Received 0 · Applied 0 · Lag 1");
+  expect(status()).toContain("Primary 1 · Received 0 · Applied 0 · Lag 1");
   expect(button("Read").disabled).toBe(false);
   act(() => fireEvent.click(button("Read")));
-  expect(status()).toContain("Read served by leader at log offset 0.");
+  expect(status()).toContain("Read served by primary at log offset 0.");
   expect(button("Write").disabled).toBe(false);
   advance(1700);
-  expect(status()).toContain("Leader 1 · Received 1 · Applied 0 · Lag 1");
+  expect(status()).toContain("Primary 1 · Received 1 · Applied 0 · Lag 1");
   advance(1100);
   expect(status()).toContain("1 write replicated in order");
   expect(button("Write").disabled).toBe(false);
   advance(10_000);
-  expect(status()).toContain("Leader 1 · Received 1 · Applied 1 · Lag 0");
+  expect(status()).toContain("Primary 1 · Received 1 · Applied 1 · Lag 0");
 });
 
 it("pauses the pipeline offscreen and resumes the same write", async () => {
@@ -119,7 +119,7 @@ it("pauses the pipeline offscreen and resumes the same write", async () => {
   advance(950);
   visibility(false);
   advance(10_000);
-  expect(status()).toContain("Leader 1 · Received 0 · Applied 0 · Lag 1");
+  expect(status()).toContain("Primary 1 · Received 0 · Applied 0 · Lag 1");
   visibility(true);
   advance(1700);
   advance(1100);
@@ -137,7 +137,7 @@ it("uses settled writes with reduced motion and resets both logs", async () => {
   advance(500);
   expect(status()).toContain("6 writes replicated in order");
   act(() => fireEvent.click(button("Reset")));
-  expect(status()).toContain("Leader 0 · Received 0 · Applied 0 · Lag 0");
+  expect(status()).toContain("Primary 0 · Received 0 · Applied 0 · Lag 0");
   expect(button("Read").disabled).toBe(false);
   act(() => fireEvent.click(button("Write")));
   expect(status()).toContain("1 write replicated in order");
@@ -150,7 +150,7 @@ it("settles an in-flight write when reduced motion is enabled", async () => {
     reduced = true;
     motionChange();
   });
-  expect(status()).toContain("Leader 1 · Received 1 · Applied 1 · Lag 0");
+  expect(status()).toContain("Primary 1 · Received 1 · Applied 1 · Lag 0");
   expect(button("Write").disabled).toBe(false);
 });
 
@@ -182,10 +182,10 @@ it("preloads near the viewport without starting replication offscreen", async ()
   act(() => ready());
   advance(10_000);
   expect(button("Write").disabled).toBe(false);
-  expect(status()).toContain("Leader 0 · Received 0 · Applied 0 · Lag 0");
+  expect(status()).toContain("Primary 0 · Received 0 · Applied 0 · Lag 0");
   visibility(true);
   advance(950);
-  expect(status()).toContain("Leader 1 · Received 0 · Applied 0 · Lag 1");
+  expect(status()).toContain("Primary 1 · Received 0 · Applied 0 · Lag 1");
 });
 
 it("accepts overlapping writes every 500ms and refreshes repeated reads", async () => {
@@ -198,13 +198,13 @@ it("accepts overlapping writes every 500ms and refreshes repeated reads", async 
   act(() => fireEvent.click(button("Write")));
   expect(status()).toContain("2 writes in flight");
   advance(850);
-  expect(status()).toContain("Leader 2 · Received 0 · Applied 0 · Lag 2");
+  expect(status()).toContain("Primary 2 · Received 0 · Applied 0 · Lag 2");
   act(() => fireEvent.click(button("Read")));
   advance(2000);
   act(() => fireEvent.click(button("Read")));
   advance(500);
-  expect(status()).toContain("Read served by leader at log offset 1");
+  expect(status()).toContain("Read served by primary at log offset 1");
   advance(1900);
-  expect(status()).toContain("Reads and writes → leader only");
-  expect(status()).toContain("Leader 2 · Received 2 · Applied 2 · Lag 0");
+  expect(status()).toContain("Reads and writes → primary only");
+  expect(status()).toContain("Primary 2 · Received 2 · Applied 2 · Lag 0");
 });

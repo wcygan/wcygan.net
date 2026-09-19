@@ -1,0 +1,21 @@
+---
+title: Vector Clocks
+date: "2026-09-19T12:00:00-05:00"
+description: Tracking causality across independent nodes
+tags: [Distributed Systems]
+---
+
+import { VectorClockDemo } from "~/components/VectorClockDemo";
+
+Three nodes share what they know using vector clocks. Step through two independent
+client writes, then follow the messages from A → B → C.
+
+<VectorClockDemo />
+
+A write, a send, and a receive each count as an event. A’s counter reaches 2
+because it handles one write and sends one message. The numbers are event counts,
+not stored data. The dashed lines show message paths.
+
+Further reading: [Wikipedia](https://en.wikipedia.org/wiki/Vector_clock),
+[Kevin Sookocheff](https://sookocheff.com/post/time/vector-clocks/), and
+[GeeksforGeeks](https://www.geeksforgeeks.org/computer-networks/vector-clocks-in-distributed-systems/).
