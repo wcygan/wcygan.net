@@ -194,7 +194,11 @@ export function DatabaseLogReplicationDemo() {
             type="button"
             disabled={pending || !sceneReady}
             onClick={() => {
-              setReadOffset(state.primary.length - 1);
+              setReadOffset(
+                state.primary.length
+                  ? Math.floor(Math.random() * state.primary.length)
+                  : -1,
+              );
               setReadVersion((current) => current + 1);
             }}
           >

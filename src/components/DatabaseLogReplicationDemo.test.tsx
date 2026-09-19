@@ -16,14 +16,18 @@ let observer: IntersectionObserverCallback;
 let preload: IntersectionObserverCallback;
 let motionChange: () => void;
 let reduced = false;
+let sceneReadOffset: number | null;
 vi.mock("~/demos/database-log-replication/Scene", () => ({
   default: ({
     onReady,
     onUnavailable,
+    readOffset,
   }: {
+    readOffset: number | null;
     onReady: () => void;
     onUnavailable: () => void;
   }) => {
+    sceneReadOffset = readOffset;
     ready = onReady;
     unavailable = onUnavailable;
     return null;
@@ -92,6 +96,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -189,6 +194,7 @@ it("preloads near the viewport without starting replication offscreen", async ()
 });
 
 it("accepts overlapping writes every 500ms and refreshes repeated reads", async () => {
+  vi.spyOn(Math, "random").mockReturnValue(0.9);
   await mount();
   expect(button("Write").disabled).toBe(true);
   advance(499);
@@ -207,4 +213,36 @@ it("accepts overlapping writes every 500ms and refreshes repeated reads", async 
   advance(1900);
   expect(status()).toContain("Reads and writes → primary only");
   expect(status()).toContain("Primary 2 · Received 2 · Applied 2 · Lag 0");
+});
+
+it("reads random committed entries and passes the same offset to the scene", async () => {
+  await mount();
+  advance(500);
+  act(() => fireEvent.click(button("Write")));
+  advance(500);
+  act(() => fireEvent.click(button("Write")));
+  advance(850);
+  expect(status()).toContain("Primary 3 · Received 0 · Applied 0 · Lag 3");
+  const random = vi.spyOn(Math, "random");
+  for (const [sample, offset] of [
+    [0, 0],
+    [0.5, 1],
+    [0.999, 2],
+  ]) {
+    random.mockReturnValue(sample);
+    act(() => fireEvent.click(button("Read")));
+    expect(status()).toContain(
+      `Read served by primary at log offset ${offset}.`,
+    );
+    expect(sceneReadOffset).toBe(offset);
+  }
+});
+
+it("reports no committed entries when read before the first commit", async () => {
+  await mount();
+  act(() => fireEvent.click(button("Read")));
+  expect(status()).toContain(
+    "Read served by primary: no committed entries yet.",
+  );
+  expect(sceneReadOffset).toBe(-1);
 });
