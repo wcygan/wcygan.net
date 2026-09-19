@@ -4,6 +4,7 @@ import {
 } from "~/demos/tidb-playback";
 
 export function TidbPlaybackControls({
+  disabled = false,
   moving,
   done,
   speed,
@@ -12,6 +13,7 @@ export function TidbPlaybackControls({
   onReplay,
   onSpeed,
 }: {
+  disabled?: boolean;
   moving: boolean;
   done: boolean;
   speed: TidbPlaybackSpeed;
@@ -26,18 +28,19 @@ export function TidbPlaybackControls({
       role="group"
       aria-label="Playback controls"
     >
-      <button type="button" onClick={onToggle}>
+      <button type="button" disabled={disabled} onClick={onToggle}>
         {moving ? "Pause" : done ? "Play again" : "Play"}
       </button>
-      <button type="button" disabled={done} onClick={onStep}>
+      <button type="button" disabled={disabled || done} onClick={onStep}>
         Step
       </button>
-      <button type="button" onClick={onReplay}>
+      <button type="button" disabled={disabled} onClick={onReplay}>
         Replay
       </button>
       <label>
         Speed
         <select
+          disabled={disabled}
           value={speed}
           onChange={(event) =>
             onSpeed(Number(event.target.value) as TidbPlaybackSpeed)

@@ -1,5 +1,6 @@
+import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import { useEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import {
   BoxGeometry,
@@ -17,6 +18,8 @@ import {
 
 type Point = [number, number, number];
 interface Props {
+  onReady: () => void;
+  onUnavailable: () => void;
   mode: RoutingMode;
   partitions: number;
   step: number;
@@ -296,7 +299,9 @@ function World({ mode, partitions, step, reduced, active, top, speed }: Props) {
 }
 export default function KafkaScene(props: Props) {
   return (
-    <Canvas
+    <SceneCanvas
+      onReady={props.onReady}
+      onUnavailable={props.onUnavailable}
       orthographic
       camera={{ position: [0, 8, 10], zoom: 45, near: 0.1, far: 100 }}
       dpr={[1, 2]}
@@ -309,6 +314,6 @@ export default function KafkaScene(props: Props) {
       }
     >
       <World {...props} />
-    </Canvas>
+    </SceneCanvas>
   );
 }

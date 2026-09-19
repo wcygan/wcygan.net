@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -15,12 +16,15 @@ const scene = vi.hoisted(() => ({
 }));
 vi.mock("./Scene", () => ({
   default: ({
+    onReady,
     playback,
     view,
   }: {
+    onReady: () => void;
     playback: Playback;
     view: { revision: number };
   }) => {
+    useEffect(onReady, [onReady]);
     scene.playback = playback;
     if (scene.fail) throw new Error("WebGL failed");
     return <div data-testid="scene" data-view={view.revision} />;

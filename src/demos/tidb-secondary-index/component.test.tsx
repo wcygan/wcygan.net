@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -12,6 +13,7 @@ import type { Props } from "./Scene";
 const scene = vi.hoisted(() => ({ props: null as Props | null, fail: false }));
 vi.mock("./Scene", () => ({
   default: (props: Props) => {
+    useEffect(props.onReady, [props.onReady]);
     if (scene.fail) throw new Error("WebGL unavailable");
     scene.props = props;
     return <div data-testid="secondary-scene" />;

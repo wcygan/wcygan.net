@@ -1,7 +1,9 @@
+import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
 import {
   Component,
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -17,12 +19,15 @@ import {
 
 const Scene = lazy(() => import("~/demos/kafka-partitioning/Scene"));
 class SceneBoundary extends Component<
-  { children: ReactNode },
+  { children: ReactNode; onFailed: () => void },
   { failed: boolean }
 > {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+  componentDidCatch() {
+    this.props.onFailed();
   }
   render() {
     return this.state.failed ? (
@@ -37,6 +42,9 @@ class SceneBoundary extends Component<
 }
 
 export function KafkaPartitioningDemo() {
+  const { ready: sceneReady, onReady: markReady } = useSceneReady();
+  const [unavailable, setUnavailable] = useState(false);
+  const markUnavailable = useCallback(() => setUnavailable(true), []);
   const figure = useRef<HTMLElement>(null);
   const [mode, setMode] = useState<RoutingMode>("keyed");
   const [partitions, setPartitions] = useState(PARTITION_COUNT);
@@ -50,7 +58,7 @@ export function KafkaPartitioningDemo() {
   const [documentVisible, setDocumentVisible] = useState(true);
   const [top, setTop] = useState(false);
   const state = partitionSnapshot(mode, step, partitions);
-  const active = visible && documentVisible;
+  const active = (sceneReady || unavailable) && visible && documentVisible;
 
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
@@ -112,8 +120,11 @@ export function KafkaPartitioningDemo() {
       ? `Record ${current.id}: ${current.key} → P${current.partition}, offset ${current.offset}.`
       : `One producer. ${partitions} ${partitions === 1 ? "partition" : "partitions"}. Follow nine records into their logs.`;
 
+  const pending = !sceneReady && !unavailable;
+
   return (
     <figure
+      aria-busy={pending}
       ref={figure}
       className="kafka-demo"
       data-graphic-frame="workbench"
@@ -127,6 +138,7 @@ export function KafkaPartitioningDemo() {
         </p>
         <div className="kafka-mode" role="group" aria-label="Routing strategy">
           <button
+            disabled={pending}
             type="button"
             aria-pressed={mode === "keyed"}
             onClick={() => reset("keyed", true)}
@@ -134,6 +146,7 @@ export function KafkaPartitioningDemo() {
             By key
           </button>
           <button
+            disabled={pending}
             type="button"
             aria-pressed={mode === "round-robin"}
             onClick={() => reset("round-robin", true)}
@@ -147,6 +160,7 @@ export function KafkaPartitioningDemo() {
           Partitions <output>{partitions}</output>
         </span>
         <input
+          disabled={pending}
           type="range"
           aria-label="Partitions"
           min={1}
@@ -169,16 +183,24 @@ export function KafkaPartitioningDemo() {
       <div
         className="kafka-stage"
         data-graphic-stage="flush"
+        data-scene-loading={pending}
         aria-hidden="true"
       >
-        {loaded ? (
-          <SceneBoundary>
+        {pending && <DemoSceneLoading />}
+        {unavailable ? (
+          <p className="kafka-scene-fallback">
+            3D is unavailable. Follow record routing in the status below.
+          </p>
+        ) : loaded ? (
+          <SceneBoundary onFailed={markUnavailable}>
             <Suspense
               fallback={
                 <p className="kafka-scene-fallback">Loading the scene…</p>
               }
             >
               <Scene
+                onReady={markReady}
+                onUnavailable={markUnavailable}
                 mode={mode}
                 partitions={partitions}
                 step={step}
@@ -199,7 +221,7 @@ export function KafkaPartitioningDemo() {
         <div>
           <button
             type="button"
-            disabled={state.done || stepping}
+            disabled={pending || state.done || stepping}
             onClick={() => {
               setPlaying(false);
               if (reduced) {
@@ -216,7 +238,7 @@ export function KafkaPartitioningDemo() {
           </button>
           <button
             type="button"
-            disabled={reduced}
+            disabled={pending || reduced}
             onClick={() => {
               setStepping(false);
               if (state.done) setStep(0);
@@ -225,13 +247,14 @@ export function KafkaPartitioningDemo() {
           >
             {playing ? "Pause" : "Play"}
           </button>
-          <button type="button" onClick={() => reset()}>
+          <button disabled={pending} type="button" onClick={() => reset()}>
             Replay
           </button>
         </div>
         <label className="kafka-speed">
           Speed
           <select
+            disabled={pending}
             value={speed}
             onChange={(event) => setSpeed(Number(event.target.value))}
           >
@@ -243,6 +266,7 @@ export function KafkaPartitioningDemo() {
           </select>
         </label>
         <button
+          disabled={pending}
           type="button"
           aria-pressed={top}
           onClick={() => setTop((t) => !t)}

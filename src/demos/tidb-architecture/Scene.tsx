@@ -1,12 +1,8 @@
+import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import { Application, Box, StorageShell } from "./Models";
 import { Processor } from "./Processor";
 import { useEffect, useMemo, useRef } from "react";
-import {
-  Canvas,
-  useFrame,
-  useThree,
-  type ThreeEvent,
-} from "@react-three/fiber";
+import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Billboard, Edges, Line, OrbitControls } from "@react-three/drei";
 import {
   DoubleSide,
@@ -48,6 +44,7 @@ interface Props {
   reduced: boolean;
   active: boolean;
   view: ViewCommand;
+  onReady: () => void;
   onUnavailable: () => void;
   inspection: Inspection | null;
   onHover: (target: Inspection | null) => void;
@@ -472,7 +469,9 @@ function World(props: Props) {
 
 export default function TidbArchitectureScene(props: Props) {
   return (
-    <Canvas
+    <SceneCanvas
+      onReady={props.onReady}
+      onUnavailable={props.onUnavailable}
       orthographic
       onPointerMissed={() => props.onSelect(null)}
       camera={{ position: DEFAULT_CAMERA, zoom: 30, near: 0.1, far: 100 }}
@@ -495,6 +494,6 @@ export default function TidbArchitectureScene(props: Props) {
       }
     >
       <World {...props} />
-    </Canvas>
+    </SceneCanvas>
   );
 }

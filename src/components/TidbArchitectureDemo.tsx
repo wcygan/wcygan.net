@@ -1,3 +1,4 @@
+import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
 import { TidbPlaybackControls } from "./TidbPlaybackControls";
 import {
   Component,
@@ -102,6 +103,7 @@ function ArchitectureSummary({
 }
 
 export function TidbArchitectureDemo() {
+  const { ready: sceneReady, onReady: markReady } = useSceneReady();
   const stage = useRef<HTMLDivElement>(null);
   const [playback] = useState(createPlayback);
   const state = useSyncExternalStore(
@@ -123,7 +125,7 @@ export function TidbArchitectureDemo() {
   const current = steps[state.step];
   const region = regionForUser(state.operation.userId);
   const done = state.step === steps.length - 1;
-  const active = visible && documentVisible;
+  const active = (sceneReady || unavailable) && visible && documentVisible;
   const inspection = hovered ?? selected;
   const details = inspection ? inspectionDetails(inspection) : null;
   const select = useCallback(
@@ -194,8 +196,11 @@ export function TidbArchitectureDemo() {
     );
   };
 
+  const pending = !sceneReady && !unavailable;
+
   return (
     <figure
+      aria-busy={pending}
       className="tidb-demo"
       data-graphic-frame="workbench"
       data-graphic-kind="canvas"
@@ -217,6 +222,7 @@ export function TidbArchitectureDemo() {
         ref={stage}
         className="tidb-stage"
         data-graphic-stage="flush"
+        data-scene-loading={pending}
         tabIndex={unavailable ? undefined : 0}
         role="group"
         aria-label="3D architecture. Left and right arrows rotate; up and down arrows zoom; Home resets the view."
@@ -231,6 +237,7 @@ export function TidbArchitectureDemo() {
           }
         }}
       >
+        {pending && <DemoSceneLoading />}
         {unavailable || !loaded ? (
           <ArchitectureSummary
             unavailable={unavailable}
@@ -246,6 +253,7 @@ export function TidbArchitectureDemo() {
                 }
               >
                 <Scene
+                  onReady={markReady}
                   playback={playback}
                   state={state}
                   active={active}
@@ -262,6 +270,7 @@ export function TidbArchitectureDemo() {
         )}
       </div>
       <TidbPlaybackControls
+        disabled={pending}
         moving={state.moving}
         done={done}
         speed={state.speed}
@@ -282,6 +291,7 @@ export function TidbArchitectureDemo() {
       />
       <div className="tidb-controls" role="group" aria-label="Query controls">
         <ScenarioMenu
+          disabled={pending}
           label="Read"
           open={menu === "Read"}
           onOpen={(open) =>
@@ -297,6 +307,7 @@ export function TidbArchitectureDemo() {
           )}
         />
         <ScenarioMenu
+          disabled={pending}
           label="Write"
           open={menu === "Write"}
           onOpen={(open) =>

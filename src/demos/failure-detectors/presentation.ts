@@ -13,12 +13,12 @@ export function outcome(s: Simulation): string {
     .map((id) => {
       const node = follower(s, id);
       const since = node.lastReceived
-        ? `its last heartbeat at ${seconds(node.lastReceived.at)}`
-        : "the experiment began";
-      return `Follower ${id}’s ${seconds(electionTimeout(s, id))} election timer expired at ${seconds(node.electionStartedAt!)}. It heard nothing from leader B since ${since}.`;
+        ? `its last heartbeat at ${seconds(node.lastReceived.at)} into the demo`
+        : "the demo began";
+      return `Follower ${id}’s ${seconds(electionTimeout(s, id))} election timer expired at ${seconds(node.electionStartedAt!)} into the demo. It had heard nothing from leader B since ${since}.`;
     })
     .join(" ");
-  return `${evidence} ${expired.length === 1 ? "It would start an election" : "They would start elections"}. Silence is suspicion, not proof that B crashed.`;
+  return `${evidence} In Raft, ${expired.length === 1 ? "it would start an election" : "they would start elections"} at this point.`;
 }
 
 export function faultSummary(s: Simulation): string {

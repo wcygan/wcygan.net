@@ -14810,6 +14810,26 @@ th {
 .fd-notice .fd-notice-faults {
   color: #63635e;
 }
+.fd-notice .fd-node-highlight {
+  display: inline-block;
+  margin-inline: 0.08em;
+  padding-inline: 0.24em;
+  border-radius: 0.35em;
+  background: color-mix(in srgb, var(--fd-node-color) 58%, #fdfdfc);
+  color: #21201c;
+  font-weight: 600;
+  text-decoration: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.fd-notice .fd-term-underline {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.12em;
+  text-decoration-color: #63635e;
+  text-underline-offset: 0.16em;
+  text-decoration-skip-ink: auto;
+  font-weight: 600;
+}
 @media (max-width: 639px) {
   .fd-node-label {
     font-size: 10px;
@@ -15435,5 +15455,175 @@ th {
   }
   .secondary-result {
     min-height: 126px;
+  }
+}
+/* Database cylinder and append-only log. */
+.database-log-demo {
+  color: #21201c;
+  font:
+    14px/1.55 Inter,
+    system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.database-log-demo-header {
+  margin-block-end: 16px;
+}
+.database-log-demo .article-graphic-title {
+  margin: 0;
+}
+.database-log-demo button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #e4e3de;
+  border-radius: 5px;
+  background: #fdfdfc;
+  color: #21201c;
+  font:
+    500 14px/1.4 Inter,
+    system-ui,
+    sans-serif;
+  transition: background-color 150ms;
+}
+.database-log-demo button:hover {
+  background: #f7f6f3;
+}
+.database-log-demo button[aria-pressed="true"] {
+  border-color: #21201c;
+  background: #21201c;
+  color: #fdfdfc;
+}
+.database-log-demo button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.database-log-stage {
+  position: relative;
+  height: 340px;
+  overflow: hidden;
+}
+.database-log-replication-stage {
+  position: relative;
+  height: 460px;
+  overflow: hidden;
+}
+.database-log-replication-label,
+.database-log-replication-entry {
+  pointer-events: none;
+  white-space: nowrap;
+  color: #21201c;
+  text-align: center;
+  font:
+    11px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+}
+.database-log-replication-label strong,
+.database-log-replication-label span {
+  display: block;
+}
+.database-log-replication-label strong {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.database-log-replication-label span {
+  color: #63635e;
+}
+.database-log-status .database-log-replication-read {
+  margin-block-start: 8px;
+  color: #63635e;
+}
+.database-log-scene-fallback {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  padding: 24px;
+  color: #63635e;
+  font-size: 14px;
+  text-align: center;
+}
+/* All live 3D stages retain their authored height through SSR and loading. */
+[data-scene-loading] {
+  isolation: isolate;
+}
+[data-scene-loading] > :not(.demo-scene-loading) {
+  isolation: isolate;
+}
+[data-scene-loading="true"] > :not(.demo-scene-loading) {
+  visibility: hidden;
+}
+.demo-scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  background: #fdfdfc;
+}
+.demo-scene-spinner {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e4e3de;
+  border-top-color: #63635e;
+  border-radius: 999px;
+  animation: demo-scene-spin 0.8s linear infinite;
+}
+@keyframes demo-scene-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-scene-spinner {
+    animation: none;
+  }
+}
+.database-log-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 12px 20px;
+}
+.database-log-controls > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.database-log-status {
+  min-height: 88px;
+}
+.database-log-status p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.site-container .post-content .database-log-status code {
+  padding: 0;
+  overflow-wrap: anywhere;
+  background: none;
+  color: #63635e;
+  font:
+    12px/1.5 Lilex,
+    monospace;
+}
+@media (max-width: 639px) {
+  .database-log-stage {
+    height: 280px;
+  }
+  .database-log-replication-stage {
+    height: 360px;
+  }
+  .database-log-status {
+    min-height: 108px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .database-log-demo button {
+    transition: none;
   }
 }

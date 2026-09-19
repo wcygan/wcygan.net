@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -19,6 +20,7 @@ const scene = vi.hoisted(() => ({
 }));
 vi.mock("./Scene", () => ({
   default: ({
+    onReady,
     view,
     state,
     reduced,
@@ -27,8 +29,10 @@ vi.mock("./Scene", () => ({
     view: { kind: string; revision: number };
     state: Simulation;
     reduced: boolean;
+    onReady: () => void;
     playback: Playback;
   }) => {
+    useEffect(onReady, [onReady]);
     if (scene.fail) throw new Error("WebGL unavailable");
     scene.state = state;
     scene.playback = playback;
@@ -196,7 +200,9 @@ describe("heartbeat scene controls", () => {
     expect(stopped).toBe(deadlines[0]);
     tick(12000);
     expect(scene.state).toBe(frozen);
-    expect(dialog.textContent).toContain("not proof");
+    expect(dialog.textContent).toContain(
+      "In Raft, it would start an election at this point.",
+    );
     expect(dialog.textContent).toContain("Reset to begin again");
     for (const name of [
       "Crash leader",

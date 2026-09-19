@@ -120,7 +120,9 @@ describe("leader heartbeats and the follower election timer", () => {
     expect(expired.followers.A.received).toBe(0);
     expect(expired.followers.A.role).toBe("candidate");
     expect(expired.now).toBe(deadline(s));
-    expect(outcome(expired)).toContain("not proof");
+    expect(outcome(expired)).toContain(
+      "In Raft, it would start an election at this point.",
+    );
   });
 
   it("drops one outgoing heartbeat, then continues normally", () => {
@@ -352,8 +354,10 @@ describe("changing the number of nodes", () => {
     expect(expired.followers.C!.role).toBe("candidate");
     expect(expired.followers.A.role).toBe("follower");
     expect(outcome(expired)).toContain("Follower C");
-    expect(outcome(expired)).toContain("3.3s election timer expired at 3.5s");
-    expect(outcome(expired)).toContain("last heartbeat at 0.2s");
+    expect(outcome(expired)).toContain(
+      "3.3s election timer expired at 3.5s into the demo",
+    );
+    expect(outcome(expired)).toContain("last heartbeat at 0.2s into the demo");
     expect(isSettled(expired)).toBe(true);
     expect(nextEventAt(expired)).toBe(Infinity);
     expect(candidates(expired)).toEqual(["C"]);
@@ -389,7 +393,7 @@ describe("changing the number of nodes", () => {
     expect(candidates(expired)).toEqual(["A", "C"]);
     expect(expired.packets).toEqual(s.packets);
     expect(expired.leader.sent).toBe(1);
-    expect(outcome(expired)).toContain("the experiment began");
+    expect(outcome(expired)).toContain("the demo began");
   });
 
   it("retains node count on reset and clamps it to whole supported sizes", () => {

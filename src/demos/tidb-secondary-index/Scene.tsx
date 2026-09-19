@@ -1,7 +1,8 @@
+import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import { PayloadModel } from "../tidb-architecture/PayloadModel";
 import { Processor } from "../tidb-architecture/Processor";
 import { useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import {
   Group,
@@ -34,6 +35,7 @@ export interface Props {
   active: boolean;
   reduced: boolean;
   view: ViewCommand;
+  onReady: () => void;
   onUnavailable: () => void;
 }
 const INK = "#56554e";
@@ -432,7 +434,9 @@ function World(props: Props) {
 }
 export default function Scene(props: Props) {
   return (
-    <Canvas
+    <SceneCanvas
+      onReady={props.onReady}
+      onUnavailable={props.onUnavailable}
       orthographic
       camera={{ position: POSITION, zoom: 30, near: 0.1, far: 100 }}
       dpr={[1, 2]}
@@ -454,6 +458,6 @@ export default function Scene(props: Props) {
       }
     >
       <World {...props} />
-    </Canvas>
+    </SceneCanvas>
   );
 }

@@ -1,4 +1,5 @@
 /** @vitest-environment jsdom */
+import { useEffect } from "react";
 import {
   act,
   cleanup,
@@ -18,6 +19,7 @@ interface SceneProps {
   active: boolean;
   reduced: boolean;
   view: ViewCommand;
+  onReady: () => void;
   onUnavailable: () => void;
   inspection: Inspection | null;
   onHover: (target: Inspection | null) => void;
@@ -29,6 +31,7 @@ const scene = vi.hoisted(() => ({
 }));
 vi.mock("./Scene", () => ({
   default: (props: SceneProps) => {
+    useEffect(props.onReady, [props.onReady]);
     if (scene.fail) throw new Error("Scene failed");
     scene.props = props;
     return <div data-testid="scene" />;

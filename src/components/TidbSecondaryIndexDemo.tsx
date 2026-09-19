@@ -1,3 +1,4 @@
+import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
 import { TidbPlaybackControls } from "./TidbPlaybackControls";
 import {
   Component,
@@ -84,6 +85,7 @@ function IndexSummary({ unavailable }: { unavailable: boolean }) {
 }
 
 export function TidbSecondaryIndexDemo() {
+  const { ready: sceneReady, onReady: markReady } = useSceneReady();
   const stage = useRef<HTMLDivElement>(null);
   const [playback] = useState(createPlayback);
   const state = useSyncExternalStore(
@@ -97,7 +99,7 @@ export function TidbSecondaryIndexDemo() {
   const [reduced, setReduced] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [view, setView] = useState<ViewCommand>({ kind: "reset", revision: 0 });
-  const active = visible && documentVisible;
+  const active = (sceneReady || unavailable) && visible && documentVisible;
   const done = state.step === LAST_STEP;
   const current = STEPS[state.step];
   // Stable callback: scene context-loss listeners must not churn with playback.
@@ -146,8 +148,11 @@ export function TidbSecondaryIndexDemo() {
     return () => cancelAnimationFrame(frame);
   }, [active, state.moving, playback]);
 
+  const pending = !sceneReady && !unavailable;
+
   return (
     <figure
+      aria-busy={pending}
       className="secondary-demo"
       data-graphic-frame="workbench"
       data-graphic-kind="canvas"
@@ -163,6 +168,7 @@ export function TidbSecondaryIndexDemo() {
         ref={stage}
         className="secondary-stage"
         data-graphic-stage="flush"
+        data-scene-loading={pending}
         role="group"
         tabIndex={unavailable ? undefined : 0}
         aria-label="3D index lookup. Drag to rotate; scroll or pinch to zoom. Arrow keys rotate and zoom; Home resets the view."
@@ -174,6 +180,7 @@ export function TidbSecondaryIndexDemo() {
           }
         }}
       >
+        {pending && <DemoSceneLoading />}
         {unavailable || !loaded ? (
           <IndexSummary unavailable={unavailable} />
         ) : (
@@ -185,6 +192,7 @@ export function TidbSecondaryIndexDemo() {
                 }
               >
                 <Scene
+                  onReady={markReady}
                   playback={playback}
                   state={state}
                   active={active}
@@ -198,6 +206,7 @@ export function TidbSecondaryIndexDemo() {
         )}
       </div>
       <TidbPlaybackControls
+        disabled={pending}
         moving={state.moving}
         done={done}
         speed={state.speed}

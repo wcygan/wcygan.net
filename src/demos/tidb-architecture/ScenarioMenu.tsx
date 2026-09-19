@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef } from "react";
 
 interface Props {
+  disabled?: boolean;
   label: string;
   open: boolean;
   onOpen: (open: boolean) => void;
@@ -8,7 +9,13 @@ interface Props {
 }
 
 /** Hover previews the choices; click, touch, and keyboard open the same menu. */
-export function ScenarioMenu({ label, open, onOpen, choices }: Props) {
+export function ScenarioMenu({
+  label,
+  open,
+  onOpen,
+  choices,
+  disabled = false,
+}: Props) {
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -47,7 +54,7 @@ export function ScenarioMenu({ label, open, onOpen, choices }: Props) {
       ref={root}
       className="tidb-scenario"
       onPointerEnter={(event) => {
-        if (event.pointerType === "mouse") onOpen(true);
+        if (!disabled && event.pointerType === "mouse") onOpen(true);
       }}
       onPointerLeave={() => {
         if (!menu.current?.contains(document.activeElement)) onOpen(false);
@@ -65,6 +72,7 @@ export function ScenarioMenu({ label, open, onOpen, choices }: Props) {
       }}
     >
       <button
+        disabled={disabled}
         ref={trigger}
         id={`${id}-trigger`}
         type="button"
@@ -109,6 +117,7 @@ export function ScenarioMenu({ label, open, onOpen, choices }: Props) {
         >
           {choices.map((choice) => (
             <button
+              disabled={disabled}
               key={choice.label}
               type="button"
               role="menuitem"

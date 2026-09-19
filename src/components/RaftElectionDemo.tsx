@@ -1,3 +1,4 @@
+import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
 import {
   Component,
   lazy,
@@ -31,6 +32,7 @@ class Boundary extends Component<
   }
 }
 export function RaftElectionDemo() {
+  const { ready: sceneReady, onReady: markReady } = useSceneReady();
   const [playback] = useState(createPlayback);
   const state = useSyncExternalStore(
     playback.subscribe,
@@ -46,7 +48,8 @@ export function RaftElectionDemo() {
   const [view, setView] = useState<ViewCommand>({ kind: "reset", revision: 0 });
   const stage = useRef<HTMLDivElement>(null);
   const fail = useCallback(() => setUnavailable(true), []);
-  const active = visible && documentVisible && !paused;
+  const active =
+    (sceneReady || unavailable) && visible && documentVisible && !paused;
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const motion = () => {
@@ -94,8 +97,11 @@ export function RaftElectionDemo() {
       </ul>
     </div>
   );
+  const pending = !sceneReady && !unavailable;
+
   return (
     <figure
+      aria-busy={pending}
       className="raft-demo"
       data-graphic-frame="workbench"
       data-graphic-kind="canvas"
@@ -105,6 +111,7 @@ export function RaftElectionDemo() {
       <label className="raft-scenario">
         Scenario{" "}
         <select
+          disabled={pending}
           value={state.scenario}
           onChange={(e) =>
             playback.dispatch({
@@ -121,6 +128,7 @@ export function RaftElectionDemo() {
         ref={stage}
         className="raft-stage"
         data-graphic-stage="flush"
+        data-scene-loading={pending}
         tabIndex={0}
         role="group"
         aria-label="Election network. Arrow keys rotate or zoom; Home restores the view."
@@ -138,6 +146,7 @@ export function RaftElectionDemo() {
           }
         }}
       >
+        {pending && <DemoSceneLoading />}
         {unavailable || !loaded ? (
           fallback
         ) : (
@@ -145,6 +154,7 @@ export function RaftElectionDemo() {
             <Suspense fallback={fallback}>
               <div className="raft-canvas" aria-hidden="true">
                 <Scene
+                  onReady={markReady}
                   state={state}
                   playback={playback}
                   active={active}
@@ -159,15 +169,17 @@ export function RaftElectionDemo() {
       </div>
       <div className="raft-controls">
         <button
-          disabled={!currentLeader(state)}
+          disabled={pending || !currentLeader(state)}
           onClick={() => playback.dispatch({ type: "crash" })}
         >
           Crash leader
         </button>
-        <button onClick={() => setPaused((p) => !p)}>
+        <button disabled={pending} onClick={() => setPaused((p) => !p)}>
           {paused ? "Resume" : "Pause"}
         </button>
-        <button onClick={() => reset()}>Reset</button>
+        <button disabled={pending} onClick={() => reset()}>
+          Reset
+        </button>
       </div>
       <p className="sr-only" role="status" aria-live="polite">
         {state.status}

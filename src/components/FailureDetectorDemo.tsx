@@ -1,7 +1,9 @@
+import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
 import {
   Component,
   lazy,
   type ReactNode,
+  type CSSProperties,
   Suspense,
   useCallback,
   useEffect,
@@ -37,6 +39,61 @@ const VIEW_KEYS: Record<string, ViewCommand["kind"] | undefined> = {
   ArrowDown: "out",
   Home: "reset",
 };
+
+const NODE_HIGHLIGHTS: Record<string, string> = {
+  A: "#efba91",
+  B: "#ead082",
+  C: "#cbd5a3",
+  D: "#e7b2ba",
+  E: "#cdbadf",
+};
+
+const DIAGNOSTIC_TOKEN =
+  /(election timer expired|last heartbeat|heartbeat|start an election|Follower\s+[ACDE]\b|leader\s+B\b|\(?\b[ABCDE]\b\)?)/gi;
+
+function DiagnosticCopy({ children }: { children: string }) {
+  const parts = children.split(DIAGNOSTIC_TOKEN);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (!part) return null;
+        const match = part.match(
+          /^(?:Follower\s+([ACDE])|leader\s+B|\(?([ABCDE])\)?)$/i,
+        );
+        const node =
+          match?.[1] ?? match?.[2] ?? part.match(/\b([ABCDE])\b/i)?.[1] ?? "";
+        if (node) {
+          return (
+            <span
+              className="fd-node-highlight"
+              data-node={node.toUpperCase()}
+              style={
+                {
+                  "--fd-node-color": NODE_HIGHLIGHTS[node.toUpperCase()],
+                } as CSSProperties
+              }
+              key={`${index}-${part}`}
+            >
+              {part}
+            </span>
+          );
+        }
+        if (
+          /^(election timer expired|last heartbeat|heartbeat|start an election)$/i.test(
+            part,
+          )
+        ) {
+          return (
+            <u className="fd-term-underline" key={`${index}-${part}`}>
+              {part}
+            </u>
+          );
+        }
+        return <span key={`${index}-${part}`}>{part}</span>;
+      })}
+    </>
+  );
+}
 class SceneBoundary extends Component<
   { children: ReactNode; onUnavailable: () => void },
   { failed: boolean }
@@ -90,6 +147,7 @@ function Fallback({
 }
 
 export function FailureDetectorDemo() {
+  const { ready: sceneReady, onReady: markReady } = useSceneReady();
   const [playback] = useState(() => createPlayback());
   const state = useSyncExternalStore(
     playback.subscribe,
@@ -110,7 +168,8 @@ export function FailureDetectorDemo() {
   const expired = candidates(state);
   const settled = isSettled(state);
   const listeners = followerIds(state);
-  const running = visible && documentVisible && !settled;
+  const running =
+    (sceneReady || unavailable) && visible && documentVisible && !settled;
   const failScene = useCallback(() => setUnavailable(true), []);
   const faults = faultSummary(state);
   const canDisrupt =
@@ -154,8 +213,11 @@ export function FailureDetectorDemo() {
     else diagnostic.current?.close();
   }, [settled]);
 
+  const pending = !sceneReady && !unavailable;
+
   return (
     <figure
+      aria-busy={pending}
       className="fd-demo"
       data-graphic-frame="workbench"
       data-graphic-key="failure-detectors"
@@ -173,7 +235,7 @@ export function FailureDetectorDemo() {
           max={5}
           step={1}
           value={state.config.nodeCount}
-          disabled={settled}
+          disabled={pending || settled}
           onChange={(e) =>
             dispatch({
               type: "configure",
@@ -186,6 +248,7 @@ export function FailureDetectorDemo() {
         className="fd-stage"
         ref={stage}
         data-graphic-stage="flush"
+        data-scene-loading={pending}
         data-clock={state.now}
         tabIndex={0}
         role="group"
@@ -198,6 +261,7 @@ export function FailureDetectorDemo() {
           }
         }}
       >
+        {pending && <DemoSceneLoading />}
         {unavailable ? (
           <Fallback state={state} playback={playback} active={running} />
         ) : (
@@ -212,6 +276,7 @@ export function FailureDetectorDemo() {
                   }
                 >
                   <Scene
+                    onReady={markReady}
                     state={state}
                     playback={playback}
                     active={running}
@@ -240,26 +305,31 @@ export function FailureDetectorDemo() {
         Drag to rotate · scroll to zoom · ½ speed
       </figcaption>
       <div className="fd-actions" role="group" aria-label="Experiment controls">
-        <button ref={resetButton} type="button" onClick={reset}>
+        <button
+          disabled={pending}
+          ref={resetButton}
+          type="button"
+          onClick={reset}
+        >
           Reset
         </button>
         <button
           type="button"
-          disabled={state.transport.crashed || settled}
+          disabled={pending || state.transport.crashed || settled}
           onClick={() => dispatch({ type: "crash" })}
         >
           Crash leader
         </button>
         <button
           type="button"
-          disabled={!canDisrupt}
+          disabled={pending || !canDisrupt}
           onClick={() => dispatch({ type: "cut" })}
         >
           Cut random link
         </button>
         <button
           type="button"
-          disabled={!canDisrupt || !!state.transport.dropNext}
+          disabled={pending || !canDisrupt || !!state.transport.dropNext}
           onClick={() => dispatch({ type: "drop" })}
         >
           Drop random heartbeat
@@ -284,18 +354,29 @@ export function FailureDetectorDemo() {
         <h2 id={`${id}-timeout`}>
           Demo paused: {expired.join(", ")} timed out
         </h2>
-        <p id={`${id}-diagnostic`}>{outcome(state)}</p>
+        <p id={`${id}-diagnostic`}>
+          <DiagnosticCopy>{outcome(state)}</DiagnosticCopy>{" "}
+          <a href="https://raft.github.io/raft.pdf#page=6">
+            Raft paper, page 6
+          </a>
+        </p>
         {faults && (
-          <p className="fd-notice-faults">Injected faults: {faults}</p>
+          <p className="fd-notice-faults">
+            Injected faults: <DiagnosticCopy>{faults}</DiagnosticCopy>
+          </p>
         )}
         <p id={`${id}-restart`}>
           Dismiss to inspect the frozen scene, or select Reset to begin again.
         </p>
         <div className="fd-actions">
-          <button type="button" onClick={() => diagnostic.current?.close()}>
+          <button
+            disabled={pending}
+            type="button"
+            onClick={() => diagnostic.current?.close()}
+          >
             Dismiss
           </button>
-          <button type="button" onClick={reset}>
+          <button disabled={pending} type="button" onClick={reset}>
             Reset
           </button>
         </div>

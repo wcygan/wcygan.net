@@ -1,3 +1,4 @@
+import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import {
   useEffect,
   useCallback,
@@ -5,7 +6,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import {
   ExtrudeGeometry,
@@ -38,6 +39,7 @@ interface Props {
   active: boolean;
   reduced: boolean;
   view: ViewCommand;
+  onReady: () => void;
   onUnavailable: () => void;
 }
 function createHeartGeometry() {
@@ -335,7 +337,9 @@ function World(props: Props) {
 }
 export default function Scene(props: Props) {
   return (
-    <Canvas
+    <SceneCanvas
+      onReady={props.onReady}
+      onUnavailable={props.onUnavailable}
       orthographic
       camera={{ position: DEFAULT_CAMERA, zoom: 42, near: 0.1, far: 100 }}
       dpr={[1, 2]}
@@ -343,6 +347,6 @@ export default function Scene(props: Props) {
       fallback={<span>3D unavailable</span>}
     >
       <World {...props} />
-    </Canvas>
+    </SceneCanvas>
   );
 }

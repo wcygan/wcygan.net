@@ -1,0 +1,20 @@
+---
+title: Replication
+date: September 18, 2026
+description: "Moving data between replicas"
+tags: []
+---
+
+import { DatabaseLogDemo } from "~/components/DatabaseLogDemo";
+import { DatabaseLogReplicationDemo } from "~/components/DatabaseLogReplicationDemo";
+
+<DatabaseLogDemo />
+
+## Replicating the log
+
+In this example, the leader handles every read and write. After a write reaches
+its log, the leader sends a copy of that entry to the follower. The follower
+records and applies each entry in order, building the same state from the same
+writes.
+
+<DatabaseLogReplicationDemo />
