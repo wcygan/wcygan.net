@@ -4,7 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import { Group, Mesh, OrthographicCamera, Spherical } from "three";
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
-import { EVENTS, NODES, snapshot, type NodeId } from "./model";
+import { INPUTS, type NodeId, NODES, value } from "./model";
 import type { Playback, PlaybackState } from "./playback";
 type Point = [number, number, number];
 const POSITIONS: Record<NodeId, Point> = {
@@ -16,9 +16,11 @@ const CLIENT_POSITIONS: Record<"A" | "C", Point> = {
   A: [-3, 0.5, -1.2],
   C: [2.6, 0.5, -1.5],
 };
+const SIDE_CAMERA: Point = [0, 8, 12];
+const TOP_CAMERA: Point = [0, 12, 0.01];
 const COLORS = { A: "#efba91", B: "#ead082", C: "#cbd5a3" };
 export type View = {
-  kind: "reset" | "left" | "right" | "in" | "out";
+  kind: "reset" | "top" | "left" | "right" | "in" | "out";
   revision: number;
 };
 interface Props {
@@ -50,7 +52,10 @@ function Camera({
   useEffect(() => {
     const ortho = camera as OrthographicCamera;
     if (view.kind === "reset") {
-      camera.position.set(4, 10, 12);
+      camera.position.set(...SIDE_CAMERA);
+      ortho.zoom = fitted;
+    } else if (view.kind === "top") {
+      camera.position.set(...TOP_CAMERA);
       ortho.zoom = fitted;
     } else if (view.kind === "in" || view.kind === "out") {
       ortho.zoom = Math.max(
@@ -94,18 +99,19 @@ function NodeBody({
   playback,
 }: Pick<Props, "state" | "playback"> & { node: NodeId }) {
   const mesh = useRef<Mesh>(null);
-  const event = state.inProgress ? EVENTS[state.step] : undefined;
+  const event = state.action;
   useFrame(() => {
     if (!mesh.current) return;
     const p = playback.getProgress();
     // Client input arrives first; processing follows in the final 35%.
     const processing =
-      event?.kind === "local" ? Math.max(0, (p - 0.65) / 0.35) : p;
+      event?.kind === "increment" ? Math.max(0, (p - 0.65) / 0.35) : p;
     const pulse =
-      !state.reduced && event?.node === node
+      !state.reduced &&
+      (event?.kind === "increment" ? event.node : event?.message.to) === node
         ? Math.sin(Math.PI * processing)
         : 0;
-    // Lift and expand the node while it processes its local/send/receive event.
+    // Briefly emphasize the node applying an increment or receiving state.
     mesh.current.position.y = 0.4 * pulse;
     mesh.current.scale.setScalar(1 + 0.2 * pulse);
   });
@@ -113,22 +119,27 @@ function NodeBody({
     <mesh ref={mesh}>
       <boxGeometry args={[0.85, 0.85, 0.85]} />
       <meshStandardMaterial color={COLORS[node]} roughness={0.85} />
-      <Edges color={event?.node === node ? "#21201c" : "#736f64"} />
+      <Edges
+        color={
+          (event?.kind === "increment" ? event.node : event?.message.to) ===
+          node
+            ? "#21201c"
+            : "#736f64"
+        }
+      />
     </mesh>
   );
 }
 function Packet({ state, playback }: Pick<Props, "state" | "playback">) {
-  const narrow = useThree((s) => s.size.width < 640);
   const group = useRef<Group>(null);
-  // A packet exists only after the sender has committed its increment.
-  const message = state.message;
+  const message =
+    state.action?.kind === "deliver" ? state.action.message : null;
   useFrame(() => {
     if (!group.current || !message) return;
     const from = POSITIONS[message.from];
     const to = POSITIONS[message.to];
     const progress = state.reduced ? 0 : playback.getProgress();
-    // Park a sent message on its path until the reader starts receipt.
-    const p = 0.35 + 0.65 * progress;
+    const p = progress;
     group.current.position.set(
       from[0] + (to[0] - from[0]) * p,
       from[1] +
@@ -146,21 +157,13 @@ function Packet({ state, playback }: Pick<Props, "state" | "playback">) {
         <meshStandardMaterial color={COLORS[message.from]} />
         <Edges color="#393833" />
       </mesh>
-      <Html
-        center
-        position={narrow ? [1.3, 0.1, 0] : [0, 0.55, 0]}
-        className="vc-packet-label"
-      >
-        <span>Clock </span>
-        <VectorNotation value={message.clock} />
-      </Html>
     </group>
   );
 }
 function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
   const request = useRef<Group>(null);
-  const event = state.inProgress ? EVENTS[state.step] : undefined;
-  const input = event?.kind === "local" ? event : undefined;
+  const event = state.action;
+  const input = event?.kind === "increment" ? event : undefined;
   useFrame(() => {
     if (!request.current || !input) return;
     const p = Math.min(1, playback.getProgress() / 0.65);
@@ -175,7 +178,7 @@ function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
   });
   return (
     <>
-      {([EVENTS[0], EVENTS[1]] as const).map((source) => (
+      {INPUTS.filter((action) => action.kind === "increment").map((source) => (
         <group key={source.client}>
           <Line
             points={[CLIENT_POSITIONS[source.node], POSITIONS[source.node]]}
@@ -193,9 +196,9 @@ function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
               <meshStandardMaterial color="#bcbbb5" />
               <Edges color="#736f64" />
             </mesh>
-            <Html center position={[0, 0.85, 0]} className="vc-client-label">
+            <Html center position={[0, 0.85, 0]} className="gc-client-label">
               <strong>{source.client}</strong>
-              <span>{source.input}</span>
+              <span>Increment +1</span>
             </Html>
           </group>
         </group>
@@ -207,15 +210,15 @@ function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
             <meshStandardMaterial color="#63635e" />
             <Edges color="#21201c" />
           </mesh>
-          <Html center position={[0, 0.5, 0]} className="vc-packet-label">
-            {input.input}
+          <Html center position={[0, 0.5, 0]} className="gc-packet-label">
+            Increment +1
           </Html>
         </group>
       )}
     </>
   );
 }
-/** Keep labels below the projected cube even when the reader orbits overhead. */
+/** Keep the whole label clear of the projected cube while the reader orbits. */
 function NodeLabel({ node, state }: { node: NodeId; state: PlaybackState }) {
   const anchor = useRef<Group>(null);
   const invalidate = useThree((s) => s.invalidate);
@@ -223,7 +226,7 @@ function NodeLabel({ node, state }: { node: NodeId; state: PlaybackState }) {
     if (!anchor.current) return;
     const e = camera.matrixWorld.elements;
     const radius = 0.425 * (Math.abs(e[4]) + Math.abs(e[5]) + Math.abs(e[6]));
-    const distance = radius + 28 / (camera as OrthographicCamera).zoom;
+    const distance = radius + 52 / (camera as OrthographicCamera).zoom;
     const changed =
       Math.abs(anchor.current.position.x + e[4] * distance) +
         Math.abs(anchor.current.position.y + e[5] * distance) +
@@ -238,28 +241,21 @@ function NodeLabel({ node, state }: { node: NodeId; state: PlaybackState }) {
   });
   return (
     <group ref={anchor}>
-      <Html center className="vc-node-label">
+      <Html center className="gc-node-label">
         <strong>
           Node{" "}
           <span
-            className="vc-node-chip"
+            className="gc-node-chip"
             style={{ backgroundColor: COLORS[node] }}
           >
             {node}
           </span>
-          {state.inProgress && EVENTS[state.step]?.node === node
-            ? " · " +
-              (EVENTS[state.step].kind === "local"
-                ? "write +1"
-                : EVENTS[state.step].kind === "send"
-                  ? "send +1"
-                  : "merge +1")
-            : ""}
         </strong>
         <VectorNotation
-          value={state.clocks[node]}
-          previous={snapshot(Math.max(0, state.step - 1)).clocks[node]}
+          value={state.replicas[node]}
+          previous={state.previous[node]}
         />
+        <span>Value: {value(state.replicas[node])}</span>
       </Html>
     </group>
   );
@@ -275,10 +271,11 @@ function World(props: Props) {
       {(
         [
           ["A", "B"],
-          ["B", "C"],
+          ["C", "B"],
+          ["A", "C"],
         ] as const
       ).map(([a, b]) => (
-        <group key={a}>
+        <group key={`${a}-${b}`}>
           <Line
             points={[POSITIONS[a], POSITIONS[b]]}
             color="#bcbbb5"
@@ -287,20 +284,6 @@ function World(props: Props) {
             dashSize={0.12}
             gapSize={0.09}
           />
-          <Html
-            center
-            position={[
-              POSITIONS[a][0] +
-                (POSITIONS[b][0] - POSITIONS[a][0]) * (a === "B" ? 0.8 : 0.5) +
-                (a === "B" ? 0.8 : 0),
-              0.9,
-              POSITIONS[a][2] +
-                (POSITIONS[b][2] - POSITIONS[a][2]) * (a === "B" ? 0.8 : 0.5),
-            ]}
-            className="vc-path-label"
-          >
-            {a} → {b}
-          </Html>
         </group>
       ))}
       {NODES.map((node) => (
@@ -318,7 +301,7 @@ export default function Scene(props: Props) {
   return (
     <SceneCanvas
       orthographic
-      camera={{ position: [4, 10, 12], zoom: 45, near: 0.1, far: 100 }}
+      camera={{ position: SIDE_CAMERA, zoom: 45, near: 0.1, far: 100 }}
       dpr={[1, 2]}
       frameloop="demand"
       gl={{ antialias: true, alpha: true }}

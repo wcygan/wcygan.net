@@ -1,9 +1,9 @@
 import { Fragment } from "react";
 import { COMPONENTS, NODES, type Vector } from "./model";
 
-export function ClockLetter({ index }: { index: number }) {
+export function NodeLetter({ index }: { index: number }) {
   return (
-    <span className={`vc-letter vc-letter-${COMPONENTS[index]}`}>
+    <span className={`gc-letter gc-letter-${COMPONENTS[index]}`}>
       {NODES[index]}
     </span>
   );
@@ -17,14 +17,14 @@ export function VectorNotation({
   previous?: Vector;
 }) {
   return (
-    <span className="vc-vector">
+    <span className="gc-vector">
       <span>[</span>
-      <span className="vc-entries">
+      <span className="gc-entries">
         {value.map((count, index) => (
           <Fragment key={index}>
-            {index > 0 && <span className="vc-comma">, </span>}
+            {index > 0 && <span className="gc-comma">, </span>}
             <span
-              className={`vc-letter vc-letter-${COMPONENTS[index]}${previous && count !== previous[index] ? " vc-changed" : ""}`}
+              className={`gc-letter gc-letter-${COMPONENTS[index]}${previous && count !== previous[index] ? " gc-changed" : ""}`}
             >
               {count}
             </span>

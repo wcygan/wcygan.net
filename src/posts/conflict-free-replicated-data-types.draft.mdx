@@ -1,0 +1,57 @@
+---
+title: Conflict Free Replicated Data Types
+date: "2026-09-20T12:00:00-05:00"
+description: Independent updates that converge without coordination
+tags: [Distributed Systems]
+---
+
+import { GrowOnlyCounterDemo } from "~/components/GrowOnlyCounterDemo";
+import { CausalRelationshipDemo } from "~/components/CausalRelationshipDemo";
+import {
+  GrowOnlyCounterDeliveryOrderEquation,
+  GrowOnlyCounterMergeEquation,
+} from "~/demos/grow-only-counter/MergeEquation";
+import {
+  NodeLetter,
+  VectorNotation,
+} from "~/demos/grow-only-counter/VectorNotation";
+
+[Conflict-free replicated data types (CRDTs)](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) let copies of shared data accept updates independently. Once every copy receives the same updates, they agree.
+
+A grow-only counter, or [G-Counter](<https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#G-Counter_(Grow-only_Counter)>), is a simple example. Each node stores a list of counts, called a vector, with one position per node: <span className="gc-vector">[<NodeLetter index={0} />, <NodeLetter index={1} />, <NodeLetter index={2} />]</span>. A node increments only its own position. Add the entries to read the total.
+
+Nodes share copies of their vectors. When a copy arrives, the receiver keeps the larger number in each position.
+
+<GrowOnlyCounterDemo />
+
+## Two increments, counted once
+
+The clients increment A and C. B has not received either update, so it still holds <VectorNotation value={[0, 0, 0]} />.
+
+<GrowOnlyCounterMergeEquation />
+
+Messages carry saved counts; sending or receiving them does not add increments. Each message keeps the state it had when sent.
+
+After all four messages arrive, every replica reads `1 + 0 + 1 = 2`. These are copies of one counter, so we do not add their totals together.
+
+## Why delivery order does not matter
+
+Each merge keeps the larger count in every position.
+
+<GrowOnlyCounterDeliveryOrderEquation />
+
+Duplicates do not change the result: merging <VectorNotation value={[1, 0, 1]} /> with <VectorNotation value={[1, 0, 0]} /> still gives <VectorNotation value={[1, 0, 1]} />.
+
+Delayed messages can leave replicas out of sync. Once each receives both increments, they agree. No coordination is needed: nodes update only their own position, and merging never lowers a count.
+
+## The connection to vector clocks
+
+A and C each accept a like before hearing from the other. These events are **concurrent**: neither could have influenced the other, regardless of wall-clock time.
+
+When C receives A’s count, it shows 2 likes. A’s like now influences C’s total—a **causal relationship**.
+
+<CausalRelationshipDemo />
+
+[Vector clocks](https://en.wikipedia.org/wiki/Vector_clock) track whether events could have influenced each other or were concurrent, without synchronized clocks. G-Counters borrow their vector and maximum-merge approach, but count application increments, not message sends or receives.
+
+Adapted from [Alex Petrov’s _Database Internals_, chapter 11, “Replication and Consistency”](https://www.oreilly.com/library/view/database-internals/9781492040330/ch11.html), page 239. A, B, and C are the book’s nodes 1, 2, and 3. For the G-Counter design and its vector-clock roots, see Shapiro et al., [_A comprehensive study of Convergent and Commutative Replicated Data Types_](https://inria.hal.science/inria-00555588v1/document), section 3.1.2.
