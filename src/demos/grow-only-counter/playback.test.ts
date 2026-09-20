@@ -12,10 +12,10 @@ const create = () => {
   return playback;
 };
 
-it("defaults to the free-form starting state at 2× speed", () => {
+it("defaults to the free-form starting state at 4× speed", () => {
   const playback = createPlayback(() => Date.now());
   const state = playback.getSnapshot();
-  expect(state.speed).toBe(2);
+  expect(state.speed).toBe(4);
   expect(state.replicas).toEqual(experimentReplicas());
   expect(state.messages).toEqual(MESSAGES);
   expect(state.delivered).toEqual([]);

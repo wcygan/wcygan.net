@@ -7,7 +7,16 @@ tags: [Distributed Systems]
 
 import { RaftElectionDemo } from "~/components/RaftElectionDemo";
 
-Discussed in [Database Internals: Chapter 10 — Leader Election](https://www.databass.dev/).
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
+
+<DatabaseInternalsReference
+  chapters={[
+    {
+      number: 10,
+      concept: "Choosing a replacement when a leader stops responding",
+    },
+  ]}
+/>
 
 A [failure detector](/failure-detectors) tells a node when to suspect its leader has failed. [Raft's election algorithm](https://raft.github.io/raft.pdf#page=5) describes what happens next: the follower becomes a candidate, [starts a new term](<https://en.wikipedia.org/wiki/Raft_(algorithm)#:~:text=In%20this%20case,a%20new%20election.>) (an election round), [votes for itself, and asks its peers for their votes](<https://en.wikipedia.org/wiki/Raft_(algorithm)#:~:text=It%20starts%20the%20election%20by%20increasing%20the%20term%20counter%2C%20voting%20for%20itself%20as%20new%20leader%2C%20and%20sending%20a%20message%20to%20all%20other%20servers%20requesting%20their%20vote>).
 

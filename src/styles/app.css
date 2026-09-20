@@ -11584,6 +11584,137 @@ th {
   box-shadow: none;
 }
 
+.site-container .post-content .database-internals-reference {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  margin-block: 32px 40px;
+  padding: 16px;
+  border: 2px solid #8d98a6;
+  border-radius: 12px;
+  background: #eef1f7;
+  box-shadow: 0 1px 2px rgb(33 32 28 / 8%);
+  color: #21201c;
+}
+
+.database-internals-reference-cover {
+  display: block;
+  width: 112px;
+  color: inherit;
+  line-height: 0;
+}
+
+.database-internals-reference-cover img {
+  display: block;
+  width: 112px;
+  height: auto;
+  margin: 0;
+  border-radius: 4px;
+  outline: 1px solid oklch(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+
+.database-internals-reference-content {
+  min-width: 0;
+}
+
+.database-internals-reference-kicker,
+.database-internals-reference-author,
+.database-internals-reference-chapters-label {
+  margin: 0;
+  color: #63635e;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.database-internals-reference-kicker {
+  font-weight: 600;
+}
+
+.database-internals-reference-title {
+  margin: 2px 0 0;
+  color: #21201c;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.database-internals-reference-author {
+  margin-top: 2px;
+}
+
+.database-internals-reference-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.database-internals-reference a {
+  color: #21201c;
+  font-weight: 600;
+  text-decoration-color: #bcbbb5;
+  text-underline-offset: 0.15em;
+}
+
+.database-internals-reference a:hover {
+  color: #21201c;
+  text-decoration-color: #21201c;
+}
+
+.database-internals-reference-chapters {
+  margin-top: 18px;
+}
+
+.database-internals-reference-chapters-label {
+  font-weight: 600;
+}
+
+.database-internals-reference-chapters ul {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.database-internals-reference-chapters li {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+.database-internals-reference-chapters li a,
+.database-internals-reference-chapters li span {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.database-internals-reference-chapters li span {
+  color: #63635e;
+}
+
+@media (max-width: 639px) {
+  .site-container .post-content .database-internals-reference {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    margin-block: 28px 36px;
+    padding: 14px;
+  }
+
+  .database-internals-reference-cover,
+  .database-internals-reference-cover img {
+    width: 96px;
+  }
+
+  .database-internals-reference-title {
+    font-size: 18px;
+  }
+}
+
 :where(.post-content) .article-graphic-title {
   margin: 0;
   color: #21201c;

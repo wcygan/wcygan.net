@@ -7,10 +7,18 @@ tags: []
 
 import { DatabaseLogDemo } from "~/components/DatabaseLogDemo";
 import { DatabaseLogReplicationDemo } from "~/components/DatabaseLogReplicationDemo";
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
 import { GroupReplicationLagDemo } from "~/components/GroupReplicationLagDemo";
 
-This article is based on ideas from [Database Internals Chapter 11: Replication
-and Consistency](https://databass.dev/).
+<DatabaseInternalsReference
+  chapters={[
+    {
+      number: 11,
+      concept:
+        "Replication, consistency models, and strong eventual consistency",
+    },
+  ]}
+/>
 
 ## Database Log
 

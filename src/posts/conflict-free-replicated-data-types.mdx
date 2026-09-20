@@ -1,5 +1,5 @@
 ---
-title: Conflict Free Replicated Data Types
+title: Conflict-Free Replicated Data Types
 date: "2026-09-20T12:00:00-05:00"
 description: Independent updates that converge without coordination
 tags: [Distributed Systems]
@@ -7,6 +7,7 @@ tags: [Distributed Systems]
 
 import { GrowOnlyCounterDemo } from "~/components/GrowOnlyCounterDemo";
 import { CausalRelationshipDemo } from "~/components/CausalRelationshipDemo";
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
 import {
   GrowOnlyCounterDeliveryOrderEquation,
   GrowOnlyCounterMergeEquation,
@@ -16,23 +17,34 @@ import {
   VectorNotation,
 } from "~/demos/grow-only-counter/VectorNotation";
 
+<DatabaseInternalsReference
+  chapters={[
+    {
+      number: 11,
+      concept: "Causal consistency, strong eventual consistency, and CRDTs",
+    },
+  ]}
+/>
+
 [Conflict-free replicated data types (CRDTs)](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type) let copies of shared data accept updates independently. Once every copy receives the same updates, they agree.
 
 A grow-only counter, or [G-Counter](<https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#G-Counter_(Grow-only_Counter)>), is a simple example. Each node stores a list of counts, called a vector, with one position per node: <span className="gc-vector">[<NodeLetter index={0} />, <NodeLetter index={1} />, <NodeLetter index={2} />]</span>. A node increments only its own position. Add the entries to read the total.
 
 Nodes share copies of their vectors. When a copy arrives, the receiver keeps the larger number in each position.
 
+Because each position only grows, a G-Counter cannot decrement or remove an increment. Those operations need a different CRDT design, such as a PN-Counter.
+
 <GrowOnlyCounterDemo />
 
-## Two increments, counted once
+## How the merge operation works
 
-The clients increment A and C. B has not received either update, so it still holds <VectorNotation value={[0, 0, 0]} />.
+A and C each increment once, producing <VectorNotation value={[1, 0, 0]} /> and <VectorNotation value={[0, 0, 1]} />. The merge keeps the larger number in each position, so their combined state is <VectorNotation value={[1, 0, 1]} />.
 
 <GrowOnlyCounterMergeEquation />
 
 Messages carry saved counts; sending or receiving them does not add increments. Each message keeps the state it had when sent.
 
-After all four messages arrive, every replica reads `1 + 0 + 1 = 2`. These are copies of one counter, so we do not add their totals together.
+After A and C exchange their saved counts, both read `1 + 0 + 1 = 2`. We merge their vectors; we do not add the totals from the two copies.
 
 ## Why delivery order does not matter
 
@@ -46,11 +58,24 @@ Delayed messages can leave replicas out of sync. Once each receives both increme
 
 ## The connection to vector clocks
 
-A and C each accept a like before hearing from the other. These events are **concurrent**: neither could have influenced the other, regardless of wall-clock time.
+Imagine a social media application where users can like posts. Each Like button click increments the post's counter, so A and C can each accept a like before hearing from the other. These events are **concurrent**: neither could have influenced the other, regardless of wall-clock time.
+
+<figure>
+  <img
+    src="/conflict-free-replicated-data-types/like-button.png"
+    alt="A cursor clicking a blue Like button"
+    width={143}
+    height={100}
+    style={{ display: "block", marginInline: "auto" }}
+  />
+  <figcaption>A Like button click is the domain event we replicate.</figcaption>
+</figure>
 
 When C receives A’s count, it shows 2 likes. A’s like now influences C’s total—a **causal relationship**.
 
 <CausalRelationshipDemo />
+
+**A1** is the first like accepted by A. **C1** is the concurrent like accepted by C. Neither server has heard about the other yet, so neither event caused the other. **C2** is the later event at C after C receives A's saved state. C2 could not possibly show two likes without receiving A1's state: before that message, C knew only about C1 and could show only one like. That dependency—A1 must happen before C2 in the information flow—is the causal relationship.
 
 [Vector clocks](https://en.wikipedia.org/wiki/Vector_clock) track whether events could have influenced each other or were concurrent, without synchronized clocks. G-Counters borrow their vector and maximum-merge approach, but count application increments, not message sends or receives.
 

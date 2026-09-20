@@ -123,18 +123,18 @@ it("authors one discoverable stage", async () => {
   expect(container.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
 });
 
-it("provides a labeled speed selector defaulting to 2×", async () => {
+it("provides a labeled speed selector defaulting to 4×", async () => {
   await act(async () => {
     render(<GrowOnlyCounterDemo />);
   });
   const speed = screen.getByRole("combobox", {
     name: "Speed",
   }) as HTMLSelectElement;
+  expect(speed.value).toBe("4");
+  fireEvent.change(speed, { target: { value: "2" } });
   expect(speed.value).toBe("2");
-  fireEvent.change(speed, { target: { value: "4" } });
-  expect(speed.value).toBe("4");
   fireEvent.click(screen.getByRole("button", { name: "Restart" }));
-  expect(speed.value).toBe("4");
+  expect(speed.value).toBe("2");
 });
 
 it("toggles between side and top views and restores the side with Home", async () => {

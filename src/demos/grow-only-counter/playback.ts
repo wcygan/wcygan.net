@@ -24,7 +24,7 @@ export function createPlayback(now = () => performance.now()) {
   let anchor = now();
   let active = false;
   let reduced = false;
-  let speed = 2;
+  let speed = 4;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
   const running = () => active && action !== null;
