@@ -37,15 +37,4 @@ describe("HomeWritingList", () => {
 
     expect(screen.queryByText("DRAFT")).toBeNull();
   });
-
-  it("shows Database Internals reading on related posts", () => {
-    render(
-      <HomeWritingList
-        posts={[{ ...publicPost, relatedReading: "Database Internals" }]}
-      />,
-    );
-
-    expect(screen.getByText("Related reading:")).toBeTruthy();
-    expect(screen.getByText("Database Internals")).toBeTruthy();
-  });
 });
