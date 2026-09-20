@@ -7,6 +7,7 @@ export interface PostMetadata {
   image?: string;
   imageAlt?: string;
   imageCaption?: string;
+  relatedReading?: string;
   tags?: string[];
   draft?: boolean;
   published?: boolean;

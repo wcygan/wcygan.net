@@ -1,0 +1,4 @@
+interface:
+  display_name: "Related Reading"
+  short_description: "Tag and render related reading across posts"
+  default_prompt: "Use $related-reading to structure and verify related-reading metadata, article references, and homepage cards."

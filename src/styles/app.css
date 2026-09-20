@@ -11525,6 +11525,50 @@ th {
   text-decoration: none;
 }
 
+.home-writing-link.has-related-reading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 20px;
+  align-items: center;
+}
+
+.home-writing-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.home-related-reading {
+  display: inline-flex;
+  max-width: 148px;
+  align-items: center;
+  gap: 8px;
+  color: #63635e;
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.home-related-reading img {
+  display: block;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 32px;
+  margin: 0;
+  border-radius: 2px;
+  outline: 1px solid oklch(0 0 0 / 0.1);
+  outline-offset: -1px;
+}
+
+.home-related-reading-label {
+  min-width: 0;
+}
+
+.home-related-reading-label strong {
+  color: #21201c;
+  font-weight: 600;
+}
+
 .home-writing-link:hover {
   background: #f5f4f4;
   text-decoration: none;
@@ -11935,6 +11979,15 @@ th {
 
   .home-writing-link {
     padding-block: 0;
+  }
+
+  .home-writing-link.has-related-reading {
+    column-gap: 12px;
+  }
+
+  .home-related-reading {
+    max-width: 112px;
+    font-size: 11px;
   }
 
   .home-writing-list {

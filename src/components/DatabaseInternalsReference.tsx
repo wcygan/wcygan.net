@@ -49,6 +49,23 @@ export interface DatabaseInternalsReferenceProps {
   chapters: readonly DatabaseInternalsChapterReference[];
 }
 
+export function DatabaseInternalsMiniReference() {
+  return (
+    <span className="home-related-reading">
+      <img
+        src="/database-internals/database-internals-cover.png"
+        alt=""
+        aria-hidden="true"
+        width={296}
+        height={388}
+      />
+      <span className="home-related-reading-label">
+        <strong>Related reading:</strong> Database Internals
+      </span>
+    </span>
+  );
+}
+
 export function DatabaseInternalsReference({
   chapters,
 }: DatabaseInternalsReferenceProps) {

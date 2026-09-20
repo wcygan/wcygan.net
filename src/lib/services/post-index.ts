@@ -52,6 +52,9 @@ export function buildPostIndex(
           image: post.frontmatter.image,
           imageAlt: post.frontmatter.imageAlt,
           imageCaption: post.frontmatter.imageCaption,
+          ...(post.frontmatter.relatedReading
+            ? { relatedReading: post.frontmatter.relatedReading }
+            : {}),
           tags: post.frontmatter.tags || [],
           draft: isDraft || post.frontmatter.draft,
           readingTime: readingTimeFor(post),
