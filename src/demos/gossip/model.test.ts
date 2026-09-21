@@ -1,28 +1,44 @@
 import { describe, expect, it } from "vitest";
-import { exchange, EXCHANGES, NODES, snapshot } from "./model";
+import { DEFAULT_SPEED, DURATION, exchange, snapshot, STEPS } from "./model";
 
-describe("gossip knowledge", () => {
-  it("starts with knowledge at E and introduces E through the seed", () => {
-    expect(snapshot(0).knowledge).toEqual({ A: 0, B: 0, C: 0, D: 0, E: 2 });
-    expect(snapshot(1).knowledge).toEqual({ A: 2, B: 0, C: 0, D: 0, E: 2 });
+describe("gossip join story", () => {
+  it("shows the existing cluster before E arrives or contacts its seed", () => {
+    expect(snapshot(0)).toMatchObject({ ePresent: false, count: 0 });
+    expect(STEPS.slice(0, 3)).toEqual([
+      { kind: "cluster" },
+      { kind: "arrival", node: "E" },
+      { kind: "exchange", from: "E", to: "A", role: "seed" },
+    ]);
+    expect(snapshot(2).knowledge).toEqual({
+      A: false,
+      B: false,
+      C: false,
+      D: false,
+      E: true,
+    });
   });
-  it("merges both peers without changing other observers or its input", () => {
-    const input = snapshot(1).knowledge;
-    expect(exchange(input, "B", "A")).toEqual({ ...input, B: 2 });
-    expect(input.B).toBe(0);
+
+  it("only informs peers through the scheduled pairwise exchanges", () => {
+    expect(snapshot(3).knowledge).toMatchObject({ A: true, B: false });
+    expect(snapshot(4).knowledge).toMatchObject({ A: true, B: true, C: false });
+    expect(snapshot(5).knowledge).toMatchObject({ B: true, C: true, D: false });
   });
-  it("allows redundant exchanges and never decreases local knowledge", () => {
-    expect(snapshot(3).knowledge).toEqual(snapshot(2).knowledge);
-    for (let i = 1; i <= EXCHANGES.length; i++) {
-      for (const node of NODES)
-        expect(snapshot(i).knowledge[node]).toBeGreaterThanOrEqual(
-          snapshot(i - 1).knowledge[node],
-        );
-    }
+
+  it("merges peer knowledge without mutating its input", () => {
+    const input = snapshot(3).knowledge;
+    expect(exchange(input, "A", "B")).toEqual({ ...input, B: true });
+    expect(input.B).toBe(false);
   });
-  it("converges indirectly and rejects a delayed older version", () => {
-    expect(snapshot(5).knowledge).toEqual({ A: 2, B: 2, C: 2, D: 2, E: 2 });
-    expect(snapshot(6).knowledge).toEqual(snapshot(5).knowledge);
-    expect(snapshot(6).done).toBe(true);
+
+  it("converges deterministically in under five seconds", () => {
+    expect(DURATION / DEFAULT_SPEED).toBe(4_800);
+    expect(snapshot(STEPS.length).knowledge).toEqual({
+      A: true,
+      B: true,
+      C: true,
+      D: true,
+      E: true,
+    });
+    expect(snapshot(STEPS.length).done).toBe(true);
   });
 });

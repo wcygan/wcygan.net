@@ -14565,6 +14565,13 @@ th {
   position: relative;
   overflow: hidden;
 }
+.epidemic-stage canvas {
+  cursor: grab;
+  touch-action: none;
+}
+.epidemic-stage canvas:active {
+  cursor: grabbing;
+}
 .epidemic-turn-counter {
   position: absolute;
   inset-block-start: 8px;
@@ -14634,11 +14641,9 @@ th {
 }
 .gossip-demo {
   --gossip-blue: oklch(0.546 0.245 262.881);
-  --gossip-blue-ink: oklch(0.379 0.146 265.522);
-  --gossip-blue-wash: oklch(0.97 0.014 254.604);
-  --gossip-amber: oklch(0.555 0.163 48.998);
-  --gossip-amber-ink: oklch(0.414 0.112 45.904);
-  --gossip-amber-wash: oklch(0.987 0.022 95.277);
+  --gossip-green: oklch(0.648 0.168 145.79);
+  --gossip-green-ink: oklch(0.47 0.124 145.79);
+  --gossip-green-wash: oklch(0.97 0.02 145.79);
 }
 .gossip-demo .gossip-message-key {
   margin-block: 8px 16px;
@@ -14650,23 +14655,23 @@ th {
   width: 10px;
   height: 10px;
   margin-inline-end: 6px;
-  background: var(--gossip-blue);
   border-radius: 2px;
 }
+.gossip-message-key > span[data-state="unaware"] {
+  background: var(--gossip-blue);
+}
+.gossip-message-key > span[data-state="informed"] {
+  background: var(--gossip-green);
+}
 .gossip-demo .gossip-exchange {
-  color: var(--gossip-blue-ink);
-  background: var(--gossip-blue-wash);
-  border-inline-start: 3px solid var(--gossip-blue);
+  color: var(--gossip-green-ink);
+  background: var(--gossip-green-wash);
+  border-inline-start: 3px solid var(--gossip-green);
   padding: 12px;
   margin-block: 0 12px;
   font:
     500 14px/1.5 Lilex,
     monospace;
-}
-.gossip-demo .gossip-exchange[data-stale="true"] {
-  color: var(--gossip-amber-ink);
-  background: var(--gossip-amber-wash);
-  border-color: var(--gossip-amber);
 }
 .gossip-stage {
   height: 360px;
@@ -14706,36 +14711,27 @@ th {
   background: #21201c;
   color: #fdfdfc;
 }
-.gossip-knowledge {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+.gossip-speed {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  border-block: 1px solid #e4e3de;
-  padding-block: 12px;
-}
-.gossip-knowledge span,
-.gossip-knowledge strong {
-  display: block;
-  font:
-    400 12px/1.6 Lilex,
-    monospace;
-  white-space: nowrap;
-}
-.gossip-knowledge span {
-  color: #63635e;
-}
-.gossip-knowledge strong {
-  color: #21201c;
-}
-.gossip-knowledge [data-informed="true"] strong {
-  color: var(--gossip-blue-ink);
-  font-weight: 600;
-}
-.gossip-demo .gossip-status {
   font-size: 14px;
-  line-height: 1.6;
-  min-height: 68px;
-  margin-block: 16px 8px;
+}
+.gossip-speed select {
+  min-height: 44px;
+  min-width: 64px;
+  padding: 8px;
+  border: 1px solid #e4e3de;
+  border-radius: 3px;
+  background: #fdfdfc;
+  color: #21201c;
+  font:
+    500 14px/1.4 Inter,
+    sans-serif;
+}
+.gossip-speed select:focus-visible {
+  outline: 2px solid #466eaa;
+  outline-offset: 2px;
 }
 .gossip-node-label,
 .gossip-version-label,
@@ -14752,23 +14748,18 @@ th {
   translate: 0 -32px;
 }
 .gossip-packet-label {
-  color: var(--gossip-blue-ink);
-  background: var(--gossip-blue-wash);
-  border: 1px solid var(--gossip-blue);
+  color: var(--gossip-green-ink);
+  background: var(--gossip-green-wash);
+  border: 1px solid var(--gossip-green);
   padding: 6px 8px;
   border-radius: 3px;
-}
-.gossip-packet-stale {
-  color: var(--gossip-amber-ink);
-  background: var(--gossip-amber-wash);
-  border-color: var(--gossip-amber);
 }
 .gossip-version-label {
   color: #63635e;
   translate: 0 32px;
 }
 .gossip-version-label.gossip-informed {
-  color: var(--gossip-blue-ink);
+  color: var(--gossip-green-ink);
   font-weight: 600;
 }
 .gossip-fallback {
@@ -14782,13 +14773,6 @@ th {
 @media (max-width: 639px) {
   .gossip-stage {
     height: 310px;
-  }
-  .gossip-knowledge {
-    gap: 4px;
-  }
-  .gossip-knowledge span,
-  .gossip-knowledge strong {
-    font-size: 10px;
   }
   .gossip-version-label,
   .gossip-packet-label {

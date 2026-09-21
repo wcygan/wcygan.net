@@ -1,0 +1,38 @@
+---
+title: Gossip Protocols
+date: "2026-09-21T12:00:00-05:00"
+description: Spreading cluster state through peer-to-peer exchange
+relatedReading: Database Internals
+tags: [Distributed Systems]
+---
+
+import { GossipDemo } from "~/components/GossipDemo";
+import { EpidemicSpreadDemo } from "~/components/EpidemicSpreadDemo";
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
+
+<DatabaseInternalsReference
+  chapters={[{ number: 12, concept: "Gossip protocols" }]}
+/>
+
+A [gossip protocol](https://en.wikipedia.org/wiki/Gossip_protocol#:~:text=A%20gossip%20protocol%20or%20epidemic%20protocol%20is%20a%20procedure%20or%20process%20of%20computer%20peer%2Dto%2Dpeer%20communication%20that%20is%20based%20on%20the%20way%20epidemics%20spread.) spreads
+information through repeated exchanges between peers. A node chooses another
+node, shares what it knows, and the recipient can pass that information along.
+It's similar to to [how disease spreads during an epidemic](https://en.wikipedia.org/wiki/Epidemic#:~:text=rapid%20spread%20of%20disease%20to%20a%20large%20number%20of%20hosts%20in%20a%20given%20population%20within%20a%20short%20period%20of%20time).
+
+<EpidemicSpreadDemo />
+
+In [Cassandra](https://cassandra.apache.org/doc/stable/cassandra/architecture/overview.html), a new node can introduce itself to a seed node, who will gossip to it's peers, introducing them to the new node.
+
+<GossipDemo />
+
+## Gossip in Cassandra
+
+[Cassandra’s gossip documentation](https://cassandra.apache.org/doc/stable/cassandra/architecture/dynamo.html#gossip)
+explains that nodes exchange endpoint state: membership, heartbeats, and other
+cluster metadata. When a node joins, it contacts a seed node. Gossip then spreads
+that membership information to other peers.
+
+In the code, [`GossipTask.run`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L337-L385)
+starts a gossip exchange, and
+[`sendGossip`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L984-L1012)
+chooses a peer to contact.

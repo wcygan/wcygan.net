@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { DemoSceneLoading, useSceneReady } from "./DemoSceneLoading";
-import { CAPTIONS, EXCHANGES, NODES, snapshot } from "~/demos/gossip/model";
+import { DEFAULT_SPEED, snapshot, STEPS } from "~/demos/gossip/model";
 import { createPlayback } from "~/demos/gossip/playback";
 
 const Scene = lazy(() => import("~/demos/gossip/Scene"));
@@ -47,7 +47,8 @@ export function GossipDemo() {
   const [documentVisible, setDocumentVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
   const [playing, setPlaying] = useState(true);
-  const [top, setTop] = useState(false);
+  const [top, setTop] = useState(true);
+  const [speed, setSpeed] = useState(DEFAULT_SPEED);
   const active =
     (ready || failed) &&
     visible &&
@@ -62,7 +63,7 @@ export function GossipDemo() {
       setReduced(media.matches);
       if (media.matches) {
         playback.setActive(false);
-        playback.seek(EXCHANGES.length);
+        playback.seek(STEPS.length);
         setPlaying(false);
       }
     };
@@ -98,15 +99,22 @@ export function GossipDemo() {
       data-graphic-key="gossip"
       aria-label="How gossip spreads knowledge of a new node"
     >
-      <p className="article-graphic-title">Spreading the news: “E is here”</p>
-      <p className="gossip-message-key">
-        <span aria-hidden="true" /> Blue carries E’s introduction. A blue node
-        knows E; a gray node has not heard yet.
+      <p className="article-graphic-title">
+        Spreading membership news: “E has joined the cluster”
       </p>
-      <p className="gossip-exchange" data-stale={!!state.event?.stale}>
+      <p className="gossip-message-key">
+        <span aria-hidden="true" data-state="unaware" /> Blue nodes have not
+        learned about E. <span aria-hidden="true" data-state="informed" /> Green
+        nodes have. Gossip spreads cluster membership knowledge peer to peer.
+      </p>
+      <p className="gossip-exchange">
         {state.done
-          ? "Everyone knows E · older update ignored"
-          : `${state.event.from} → ${state.event.to} · ${state.event.stale ? "Delayed introduction · v1" : "E is here · v2"}`}
+          ? "Converged · A–E all know the membership"
+          : state.step.kind === "cluster"
+            ? "Existing cluster · A–D"
+            : state.step.kind === "arrival"
+              ? "New node arriving · E"
+              : `${state.step.from} → ${state.step.to} · ${state.step.role === "seed" ? "First contact via seed" : "Peer gossip: E joined"}`}
       </p>
       <div
         ref={stage}
@@ -117,8 +125,8 @@ export function GossipDemo() {
         {!ready && !failed && <DemoSceneLoading />}
         {failed ? (
           <p className="gossip-fallback">
-            3D is unavailable. Step through the exchanges and read each node’s
-            knowledge below.
+            3D is unavailable. Step through E’s arrival and the gossip sequence
+            using the exchange status above.
           </p>
         ) : (
           loaded && (
@@ -175,24 +183,27 @@ export function GossipDemo() {
         >
           Top view
         </button>
+        <label className="gossip-speed">
+          Speed
+          <select
+            aria-label="Gossip speed"
+            disabled={reduced}
+            value={speed}
+            onChange={(event) => {
+              const nextSpeed = Number(event.target.value);
+              setSpeed(nextSpeed);
+              playback.setSpeed(nextSpeed);
+            }}
+          >
+            <option value={1}>1×</option>
+            <option value={2}>2×</option>
+            <option value={4}>4×</option>
+          </select>
+        </label>
       </div>
-      <div className="gossip-knowledge" aria-label="Each node’s knowledge of E">
-        {NODES.map((node) => (
-          <div key={node} data-informed={!!state.knowledge[node]}>
-            <span>
-              {node}
-              {node === "A" ? " · seed" : node === "E" ? " · new" : ""}
-            </span>
-            <strong>{state.knowledge[node] ? "Knows E" : "Not yet"}</strong>
-          </div>
-        ))}
-      </div>
-      <p className="gossip-status" role="status">
-        {CAPTIONS[count]}
-      </p>
       <figcaption>
-        One illustrative sequence of peer choices. Drag to orbit; scroll to
-        zoom. Top view restores a readable overview.
+        Dashed lines show established peer relationships. Drag to orbit; scroll
+        to zoom.
       </figcaption>
     </figure>
   );

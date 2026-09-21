@@ -1,14 +1,18 @@
-import { BEAT_MS, DURATION } from "./model";
+import { BEAT_MS, DEFAULT_SPEED, DURATION } from "./model";
 
-export function createPlayback() {
+export function createPlayback(initialSpeed = DEFAULT_SPEED) {
   let elapsed = 0;
   let anchor = 0;
   let active = false;
+  let speed = initialSpeed;
   let completed = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
   const getTime = () =>
-    Math.min(DURATION, elapsed + (active ? performance.now() - anchor : 0));
+    Math.min(
+      DURATION,
+      elapsed + (active ? (performance.now() - anchor) * speed : 0),
+    );
   const publish = () => listeners.forEach((listener) => listener());
   function schedule() {
     clearTimeout(timer);
@@ -22,7 +26,7 @@ export function createPlayback() {
         schedule();
         publish();
       },
-      Math.max(1, Math.ceil((completed + 1) * BEAT_MS - getTime())),
+      Math.max(1, Math.ceil(((completed + 1) * BEAT_MS - getTime()) / speed)),
     );
   }
   return {
@@ -38,6 +42,13 @@ export function createPlayback() {
       elapsed = getTime();
       anchor = performance.now();
       active = value && elapsed < DURATION;
+      schedule();
+    },
+    setSpeed(value: number) {
+      if (!Number.isFinite(value) || value <= 0) return;
+      elapsed = getTime();
+      anchor = performance.now();
+      speed = value;
       schedule();
     },
     seek(count: number) {

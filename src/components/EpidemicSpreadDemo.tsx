@@ -155,17 +155,6 @@ export function EpidemicSpreadDemo() {
       <div className="gossip-controls">
         <button
           type="button"
-          disabled={infected > 0}
-          onClick={() => {
-            autoStarted.current = true;
-            setState(infectRandom());
-            setPlaying(!reduced);
-          }}
-        >
-          Infect random node
-        </button>
-        <button
-          type="button"
           disabled={!infected || done}
           onClick={() => setPlaying(!playing)}
         >
@@ -192,19 +181,6 @@ export function EpidemicSpreadDemo() {
           Reset
         </button>
       </div>
-      <p className="epidemic-status" role="status">
-        {!infected
-          ? "36 uninfected nodes. Infect one to begin."
-          : done
-            ? `All 36 nodes infected after ${state.turn} turns. Spread complete.`
-            : `Turn ${state.turn} · ${infected} / 36 infected · ${state.transmissions.length} new this turn`}
-      </p>
-      <figcaption>
-        Each turn, every infected node has an independent 50% chance to infect
-        each uninfected neighbor: up, down, left, and right. Blue neighbors turn
-        green; green neighbors stay infected. New infections can spread on the
-        next turn. Two turns per second; use Next turn to inspect each round.
-      </figcaption>
     </figure>
   );
 }
