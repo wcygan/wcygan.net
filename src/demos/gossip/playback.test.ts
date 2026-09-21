@@ -1,0 +1,22 @@
+import { afterEach, expect, it, vi } from "vitest";
+import { createPlayback } from "./playback";
+import { BEAT_MS, DURATION } from "./model";
+afterEach(() => vi.useRealTimers());
+it("preserves partial exchanges across pauses and stops at the outcome", () => {
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "performance"] });
+  const player = createPlayback();
+  player.setActive(true);
+  vi.advanceTimersByTime(1000);
+  player.setActive(false);
+  vi.advanceTimersByTime(5000);
+  expect(player.getTime()).toBe(1000);
+  player.setActive(true);
+  vi.advanceTimersByTime(BEAT_MS - 1000);
+  expect(player.getSnapshot()).toBe(1);
+  vi.advanceTimersByTime(DURATION);
+  expect(player.getSnapshot()).toBe(6);
+  expect(player.getTime()).toBe(DURATION);
+  expect(vi.getTimerCount()).toBe(0);
+  player.seek(0);
+  expect(player.getSnapshot()).toBe(0);
+});

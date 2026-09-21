@@ -14559,6 +14559,243 @@ th {
   }
 }
 
+/* Gossip: local knowledge stays readable independently of WebGL. */
+.epidemic-stage {
+  height: 380px;
+  position: relative;
+  overflow: hidden;
+}
+.epidemic-turn-counter {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-start: 12px;
+  z-index: 2;
+  pointer-events: none;
+  color: #21201c;
+  font:
+    500 12px/1.5 Lilex,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.epidemic-demo .epidemic-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-block: 12px;
+}
+.epidemic-key > span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: oklch(0.546 0.245 262.881);
+  color: white;
+  font:
+    600 16px/1 Inter,
+    sans-serif;
+}
+.epidemic-key > span[data-infected="true"] {
+  background: oklch(0.527 0.154 150.069);
+  margin-inline-start: 12px;
+}
+.epidemic-demo .epidemic-status {
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 24px;
+  margin-block: 12px;
+}
+.epidemic-fallback-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  place-items: center;
+  gap: 12px;
+  max-width: 360px;
+  margin: auto;
+  padding: 24px;
+}
+.epidemic-fallback-grid span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: oklch(0.546 0.245 262.881);
+  color: white;
+}
+.epidemic-fallback-grid span[data-infected="true"] {
+  background: oklch(0.527 0.154 150.069);
+}
+@media (max-width: 639px) {
+  .epidemic-stage {
+    height: 320px;
+  }
+}
+.gossip-demo {
+  --gossip-blue: oklch(0.546 0.245 262.881);
+  --gossip-blue-ink: oklch(0.379 0.146 265.522);
+  --gossip-blue-wash: oklch(0.97 0.014 254.604);
+  --gossip-amber: oklch(0.555 0.163 48.998);
+  --gossip-amber-ink: oklch(0.414 0.112 45.904);
+  --gossip-amber-wash: oklch(0.987 0.022 95.277);
+}
+.gossip-demo .gossip-message-key {
+  margin-block: 8px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.gossip-message-key > span {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-inline-end: 6px;
+  background: var(--gossip-blue);
+  border-radius: 2px;
+}
+.gossip-demo .gossip-exchange {
+  color: var(--gossip-blue-ink);
+  background: var(--gossip-blue-wash);
+  border-inline-start: 3px solid var(--gossip-blue);
+  padding: 12px;
+  margin-block: 0 12px;
+  font:
+    500 14px/1.5 Lilex,
+    monospace;
+}
+.gossip-demo .gossip-exchange[data-stale="true"] {
+  color: var(--gossip-amber-ink);
+  background: var(--gossip-amber-wash);
+  border-color: var(--gossip-amber);
+}
+.gossip-stage {
+  height: 360px;
+  position: relative;
+  overflow: hidden;
+}
+.gossip-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 12px 20px;
+}
+.gossip-controls button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 12px;
+  border: 1px solid #e4e3de;
+  border-radius: 5px;
+  background: #fdfdfc;
+  color: #21201c;
+  font:
+    500 14px/1.4 Inter,
+    sans-serif;
+}
+.gossip-controls button:hover {
+  background: #f7f6f3;
+}
+.gossip-controls button:focus-visible {
+  outline: 2px solid #466eaa;
+  outline-offset: 2px;
+}
+.gossip-controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.gossip-controls button[aria-pressed="true"] {
+  background: #21201c;
+  color: #fdfdfc;
+}
+.gossip-knowledge {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  border-block: 1px solid #e4e3de;
+  padding-block: 12px;
+}
+.gossip-knowledge span,
+.gossip-knowledge strong {
+  display: block;
+  font:
+    400 12px/1.6 Lilex,
+    monospace;
+  white-space: nowrap;
+}
+.gossip-knowledge span {
+  color: #63635e;
+}
+.gossip-knowledge strong {
+  color: #21201c;
+}
+.gossip-knowledge [data-informed="true"] strong {
+  color: var(--gossip-blue-ink);
+  font-weight: 600;
+}
+.gossip-demo .gossip-status {
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 68px;
+  margin-block: 16px 8px;
+}
+.gossip-node-label,
+.gossip-version-label,
+.gossip-packet-label {
+  pointer-events: none;
+  white-space: nowrap;
+  color: #21201c;
+  font:
+    500 13px/1.2 Lilex,
+    monospace;
+}
+.gossip-node-label {
+  font-size: 18px;
+  translate: 0 -32px;
+}
+.gossip-packet-label {
+  color: var(--gossip-blue-ink);
+  background: var(--gossip-blue-wash);
+  border: 1px solid var(--gossip-blue);
+  padding: 6px 8px;
+  border-radius: 3px;
+}
+.gossip-packet-stale {
+  color: var(--gossip-amber-ink);
+  background: var(--gossip-amber-wash);
+  border-color: var(--gossip-amber);
+}
+.gossip-version-label {
+  color: #63635e;
+  translate: 0 32px;
+}
+.gossip-version-label.gossip-informed {
+  color: var(--gossip-blue-ink);
+  font-weight: 600;
+}
+.gossip-fallback {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  padding: 24px;
+  font-size: 14px;
+  color: #63635e;
+}
+@media (max-width: 639px) {
+  .gossip-stage {
+    height: 310px;
+  }
+  .gossip-knowledge {
+    gap: 4px;
+  }
+  .gossip-knowledge span,
+  .gossip-knowledge strong {
+    font-size: 10px;
+  }
+  .gossip-version-label,
+  .gossip-packet-label {
+    font-size: 11px;
+  }
+}
+
 /* Kafka partitioning: a small 3D scene with an accessible HTML ledger. */
 .kafka-demo {
   --kafka-orange: #d87842;

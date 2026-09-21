@@ -1,0 +1,105 @@
+---
+title: Gossip Protocols
+date: "3000-09-21T12:00:00-05:00"
+description: Spreading cluster state through peer-to-peer exchange
+tags: [Distributed Systems]
+---
+
+import { GossipDemo } from "~/components/GossipDemo";
+import { EpidemicSpreadDemo } from "~/components/EpidemicSpreadDemo";
+
+A [gossip protocol](https://en.wikipedia.org/wiki/Gossip_protocol#:~:text=A%20gossip%20protocol%20or%20epidemic%20protocol%20is%20a%20procedure%20or%20process%20of%20computer%20peer%2Dto%2Dpeer%20communication%20that%20is%20based%20on%20the%20way%20epidemics%20spread.) spreads
+information through repeated conversations between peers. A node chooses another
+node, shares what it knows, and the recipient can pass that information along.
+Nodes can learn about peers they have never contacted directly.
+
+Start with a simple infection spreading across a grid. An infected node can pass
+the infection to a neighbor, which can then pass it on in a later turn.
+
+<EpidemicSpreadDemo />
+
+Gossip uses a similar idea to spread information. The grid above limits contacts
+to immediate neighbors; Cassandra can choose peers elsewhere in the cluster.
+The infection is an analogy: the next demo spreads knowledge of a new node.
+
+Here, the news is **“E is here.”** Follow the blue introduction from E to A,
+then between peers. Each gray node turns blue when it learns about E. The version
+number tells peers which introduction is newer; it is metadata about E, not a
+database row being copied.
+
+<GossipDemo />
+
+## Learning through peers
+
+E introduces itself to A, a seed node. A tells B, B tells C, and C tells D.
+An exchange between two already-informed peers adds nothing. The update spreads
+through repeated conversations, but the number of informed nodes does not double
+with every exchange.
+
+Each node keeps its own view. In this example, everyone eventually learns E’s
+version 2. When a delayed version 1 reaches D, D keeps the newer version.
+
+## Gossip in Cassandra
+
+[Cassandra’s gossip documentation](https://cassandra.apache.org/doc/stable/cassandra/architecture/dynamo.html#gossip)
+describes how nodes exchange endpoint state: information about a node’s identity,
+heartbeat, and other cluster metadata. Seeds provide initial contacts for
+discovery. The same peer exchanges carry information learned from other nodes.
+
+The code links below are pinned to commit
+[`81b4580` on Cassandra’s 5.0 branch](https://github.com/apache/cassandra/commit/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8),
+so the referenced implementation and line numbers remain stable.
+
+### Choosing a peer
+
+[`GossipTask.run`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L337-L385)
+updates the local heartbeat, builds a summary of known endpoint state, and starts
+an exchange with a live peer. The random choice happens in
+[`sendGossip`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L984-L1012):
+it selects an index from the eligible endpoints and sends the message there.
+
+The task also considers unreachable peers and seeds. Those additional contacts
+are conditional and probabilistic; a seed does not relay every message. See
+[`maybeGossipToUnreachableMember` and `maybeGossipToSeed`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L1014-L1056).
+
+### Exchanging what is missing
+
+A normal exchange has three messages. Suppose A starts a conversation with B:
+
+1. **A → B, SYN:** A sends a digest—a summary containing each known endpoint,
+   its generation, and its maximum state version. See
+   [`makeGossipDigest`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L811-L832).
+2. **B → A, ACK:** B compares that summary with its own view. Its reply includes
+   state A is missing and requests for state B needs. See
+   [`createNormalReply`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/GossipDigestSynVerbHandler.java#L115-L123).
+3. **A → B, ACK2:** A applies the received state and sends the requested updates
+   back. See the
+   [ACK handler](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/GossipDigestAckVerbHandler.java#L80-L100)
+   and the
+   [ACK2 handler that applies the response at B](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/GossipDigestAck2VerbHandler.java#L47-L50).
+
+This is how A can teach B about E: E’s state appears in A’s local view and can be
+included in an exchange, even though E is not participating in that conversation.
+The digest helps peers identify what they need before transferring state.
+
+### Keeping newer knowledge
+
+The demo’s v1 and v2 belong to the same generation. Cassandra also compares
+generations, which distinguish incarnations of an endpoint across restarts.
+In [`applyStateLocally`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L1738-L1784),
+a newer valid generation takes precedence. Within the same generation, a higher
+remote maximum version triggers a merge; an older or equal version is ignored.
+
+The merge then checks individual application-state entries.
+[`applyNewStates`](https://github.com/apache/cassandra/blob/81b458017d8aef6e7dcd91d3f31d651bdad1aaa8/src/java/org/apache/cassandra/gms/Gossiper.java#L1788-L1806)
+keeps entries whose remote version is newer than the local copy, along with entries
+the node has not seen before. That is the concrete rule behind D retaining v2
+when the amber v1 message arrives.
+
+### What the demo leaves out
+
+This scene follows one piece of state about E, within one generation. It uses a
+fixed sequence of peer choices and shows exchanges one at a time; real nodes act
+independently, exchange state summaries and updates, and keep gossiping. The late
+v1 message represents an earlier update delayed in transit. Learning about E does
+not mean E has finished joining or copying database data.
