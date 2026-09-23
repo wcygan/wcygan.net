@@ -8,7 +8,9 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
+import { blogPostIndexPlugin } from "./scripts/blog-post-index-plugin";
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
+import { postReloadPlugin } from "./scripts/post-reload-plugin";
 import { recmaPostToc, remarkPostToc } from "./scripts/remark-post-toc";
 import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHttp";
 import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
@@ -24,6 +26,7 @@ export default defineConfig(({ command }) => ({
     postcss: "./postcss.config.js",
   },
   plugins: [
+    blogPostIndexPlugin(),
     mdx({
       remarkPlugins: [
         remarkFrontmatter,
@@ -116,6 +119,7 @@ export default defineConfig(({ command }) => ({
     react(),
     nitro({ preset: "deno-server" }),
     siteMetadataPlugin(),
+    postReloadPlugin(),
   ],
   resolve: {
     alias: [

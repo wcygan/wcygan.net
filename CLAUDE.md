@@ -334,6 +334,15 @@ backing model, engine, renderer, viewport, and tests in `src/demos/`, and the
 vendored PlanetScale reference library in
 `.agents/skills/planet-scale-animation-design-system/references/`.
 
+Load the repository's `$3d-modeling` skill before creating, editing, reviewing,
+or debugging an interactive 3D scene in any article. Its guidance applies
+across post subjects. Kafka Partitioning and Failure Detectors provide concrete
+examples. Most posts contain a bespoke visualization or interactive demo. For
+each new or revised post visual, consider whether 3D geometry, spatial
+relationships, or camera interaction would clarify the lesson; consult this
+skill when they would. Follow its relevant references for geometry, cameras,
+materials, labels, article integration, and performance.
+
 The approved visual reference is the N+1 query race on
 `/n-plus-one-sql-query`, implemented by `NPlusOneQueryDemos.tsx` and the
 `/* N+1 query race */` styles in `app.css`. Treat it as a craft benchmark, not a
@@ -342,6 +351,8 @@ layout template.
 New or redesigned diagrams must:
 
 - feel like part of the article rather than a miniature dashboard;
+- give each demo a short, plain name that says what it shows, such as “Leader
+  Election” or “Log Replication”;
 - default to black, white, and warm gray, using structure before color;
 - explain one invariant through direct labels and inspectable state;
 - use grouping, rhythm, line treatment, and persistent settled state to compare

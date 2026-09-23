@@ -1,22 +1,6 @@
-import type { Post, PostMetadata } from "~/lib/types";
-import {
-  draftPostFiles,
-  includeDraftPosts,
-} from "~/lib/services/draft-post-modules";
-import { buildPostIndex, findPostBySlug } from "./post-index";
-import type { MdxModule } from "./post-modules";
-
-type BlogMdxModule = MdxModule & { frontmatter: PostMetadata };
-
-const postFiles = import.meta.glob<BlogMdxModule>(
-  ["/src/posts/*.mdx", "!/src/posts/*.draft.mdx"],
-  { eager: true },
-);
-
-const posts: Post[] = buildPostIndex(
-  [...Object.entries(postFiles), ...Object.entries(draftPostFiles)],
-  { includeDrafts: includeDraftPosts },
-);
+import type { Post } from "~/lib/types";
+import { posts } from "virtual:blog-post-index";
+import { findPostBySlug } from "./post-index";
 
 export function getAllPosts(): Post[] {
   return posts;
@@ -40,7 +24,7 @@ export interface AdjacentPosts {
 // Posts are sorted newest-first, so prev is the newer neighbor (lower index)
 // and next is the older neighbor (higher index).
 export function getAdjacentPosts(slug: string): AdjacentPosts {
-  const index = posts.findIndex((p) => p.slug === slug);
+  const index = posts.findIndex((post) => post.slug === slug);
   if (index === -1) return { prev: null, next: null };
 
   const prevPost = index > 0 ? posts[index - 1] : null;

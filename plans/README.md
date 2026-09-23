@@ -4,12 +4,15 @@
 | --- | ---------------------------------------------------------------------------------------- | -------- | ------ | ------------ |
 | 001 | [Slow and clarify the N+1 query race](001-clarify-n-plus-one-query-race.md)              | MEDIUM   | DONE   | None         |
 | 002 | [Connect each ETL actor with rounded payload handoffs](002-hop-incremental-etl-event.md) | HIGH     | TODO   | None         |
+| 003 | [Clarify transaction event motion](003-polish-distributed-transaction-motion.md)         | MEDIUM   | DONE   | None         |
 
 ## Recommended execution order
 
 1. Plan 001 is complete.
 2. Execute plan 002 next. It is isolated to the existing incremental ETL
    component, deterministic model/tests, and canonical CSS section.
+3. Plan 003 is complete. All five transaction models were polished in article
+   order and checked on desktop and mobile.
 
 ## Execution
 

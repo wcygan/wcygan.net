@@ -1,21 +1,23 @@
 ---
 title: Embeddings
-date: September 2, 3000
-description: Representing text as vectors for semantic search
+date: September 21, 4000
+description: Finding meaning in a space of numbers
 tags: [Machine Learning, Data, Architecture]
 ---
 
-<figure style={{ maxWidth: "60%", margin: "0 auto" }}>
-  <img
-    src="/embeddings/latitude-longitude.png"
-    alt="Globe diagram showing latitude and longitude: a shaded wedge from the North Pole to the center of Earth marks New Orleans at 30° N. Latitude and 90° W. Longitude."
-    width={1467}
-    height={1568}
-  />
-  <figcaption>
-    Earth's coordinate system: latitude from the equator, longitude from the
-    prime meridian. Image © Encyclopædia Britannica, Inc.
-  </figcaption>
-</figure>
+import {
+  EmbeddingCoordinatesDemo,
+  EmbeddingSearchDemo,
+  EmbeddingJobMatchDemo,
+} from "~/components/EmbeddingDemos";
 
-{/* TODO: body */}
+<EmbeddingCoordinatesDemo />
+
+<EmbeddingSearchDemo />
+
+<EmbeddingJobMatchDemo />
+
+An application can embed profile and job summaries in one batch, then rank the
+job vectors against a profile vector. The [Batching article's embeddings
+section](/batching#embeddings) describes submitting those inputs to the
+embeddings endpoint.

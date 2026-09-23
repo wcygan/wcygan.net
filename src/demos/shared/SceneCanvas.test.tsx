@@ -2,7 +2,7 @@
 import { act, cleanup, render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { SceneCanvas } from "./SceneCanvas";
+import { resetWebGL2SupportForTests, SceneCanvas } from "./SceneCanvas";
 
 const fiber = vi.hoisted(() => ({ frame: () => {}, invalidate: vi.fn() }));
 vi.mock("@react-three/fiber", () => ({
@@ -14,6 +14,7 @@ vi.mock("@react-three/fiber", () => ({
     select({ invalidate: fiber.invalidate }),
 }));
 beforeEach(() => {
+  resetWebGL2SupportForTests();
   vi.useFakeTimers();
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
     getExtension: () => null,
@@ -21,6 +22,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  resetWebGL2SupportForTests();
   vi.useRealTimers();
   vi.restoreAllMocks();
 });

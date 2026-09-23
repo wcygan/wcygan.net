@@ -6,7 +6,8 @@
   "tasks": {
     "dev": "PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 scripts/ensure-portless-proxy.sh && PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 portless run deno task dev-vite",
     "dev-vite": "vite dev",
-    "build": "deno run -A scripts/build.mjs",
+    "build": "deno task generate:embedding-land && deno run -A scripts/build.mjs",
+    "generate:embedding-land": "deno run --unstable-sloppy-imports --allow-write=src/demos/embeddings/land-points.generated.ts scripts/generate-embedding-land.mjs",
     "preview": "vite preview",
     "preview-static": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server .output/public",
     "render:diagrams": "node scripts/render-diagrams.mjs",
