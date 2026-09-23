@@ -1,10 +1,10 @@
 import {
   Canvas,
+  type CanvasProps,
   useFrame,
   useThree,
-  type CanvasProps,
 } from "@react-three/fiber";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 let webgl2Support: boolean | undefined;
 
@@ -57,24 +57,73 @@ function FirstFrame({ onReady }: { onReady: () => void }) {
 }
 
 export function SceneCanvas({
+  sceneId,
   onReady,
   onUnavailable,
   children,
   ...props
-}: CanvasProps & { onReady: () => void; onUnavailable: () => void }) {
+}: CanvasProps & {
+  sceneId: string;
+  onReady: () => void;
+  onUnavailable: () => void;
+}) {
   const [supported, setSupported] = useState(false);
+  const timingRef = useRef<{
+    startedAt: number | null;
+    finished: boolean;
+  }>({ startedAt: null, finished: false });
+
+  const finishTiming = useCallback(
+    (outcome: "ready" | "unavailable") => {
+      if (!import.meta.env.DEV) return;
+
+      const timing = timingRef.current;
+      if (timing.finished || timing.startedAt === null) return;
+      timing.finished = true;
+
+      const duration = performance.now() - timing.startedAt;
+      const measureName = `3d-demo:${sceneId}:${outcome}`;
+      performance.measure(measureName, {
+        start: timing.startedAt,
+        duration,
+      });
+      console.info(
+        `[3D timing] ${sceneId}: ${duration.toFixed(1)} ms (${outcome})`,
+      );
+    },
+    [sceneId],
+  );
+
+  const handleReady = useCallback(() => {
+    finishTiming("ready");
+    onReady();
+  }, [finishTiming, onReady]);
+
   useEffect(() => {
+    if (import.meta.env.DEV && timingRef.current.startedAt === null) {
+      // Start before capability detection and Canvas setup. Lazy module loading
+      // has already completed by the time this scene component mounts.
+      timingRef.current.startedAt = performance.now();
+    }
+
     // Renderer creation is asynchronous in Fiber. Detect absent WebGL before
     // mounting so the loading overlay can yield to the usable HTML fallback.
     // All canvases share this page-level check instead of creating one probe
     // context per scene.
-    if (supportsWebGL2(onUnavailable)) setSupported(true);
-  }, [onUnavailable]);
+    if (
+      supportsWebGL2(() => {
+        finishTiming("unavailable");
+        onUnavailable();
+      })
+    ) {
+      setSupported(true);
+    }
+  }, [finishTiming, onUnavailable]);
   if (!supported) return null;
   return (
     <Canvas {...props}>
       {children}
-      <FirstFrame onReady={onReady} />
+      <FirstFrame onReady={handleReady} />
     </Canvas>
   );
 }

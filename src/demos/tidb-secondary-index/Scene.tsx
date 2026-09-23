@@ -1,7 +1,7 @@
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import { PayloadModel } from "../tidb-architecture/PayloadModel";
 import { Processor } from "../tidb-architecture/Processor";
-import { useCallback, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import {
@@ -14,15 +14,15 @@ import {
 } from "three";
 import {
   layout,
-  traversal,
-  sourcePosition,
-  STORAGE_SOURCES,
-  READ_TS,
   packetForStep,
+  type Point,
   PRIMARY_ENTRIES,
+  READ_TS,
   rowPosition,
   SECONDARY_ENTRIES,
-  type Point,
+  sourcePosition,
+  STORAGE_SOURCES,
+  traversal,
   type ViewCommand,
 } from "./model";
 import type { Playback, Snapshot } from "./playback";
@@ -130,12 +130,12 @@ function Camera({
     if (view.kind === "reset") {
       camera.position.set(...POSITION);
       ortho.zoom = fit;
-    } else if (view.kind === "in" || view.kind === "out")
+    } else if (view.kind === "in" || view.kind === "out") {
       ortho.zoom = Math.max(
         fit * 0.7,
         Math.min(fit * 2, ortho.zoom * (view.kind === "in" ? 1.2 : 1 / 1.2)),
       );
-    else {
+    } else {
       const target = new Vector3(...TARGET);
       const spherical = new Spherical().setFromVector3(
         camera.position.clone().sub(target),
@@ -245,7 +245,9 @@ function Tray({
             <Label
               surface
               position={[p[0], y + 0.095, p[2]]}
-              className={`secondary-entry ${selected ? "secondary-entry-selected" : ""}`}
+              className={`secondary-entry ${
+                selected ? "secondary-entry-selected" : ""
+              }`}
             >
               {primary ? (
                 <>
@@ -364,8 +366,9 @@ function Packet({
           String(Math.max(rect.y, Math.min(point.y, rect.y + rect.height))),
         );
       }
-      if (leader.current)
+      if (leader.current) {
         leader.current.style.visibility = rect ? "visible" : "hidden";
+      }
     }
     if (active && state.moving && !reduced) invalidate();
   });
@@ -435,6 +438,7 @@ function World(props: Props) {
 export default function Scene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="tidb-secondary-index"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

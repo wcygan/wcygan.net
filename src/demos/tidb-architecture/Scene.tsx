@@ -2,13 +2,13 @@ import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import { Application, Box, StorageShell } from "./Models";
 import { Processor } from "./Processor";
 import { useEffect, useMemo, useRef } from "react";
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Billboard, Edges, Line, OrbitControls } from "@react-three/drei";
 import {
   DoubleSide,
   Group,
-  Mesh,
   LineCurve3,
+  Mesh,
   OrthographicCamera,
   QuadraticBezierCurve3,
   Shape,
@@ -17,25 +17,25 @@ import {
   WebGLRenderer,
 } from "three";
 import {
-  GROUPS,
-  NODES,
   architectureConnections,
-  messagePoints,
-  operationSteps,
-  regionForUser,
-  regionsOnNode,
-  replicaHeight,
-  REPLICA_BLOCK_HEIGHT,
-  stepParticipants,
   type ArchitectureNode,
   type GroupId,
+  GROUPS,
   type MessagePath,
+  messagePoints,
+  NODES,
+  operationSteps,
   type Point,
   type Region,
+  regionForUser,
+  regionsOnNode,
+  REPLICA_BLOCK_HEIGHT,
+  replicaHeight,
+  stepParticipants,
   type ViewCommand,
 } from "./model";
 import type { Playback, PlaybackSnapshot } from "./playback";
-import { CONNECTIONS, sceneLabels, type Inspection } from "./presentation";
+import { CONNECTIONS, type Inspection, sceneLabels } from "./presentation";
 import { Labels } from "./Labels";
 
 interface Props {
@@ -332,8 +332,9 @@ function World(props: Props) {
   const events = (target: Inspection) => ({
     onPointerOver: (event: ThreeEvent<PointerEvent>) => {
       event.stopPropagation();
-      if (!event.buttons && event.pointerType !== "touch")
+      if (!event.buttons && event.pointerType !== "touch") {
         props.onHover(target);
+      }
     },
     onPointerOut: () => props.onHover(null),
     onClick: (event: ThreeEvent<MouseEvent>) => {
@@ -470,6 +471,7 @@ function World(props: Props) {
 export default function TidbArchitectureScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="tidb-architecture"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

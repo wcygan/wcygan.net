@@ -171,6 +171,7 @@ function Scene({ jobs, ...props }: Props) {
 export default function JobMatchScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="embeddings:job-matching"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

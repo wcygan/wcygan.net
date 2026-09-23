@@ -244,8 +244,9 @@ function Packet({
       }
       distance -= length;
     }
-    if (flight.phase !== "replicating")
+    if (flight.phase !== "replicating") {
       mesh.current.position.y += Math.sin(Math.PI * t) * 0.5;
+    }
     if (active && t < 1) invalidate();
   });
   return (
@@ -321,7 +322,11 @@ function World({
         <strong>Replication ↓</strong>
         <span>
           {sending.length
-            ? `Sending ${sending.length === 1 ? `entry ${sending[0].record.id}` : `${sending.length} entries`}`
+            ? `Sending ${
+                sending.length === 1
+                  ? `entry ${sending[0].record.id}`
+                  : `${sending.length} entries`
+              }`
             : "Copy entries in order"}
         </span>
       </Html>
@@ -340,6 +345,7 @@ function World({
 export default function DatabaseLogReplicationScene(props: SceneProps) {
   return (
     <SceneCanvas
+      sceneId="database-log-replication"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

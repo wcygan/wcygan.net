@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import { Group, Mesh, OrthographicCamera } from "three";
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
-import { BEAT_MS, NODES, snapshot, type Node } from "./model";
+import { BEAT_MS, type Node, NODES, snapshot } from "./model";
 import type { Playback } from "./playback";
 
 type Point = [number, number, number];
@@ -157,7 +157,9 @@ function GossipNode({
       <Html
         center
         position={[0, -0.75, 0]}
-        className={`gossip-version-label${state.ePresent && informed ? " gossip-informed" : ""}`}
+        className={`gossip-version-label${
+          state.ePresent && informed ? " gossip-informed" : ""
+        }`}
         zIndexRange={[1, 0]}
       >
         {node === "E" && !state.ePresent
@@ -174,6 +176,7 @@ export default function Scene(props: Props) {
   const state = snapshot(props.count);
   return (
     <SceneCanvas
+      sceneId="gossip"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

@@ -121,6 +121,7 @@ export default function Scene({
 }) {
   return (
     <SceneCanvas
+      sceneId="epidemic-spread"
       orthographic
       camera={{ position: [6.8, 7.5, 8.5], near: 0.1, far: 100 }}
       onReady={onReady}

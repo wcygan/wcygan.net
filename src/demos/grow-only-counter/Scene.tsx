@@ -300,6 +300,7 @@ function World(props: Props) {
 export default function Scene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="grow-only-counter"
       orthographic
       camera={{ position: SIDE_CAMERA, zoom: 45, near: 0.1, far: 100 }}
       dpr={[1, 2]}

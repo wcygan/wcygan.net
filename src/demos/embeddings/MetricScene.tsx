@@ -319,6 +319,7 @@ function World(props: Props) {
 export default function MetricScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="embeddings:vector-similarity"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

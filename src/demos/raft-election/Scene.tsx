@@ -1,7 +1,7 @@
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import {
-  useEffect,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -15,10 +15,10 @@ import {
   Shape,
   Spherical,
 } from "three";
-import { NODES, type NodeId, type Packet, type Simulation } from "./types";
+import { type NodeId, NODES, type Packet, type Simulation } from "./types";
 import type { Playback } from "./playback";
 import { RECOVERY_DELAY } from "./model";
-import { NODE_COLORS, termColor, PLAYBACK_RATE } from "./presentation";
+import { NODE_COLORS, PLAYBACK_RATE, termColor } from "./presentation";
 type Point = [number, number, number];
 const DEFAULT_CAMERA: Point = [0, 10, 10];
 const MOBILE_CAMERA: Point = [0, 14, 8];
@@ -150,8 +150,9 @@ function PacketMesh({
           (packet.arrivesAt - packet.sentAt),
       ),
     );
-    if (label.current)
+    if (label.current) {
       label.current.style.opacity = t > 0.22 && t < 0.78 ? "1" : "0";
+    }
     const a = positions[packet.from],
       b = positions[packet.to];
     ref.current.position.set(
@@ -211,15 +212,17 @@ function Label({
     const remaining = Number.isFinite(deadline)
       ? Math.max(0, deadline - playback.getTime())
       : 0;
-    if (bar.current)
+    if (bar.current) {
       bar.current.value =
         !crashed && node.role === "leader" ? duration : remaining;
-    if (timer.current)
+    }
+    if (timer.current) {
       timer.current.textContent = crashed
         ? `Back in ${(remaining / PLAYBACK_RATE / 1000).toFixed(1)}s`
         : node.role === "leader"
           ? "No timeout"
           : `${(remaining / 1000).toFixed(1)}s`;
+    }
   }, [deadline, duration, node.role, crashed, playback]);
   useFrame(draw);
   useLayoutEffect(draw, [draw]);
@@ -338,6 +341,7 @@ function World(props: Props) {
 export default function Scene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="raft-election"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

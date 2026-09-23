@@ -304,6 +304,7 @@ function World({
 export default function DatabaseLogScene(props: SceneProps) {
   return (
     <SceneCanvas
+      sceneId="database-log"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

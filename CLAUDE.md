@@ -343,6 +343,9 @@ relationships, or camera interaction would clarify the lesson; consult this
 skill when they would. Follow its relevant references for geometry, cameras,
 materials, labels, article integration, and performance.
 
+Load the repository's `$3d-benchmark-harness` skill when recording or comparing
+development first-frame measurements for article scenes that use `SceneCanvas`.
+
 The approved visual reference is the N+1 query race on
 `/n-plus-one-sql-query`, implemented by `NPlusOneQueryDemos.tsx` and the
 `/* N+1 query race */` styles in `app.css`. Treat it as a craft benchmark, not a

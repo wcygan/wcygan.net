@@ -29,7 +29,13 @@ afterEach(() => {
 
 it("announces readiness after a rendered frame, once, not at Canvas mount", () => {
   const ready = vi.fn();
-  render(<SceneCanvas onReady={ready} onUnavailable={vi.fn()} />);
+  render(
+    <SceneCanvas
+      sceneId="Test Scene"
+      onReady={ready}
+      onUnavailable={vi.fn()}
+    />,
+  );
   act(() => vi.advanceTimersByTime(1000));
   expect(ready).not.toHaveBeenCalled();
   act(() => fiber.frame());
@@ -45,7 +51,11 @@ it("announces readiness after a rendered frame, once, not at Canvas mount", () =
 it("cancels the readiness notification when the scene unmounts", () => {
   const ready = vi.fn();
   const { unmount } = render(
-    <SceneCanvas onReady={ready} onUnavailable={vi.fn()} />,
+    <SceneCanvas
+      sceneId="Test Scene"
+      onReady={ready}
+      onUnavailable={vi.fn()}
+    />,
   );
   act(() => fiber.frame());
   unmount();
@@ -56,7 +66,9 @@ it("reports unsupported WebGL instead of leaving the spinner pending", () => {
   vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(null);
   const ready = vi.fn(),
     fail = vi.fn();
-  render(<SceneCanvas onReady={ready} onUnavailable={fail} />);
+  render(
+    <SceneCanvas sceneId="Test Scene" onReady={ready} onUnavailable={fail} />,
+  );
   expect(fail).toHaveBeenCalledTimes(1);
   expect(ready).not.toHaveBeenCalled();
 });

@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "runId": "2026-09-23T20-37-08-686Z",
+  "recordedAt": "2026-09-23T20:37:08.686Z",
+  "scenario": "warm-local-development-first-frame",
+  "metric": {
+    "unit": "ms",
+    "start": "SceneCanvas client effect, before WebGL capability detection",
+    "stop": "first Fiber frame and following requestAnimationFrame callback",
+    "includesLazySceneModuleLoad": false
+  },
+  "environment": {
+    "browser": "Chrome/154.0.8037.57",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "deviceScaleFactor": 1,
+    "os": "darwin-aarch64",
+    "denoVersion": "2.8.3",
+    "gpuRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Unspecified Version)",
+    "routeCountScanned": 28,
+    "routesWithScenes": [
+      "/conflict-free-replicated-data-types",
+      "/consensus",
+      "/distributed-transactions",
+      "/embeddings",
+      "/failure-detectors",
+      "/gossip-protocols",
+      "/kafka-partitioning",
+      "/leader-election",
+      "/replication",
+      "/tidb-architecture"
+    ],
+    "warmupPasses": 1,
+    "measuredSamples": 3
+  },
+  "source": {
+    "revision": "ba71b39222d2d10f4044d1427b8327f4ea20aafe",
+    "workingTreeDirty": true,
+    "workingTreeSha256": "7db6d2ed15f5c0047d78d221e1669701caf1eca17316f94cba697e6c0e924133"
+  },
+  "scenes": [
+    {
+      "route": "/consensus",
+      "id": "consensus:apply",
+      "outcome": "ready",
+      "samplesMs": [106.6, 106.2, 94.3],
+      "medianMs": 106.2
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:current-term",
+      "outcome": "ready",
+      "samplesMs": [96.7, 96.9, 97.1],
+      "medianMs": 96.9
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:election",
+      "outcome": "ready",
+      "samplesMs": [101.6, 102.7, 89.5],
+      "medianMs": 101.6
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:membership",
+      "outcome": "ready",
+      "samplesMs": [91.9, 92.1, 92.3],
+      "medianMs": 92.1
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:partition",
+      "outcome": "ready",
+      "samplesMs": [99.5, 102, 102.8],
+      "medianMs": 102
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:repair",
+      "outcome": "ready",
+      "samplesMs": [91.4, 92.1, 93.1],
+      "medianMs": 92.1
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:replication",
+      "outcome": "ready",
+      "samplesMs": [125.5, 112.6, 113.8],
+      "medianMs": 113.8
+    },
+    {
+      "route": "/consensus",
+      "id": "consensus:snapshot",
+      "outcome": "ready",
+      "samplesMs": [93.3, 93.3, 93.5],
+      "medianMs": 93.3
+    },
+    {
+      "route": "/replication",
+      "id": "database-log",
+      "outcome": "ready",
+      "samplesMs": [121.7, 111.7, 122.6],
+      "medianMs": 121.7
+    },
+    {
+      "route": "/replication",
+      "id": "database-log-replication",
+      "outcome": "ready",
+      "samplesMs": [99.4, 98.9, 98.6],
+      "medianMs": 98.9
+    },
+    {
+      "route": "/distributed-transactions",
+      "id": "distributed-transactions:independent",
+      "outcome": "ready",
+      "samplesMs": [94.5, 93.4, 111.5],
+      "medianMs": 94.5
+    },
+    {
+      "route": "/distributed-transactions",
+      "id": "distributed-transactions:placement",
+      "outcome": "ready",
+      "samplesMs": [92.1, 90.2, 95],
+      "medianMs": 92.1
+    },
+    {
+      "route": "/distributed-transactions",
+      "id": "distributed-transactions:spanner",
+      "outcome": "ready",
+      "samplesMs": [91.5, 95.2, 91.3],
+      "medianMs": 91.5
+    },
+    {
+      "route": "/distributed-transactions",
+      "id": "distributed-transactions:three-phase",
+      "outcome": "ready",
+      "samplesMs": [91.7, 93, 92.4],
+      "medianMs": 92.4
+    },
+    {
+      "route": "/distributed-transactions",
+      "id": "distributed-transactions:two-phase",
+      "outcome": "ready",
+      "samplesMs": [93.9, 91.3, 92.4],
+      "medianMs": 92.4
+    },
+    {
+      "route": "/embeddings",
+      "id": "embeddings:city-coordinates",
+      "outcome": "ready",
+      "samplesMs": [166.3, 105.2, 103.6],
+      "medianMs": 105.2
+    },
+    {
+      "route": "/embeddings",
+      "id": "embeddings:job-matching",
+      "outcome": "ready",
+      "samplesMs": [166.4, 130.7, 140.5],
+      "medianMs": 140.5
+    },
+    {
+      "route": "/embeddings",
+      "id": "embeddings:semantic-search",
+      "outcome": "ready",
+      "samplesMs": [153.9, 130.8, 140.4],
+      "medianMs": 140.4
+    },
+    {
+      "route": "/gossip-protocols",
+      "id": "epidemic-spread",
+      "outcome": "ready",
+      "samplesMs": [115.9, 111.6, 99],
+      "medianMs": 111.6
+    },
+    {
+      "route": "/failure-detectors",
+      "id": "failure-detectors",
+      "outcome": "ready",
+      "samplesMs": [118.4, 102.7, 118.9],
+      "medianMs": 118.4
+    },
+    {
+      "route": "/gossip-protocols",
+      "id": "gossip",
+      "outcome": "ready",
+      "samplesMs": [99.3, 99, 98.2],
+      "medianMs": 99
+    },
+    {
+      "route": "/replication",
+      "id": "group-replication-lag",
+      "outcome": "ready",
+      "samplesMs": [129.2, 138.3, 122.7],
+      "medianMs": 129.2
+    },
+    {
+      "route": "/conflict-free-replicated-data-types",
+      "id": "grow-only-counter",
+      "outcome": "ready",
+      "samplesMs": [91.2, 102.8, 100.9],
+      "medianMs": 100.9
+    },
+    {
+      "route": "/kafka-partitioning",
+      "id": "kafka-partitioning",
+      "outcome": "ready",
+      "samplesMs": [111.1, 115.5, 107],
+      "medianMs": 111.1
+    },
+    {
+      "route": "/leader-election",
+      "id": "raft-election",
+      "outcome": "ready",
+      "samplesMs": [105.2, 119.2, 98.3],
+      "medianMs": 105.2
+    },
+    {
+      "route": "/tidb-architecture",
+      "id": "tidb-architecture",
+      "outcome": "ready",
+      "samplesMs": [161.2, 152.4, 150.2],
+      "medianMs": 152.4
+    },
+    {
+      "route": "/tidb-architecture",
+      "id": "tidb-secondary-index",
+      "outcome": "ready",
+      "samplesMs": [106.6, 90.5, 93.2],
+      "medianMs": 93.2
+    }
+  ]
+}

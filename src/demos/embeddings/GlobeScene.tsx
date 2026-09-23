@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html, Line, OrbitControls } from "@react-three/drei";
 import { Group, OrthographicCamera, PointsMaterial, Spherical } from "three";
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import {
   CITIES,
+  type City,
   coordinateArcs,
   formatCoordinate,
+  type GlobePoint,
   globePoint,
   latitudeRing,
   longitudeRing,
-  type City,
-  type GlobePoint,
 } from "./geography";
 import {
   LAND_DETAIL_POSITIONS,
@@ -333,8 +333,9 @@ function Globe({
     if (
       Math.abs(longitudeDifference) < 0.0001 &&
       Math.abs(tiltDifference) < 0.0001
-    )
+    ) {
       return;
+    }
     if (reduced) {
       globe.current.rotation.y += longitudeDifference;
       globe.current.rotation.x += tiltDifference;
@@ -366,6 +367,7 @@ function Globe({
 export default function GlobeScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="embeddings:city-coordinates"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

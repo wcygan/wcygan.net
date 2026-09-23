@@ -364,6 +364,7 @@ function World({
 export default function FailureDetectorScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="failure-detectors"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

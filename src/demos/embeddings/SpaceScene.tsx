@@ -243,6 +243,7 @@ function World(props: Props) {
 export default function SpaceScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="embeddings:semantic-search"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

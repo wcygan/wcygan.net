@@ -228,6 +228,7 @@ export function DistributedTransactionDemo({ kind }: { kind: DemoKind }) {
               <SceneBoundary onFailed={onUnavailable}>
                 <Suspense fallback={null}>
                   <Scene
+                    sceneId={`distributed-transactions:${kind}`}
                     frame={frame}
                     nextFrame={next}
                     messages={moving && next ? next.messages : EMPTY_MESSAGES}

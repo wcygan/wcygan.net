@@ -5,9 +5,9 @@ import { Group, OrthographicCamera, Spherical, Vector3 } from "three";
 import { SceneCanvas } from "~/demos/shared/SceneCanvas";
 import {
   DATABASE_COLORS,
+  LAG_OUTLINE,
   LOG_ENTRY_COLORS,
   LOG_ENTRY_OUTLINE,
-  LAG_OUTLINE,
 } from "~/demos/shared/replication-palette";
 import {
   DatabaseCylinderGeometry,
@@ -17,23 +17,23 @@ import type { Flight, Member } from "./model";
 import { MAX_WRITES } from "./model";
 import type { LagPlayback, LagState } from "./playback";
 import {
-  type Point,
-  ROWS,
-  DATABASE_X,
-  LOG_X,
-  SLOT_START,
-  SLOT_SPACING,
-  ENTRY_SIZE,
-  LOG_SURFACE_Y,
-  slot,
-  linkPath,
-  flightPath,
-  measurePath,
-  samplePath,
   cacheSlot,
-  proposalInletPath,
+  DATABASE_X,
   donorPath,
+  ENTRY_SIZE,
+  flightPath,
   interruptedLinkPaths,
+  linkPath,
+  LOG_SURFACE_Y,
+  LOG_X,
+  measurePath,
+  type Point,
+  proposalInletPath,
+  ROWS,
+  samplePath,
+  slot,
+  SLOT_SPACING,
+  SLOT_START,
 } from "./paths";
 
 export interface ViewCommand {
@@ -87,9 +87,9 @@ function Camera({
     } else {
       const offset = camera.position.clone().sub(new Vector3(...TARGET));
       const spherical = new Spherical().setFromVector3(offset);
-      if (view.kind === "left" || view.kind === "right")
+      if (view.kind === "left" || view.kind === "right") {
         spherical.theta += view.kind === "left" ? -Math.PI / 12 : Math.PI / 12;
-      else
+      } else {
         spherical.phi = Math.max(
           0.08,
           Math.min(
@@ -97,6 +97,7 @@ function Camera({
             spherical.phi + (view.kind === "up" ? -0.15 : 0.15),
           ),
         );
+      }
       camera.position.setFromSpherical(spherical).add(new Vector3(...TARGET));
     }
     camera.lookAt(...TARGET);
@@ -286,8 +287,9 @@ function MovingTransaction({
       ),
     );
     packet.current.position.set(...samplePath(route, progress));
-    if (flight.kind === "ordering" || flight.kind === "applying")
+    if (flight.kind === "ordering" || flight.kind === "applying") {
       packet.current.position.y += Math.sin(progress * Math.PI) * 0.45;
+    }
     if (active && progress < 1) invalidate();
   });
   useEffect(() => {
@@ -319,6 +321,7 @@ function MovingTransaction({
 export default function GroupReplicationLagScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="group-replication-lag"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic
@@ -435,7 +438,9 @@ export default function GroupReplicationLagScene(props: Props) {
       {!props.state.reduced &&
         props.state.flights.map((flight) => (
           <MovingTransaction
-            key={`${flight.member}-${flight.transaction}-${flight.kind}-${flight.attemptId ?? 0}`}
+            key={`${flight.member}-${flight.transaction}-${flight.kind}-${
+              flight.attemptId ?? 0
+            }`}
             flight={flight}
             playback={props.playback}
             active={props.state.running}

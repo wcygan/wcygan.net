@@ -10,6 +10,7 @@
     "generate:embedding-land": "deno run --unstable-sloppy-imports --allow-write=src/demos/embeddings/land-points.generated.ts scripts/generate-embedding-land.mjs",
     "preview": "vite preview",
     "preview-static": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server .output/public",
+    "benchmark:3d": "deno run -A scripts/benchmark-3d-demos.ts",
     "render:diagrams": "node scripts/render-diagrams.mjs",
     "deploy": "deno task build && wrangler deploy",
     "test": "vitest run",

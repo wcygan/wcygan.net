@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Edges, Html, Line, OrbitControls } from "@react-three/drei";
 import { Group, Mesh, OrthographicCamera, Spherical, Vector3 } from "three";
@@ -15,9 +15,9 @@ import {
   ENTRY_PENDING,
   entryColor,
   nodeColor,
-  termColor,
-  SNAPSHOT_COLOR,
   type PaletteColor,
+  SNAPSHOT_COLOR,
+  termColor,
 } from "./colors";
 
 type Point = [number, number, number];
@@ -861,6 +861,7 @@ function World(props: ConsensusSceneProps) {
 export default function ConsensusScene(props: ConsensusSceneProps) {
   return (
     <SceneCanvas
+      sceneId={`consensus:${props.lesson.id}`}
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

@@ -1,6 +1,6 @@
 import {
-  createContext,
   type ComponentRef,
+  createContext,
   type ReactNode,
   useCallback,
   useContext,
@@ -33,20 +33,21 @@ import type {
 
 import {
   BACK_REPLICA_HEIGHT,
+  connectionsFor,
   COORDINATOR_RADIUS,
   DATABASE_HEIGHT,
   DATABASE_RADIUS,
-  REPLICA_HEIGHT,
-  connectionsFor,
   nodeRadius,
   type Point,
   pointOnRoute,
   type Positions,
   positionsFor,
+  REPLICA_HEIGHT,
   routeBetween,
 } from "./geometry";
 
 export interface TransactionSceneProps {
+  sceneId: string;
   frame: TransactionFrame;
   nextFrame?: TransactionFrame;
   messages: Message[];
@@ -579,7 +580,9 @@ function Replica({
   const front = replica.id.length === 1;
   const radius = nodeRadius("replicated", replica.id);
   const height = front ? REPLICA_HEIGHT : BACK_REPLICA_HEIGHT;
-  const id = `${replica.group.toUpperCase()}${front ? "1" : replica.id.slice(1)}`;
+  const id = `${replica.group.toUpperCase()}${
+    front ? "1" : replica.id.slice(1)
+  }`;
   return (
     <>
       <Database
@@ -1009,6 +1012,7 @@ function World(props: TransactionSceneProps) {
 export default function TransactionScene(props: TransactionSceneProps) {
   return (
     <SceneCanvas
+      sceneId={props.sceneId}
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic

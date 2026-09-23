@@ -10,8 +10,8 @@ import {
   OrthographicCamera,
 } from "three";
 import {
-  KEY_COLORS,
   type KafkaRecord,
+  KEY_COLORS,
   partitionSnapshot,
   type RoutingMode,
 } from "./model";
@@ -111,7 +111,9 @@ function logTint(mode: RoutingMode, partition: number, records: KafkaRecord[]) {
     : new Color("#aaa69b");
   // Empty lanes stay neutral; differing lightness identifies lanes whose
   // reachable colors have the same average.
-  return `#${average.lerp(new Color("#ffffff"), 0.14 + partition * 0.035).getHexString()}`;
+  return `#${average
+    .lerp(new Color("#ffffff"), 0.14 + partition * 0.035)
+    .getHexString()}`;
 }
 function Label({
   position,
@@ -300,6 +302,7 @@ function World({ mode, partitions, step, reduced, active, top, speed }: Props) {
 export default function KafkaScene(props: Props) {
   return (
     <SceneCanvas
+      sceneId="kafka-partitioning"
       onReady={props.onReady}
       onUnavailable={props.onUnavailable}
       orthographic
