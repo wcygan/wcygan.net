@@ -28,6 +28,10 @@
   --dt-highlight-abort: oklch(0.92 0.029 25);
   --dt-highlight-aborted: oklch(0.87 0.046 15);
   --dt-highlight-unavailable: oklch(0.92 0.004 90);
+  --dt-change-credit-border: #4b9a65;
+  --dt-change-credit-background: #e7f4e9;
+  --dt-change-debit-border: #c7636b;
+  --dt-change-debit-background: #fbe9e9;
   color: #21201c;
   font:
     400 16px/1.55 Inter,
@@ -157,6 +161,27 @@
   min-height: 15px;
   color: var(--dt-muted);
   font-size: 11px;
+}
+.dt-scene-label .dt-account-change {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 3px;
+  padding: 1px 4px;
+  border: 1px solid var(--dt-change-border);
+  border-radius: 2px;
+  color: var(--dt-ink);
+  font-size: inherit;
+  font-weight: 550;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.dt-account-change[data-direction="credit"] {
+  --dt-change-border: var(--dt-change-credit-border);
+  background: var(--dt-change-credit-background);
+}
+.dt-account-change[data-direction="debit"] {
+  --dt-change-border: var(--dt-change-debit-border);
+  background: var(--dt-change-debit-background);
 }
 .dt-scene-label--node,
 .dt-scene-label--coordinator {

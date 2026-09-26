@@ -340,7 +340,12 @@ function Account({
         {state.pending !== 0 ? (
           <>
             <StateHighlight>pending</StateHighlight>{" "}
-            {state.pending > 0 ? "+" : "−"}${Math.abs(state.pending)}
+            <b
+              className="dt-account-change"
+              data-direction={state.pending > 0 ? "credit" : "debit"}
+            >
+              {state.pending > 0 ? "+" : "−"}${Math.abs(state.pending)}
+            </b>
           </>
         ) : state.state === "committed" || state.state === "aborted" ? (
           <StateHighlight>{state.state}</StateHighlight>

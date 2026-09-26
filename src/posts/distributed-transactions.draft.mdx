@@ -3,31 +3,58 @@ title: Distributed Transactions
 date: "3000-09-22T12:00:00-05:00"
 description: Committing changes across multiple shards
 tags: [Distributed Systems, Databases]
+relatedReading: Database Internals
 draft: true
 ---
 
 import { DistributedTransactionDemo } from "~/components/DistributedTransactionDemo";
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
+
+<DatabaseInternalsReference
+  chapters={[
+    {
+      number: 13,
+      concept: "Two-phase commit and distributed transaction protocols",
+    },
+  ]}
+/>
+
+[Atomic Commitment algorithms](https://en.wikipedia.org/wiki/Atomic_commit) are used to make multiple operations appear like they are executed atomically. For example, transferring $10 between accounts should appear like <span className="transaction-amount transaction-amount--credit">+$10</span> and <span className="transaction-amount transaction-amount--debit">−$10</span> against different accounts in one database transaction instead of two. To make sure balance is not lost, either both of these operations should occur, or neither.
+
+"Distributed" here means that the database is sharded. Since accounts may live on separate shards, single-node [Transcations](https://dev.mysql.com/doc/refman/9.7/en/glossary.html#glos_transaction) will not suffice, and we need to reach for [Distributed Transactions](https://dev.mysql.com/doc/refman/9.7/en/glossary.html#glos_transaction:~:text=Also%20cursor.-,two%2Dphase%20commit,-An%20operation%20that) to ensure the changes are applied consistently across shards.
+
+MySQL uses [Two-Phase Commit](<https://dev.mysql.com/doc/refman/9.7/en/xa.html#:~:text=The%20process%20for%20executing%20a%20global%20transaction%20uses%20two%2Dphase%20commit%20(2PC)>) to support distributed transactions.
 
 ## Two-Phase Commit
+
+Two-Phase Commit (2PC) uses a coordinator to orchestrate progress across the cluster. At a high level, it follows this process:
+
+1. **Prepare:** The coordinator asks every shard to prepare and waits for each vote (yes or no).
+2. **Commit or abort:** If all vote yes, the coordinator records and sends <span className="transaction-decision transaction-decision--commit">COMMIT</span>; otherwise, it records and sends <span className="transaction-decision transaction-decision--abort">ABORT</span>. Each shard applies the decision, records the outcome, and acknowledges it.
+
+In 2PC, the <span className="transaction-decision transaction-decision--abort"><a href="https://en.wikipedia.org/wiki/Two-phase_commit_protocol#Disadvantages:~:text=The%20greatest%20disadvantage%20of%20the%20two%2Dphase%20commit%20protocol%20is%20that%20it%20is%20a%20blocking%20protocol">worst case</a></span> is that the transaction can block indefinitely.
+
+After every shard votes yes, a coordinator failure before its decision reaches them leaves prepared shards unable to safely choose commit or abort. They [block until they receive a commit or rollback decision](https://en.wikipedia.org/wiki/Two-phase_commit_protocol#Disadvantages:~:text=If%20the%20coordinator%20fails%20permanently%2C%20some%20participants%20will%20never%20resolve%20their%20transactions%3A%20After%20a%20participant%20has%20sent%20an%20agreement%20message%20as%20a%20response%20to%20the%20commit%2Drequest%20message%20from%20the%20coordinator%2C%20it%20will%20block%20until%20a%20commit%20or%20rollback%20is%20received.). When the coordinator restarts, it checks its durable transaction log and resends any recorded decision; the shards keep their locks until they receive and apply it.
+
+This does not stop a shard from doing all other work: the prepared transaction holds locks on the [rows it touched](https://dev.mysql.com/doc/refman/9.7/en/innodb-locking.html#:~:text=InnoDB%20implements%20standard%20row%2Dlevel%20locking). Work on unrelated rows can continue, while [writes that need those locked rows must wait](https://dev.mysql.com/doc/refman/9.7/en/innodb-information-schema-understanding-innodb-locking.html#:~:text=The%20requesting%20transaction%20must%20wait%20for%20the%20transaction%20that%20holds%20the%20blocking%20lock%20to%20commit%20or%20roll%20back.%20If%20a%20transaction%20is%20not%20waiting%20for%20a%20lock%2C%20it%20is%20in%20a%20RUNNING%20state.%20If%20a%20transaction%20is%20waiting%20for%20a%20lock%2C%20it%20is%20in%20a%20LOCK%20WAIT%20state.) for the decision.
 
 <figure className="static-mermaid-figure">
   <div className="static-mermaid-frame">
     <img
       className="static-mermaid-diagram"
-      src="/distributed-transactions/two-phase-commit.svg"
-      alt="Sequence diagram focused on the coordinator: it asks Shards A and B to prepare, receives yes votes from both, sends commit to both, and waits for their committed acknowledgements. Prepare and yes messages are orange, commit messages are teal, and committed acknowledgements are green."
+      src="/distributed-transactions/two-phase-commit.svg?v=2"
+      alt="Sequence diagram focused on the coordinator: it asks both shards to prepare. If both vote yes, it sends teal commit messages and receives green committed acknowledgements. If either votes no, it sends red abort messages and receives red aborted acknowledgements."
       width={650}
       height={587}
     />
   </div>
-  <figcaption>
-    Two-phase commit coordinates a decision across shards.
-  </figcaption>
 </figure>
 
-<DistributedTransactionDemo kind="two-phase" />
+<DistributedTransactionDemo kind="two-phase" showLedger={false} />
 
 ## Three-Phase Commit
+
+Three-Phase Commit (3PC) adds a pre-commit round before the final decision to reduce blocking when the coordinator fails. This relies on bounded message and processing delays. A network partition can prevent some shards from receiving `PRE-COMMIT`; shards that receive it may time out and commit while those that do not time out and abort, leaving participants with different outcomes and violating atomicity.
 
 <figure className="static-mermaid-figure">
   <div className="static-mermaid-frame">
@@ -44,6 +71,6 @@ import { DistributedTransactionDemo } from "~/components/DistributedTransactionD
   </figcaption>
 </figure>
 
-<DistributedTransactionDemo kind="three-phase" />
+<DistributedTransactionDemo kind="three-phase" showLedger={false} />
 
-<DistributedTransactionDemo kind="spanner" />
+<DistributedTransactionDemo kind="spanner" showLedger={false} />

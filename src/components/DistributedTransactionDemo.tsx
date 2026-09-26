@@ -37,7 +37,13 @@ class SceneBoundary extends Component<
   }
 }
 
-export function DistributedTransactionDemo({ kind }: { kind: DemoKind }) {
+export function DistributedTransactionDemo({
+  kind,
+  showLedger = true,
+}: {
+  kind: DemoKind;
+  showLedger?: boolean;
+}) {
   const definition = DEMOS[kind];
   const [scenarioId, setScenarioId] = useState(definition.scenarios[0].id);
   const scenario = definition.scenarios.find((item) => item.id === scenarioId)!;
@@ -275,7 +281,9 @@ export function DistributedTransactionDemo({ kind }: { kind: DemoKind }) {
       </div>
       <p id={guideId} className="dt-guide">
         {unavailable
-          ? "3D is unavailable; the controls and account state remain usable"
+          ? showLedger
+            ? "3D is unavailable; the controls and account state remain usable"
+            : "3D is unavailable; the controls and transaction progress remain usable"
           : "Drag to orbit · Scroll to zoom · Focus the view for arrow keys, +/− and Home"}
         {reduced && ". Reduced motion: Step advances without animation."}
       </p>
@@ -321,84 +329,89 @@ export function DistributedTransactionDemo({ kind }: { kind: DemoKind }) {
           </p>
         )}
       </div>
-      <dl className="dt-accounts" aria-label="Account state">
-        {frame.accounts.map((account, index) => (
-          <div key={index}>
-            <dt>Account {index === 0 ? "A" : "B"}</dt>
-            <dd className="dt-balance">
-              ${account.balance}
-              {account.pending !== 0 && (
-                <span>
-                  {" "}
-                  · <StateHighlight>pending</StateHighlight>{" "}
-                  {account.pending > 0 ? "+" : "−"}${Math.abs(account.pending)}
-                </span>
-              )}
-            </dd>
-            <dd data-state={account.state}>
-              <StateHighlight>{account.state}</StateHighlight>
-              {account.locked ? " · lock held" : ""}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <details className="dt-records">
-        <summary>Inspect durable records</summary>
-        <dl>
-          {frame.coordinator.visible && (
-            <div>
-              <dt>
-                Coordinator
-                {!frame.coordinator.online && (
-                  <>
-                    {" "}
-                    (<StateHighlight>unreachable</StateHighlight>)
-                  </>
-                )}
-              </dt>
-              <dd>
-                <StateHighlight>
-                  {frame.coordinator.record ?? "No decision recorded"}
-                </StateHighlight>
-              </dd>
-            </div>
-          )}
+      {showLedger && (
+        <dl className="dt-accounts" aria-label="Account state">
           {frame.accounts.map((account, index) => (
             <div key={index}>
-              <dt>Shard {index === 0 ? "A" : "B"}</dt>
-              <dd>
-                {account.records.length
-                  ? account.records.map((record, index) => (
-                      <Fragment key={index}>
-                        {index > 0 && " → "}
-                        <StateHighlight>{record}</StateHighlight>
-                      </Fragment>
-                    ))
-                  : "No transaction record"}
-              </dd>
-            </div>
-          ))}
-          {frame.replicas.map((replica) => (
-            <div key={replica.id}>
-              <dt>
-                {replica.id.toUpperCase()}
-                {replica.leader ? " · leader" : ""}
-                {!replica.online && (
-                  <>
+              <dt>Account {index === 0 ? "A" : "B"}</dt>
+              <dd className="dt-balance">
+                ${account.balance}
+                {account.pending !== 0 && (
+                  <span>
                     {" "}
-                    · <StateHighlight>offline</StateHighlight>
-                  </>
+                    · <StateHighlight>pending</StateHighlight>{" "}
+                    {account.pending > 0 ? "+" : "−"}$
+                    {Math.abs(account.pending)}
+                  </span>
                 )}
-              </dt>
-              <dd>
-                <StateHighlight>
-                  {replica.record ?? "No transaction record"}
-                </StateHighlight>
+              </dd>
+              <dd data-state={account.state}>
+                <StateHighlight>{account.state}</StateHighlight>
+                {account.locked ? " · lock held" : ""}
               </dd>
             </div>
           ))}
         </dl>
-      </details>
+      )}
+      {showLedger && (
+        <details className="dt-records">
+          <summary>Inspect durable records</summary>
+          <dl>
+            {frame.coordinator.visible && (
+              <div>
+                <dt>
+                  Coordinator
+                  {!frame.coordinator.online && (
+                    <>
+                      {" "}
+                      (<StateHighlight>unreachable</StateHighlight>)
+                    </>
+                  )}
+                </dt>
+                <dd>
+                  <StateHighlight>
+                    {frame.coordinator.record ?? "No decision recorded"}
+                  </StateHighlight>
+                </dd>
+              </div>
+            )}
+            {frame.accounts.map((account, index) => (
+              <div key={index}>
+                <dt>Shard {index === 0 ? "A" : "B"}</dt>
+                <dd>
+                  {account.records.length
+                    ? account.records.map((record, index) => (
+                        <Fragment key={index}>
+                          {index > 0 && " → "}
+                          <StateHighlight>{record}</StateHighlight>
+                        </Fragment>
+                      ))
+                    : "No transaction record"}
+                </dd>
+              </div>
+            ))}
+            {frame.replicas.map((replica) => (
+              <div key={replica.id}>
+                <dt>
+                  {replica.id.toUpperCase()}
+                  {replica.leader ? " · leader" : ""}
+                  {!replica.online && (
+                    <>
+                      {" "}
+                      · <StateHighlight>offline</StateHighlight>
+                    </>
+                  )}
+                </dt>
+                <dd>
+                  <StateHighlight>
+                    {replica.record ?? "No transaction record"}
+                  </StateHighlight>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      )}
     </figure>
   );
 }

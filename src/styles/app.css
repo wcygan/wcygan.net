@@ -17598,3 +17598,39 @@ th {
     transition: none;
   }
 }
+
+.site-container .post-content .transaction-amount {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid;
+  border-radius: 2px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.site-container .post-content .transaction-amount--credit {
+  border-color: #4b9a65;
+  background: #e7f4e9;
+}
+
+.site-container .post-content .transaction-amount--debit {
+  border-color: #c7636b;
+  background: #fbe9e9;
+}
+
+.site-container .post-content .transaction-decision {
+  display: inline-block;
+  padding-inline: 2px;
+  color: #21201c;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.site-container .post-content .transaction-decision--commit {
+  background: oklch(0.92 0.078 180);
+}
+
+.site-container .post-content .transaction-decision--abort {
+  background: oklch(0.92 0.029 25);
+}
