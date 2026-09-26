@@ -1,0 +1,60 @@
+/* Match the 3D demo's prepared, pre-commit, commit, and committed palette. */
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i0"],
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i1"],
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i2"],
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i3"] {
+  stroke: oklch(0.63 0.13 55) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i5"],
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i6"],
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i7"],
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i8"] {
+  stroke: oklch(0.56 0.14 330) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i10"],
+#distributed-transactions-three-phase-commit-mmd .messageLine0[data-id="i11"] {
+  stroke: oklch(0.55 0.09 180) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i12"],
+#distributed-transactions-three-phase-commit-mmd .messageLine1[data-id="i13"] {
+  stroke: #2e8052 !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i0"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i1"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i2"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i3"]) {
+  fill: oklch(0.63 0.13 55) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i5"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i6"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i7"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i8"]) {
+  fill: oklch(0.56 0.14 330) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i10"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i11"]) {
+  fill: oklch(0.55 0.09 180) !important;
+}
+
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i12"]),
+#distributed-transactions-three-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i13"]) {
+  fill: #2e8052 !important;
+}

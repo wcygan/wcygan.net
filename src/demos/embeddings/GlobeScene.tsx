@@ -26,6 +26,7 @@ export interface GlobeViewCommand {
 interface Props {
   cityId: string;
   active: boolean;
+  started: boolean;
   reduced: boolean;
   view: GlobeViewCommand;
   onReady: () => void;
@@ -365,6 +366,7 @@ function Globe({
 }
 
 export default function GlobeScene(props: Props) {
+  if (!props.started) return null;
   return (
     <SceneCanvas
       sceneId="embeddings:city-coordinates"

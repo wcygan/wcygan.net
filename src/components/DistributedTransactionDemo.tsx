@@ -1,3 +1,4 @@
+import "~/demos/distributed-transactions/styles.css";
 import {
   Component,
   Fragment,

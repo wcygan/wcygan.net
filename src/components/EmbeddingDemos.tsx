@@ -33,6 +33,7 @@ const JobMatchScene = lazy(() => import("~/demos/embeddings/JobMatchScene"));
 type ViewKind = "reset" | "left" | "right" | "up" | "down" | "in" | "out";
 interface SceneState {
   active: boolean;
+  started: boolean;
   reduced: boolean;
   view: ViewCommand;
   onReady: () => void;
@@ -85,6 +86,7 @@ function EmbeddingFigure({
   const stage = useRef<HTMLDivElement>(null);
   const id = useId();
   const { ready, onReady } = useSceneReady();
+  const [started, setStarted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
@@ -107,6 +109,7 @@ function EmbeddingFigure({
     document.addEventListener("visibilitychange", visibility);
     const observer = new IntersectionObserver(
       ([entry]) => {
+        if (entry.isIntersecting) setStarted(true);
         setVisible(entry.isIntersecting && entry.intersectionRatio >= 0.25);
       },
       { threshold: [0, 0.25] },
@@ -169,6 +172,7 @@ function EmbeddingFigure({
               <Suspense fallback={null}>
                 {scene({
                   active: visible && documentVisible,
+                  started,
                   reduced,
                   view,
                   onReady,

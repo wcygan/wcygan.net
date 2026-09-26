@@ -1,0 +1,16 @@
+sequenceDiagram
+    accTitle: Two-phase commit call sequence
+    accDescr: The coordinator asks both shards to prepare. Each shard votes yes, so the coordinator sends commit and waits for acknowledgements. A no vote would instead make the coordinator send abort.
+    participant C as Coordinator
+    participant A as Shard A
+    participant B as Shard B
+
+    C->>A: Prepare
+    C->>B: Prepare
+    A-->>C: Yes, ready
+    B-->>C: Yes, ready
+    Note over C,B: All participants are prepared
+    C->>A: Commit
+    C->>B: Commit
+    A-->>C: Committed
+    B-->>C: Committed

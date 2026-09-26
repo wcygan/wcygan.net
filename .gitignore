@@ -1,4 +1,5 @@
 .idea
+benchmarks/
 .playwright-cli
 node_modules
 .pnpm-store

@@ -8,11 +8,41 @@ draft: true
 
 import { DistributedTransactionDemo } from "~/components/DistributedTransactionDemo";
 
-<DistributedTransactionDemo kind="independent" />
+## Two-Phase Commit
 
-<DistributedTransactionDemo kind="placement" />
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/distributed-transactions/two-phase-commit.svg"
+      alt="Sequence diagram focused on the coordinator: it asks Shards A and B to prepare, receives yes votes from both, sends commit to both, and waits for their committed acknowledgements. Prepare and yes messages are orange, commit messages are teal, and committed acknowledgements are green."
+      width={650}
+      height={587}
+    />
+  </div>
+  <figcaption>
+    Two-phase commit coordinates a decision across shards.
+  </figcaption>
+</figure>
 
 <DistributedTransactionDemo kind="two-phase" />
+
+## Three-Phase Commit
+
+<figure className="static-mermaid-figure">
+  <div className="static-mermaid-frame">
+    <img
+      className="static-mermaid-diagram"
+      src="/distributed-transactions/three-phase-commit.svg"
+      alt="Sequence diagram of three-phase commit: the coordinator gathers prepare votes, sends Pre-commit and gathers acknowledgements, then sends Commit and receives committed replies. Prepare messages are orange, Pre-commit messages are purple, Commit messages are teal, and committed acknowledgements are green."
+      width={650}
+      height={819}
+    />
+  </div>
+  <figcaption>
+    Three-phase commit adds a Pre-commit round before the final decision.
+  </figcaption>
+</figure>
 
 <DistributedTransactionDemo kind="three-phase" />
 

@@ -1,0 +1,323 @@
+/* Distributed transactions: one shared scene, progressively richer protocols. */
+.dt-demo {
+  /* One palette for CSS labels and WebGL materials; palette.ts resolves sRGB. */
+  --dt-database-a: #cee2f7;
+  --dt-database-b: #e5d9f2;
+  --dt-ink-a: #21201c;
+  --dt-ink-b: #21201c;
+  --dt-neutral: #eeeee8;
+  --dt-paper: #fdfdfc;
+  --dt-ink: #21201c;
+  --dt-muted: #63635e;
+  --dt-line: #bcbcb4;
+  --dt-offline: #eeeee8;
+  --dt-prepared: oklch(0.63 0.13 55);
+  --dt-pre-commit: oklch(0.56 0.14 330);
+  --dt-commit: oklch(0.55 0.09 180);
+  --dt-committed: #2e8052;
+  --dt-abort: oklch(0.58 0.16 25);
+  --dt-aborted: #b74a50;
+  --dt-active: #466eaa;
+  /* Text markers name protocol states; cylinder caps continue to identify shards. */
+  --dt-highlight-pending: oklch(0.92 0.092 100);
+  --dt-highlight-collecting-votes: oklch(0.92 0.04 220);
+  --dt-highlight-prepare: oklch(0.92 0.034 55);
+  --dt-highlight-pre-commit: oklch(0.92 0.047 330);
+  --dt-highlight-commit: oklch(0.92 0.078 180);
+  --dt-highlight-committed: oklch(0.92 0.098 140);
+  --dt-highlight-abort: oklch(0.92 0.029 25);
+  --dt-highlight-aborted: oklch(0.87 0.046 15);
+  --dt-highlight-unavailable: oklch(0.92 0.004 90);
+  color: #21201c;
+  font:
+    400 16px/1.55 Inter,
+    sans-serif;
+}
+.dt-demo p {
+  margin: 0;
+  line-height: 1.55;
+}
+.dt-header {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+}
+.dt-demo .dt-description,
+.dt-demo .dt-assumption {
+  color: #63635e;
+  font-size: 14px;
+}
+.dt-scenarios,
+.dt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dt-scenarios {
+  margin-block-end: 12px;
+}
+.dt-demo button {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #e4e3de;
+  border-radius: 5px;
+  padding: 8px 12px;
+  background: #fdfdfc;
+  color: #21201c;
+  font:
+    500 14px/1.4 Inter,
+    sans-serif;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+.dt-demo button:hover {
+  background: #f7f6f3;
+}
+.dt-demo button[aria-pressed="true"] {
+  color: #fdfdfc;
+  background: #21201c;
+  border-color: #21201c;
+}
+.dt-demo button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.dt-demo :is(button, summary, [tabindex]):focus-visible {
+  outline: 2px solid #466eaa;
+  outline-offset: 2px;
+}
+.dt-stage {
+  height: 380px;
+  position: relative;
+  overflow: hidden;
+  margin-block: 8px 16px;
+  isolation: isolate;
+}
+.dt-demo[data-layout="replicated"] .dt-stage {
+  height: 440px;
+}
+.dt-canvas {
+  height: 100%;
+  width: 100%;
+}
+.dt-fallback {
+  display: grid;
+  height: 100%;
+  align-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #63635e;
+}
+.dt-scene-label {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--dt-ink);
+  font:
+    400 12px/1.3 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+.dt-scene-label :is(strong, span, small) {
+  display: block;
+  font-size: inherit;
+  line-height: 1.3;
+}
+.dt-scene-label strong {
+  font-weight: 400;
+}
+.dt-scene-label--account {
+  display: grid;
+  gap: 4px;
+  width: 140px;
+}
+.dt-scene-label .dt-account-name {
+  color: var(--dt-muted);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.dt-scene-label .dt-account-value {
+  color: var(--dt-ink);
+  font:
+    500 23px/1.25 Inter,
+    system-ui,
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.dt-scene-label :is(.dt-account-pending, .dt-account-record) {
+  min-height: 15px;
+  color: var(--dt-muted);
+  font-size: 11px;
+}
+.dt-scene-label--node,
+.dt-scene-label--coordinator {
+  color: var(--dt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 11px;
+}
+.dt-scene-label--replica {
+  font-size: 11px;
+}
+.dt-scene-label--replica span {
+  color: var(--dt-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.dt-scene-label--record {
+  font-size: 11px;
+  color: var(--dt-muted);
+}
+.dt-scene-label--offline {
+  color: var(--dt-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 11px;
+}
+.dt-accounts > div:first-child dt {
+  color: var(--dt-ink-a);
+}
+.dt-accounts > div:last-child dt {
+  color: var(--dt-ink-b);
+}
+.dt-demo .dt-state-highlight {
+  display: inline;
+  padding-inline: 2px;
+  color: var(--dt-ink);
+  background: var(--dt-state-background);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.dt-state-highlight[data-state="pending"] {
+  --dt-state-background: var(--dt-highlight-pending);
+}
+.dt-state-highlight[data-state="collecting-votes"] {
+  --dt-state-background: var(--dt-highlight-collecting-votes);
+}
+.dt-state-highlight:is([data-state="prepare"], [data-state="prepared"]) {
+  --dt-state-background: var(--dt-highlight-prepare);
+}
+.dt-state-highlight[data-state="pre-commit"] {
+  --dt-state-background: var(--dt-highlight-pre-commit);
+}
+.dt-state-highlight[data-state="commit"] {
+  --dt-state-background: var(--dt-highlight-commit);
+}
+.dt-state-highlight[data-state="committed"] {
+  --dt-state-background: var(--dt-highlight-committed);
+}
+.dt-state-highlight[data-state="abort"] {
+  --dt-state-background: var(--dt-highlight-abort);
+}
+.dt-state-highlight[data-state="aborted"] {
+  --dt-state-background: var(--dt-highlight-aborted);
+}
+.dt-state-highlight[data-state="unavailable"] {
+  --dt-state-background: var(--dt-highlight-unavailable);
+}
+.dt-demo .dt-guide {
+  margin-block: 12px 20px;
+  color: #63635e;
+  font-size: 12px;
+}
+.dt-status {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 108px;
+}
+.dt-demo .dt-step {
+  font-weight: 550;
+}
+.dt-step > span {
+  display: inline-block;
+  min-width: 48px;
+  margin-inline-end: 8px;
+  color: #63635e;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.dt-demo .dt-messages {
+  color: #63635e;
+  font-size: 13px;
+}
+.dt-accounts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-block: 16px 8px;
+  border-block: 1px solid #e4e3de;
+  padding-block: 12px;
+}
+.dt-demo dt {
+  font-size: 13px;
+  color: #63635e;
+  font-weight: 500;
+}
+.dt-demo dd {
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.dt-demo .dt-balance {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.dt-balance span {
+  color: #63635e;
+  font-size: 13px;
+}
+.dt-records summary {
+  min-height: 44px;
+  padding-block: 10px;
+  color: #63635e;
+  font-size: 14px;
+  cursor: pointer;
+}
+.dt-records dl {
+  display: grid;
+  gap: 8px;
+  margin-block: 8px 16px;
+}
+.dt-records dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 12px;
+}
+@media (max-width: 639px) {
+  .dt-stage {
+    height: 380px;
+  }
+  .dt-demo[data-layout="replicated"] .dt-stage {
+    height: 420px;
+  }
+  .dt-scene-label {
+    font-size: 11px;
+  }
+  .dt-scene-label--account {
+    width: 128px;
+  }
+  .dt-controls {
+    gap: 8px;
+  }
+  .dt-accounts {
+    gap: 12px;
+  }
+  .dt-balance span {
+    display: block;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dt-demo button {
+    transition: none;
+  }
+}

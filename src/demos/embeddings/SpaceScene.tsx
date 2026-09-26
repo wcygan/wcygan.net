@@ -20,6 +20,7 @@ interface Props {
   count: number;
   selectedId: string | null;
   active: boolean;
+  started: boolean;
   reduced: boolean;
   view: ViewCommand;
   onReady: () => void;
@@ -241,6 +242,7 @@ function World(props: Props) {
 }
 
 export default function SpaceScene(props: Props) {
+  if (!props.started) return null;
   return (
     <SceneCanvas
       sceneId="embeddings:semantic-search"

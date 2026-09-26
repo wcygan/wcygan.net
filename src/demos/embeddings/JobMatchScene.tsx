@@ -7,6 +7,7 @@ import { Label, SceneCamera, type ViewCommand } from "./scene-helpers";
 interface Props {
   jobs: (JobDescription & { score: number })[];
   active: boolean;
+  started: boolean;
   reduced: boolean;
   view: ViewCommand;
   onReady: () => void;
@@ -169,6 +170,7 @@ function Scene({ jobs, ...props }: Props) {
 }
 
 export default function JobMatchScene(props: Props) {
+  if (!props.started) return null;
   return (
     <SceneCanvas
       sceneId="embeddings:job-matching"

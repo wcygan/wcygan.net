@@ -1,0 +1,42 @@
+/* Match the 3D demo's prepared, commit, and committed state palette. */
+#distributed-transactions-two-phase-commit-mmd .messageLine0[data-id="i0"],
+#distributed-transactions-two-phase-commit-mmd .messageLine0[data-id="i1"],
+#distributed-transactions-two-phase-commit-mmd .messageLine1[data-id="i2"],
+#distributed-transactions-two-phase-commit-mmd .messageLine1[data-id="i3"] {
+  stroke: oklch(0.63 0.13 55) !important;
+}
+
+#distributed-transactions-two-phase-commit-mmd .messageLine0[data-id="i5"],
+#distributed-transactions-two-phase-commit-mmd .messageLine0[data-id="i6"] {
+  stroke: oklch(0.55 0.09 180) !important;
+}
+
+#distributed-transactions-two-phase-commit-mmd .messageLine1[data-id="i7"],
+#distributed-transactions-two-phase-commit-mmd .messageLine1[data-id="i8"] {
+  stroke: #2e8052 !important;
+}
+
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i0"]),
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i1"]),
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i2"]),
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i3"]) {
+  fill: oklch(0.63 0.13 55) !important;
+}
+
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i5"]),
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine0[data-id="i6"]) {
+  fill: oklch(0.55 0.09 180) !important;
+}
+
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i7"]),
+#distributed-transactions-two-phase-commit-mmd
+  .messageText:has(+ .messageLine1[data-id="i8"]) {
+  fill: #2e8052 !important;
+}

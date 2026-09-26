@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
 import { TableOfContents } from "~/components/TableOfContents";
 import {
   clearArticleGraphicMarkers,
@@ -26,6 +26,20 @@ const postModules: Record<string, LazyMdxModule> = {
   ...mdxModules,
   ...draftPostModules,
 };
+const postModulePromises = new Map<string, Promise<MdxModule>>();
+function loadPostModule(moduleKey: string): Promise<MdxModule> {
+  let promise = postModulePromises.get(moduleKey);
+  if (!promise) {
+    promise = postModules[moduleKey]();
+    postModulePromises.set(moduleKey, promise);
+  }
+  return promise;
+}
+
+function PostContent({ moduleKey }: { moduleKey: string }) {
+  const Content = use(loadPostModule(moduleKey)).default;
+  return <Content />;
+}
 const postModuleKeyBySlug = new Map(
   Object.keys(postModules).map((key) => [slugFromPostFilepath(key), key]),
 );
@@ -169,15 +183,10 @@ function BlogPostPage() {
 
   useEffect(() => {
     let isCurrent = true;
-    const loadModule = postModules[moduleKey];
     setPostModule(null);
-    if (loadModule) {
-      loadModule().then((mod) => {
-        if (isCurrent) {
-          setPostModule(mod);
-        }
-      });
-    }
+    loadPostModule(moduleKey).then((mod) => {
+      if (isCurrent) setPostModule(mod);
+    });
 
     return () => {
       isCurrent = false;
@@ -242,7 +251,9 @@ function BlogPostPage() {
           </figure>
         ) : null}
         <div ref={postContentRef} className="post-content e-content">
-          {Content ? <Content /> : <p>Loading...</p>}
+          <Suspense fallback={<p>Loading...</p>}>
+            <PostContent moduleKey={moduleKey} />
+          </Suspense>
         </div>
 
         <footer />

@@ -1,0 +1,21 @@
+sequenceDiagram
+    accTitle: Three-phase commit call sequence
+    accDescr: The coordinator asks both shards to prepare and receives yes votes. It then sends Pre-commit and waits for acknowledgements from both shards before sending Commit.
+    participant C as Coordinator
+    participant A as Shard A
+    participant B as Shard B
+
+    C->>A: Prepare
+    C->>B: Prepare
+    A-->>C: Yes, ready
+    B-->>C: Yes, ready
+    Note over C,B: Both participants are prepared
+    C->>A: Pre-commit
+    C->>B: Pre-commit
+    A-->>C: Ack
+    B-->>C: Ack
+    Note over C,B: Both acknowledge Pre-commit
+    C->>A: Commit
+    C->>B: Commit
+    A-->>C: Committed
+    B-->>C: Committed
