@@ -167,7 +167,7 @@ export function frontmatterToPost(
   slug: string,
   fm: Record<string, unknown>,
 ): PostEntry | null {
-  if (!isPublicPost(fm)) return null;
+  if (!isPublicPost(fm) || fm.unlisted === true) return null;
 
   const title = typeof fm.title === "string" ? fm.title : null;
   const date = typeof fm.date === "string" ? fm.date : null;

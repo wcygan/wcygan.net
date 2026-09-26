@@ -6,6 +6,8 @@ tags: [Distributed Systems, Databases]
 draft: true
 ---
 
+import { CommitRecoveryDemo } from "~/components/CommitRecoveryDemo";
+
 import { DistributedTransactionDemo } from "~/components/DistributedTransactionDemo";
 
 ## Two-Phase Commit
@@ -27,6 +29,8 @@ import { DistributedTransactionDemo } from "~/components/DistributedTransactionD
 
 <DistributedTransactionDemo kind="two-phase" />
 
+<CommitRecoveryDemo protocol="2pc" />
+
 ## Three-Phase Commit
 
 <figure className="static-mermaid-figure">
@@ -45,5 +49,7 @@ import { DistributedTransactionDemo } from "~/components/DistributedTransactionD
 </figure>
 
 <DistributedTransactionDemo kind="three-phase" />
+
+<CommitRecoveryDemo protocol="3pc" />
 
 <DistributedTransactionDemo kind="spanner" />

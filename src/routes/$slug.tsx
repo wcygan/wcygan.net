@@ -15,7 +15,7 @@ import {
   shouldShowTableOfContents,
   type TableOfContentsItem,
 } from "~/lib/table-of-contents";
-import { toIsoDate, toDisplayDate } from "~/lib/utils/formatDate";
+import { toDisplayDate, toIsoDate } from "~/lib/utils/formatDate";
 import { SITE_URL } from "~/lib/sitemap/generators";
 
 const mdxModules = import.meta.glob<MdxModule>([
@@ -150,6 +150,7 @@ export const Route = createFileRoute("/$slug")({
         imageAlt: post.imageAlt,
         imageCaption: post.imageCaption,
         tags: post.tags,
+        unlisted: post.unlisted,
         readingTime: post.readingTime ?? 1,
       },
       moduleKey,
@@ -159,6 +160,9 @@ export const Route = createFileRoute("/$slug")({
   head: ({ loaderData }) => ({
     meta: [
       { title: `${loaderData?.meta?.title ?? "Post"} - Will Cygan` },
+      ...(loaderData?.meta?.unlisted
+        ? [{ name: "robots", content: "noindex, nofollow" }]
+        : []),
       {
         name: "description",
         content: loaderData?.meta?.description ?? "",

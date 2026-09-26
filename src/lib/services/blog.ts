@@ -3,7 +3,7 @@ import { posts } from "virtual:blog-post-index";
 import { findPostBySlug } from "./post-index";
 
 export function getAllPosts(): Post[] {
-  return posts;
+  return posts.filter((post) => !post.unlisted);
 }
 
 export function getPostBySlug(slug: string): Post | undefined {

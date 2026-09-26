@@ -11,6 +11,8 @@ export interface PostMetadata {
   tags?: string[];
   draft?: boolean;
   published?: boolean;
+  /** Available by its URL, but omitted from public post listings and indexes. */
+  unlisted?: boolean;
 }
 
 // Post type for display in lists and cards

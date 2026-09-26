@@ -67,6 +67,7 @@ function readBlogPosts(postsDirectory: string, includeDrafts: boolean): Post[] {
         ? { relatedReading: frontmatter.relatedReading }
         : {}),
       ...(draft || frontmatter.draft === true ? { draft: true } : {}),
+      ...(frontmatter.unlisted === true ? { unlisted: true } : {}),
       tags,
       readingTime: Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
     });
@@ -105,8 +106,9 @@ export function blogPostIndexPlugin(): Plugin {
       if (
         !file.startsWith(`${postsDirectory}${path.sep}`) ||
         !file.endsWith(".mdx")
-      )
+      ) {
         return;
+      }
 
       const module = server.moduleGraph.getModuleById(RESOLVED_ID);
       if (module) server.moduleGraph.invalidateModule(module);
