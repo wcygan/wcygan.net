@@ -237,10 +237,37 @@ function createRendererServer() {
 <script type="module">
   import mermaid from "/node_modules/mermaid/dist/mermaid.esm.mjs";
 
-  window.renderMermaid = async (id, diagram, config) => {
+  window.renderMermaid = async (
+    id,
+    diagram,
+    config,
+    addMessageLabelBackplates = false,
+  ) => {
     mermaid.initialize(config);
     const result = await mermaid.render(id, diagram.trim());
-    return result.svg;
+    if (!addMessageLabelBackplates) return result.svg;
+
+    const target = document.getElementById("target");
+    target.innerHTML = result.svg;
+    const svg = target.querySelector("svg");
+    for (const label of svg.querySelectorAll(".messageText")) {
+      const bounds = label.getBBox();
+      const backplate = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "rect",
+      );
+      backplate.setAttribute("class", "message-label-backplate");
+      backplate.setAttribute("x", String(bounds.x - 6));
+      backplate.setAttribute("y", String(bounds.y - 3));
+      backplate.setAttribute("width", String(bounds.width + 12));
+      backplate.setAttribute("height", String(bounds.height + 6));
+      backplate.setAttribute("rx", "2");
+      backplate.setAttribute("aria-hidden", "true");
+      backplate.setAttribute("pointer-events", "none");
+      label.parentNode.insertBefore(backplate, label);
+    }
+
+    return svg.outerHTML;
   };
 
   window.__ready = true;
@@ -470,7 +497,7 @@ async function renderAll(diagrams) {
         let svg = await evaluate(
           cdp,
           sessionId,
-          `window.renderMermaid(${JSON.stringify(diagram.id)}, ${JSON.stringify(source)}, ${JSON.stringify(mermaidConfig)})`,
+          `window.renderMermaid(${JSON.stringify(diagram.id)}, ${JSON.stringify(source)}, ${JSON.stringify(mermaidConfig)}, ${JSON.stringify(relative(diagramsDir, diagram.sourcePath) === "distributed-transactions/two-phase-commit.mmd")})`,
         );
 
         svg = makeStableSvg(svg);

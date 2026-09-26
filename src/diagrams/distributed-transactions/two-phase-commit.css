@@ -80,3 +80,9 @@
 #distributed-transactions-two-phase-commit-mmd .noteText {
   fill: #21201c !important;
 }
+
+#distributed-transactions-two-phase-commit-mmd .message-label-backplate {
+  fill: #fff;
+  stroke: #d6d6d2;
+  stroke-width: 0.75px;
+}
