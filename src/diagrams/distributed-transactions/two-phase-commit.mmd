@@ -11,8 +11,7 @@ sequenceDiagram
     B-->>C: Yes, ready
     alt All participants vote yes
         rect rgb(231, 244, 233)
-        Note over C,B: All participants vote yes
-        Note over C,B: All participants are prepared
+        Note over C,B: Both participants voted yes and are prepared
         C->>A: COMMIT
         C->>B: COMMIT
         A-->>C: Committed

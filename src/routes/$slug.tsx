@@ -151,6 +151,7 @@ export const Route = createFileRoute("/$slug")({
         imageCaption: post.imageCaption,
         tags: post.tags,
         unlisted: post.unlisted,
+        interviewQuestion: post.interviewQuestion,
         readingTime: post.readingTime ?? 1,
       },
       moduleKey,
@@ -199,6 +200,7 @@ function BlogPostPage() {
 
   const Content = postModule?.default ?? null;
   const toc = postModule?.toc ?? EMPTY_TOC;
+  const isInterviewProblem = meta.interviewQuestion === true;
   const postTitleTocId = `${POST_TITLE_TOC_ID_PREFIX}-${slug}`;
   const tocWithTitle = useMemo<TableOfContentsItem[]>(
     () => [
@@ -211,8 +213,11 @@ function BlogPostPage() {
     ],
     [meta.title, postTitleTocId, toc],
   );
-  const showToc = shouldShowTableOfContents(tocWithTitle);
-  const activeTocId = useActiveTocId(tocWithTitle);
+  const showToc =
+    !isInterviewProblem && shouldShowTableOfContents(tocWithTitle);
+  const activeTocId = useActiveTocId(
+    isInterviewProblem ? EMPTY_TOC : tocWithTitle,
+  );
 
   useEffect(() => {
     const postContent = postContentRef.current;
@@ -235,16 +240,23 @@ function BlogPostPage() {
         <Link className="post-back-link" to="/">
           ← Back
         </Link>
-        <h1 id={postTitleTocId} className="post-title p-name">
+        <h1
+          id={postTitleTocId}
+          className={
+            isInterviewProblem ? "sr-only p-name" : "post-title p-name"
+          }
+        >
           <Link to="/$slug" params={{ slug }} className="post-permalink">
             {meta.title}
           </Link>
         </h1>
-        <p className="post-footnote">
-          <time className="dt-published" dateTime={toIsoDate(meta.date)}>
-            {toDisplayDate(meta.date)}
-          </time>
-        </p>
+        {!isInterviewProblem ? (
+          <p className="post-footnote">
+            <time className="dt-published" dateTime={toIsoDate(meta.date)}>
+              {toDisplayDate(meta.date)}
+            </time>
+          </p>
+        ) : null}
 
         {meta.image ? (
           <figure className="post-hero-image">
@@ -254,7 +266,11 @@ function BlogPostPage() {
             ) : null}
           </figure>
         ) : null}
-        <div ref={postContentRef} className="post-content e-content">
+        <div
+          ref={postContentRef}
+          className="post-content e-content"
+          data-interview-question={isInterviewProblem ? "" : undefined}
+        >
           <Suspense fallback={<p>Loading...</p>}>
             <PostContent moduleKey={moduleKey} />
           </Suspense>

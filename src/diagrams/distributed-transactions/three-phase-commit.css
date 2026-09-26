@@ -58,3 +58,9 @@
   .messageText:has(+ .messageLine1[data-id="i13"]) {
   fill: #2e8052 !important;
 }
+
+#distributed-transactions-three-phase-commit-mmd .message-label-backplate {
+  fill: #fff;
+  stroke: #d6d6d2;
+  stroke-width: 0.75px;
+}

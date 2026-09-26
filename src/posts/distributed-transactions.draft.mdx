@@ -54,7 +54,11 @@ This does not stop a shard from doing all other work: the prepared transaction h
 
 ## Three-Phase Commit
 
-Three-Phase Commit (3PC) adds a pre-commit round before the final decision to reduce blocking when the coordinator fails. This relies on bounded message and processing delays. A network partition can prevent some shards from receiving `PRE-COMMIT`; shards that receive it may time out and commit while those that do not time out and abort, leaving participants with different outcomes and violating atomicity.
+Three-Phase Commit (3PC) adds a pre-commit round before the final decision to reduce blocking when the coordinator fails.
+
+In 3PC, the <span className="transaction-decision transaction-decision--abort"><a href="https://en.wikipedia.org/wiki/Three-phase_commit_protocol#Disadvantages:~:text=Three%2Dphase%20commit%20assumes%20a%20network%20with%20bounded%20delay%20and%20nodes%20with%20bounded%20response%20times">worst case</a></span> is that a network partition can leave participants with different outcomes.
+
+3PC relies on bounded message and processing delays. If a partition prevents some shards from receiving <span className="transaction-decision transaction-decision--pre-commit">PRE-COMMIT</span>, participants that received it may time out and commit while others time out and abort, violating atomicity. The extra phase reduces blocking only while those timing assumptions hold.
 
 <figure className="static-mermaid-figure">
   <div className="static-mermaid-frame">

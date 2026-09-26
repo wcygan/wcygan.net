@@ -82,6 +82,36 @@
   background: #21201c;
   border-color: #21201c;
 }
+.dt-demo .dt-scenarios button[data-scenario] {
+  border-color: var(--dt-scenario-border);
+  background: var(--dt-scenario-background);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms;
+}
+.dt-demo .dt-scenarios button[data-scenario][aria-pressed="true"] {
+  border-color: var(--dt-scenario-selected);
+  background: var(--dt-scenario-selected);
+  color: #fff;
+}
+.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="commit"] {
+  --dt-scenario-background: #e7f4e9;
+  --dt-scenario-border: #4b9a65;
+  --dt-scenario-selected: #2e8052;
+}
+.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="abort"],
+.dt-demo[data-demo="three-phase"] .dt-scenarios [data-scenario="partition"] {
+  --dt-scenario-background: #fbe9e9;
+  --dt-scenario-border: #c7636b;
+  --dt-scenario-selected: #b74a50;
+}
+.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="interrupted"],
+.dt-demo[data-demo="three-phase"] .dt-scenarios [data-scenario="recovery"] {
+  --dt-scenario-background: oklch(0.92 0.092 100);
+  --dt-scenario-border: oklch(0.72 0.13 85);
+  --dt-scenario-selected: #806800;
+}
 .dt-demo button:disabled {
   opacity: 0.45;
   cursor: default;

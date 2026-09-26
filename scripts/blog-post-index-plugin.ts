@@ -68,6 +68,9 @@ function readBlogPosts(postsDirectory: string, includeDrafts: boolean): Post[] {
         : {}),
       ...(draft || frontmatter.draft === true ? { draft: true } : {}),
       ...(frontmatter.unlisted === true ? { unlisted: true } : {}),
+      ...(frontmatter.interviewQuestion === true
+        ? { interviewQuestion: true }
+        : {}),
       tags,
       readingTime: Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE)),
     });

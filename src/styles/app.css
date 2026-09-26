@@ -11395,6 +11395,195 @@ th {
   margin-top: 0.45em;
 }
 
+.site-container .post-content .top-k-implementation {
+  margin: 16px 0 32px;
+  border-block: 1px solid #e4e3de;
+}
+
+.site-container .post-content .top-k-implementation > summary {
+  min-height: 44px;
+  padding: 10px 4px;
+  color: #4a4842;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 24px;
+}
+
+.site-container .post-content .top-k-implementation > summary::marker {
+  color: #63635e;
+}
+
+.site-container .post-content .top-k-implementation[open] > summary {
+  border-bottom: 1px solid #e4e3de;
+}
+
+.site-container .post-content .top-k-implementation > p {
+  margin: 16px 0;
+}
+
+.site-container .post-content .top-k-complexity {
+  margin: 20px 0;
+  padding: 16px 20px;
+  border: 1px solid #e4e3de;
+  border-radius: 4px;
+  background: #f7f6f3;
+}
+
+.site-container .post-content .top-k-complexity > section + section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e4e3de;
+}
+
+.site-container .post-content .top-k-complexity h5 {
+  margin: 0 0 8px;
+  color: #21201c;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.site-container .post-content .top-k-complexity p,
+.site-container .post-content .top-k-complexity ul {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.site-container .post-content .top-k-complexity ul {
+  margin-top: 12px;
+  padding-left: 1.25em;
+}
+
+.site-container .post-content .top-k-complexity li + li {
+  margin-top: 8px;
+}
+
+.site-container .post-content .problem-board {
+  display: grid;
+  grid-template-columns: 197px minmax(0, 1fr);
+  align-content: start;
+  position: relative;
+  left: 50%;
+  width: min(950px, calc(100vw - 48px));
+  margin-block: 8px 40px;
+  overflow: hidden;
+  transform: translateX(-50%);
+  border: 1px solid #deddd7;
+  border-radius: 5px;
+  background: #fdfdfc;
+  box-shadow: 0 1px 1px #211d1510;
+  color: #25241f;
+  font-feature-settings: "cv01", "ss03";
+  font-variant-ligatures: none;
+  line-height: 1.48;
+}
+
+.site-container .post-content .problem-board__header {
+  grid-column: 1 / -1;
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid #deddd7;
+  background: #f4f3ef;
+}
+
+.site-container .post-content .problem-board__title {
+  margin: 0;
+  color: #25241f;
+  font-size: 24px;
+  font-weight: 550;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+
+.site-container .post-content .problem-board > h2 {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 20px 0 20px 28px;
+  color: #696861;
+  font-size: 11px;
+  font-weight: 550;
+  letter-spacing: 0.07em;
+  line-height: 1.48;
+  text-transform: uppercase;
+}
+
+.site-container .post-content .problem-board > h2[id] {
+  scroll-margin-top: 24px;
+}
+
+.site-container .post-content .problem-board > h2 + p,
+.site-container .post-content .problem-board > h2 + ul,
+.site-container .post-content .problem-board > h2 + ol {
+  margin: 0;
+  padding-block: 20px;
+  padding-inline-end: 28px;
+  font-size: 16px;
+  line-height: 1.48;
+}
+
+.site-container .post-content .problem-board > h2 + p {
+  padding-inline-start: 0;
+  max-width: 50ch;
+}
+
+.site-container .post-content .problem-board > h2 + ul,
+.site-container .post-content .problem-board > h2 + ol {
+  padding-inline-start: 19px;
+}
+
+.site-container .post-content .problem-board > h2 + ul li + li,
+.site-container .post-content .problem-board > h2 + ol li + li {
+  margin-block-start: 9px;
+}
+
+.site-container .post-content .problem-board > h2 + ul li,
+.site-container .post-content .problem-board > h2 + ol li {
+  padding-block: 0;
+  padding-inline-start: 2px;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.site-container .post-content .problem-board > h2:nth-of-type(2),
+.site-container .post-content .problem-board > h2:nth-of-type(2) + p,
+.site-container .post-content .problem-board > h2:nth-of-type(2) + ul,
+.site-container .post-content .problem-board > h2:nth-of-type(2) + ol {
+  border-top: 1px solid #deddd7;
+}
+
+@media (max-width: 639px) {
+  .site-container .post-content .problem-board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .site-container .post-content .problem-board__header {
+    padding: 20px 20px 16px;
+  }
+
+  .site-container .post-content .problem-board > h2 {
+    padding: 16px 20px 6px;
+  }
+
+  .site-container .post-content .problem-board > h2 + p,
+  .site-container .post-content .problem-board > h2 + ul,
+  .site-container .post-content .problem-board > h2 + ol {
+    padding: 0 20px 16px;
+  }
+
+  .site-container .post-content .problem-board > h2 + ul,
+  .site-container .post-content .problem-board > h2 + ol {
+    padding-inline-start: 39px;
+  }
+
+  .site-container .post-content .problem-board > h2:nth-of-type(2) + p,
+  .site-container .post-content .problem-board > h2:nth-of-type(2) + ul,
+  .site-container .post-content .problem-board > h2:nth-of-type(2) + ol {
+    border-top: 0;
+  }
+}
+
 .site-container .post-content > table {
   margin: 2em 0;
   font-size: 0.9375rem;
@@ -11418,6 +11607,11 @@ th {
   margin: 2em 0;
   font-size: 0.9375rem;
   line-height: 1.5;
+}
+
+.site-container .post-content[data-interview-question] pre,
+.site-container .post-content[data-interview-question] .shiki {
+  font-size: 9px;
 }
 
 .site-container .post-content > figure > img,
@@ -11591,10 +11785,11 @@ th {
   align-items: start;
   margin-block: 32px 40px;
   padding: 16px;
-  border: 2px solid #8d98a6;
-  border-radius: 12px;
-  background: #eef1f7;
-  box-shadow: 0 1px 2px rgb(33 32 28 / 8%);
+  border-radius: 6px;
+  background: #f7f6f3;
+  box-shadow:
+    0 0 0 1px oklch(0 0 0 / 0.06),
+    0 1px 2px -1px oklch(0 0 0 / 0.04);
   color: #21201c;
 }
 
@@ -17631,6 +17826,38 @@ th {
   background: oklch(0.92 0.078 180);
 }
 
+.site-container .post-content .transaction-decision--pre-commit {
+  background: oklch(0.92 0.047 330);
+}
+
 .site-container .post-content .transaction-decision--abort {
   background: oklch(0.92 0.029 25);
+}
+
+/* Every authored MDX heading has a direct, keyboard-accessible permalink. */
+.post-content h1[id],
+.post-content h2[id],
+.post-content h3[id],
+.post-content h4[id] {
+  scroll-margin-top: 24px;
+}
+
+.post-content .heading-anchor {
+  color: inherit;
+  text-decoration: none;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.12em;
+  transition: text-decoration-color 120ms ease;
+}
+
+.post-content :is(h1, h2, h3, h4):hover .heading-anchor,
+.post-content .heading-anchor:focus-visible {
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-content .heading-anchor {
+    transition: none;
+  }
 }

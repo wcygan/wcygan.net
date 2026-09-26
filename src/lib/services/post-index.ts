@@ -58,6 +58,7 @@ export function buildPostIndex(
           tags: post.frontmatter.tags || [],
           draft: isDraft || post.frontmatter.draft,
           unlisted: post.frontmatter.unlisted === true,
+          interviewQuestion: post.frontmatter.interviewQuestion === true,
           readingTime: readingTimeFor(post),
         },
       ];

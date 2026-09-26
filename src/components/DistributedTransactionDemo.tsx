@@ -182,6 +182,7 @@ export function DistributedTransactionDemo({
       data-graphic-key={`distributed-${kind}`}
       data-graphic-kind="canvas"
       aria-labelledby={titleId}
+      data-demo={kind}
       data-layout={frame.layout}
       data-step={step}
       data-moving={moving}
@@ -203,6 +204,7 @@ export function DistributedTransactionDemo({
             <button
               key={item.id}
               type="button"
+              data-scenario={item.id}
               aria-pressed={scenarioId === item.id}
               onClick={() => reset(item.id)}
             >

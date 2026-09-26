@@ -4,7 +4,12 @@ date: September 26, 2026
 description: Find and claim numbered tickets
 tags: [Systems Design]
 unlisted: true
+interviewQuestion: true
 ---
+
+import { ProblemBoard } from "../components/ProblemBoard.tsx";
+
+<ProblemBoard title="Ticket Claim Service">
 
 ## Problem
 
@@ -12,9 +17,12 @@ Build a service for 100 numbered tickets. Clients can find available tickets and
 
 ## Requirements
 
-- Tickets are numbered `1` through `100`.
-- Clients can list available tickets.
-- A client can attempt to claim a ticket and receive `true` or `false`.
+1. Tickets are numbered `1` through `100`.
+2. Clients can list available tickets.
+3. A client can attempt to claim a ticket and receive `true` or `false`.
+4. Tickets cannot be oversold: each ticket can be claimed by at most one client.
+
+</ProblemBoard>
 
 ## Operations
 

@@ -497,7 +497,7 @@ async function renderAll(diagrams) {
         let svg = await evaluate(
           cdp,
           sessionId,
-          `window.renderMermaid(${JSON.stringify(diagram.id)}, ${JSON.stringify(source)}, ${JSON.stringify(mermaidConfig)}, ${JSON.stringify(relative(diagramsDir, diagram.sourcePath) === "distributed-transactions/two-phase-commit.mmd")})`,
+          `window.renderMermaid(${JSON.stringify(diagram.id)}, ${JSON.stringify(source)}, ${JSON.stringify(mermaidConfig)}, ${JSON.stringify(["distributed-transactions/two-phase-commit.mmd", "distributed-transactions/three-phase-commit.mmd"].includes(relative(diagramsDir, diagram.sourcePath)))})`,
         );
 
         svg = makeStableSvg(svg);

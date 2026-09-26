@@ -6,6 +6,12 @@ export function getAllPosts(): Post[] {
   return posts.filter((post) => !post.unlisted);
 }
 
+export function getInterviewQuestions(): Post[] {
+  return posts
+    .filter((post) => post.interviewQuestion === true && !post.draft)
+    .sort((left, right) => left.title.localeCompare(right.title));
+}
+
 export function getPostBySlug(slug: string): Post | undefined {
   return findPostBySlug(posts, slug);
 }

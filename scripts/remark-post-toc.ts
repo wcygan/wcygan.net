@@ -49,7 +49,12 @@ export function remarkPostToc() {
     const toc: TableOfContentsItem[] = [];
 
     visit(tree, (node) => {
-      if (node.type !== "heading" || (node.depth !== 2 && node.depth !== 3)) {
+      if (
+        node.type !== "heading" ||
+        node.depth === undefined ||
+        node.depth < 1 ||
+        node.depth > 4
+      ) {
         return;
       }
 
@@ -65,11 +70,27 @@ export function remarkPostToc() {
         id,
       };
 
-      toc.push({
-        id,
-        title,
-        depth: node.depth,
-      });
+      node.children = [
+        {
+          type: "link",
+          url: `#${id}`,
+          title: null,
+          data: {
+            hProperties: {
+              className: ["heading-anchor"],
+            },
+          },
+          children: node.children ?? [],
+        },
+      ];
+
+      if (node.depth === 2 || node.depth === 3) {
+        toc.push({
+          id,
+          title,
+          depth: node.depth,
+        });
+      }
     });
 
     file.data.postToc = toc;

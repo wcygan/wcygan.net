@@ -4,7 +4,12 @@ date: September 26, 2026
 description: Rank keys by recent successful reads
 tags: [Systems Design]
 unlisted: true
+interviewQuestion: true
 ---
+
+import { ProblemBoard } from "../components/ProblemBoard.tsx";
+
+<ProblemBoard title="Top K Recently Accessed Keys">
 
 ## Problem
 
@@ -12,9 +17,12 @@ Add a top-k query to a key-value store. It returns the keys with the most succes
 
 ## Requirements
 
-- A successful read counts as one access.
-- Return at most `k` entries, ordered by access count descending.
-- Break ties by key to make the order predictable.
+1. A successful read counts as one access.
+2. Accesses older than 24 hours do not count toward the recent top-k results.
+3. Return at most `k` entries, ordered by access count descending.
+4. Break ties by key to make the order predictable.
+
+</ProblemBoard>
 
 ## Operations
 
@@ -68,8 +76,298 @@ GET /keys/theme
 
 ### 1. Single server without concurrency
 
-### 2. Single server with concurrency
+You can build the ranking when `topK` runs, or update it as reads happen. Both approaches keep current string values and count only successful reads from the past 24 hours.
 
-### 3. Multi-server
+#### Batch ranking on each query
 
-### 4. Multi-region
+Build the ranking when `topK` runs.
+
+- **Read:** Keep timestamps for each key. A successful `get` adds one and removes old timestamps for that key.
+- **Query:** Remove old timestamps, scan stored keys, and sort those with recent reads.
+- **Benefit:** Reads stay cheap, and there is little ranking state to maintain. This fits when `topK` runs rarely.
+- **Tradeoff:** Every `topK` scans and sorts, even when it needs only a few keys.
+
+<details className="top-k-implementation">
+  <summary>View Java implementation and complexity</summary>
+
+Standard library imports are omitted for brevity.
+
+```java
+public final class KVStore {
+    public record Entry(String key, String value, int accessCount) {}
+
+    private static final Duration WINDOW = Duration.ofHours(24);
+
+    private final Clock clock;
+    private final Map<String, String> values = new HashMap<>();
+    private final Map<String, Deque<Instant>> reads = new HashMap<>();
+
+    public KVStore(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
+
+    public void put(String key, String value) {
+        values.put(key, Objects.requireNonNull(value));
+    }
+
+    public void delete(String key) {
+        values.remove(key);
+        reads.remove(key);
+    }
+
+    public Optional<String> get(String key) {
+        String value = values.get(key);
+        if (value == null) return Optional.empty();
+
+        Instant now = clock.instant();
+        Deque<Instant> times = reads.computeIfAbsent(key, ignored -> new ArrayDeque<>());
+        prune(times, now.minus(WINDOW));
+        times.addLast(now);
+        return Optional.of(value);
+    }
+
+    public List<Entry> topK(int k) {
+        if (k < 0) throw new IllegalArgumentException("k must be nonnegative");
+        if (k == 0) return List.of();
+
+        Instant cutoff = clock.instant().minus(WINDOW);
+        List<Entry> result = new ArrayList<>();
+        for (Map.Entry<String, String> item : values.entrySet()) {
+            Deque<Instant> times = reads.get(item.getKey());
+            if (times == null) continue;
+
+            prune(times, cutoff);
+            if (!times.isEmpty()) {
+                result.add(new Entry(item.getKey(), item.getValue(), times.size()));
+            }
+        }
+
+        result.sort(Comparator.<Entry>comparingInt(Entry::accessCount)
+                .reversed().thenComparing(Entry::key));
+        return List.copyOf(result.subList(0, Math.min(k, result.size())));
+    }
+
+    private static void prune(Deque<Instant> times, Instant cutoff) {
+        while (!times.isEmpty() && times.peekFirst().isBefore(cutoff)) {
+            times.removeFirst();
+        }
+    }
+}
+```
+
+<div className="top-k-complexity">
+  <section>
+    <h5>Time</h5>
+    <p>
+      <code>topK(k)</code> takes <code>O(n + e + q log q)</code>.
+    </p>
+    <ul>
+      <li>
+        Scan <code>n</code> stored keys.
+      </li>
+      <li>
+        Remove <code>e</code> expired timestamps.
+      </li>
+      <li>
+        Sort <code>q</code> keys with recent reads, even if <code>k</code> is
+        small.
+      </li>
+      <li>
+        <code>put</code> and <code>delete</code> average <code>O(1)</code>.{" "}
+        <code>get</code> takes <code>O(1 + e)</code> for that key; here{" "}
+        <code>e</code> is the expired timestamps removed by that read.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h5>Space</h5>
+    <p>
+      Stored state takes <code>O(n + r)</code>; <code>topK</code> uses{" "}
+      <code>O(q)</code> extra space.
+    </p>
+    <ul>
+      <li>
+        Keep <code>n</code> keys and <code>r</code> stored read timestamps.
+      </li>
+      <li>
+        Old timestamps for an inactive key remain until that key is read,
+        included in a <code>topK</code> query, or deleted.
+      </li>
+    </ul>
+  </section>
+</div>
+
+</details>
+
+#### Incremental ranking on reads
+
+Keep the ranking up to date as reads happen.
+
+- **Read:** Keep accesses in one time-ordered deque. Each successful `get` updates the key's count and adds a ranking snapshot to a max-heap.
+- **Query:** Expire old accesses, skip outdated heap entries, and take the highest-ranked current keys.
+- **Benefit:** A small `topK` usually avoids scanning and sorting every key. This fits when small queries run often.
+- **Tradeoff:** Reads do more work. Expiration or heap cleanup can still make one read or query slow.
+
+<details className="top-k-implementation">
+  <summary>View Java implementation and complexity</summary>
+
+Standard library imports are omitted for brevity.
+
+```java
+public final class KVStore {
+    public record Entry(String key, String value, int accessCount) {}
+    private record Access(String key, long generation, Instant time) {}
+    private record Rank(String key, int count, long version) {}
+
+    private static final Duration WINDOW = Duration.ofHours(24);
+
+    private final Clock clock;
+    private final Map<String, String> values = new HashMap<>();
+    private final Map<String, Integer> counts = new HashMap<>();
+    private final Map<String, Long> generations = new HashMap<>();
+    private final Map<String, Long> versions = new HashMap<>();
+    private final Deque<Access> accesses = new ArrayDeque<>();
+    private final PriorityQueue<Rank> ranking = new PriorityQueue<>(
+            Comparator.comparingInt(Rank::count).reversed().thenComparing(Rank::key));
+    private long nextId;
+
+    public KVStore(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
+
+    public void put(String key, String value) {
+        if (!values.containsKey(key)) generations.put(key, ++nextId);
+        values.put(key, Objects.requireNonNull(value));
+    }
+
+    public void delete(String key) {
+        values.remove(key);
+        counts.remove(key);
+        generations.remove(key);
+        versions.remove(key);
+    }
+
+    public Optional<String> get(String key) {
+        Instant now = clock.instant();
+        expire(now);
+        String value = values.get(key);
+        if (value == null) return Optional.empty();
+
+        accesses.addLast(new Access(key, generations.get(key), now));
+        setCount(key, counts.getOrDefault(key, 0) + 1);
+        compactRankingIfNeeded();
+        return Optional.of(value);
+    }
+
+    public List<Entry> topK(int k) {
+        if (k < 0) throw new IllegalArgumentException("k must be nonnegative");
+        if (k == 0) return List.of();
+
+        expire(clock.instant());
+        compactRankingIfNeeded();
+        List<Entry> result = new ArrayList<>();
+        List<Rank> selected = new ArrayList<>();
+
+        while (result.size() < k && !ranking.isEmpty()) {
+            Rank rank = ranking.remove();
+            if (!Objects.equals(versions.get(rank.key()), rank.version())) continue;
+
+            selected.add(rank);
+            result.add(new Entry(rank.key(), values.get(rank.key()), rank.count()));
+        }
+
+        ranking.addAll(selected);
+        return List.copyOf(result);
+    }
+
+    private void expire(Instant now) {
+        Instant cutoff = now.minus(WINDOW);
+        while (!accesses.isEmpty() && accesses.peekFirst().time().isBefore(cutoff)) {
+            Access access = accesses.removeFirst();
+            if (!Objects.equals(generations.get(access.key()), access.generation())) continue;
+            setCount(access.key(), counts.get(access.key()) - 1);
+        }
+    }
+
+    private void setCount(String key, int count) {
+        if (count == 0) {
+            counts.remove(key);
+            versions.remove(key);
+        } else {
+            counts.put(key, count);
+            long version = ++nextId;
+            versions.put(key, version);
+            ranking.add(new Rank(key, count, version));
+        }
+    }
+
+    private void compactRankingIfNeeded() {
+        if (ranking.size() <= Math.max(32, 4 * counts.size())) return;
+
+        ranking.clear();
+        for (Map.Entry<String, Integer> item : counts.entrySet()) {
+            ranking.add(new Rank(item.getKey(), item.getValue(), versions.get(item.getKey())));
+        }
+    }
+}
+```
+
+<div className="top-k-complexity">
+  <section>
+    <h5>Time</h5>
+    <p>
+      A clean <code>topK(k)</code> usually takes <code>O(k log h)</code>, where{" "}
+      <code>h</code> is the heap size.
+    </p>
+    <ul>
+      <li>
+        Take up to <code>k</code> current leaders from the heap.
+      </li>
+      <li>
+        If <code>e</code> accesses expire and <code>s</code> old heap entries
+        are skipped, the call takes <code>O((e + k + s) log h)</code>.
+      </li>
+      <li>
+        A heap rebuild adds <code>O(c log c)</code>, where <code>c</code> is the
+        number of keys with positive counts. So one query is not guaranteed to
+        be faster.
+      </li>
+      <li>
+        A successful <code>get</code> takes <code>O(log h)</code> for its heap
+        update, plus <code>O(e log h)</code> to expire old accesses.{" "}
+        <code>put</code> and <code>delete</code> average <code>O(1)</code>.
+      </li>
+    </ul>
+  </section>
+  <section>
+    <h5>Space</h5>
+    <p>
+      After a successful read or nonzero <code>topK</code>, stored state takes{" "}
+      <code>O(n + a + c + 1)</code>; the query uses <code>O(k)</code> extra
+      space.
+    </p>
+    <ul>
+      <li>
+        Keep <code>n</code> stored keys and <code>a</code> access records in the
+        global deque.
+      </li>
+      <li>
+        Periodic rebuilds keep old heap snapshots proportional to <code>c</code>
+        . A small fixed allowance remains.
+      </li>
+      <li>Records for deleted keys stay in the deque until they expire.</li>
+    </ul>
+  </section>
+</div>
+
+This version assumes access times arrive in nondecreasing order.
+
+</details>
+
+#### Recommendation
+
+Use **batch ranking** for a small store or when `topK` runs only occasionally. It keeps each read cheap and avoids maintaining a heap.
+
+- **Batch fits:** Many reads between queries, a modest number of keys, or requests for a large `k`. Paying for one scan and sort at query time is usually reasonable.
+- **Incremental fits:** Frequent `topK` queries that ask for a small `k` compared with the number of ranked keys. Updating counts during reads can avoid scanning and sorting every key for each query.
+- **Measure the slow calls:** Both approaches may remove many expired accesses in one call. The incremental version may also skip stale heap entries or rebuild its heap, so its worst-case `topK` can still be slow.
