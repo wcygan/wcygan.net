@@ -1,0 +1,75 @@
+---
+title: Top K Recently Accessed Keys
+date: September 26, 2026
+description: Rank keys by recent successful reads
+tags: [Systems Design]
+unlisted: true
+---
+
+## Problem
+
+Add a top-k query to a key-value store. It returns the keys with the most successful reads in the rolling 24 hours before the query, along with their current values and access counts.
+
+## Requirements
+
+- A successful read counts as one access.
+- Return at most `k` entries, ordered by access count descending.
+- Break ties by key to make the order predictable.
+
+## Operations
+
+### Read a value
+
+- **Input:** A key.
+- **Result:** Its current value, or no value if the key does not exist.
+- **Effect:** A successful read counts as one access.
+
+### Find the most accessed keys
+
+- **Input:** A maximum number of entries, `k`.
+- **Result:** Up to `k` entries. Each contains a key, its current value, and its successful-read count in the rolling 24-hour window before the query.
+- **Ordering:** Access count descending, then key order for ties.
+
+## HTTP mapping
+
+One possible HTTP mapping is:
+
+```http
+GET /keys/{key}
+GET /top-k?k=3
+```
+
+A successful `GET /keys/{key}` returns the current value and counts as one access. For example:
+
+```http
+GET /keys/theme
+```
+
+```json
+{
+  "key": "theme",
+  "value": "dark"
+}
+```
+
+`GET /top-k?k=3` returns up to three entries, ordered by access count descending and then key order. For example:
+
+```json
+{
+  "entries": [
+    { "key": "theme", "value": "dark", "access_count": 18 },
+    { "key": "language", "value": "en", "access_count": 12 },
+    { "key": "timezone", "value": "UTC", "access_count": 7 }
+  ]
+}
+```
+
+## Progression
+
+### 1. Single server without concurrency
+
+### 2. Single server with concurrency
+
+### 3. Multi-server
+
+### 4. Multi-region

@@ -1,0 +1,67 @@
+---
+title: Ticket Claim Service
+date: September 26, 2026
+description: Find and claim numbered tickets
+tags: [Systems Design]
+unlisted: true
+---
+
+## Problem
+
+Build a service for 100 numbered tickets. Clients can find available tickets and claim one.
+
+## Requirements
+
+- Tickets are numbered `1` through `100`.
+- Clients can list available tickets.
+- A client can attempt to claim a ticket and receive `true` or `false`.
+
+## Operations
+
+### Find available tickets
+
+- **Input:** None.
+- **Result:** The IDs of tickets currently available.
+
+### Claim a ticket
+
+- **Input:** A ticket ID and client ID.
+- **Result:** `true` if the ticket is claimed by the client; otherwise `false`.
+
+## HTTP mapping
+
+One possible HTTP mapping is:
+
+```http
+GET /tickets?status=unclaimed
+POST /tickets/{ticketId}/claim
+Content-Type: application/json
+
+{
+  "clientId": "client-42"
+}
+```
+
+The search response can encode available IDs as:
+
+```json
+{
+  "ticketIds": [3, 7, 12]
+}
+```
+
+The claim endpoint returns `true` when the claim succeeds and `false` when it does not. For example:
+
+```json
+true
+```
+
+## Progression
+
+### 1. Single server without concurrency
+
+### 2. Single server with concurrency
+
+### 3. Multi-server
+
+### 4. Multi-region
