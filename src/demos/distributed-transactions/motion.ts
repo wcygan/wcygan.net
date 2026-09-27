@@ -1,5 +1,11 @@
 import type { Message, NodeId, TransactionFrame } from "./types";
 
+/** Hold each settled state long enough to read its title and explanation. */
+export function readingTime(frame: TransactionFrame) {
+  const words = `${frame.title} ${frame.status}`.trim().split(/\s+/).length;
+  return Math.min(6000, Math.max(3200, words * 180));
+}
+
 export function transitionTiming(
   from: TransactionFrame,
   to?: TransactionFrame,

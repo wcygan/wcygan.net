@@ -1,9 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { DEMOS } from "./model";
-import { messagePhase, transitionTiming } from "./motion";
+import { messagePhase, readingTime, transitionTiming } from "./motion";
 import type { Message } from "./types";
 
 describe("transaction pacing", () => {
+  it("holds each explanation for reading and gives longer captions more time", () => {
+    const short = DEMOS["two-phase"].scenarios[0].frames[0];
+    const long = DEMOS.spanner.scenarios[2].frames[6];
+    expect(readingTime(short)).toBeGreaterThanOrEqual(3200);
+    expect(readingTime(long)).toBeGreaterThan(readingTime(short));
+    expect(readingTime(long)).toBeLessThanOrEqual(6000);
+  });
+
   it("separates reading, local work, and the arrived-state hold", () => {
     const [start, staged] = DEMOS.placement.scenarios[0].frames;
     expect(transitionTiming(start, staged)).toEqual({

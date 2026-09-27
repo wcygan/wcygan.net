@@ -32,102 +32,8 @@
   --dt-change-credit-background: #e7f4e9;
   --dt-change-debit-border: #c7636b;
   --dt-change-debit-background: #fbe9e9;
-  color: #21201c;
-  font:
-    400 16px/1.55 Inter,
-    sans-serif;
 }
-.dt-demo p {
-  margin: 0;
-  line-height: 1.55;
-}
-.dt-header {
-  display: grid;
-  gap: 8px;
-  margin-block-end: 16px;
-}
-.dt-demo .dt-description,
-.dt-demo .dt-assumption {
-  color: #63635e;
-  font-size: 14px;
-}
-.dt-scenarios,
-.dt-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.dt-scenarios {
-  margin-block-end: 12px;
-}
-.dt-demo button {
-  min-width: 44px;
-  min-height: 44px;
-  border: 1px solid #e4e3de;
-  border-radius: 5px;
-  padding: 8px 12px;
-  background: #fdfdfc;
-  color: #21201c;
-  font:
-    500 14px/1.4 Inter,
-    sans-serif;
-  cursor: pointer;
-  transition: background-color 150ms;
-}
-.dt-demo button:hover {
-  background: #f7f6f3;
-}
-.dt-demo button[aria-pressed="true"] {
-  color: #fdfdfc;
-  background: #21201c;
-  border-color: #21201c;
-}
-.dt-demo .dt-scenarios button[data-scenario] {
-  border-color: var(--dt-scenario-border);
-  background: var(--dt-scenario-background);
-  transition:
-    background-color 150ms,
-    border-color 150ms,
-    color 150ms;
-}
-.dt-demo .dt-scenarios button[data-scenario][aria-pressed="true"] {
-  border-color: var(--dt-scenario-selected);
-  background: var(--dt-scenario-selected);
-  color: #fff;
-}
-.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="commit"] {
-  --dt-scenario-background: #e7f4e9;
-  --dt-scenario-border: #4b9a65;
-  --dt-scenario-selected: #2e8052;
-}
-.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="abort"],
-.dt-demo[data-demo="three-phase"] .dt-scenarios [data-scenario="partition"] {
-  --dt-scenario-background: #fbe9e9;
-  --dt-scenario-border: #c7636b;
-  --dt-scenario-selected: #b74a50;
-}
-.dt-demo[data-demo="two-phase"] .dt-scenarios [data-scenario="interrupted"],
-.dt-demo[data-demo="three-phase"] .dt-scenarios [data-scenario="recovery"] {
-  --dt-scenario-background: oklch(0.92 0.092 100);
-  --dt-scenario-border: oklch(0.72 0.13 85);
-  --dt-scenario-selected: #806800;
-}
-.dt-demo button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.dt-demo :is(button, summary, [tabindex]):focus-visible {
-  outline: 2px solid #466eaa;
-  outline-offset: 2px;
-}
-.dt-stage {
-  height: 380px;
-  position: relative;
-  overflow: hidden;
-  margin-block: 8px 16px;
-  isolation: isolate;
-}
-.dt-demo[data-layout="replicated"] .dt-stage {
+.dt-demo[data-layout="replicated"] .demo-workbench-stage {
   height: 440px;
 }
 .dt-canvas {
@@ -205,6 +111,31 @@
   line-height: 1.2;
   white-space: nowrap;
 }
+.dt-scene-label .dt-account-record:has(svg) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.dt-account-record svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.dt-scene-label--quorum {
+  display: grid;
+  gap: 3px;
+  color: var(--dt-muted);
+  font-size: 11px;
+}
+.dt-scene-label--quorum span:first-child {
+  color: var(--dt-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
 .dt-account-change[data-direction="credit"] {
   --dt-change-border: var(--dt-change-credit-border);
   background: var(--dt-change-credit-background);
@@ -279,28 +210,6 @@
 .dt-state-highlight[data-state="unavailable"] {
   --dt-state-background: var(--dt-highlight-unavailable);
 }
-.dt-demo .dt-guide {
-  margin-block: 12px 20px;
-  color: #63635e;
-  font-size: 12px;
-}
-.dt-status {
-  display: grid;
-  align-content: start;
-  gap: 8px;
-  min-height: 108px;
-}
-.dt-demo .dt-step {
-  font-weight: 550;
-}
-.dt-step > span {
-  display: inline-block;
-  min-width: 48px;
-  margin-inline-end: 8px;
-  color: #63635e;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
 .dt-demo .dt-messages {
   color: #63635e;
   font-size: 13px;
@@ -349,10 +258,7 @@
   gap: 12px;
 }
 @media (max-width: 639px) {
-  .dt-stage {
-    height: 380px;
-  }
-  .dt-demo[data-layout="replicated"] .dt-stage {
+  .dt-demo[data-layout="replicated"] .demo-workbench-stage {
     height: 420px;
   }
   .dt-scene-label {
@@ -361,18 +267,15 @@
   .dt-scene-label--account {
     width: 128px;
   }
-  .dt-controls {
-    gap: 8px;
+  .dt-scene-label--quorum {
+    width: 142px;
+    font-size: 10px;
+    white-space: normal;
   }
   .dt-accounts {
     gap: 12px;
   }
   .dt-balance span {
     display: block;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .dt-demo button {
-    transition: none;
   }
 }

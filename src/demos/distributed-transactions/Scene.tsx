@@ -24,6 +24,7 @@ import { messageRole, type Palette, readPalette, recordRole } from "./palette";
 import { changedNodes, messagePhase } from "./motion";
 import { fitTransactionZoom } from "./camera";
 import { StateHighlight } from "./StateHighlight";
+import { quorumLabel } from "./quorum";
 import type {
   AccountState,
   Message,
@@ -161,6 +162,7 @@ function Label({
     | "record"
     | "offline"
     | "replica"
+    | "quorum"
     | "coordinator";
   owner?: "a" | "b";
   children: ReactNode;
@@ -320,21 +322,39 @@ function Camera({
   );
 }
 
+function LockIcon({ released }: { released: boolean }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 16 16" fill="none">
+      <rect x="3.5" y="7" width="9" height="7" rx="1.5" />
+      {released ? (
+        <path d="M6 7V4.5a2.5 2.5 0 0 1 4.7-1.2" />
+      ) : (
+        <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" />
+      )}
+    </svg>
+  );
+}
+
 function Account({
   id,
   state,
   position,
   showRecord = true,
+  internalApply = false,
 }: {
   id: "A" | "B";
   state: AccountState;
   position: Point;
   showRecord?: boolean;
+  internalApply?: boolean;
 }) {
   const record = state.records.at(-1);
   return (
     <Label position={position} variant="account">
-      <small className="dt-account-name">Account {id}</small>
+      <small className="dt-account-name">
+        Account {id}
+        {internalApply ? " · applied" : ""}
+      </small>
       <strong className="dt-account-value">${state.balance}</strong>
       <span className="dt-account-pending">
         {state.pending !== 0 ? (
@@ -348,13 +368,31 @@ function Account({
             </b>
           </>
         ) : state.state === "committed" || state.state === "aborted" ? (
-          <StateHighlight>{state.state}</StateHighlight>
+          <StateHighlight>
+            {internalApply && state.state === "committed"
+              ? "applied"
+              : state.state}
+          </StateHighlight>
         ) : (
           "\u00a0"
         )}
       </span>
       <span className="dt-account-record">
-        {showRecord && record ? (
+        {internalApply ? (
+          state.locked ? (
+            <>
+              <LockIcon released={false} />
+              LOCK HELD
+            </>
+          ) : state.state === "idle" ? (
+            "UNLOCKED"
+          ) : (
+            <>
+              <LockIcon released />
+              LOCK RELEASED
+            </>
+          )
+        ) : showRecord && record ? (
           <>
             STORED: <StateHighlight>{record}</StateHighlight>
           </>
@@ -401,10 +439,10 @@ function Coordinator({
         />
       </Billboard>
       <Label position={[0, 0, 0]} variant="replica">
-        C
+        TM
       </Label>
       <Label position={[0, 0.85, 0]} variant="coordinator">
-        Coordinator
+        Transaction manager
       </Label>
       <Label position={[0, -0.68, 0]} variant="record">
         <span>
@@ -605,17 +643,33 @@ function Replica({
         {id}
       </Label>
       {(replica.leader || !replica.online) && (
-        <Label position={offset(position, 0, height / 2 + 0.52)}>
+        <Label
+          position={offset(
+            position,
+            0,
+            height / 2 + (coordinator && !front ? 1.02 : 0.52),
+          )}
+        >
           {!replica.online ? (
             <StateHighlight>UNREACHABLE</StateHighlight>
           ) : coordinator ? (
-            "LEADER · COORD."
+            front ? (
+              "LEADER · COORDINATOR"
+            ) : (
+              <>
+                <span>LEADER</span>
+                <span>COORDINATOR</span>
+              </>
+            )
           ) : (
             "LEADER"
           )}
         </Label>
       )}
-      <Label position={offset(position, 0, -height / 2 - 0.4)} variant="record">
+      <Label
+        position={offset(position, 0, -height / 2 - (front ? 0.7 : 0.4))}
+        variant="record"
+      >
         {replica.record ? (
           <>
             {front ? "STORED: " : ""}
@@ -640,14 +694,16 @@ function ReplicatedServers({
     <>
       {(["a", "b"] as const).map((group, index) => (
         <group key={group}>
-          <Label position={[positions[group][0], 1.7, -4]}>
-            Shard {group.toUpperCase()}
+          <Label position={[positions[group][0], 2.6, -4]} variant="quorum">
+            <span>Shard {group.toUpperCase()}</span>
+            <span>{quorumLabel(frame.replicas, group)}</span>
           </Label>
           <Account
             id={index === 0 ? "A" : "B"}
             state={frame.accounts[index]}
-            position={offset(positions[group], 0, -2.6)}
+            position={offset(positions[group], 0, -3.15)}
             showRecord={false}
+            internalApply
           />
         </group>
       ))}

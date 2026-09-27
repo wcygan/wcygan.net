@@ -191,7 +191,7 @@ function placementTogether(): TransactionScenario {
 function twoPhasePrefix(): TransactionFrame[] {
   const start = initial(
     "Two participants",
-    "A coordinator will collect votes before choosing one outcome for the transfer.",
+    "A transaction manager acts as coordinator for Shards A and B, collecting their votes before choosing one outcome for the transfer.",
     "split",
     true,
   );
@@ -278,12 +278,18 @@ function twoPhaseCommit(interrupted = false): TransactionScenario {
 
 function twoPhaseAbort(): TransactionScenario {
   const [start, staged] = twoPhasePrefix();
-  const rejected = next(
+  const prepared = next(
     staged,
-    "A prepares; B votes No",
-    "A can commit and durably prepares. B rejects the credit before promising to commit, discarding its pending change.",
+    "A records Prepare",
+    "A durably prepares its debit. B has not promised to commit its credit.",
+    { accounts: [prepare(staged.accounts[0]), staged.accounts[1]] },
+  );
+  const rejected = next(
+    prepared,
+    "B votes No",
+    "B rejects the credit and discards its pending change before promising to commit.",
     {
-      accounts: [prepare(staged.accounts[0]), abort(staged.accounts[1])],
+      accounts: [prepared.accounts[0], abort(prepared.accounts[1])],
       messages: [message("b", "coordinator", "No")],
     },
   );
@@ -302,7 +308,7 @@ function twoPhaseAbort(): TransactionScenario {
   const done = next(
     decision,
     "Both changes abort",
-    "A and B remain $100 each. Neither change committed, and the prepared lock is released.",
+    "A and B remain $100 each. Neither change committed, and both locks are released.",
     {
       accounts: [abort(decision.accounts[0]), decision.accounts[1]],
       messages: broadcast("Abort"),
@@ -312,7 +318,7 @@ function twoPhaseAbort(): TransactionScenario {
     id: "abort",
     label: "Abort",
     description: "A No vote prevents the transfer from committing anywhere.",
-    frames: [start, staged, rejected, voted, decision, done],
+    frames: [start, staged, prepared, rejected, voted, decision, done],
   };
 }
 
@@ -338,9 +344,6 @@ function placementSeparate(): TransactionScenario {
 // Skeen, Nonblocking Commit Protocols (1981), §1 and §6:
 // https://www.cs.cornell.edu/courses/cs614/2003sp/papers/Ske81.pdf
 // This trace assumes connected survivors and reliable failure detection.
-const threePhaseAssumption =
-  "Assumes bounded message and processing delays, connected surviving participants, and one fail-stop coordinator crash. Recovery exchanges state; timeout alone is insufficient.";
-
 function threePhase(partition: boolean): TransactionScenario {
   const frames = twoPhasePrefix();
   let frame = frames.at(-1)!;
@@ -403,14 +406,16 @@ function threePhase(partition: boolean): TransactionScenario {
     frames.push(frame);
     frame = next(
       frame,
-      "Survivors exchange state",
-      "A leads recovery and collects B's state. Both report PRE-COMMIT, so recovery can finish this transaction without the old coordinator.",
-      {
-        messages: [
-          message("a", "b", "State?"),
-          { ...message("b", "a", "Pre-commit"), beat: 1 },
-        ],
-      },
+      "A asks B for its state",
+      "A begins recovery by asking B what it durably recorded.",
+      { messages: [message("a", "b", "State?")] },
+    );
+    frames.push(frame);
+    frame = next(
+      frame,
+      "B confirms Pre-commit",
+      "B reports PRE-COMMIT. A now knows both participants reached that phase, so recovery can safely commit.",
+      { messages: [message("b", "a", "Pre-commit")] },
     );
     frames.push(frame);
     frames.push(
@@ -431,7 +436,6 @@ function threePhase(partition: boolean): TransactionScenario {
     description: partition
       ? "Partition the participants while Pre-commit is only partially delivered."
       : "Connected participants recover after both acknowledge the additional phase.",
-    assumption: threePhaseAssumption,
     frames,
   };
 }
@@ -470,6 +474,7 @@ function spanner(
     true,
   );
   start.replicas = replicas();
+  start.spanner = { yesReceived: false, commitWaitComplete: false };
   start.coordinator.role = "a";
   const frames = [start];
   let frame = next(
@@ -501,13 +506,16 @@ function spanner(
     frame,
     "B votes after replication",
     "Only after the prepare quorum does B notify coordinator A that it can commit.",
-    { messages: [message("b", "a", "Prepared")] },
+    {
+      messages: [message("b", "a", "Prepared")],
+      spanner: { yesReceived: true, commitWaitComplete: false },
+    },
   );
   frames.push(frame);
   frame = next(
     frame,
     "Replicate the global decision",
-    "A and A2 durably record COMMIT. This quorum fixes the transaction's outcome before B learns it.",
+    "A and A2 durably record COMMIT, A’s local write, and the commit timestamp. This quorum fixes the outcome before B learns it.",
     {
       coordinator: { ...frame.coordinator, record: "COMMIT" },
       replicas: recordReplicas(frame, ["a", "a2"], "COMMIT"),
@@ -561,14 +569,14 @@ function spanner(
       frame,
       "Complete commit wait",
       "The commit timestamp is now certainly in the past. This separate clock requirement precedes applying the coordinator's writes.",
-      { wait: true },
+      { wait: true, spanner: { yesReceived: true, commitWaitComplete: true } },
     );
     frames.push(frame);
     const leader = mode === "leader-failure" ? "a2" : "a";
     frame = next(
       frame,
       "Send the decision across shards",
-      "A's group applies its debit and sends COMMIT to B. B will durably replicate the outcome before applying its credit.",
+      "A’s group applies its debit and sends COMMIT to B. B still holds its lock: a read needing the new credit waits. These applied balances are internal progress, not a consistent client snapshot.",
       {
         accounts: [commit(frame.accounts[0]), frame.accounts[1]],
         messages: [message(leader, "b", "Commit")],
@@ -608,8 +616,6 @@ function spanner(
         : mode === "leader-failure"
           ? "Recover a replicated decision after the coordinator leader fails."
           : "Lose two replicas of the coordinator group after its commit decision.",
-    assumption:
-      "Three voting replicas per group; a quorum is two. This trace uses serializable locking and shows commit wait without simulating TrueTime.",
     frames,
   };
 }

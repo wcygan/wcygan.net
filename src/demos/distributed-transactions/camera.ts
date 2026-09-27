@@ -53,7 +53,7 @@ function viewAnchors(replicated: boolean): ViewAnchor[] {
     add([0, -0.68, positions.coordinator[2]], [70, 15]);
   } else {
     for (const group of ["a", "b"] as const) {
-      add([positions[group][0], 1.7, -4], [30, 7]);
+      add([positions[group][0], 2.6, -4], [30, 20]);
       add([positions[group][0], -2.6, positions[group][2]], [70, 45]);
     }
     for (const id of ["a", "a2", "a3", "b", "b2", "b3"] as const) {

@@ -44,6 +44,8 @@ export interface TransactionFrame {
     record: string | null;
     role: "dedicated" | "a";
   };
+  /** Persistent teaching state for the Spanner-style trace. */
+  spanner?: { yesReceived: boolean; commitWaitComplete: boolean };
   isolated: boolean;
   replicas: ReplicaState[];
   /** Messages arriving to produce this frame; shown while advancing from the previous frame. */
@@ -57,7 +59,6 @@ export interface TransactionScenario {
   id: string;
   label: string;
   description: string;
-  assumption?: string;
   frames: TransactionFrame[];
 }
 export interface DemoDefinition {

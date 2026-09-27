@@ -16,17 +16,22 @@ import type { Message, NodeId } from "./types";
 describe("transaction connections", () => {
   it("draws one wire for the 3PC state request and its reverse reply", () => {
     const frames = DEMOS["three-phase"].scenarios[0].frames;
-    const exchangeAt = frames.findIndex(
-      (frame) => frame.title === "Survivors exchange state",
+    const requestAt = frames.findIndex(
+      (frame) => frame.title === "A asks B for its state",
     );
-    const connections = connectionsFor(
-      frames[exchangeAt - 1],
-      frames[exchangeAt].messages,
-    );
-    expect(connections).toEqual([
+    const expected = [
       { from: "coordinator", to: "a", interrupted: true, active: false },
       { from: "coordinator", to: "b", interrupted: true, active: false },
       { from: "a", to: "b", interrupted: false, active: true },
+    ];
+    expect(
+      connectionsFor(frames[requestAt - 1], frames[requestAt].messages),
+    ).toEqual(expected);
+    expect(
+      connectionsFor(frames[requestAt], frames[requestAt + 1].messages),
+    ).toEqual([
+      ...expected.slice(0, 2),
+      { from: "b", to: "a", interrupted: false, active: true },
     ]);
   });
 
@@ -214,9 +219,12 @@ describe("database ports", () => {
     ] as const) {
       const route = routeBetween(positions, "replicated", front, back);
       const direction = Math.sign(positions[back][0] - positions[front][0]);
-      expect(route).toHaveLength(4);
-      expect(route[1][0]).toBeCloseTo(positions[back][0] + direction * 0.85);
-      expect(route[1][0]).toBe(route[2][0]);
+      expect(route).toHaveLength(5);
+      expect(route[3][0]).toBeCloseTo(positions[back][0] + direction * 0.85);
+      expect(route[3][0]).toBe(route[2][0]);
+      // The rear approach stays clear of the cross-shard leader wire.
+      expect(route[0][2]).toBeLessThan(positions[front][2]);
+      expect(route[1][2]).toBeLessThan(positions[front][2]);
       expect(horizontalDistance(route[0], positions[front])).toBeCloseTo(0.66);
       expect(horizontalDistance(route.at(-1)!, positions[back])).toBeCloseTo(
         0.5,
