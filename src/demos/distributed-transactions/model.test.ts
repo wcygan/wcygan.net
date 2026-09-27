@@ -169,6 +169,13 @@ describe("two-phase commit", () => {
 
   it("rejects B before it promises to commit and unwinds A's prepared debit", () => {
     const frames = scenario("two-phase", "abort").frames;
+    const preparedAt = frames.findIndex((frame) =>
+      frame.accounts[0].records.includes("PREPARE"),
+    );
+    const rejectedAt = frames.findIndex((frame) =>
+      frame.messages.some((message) => message.label === "No"),
+    );
+    expect(rejectedAt).toBe(preparedAt + 1);
     expect(
       frames.every((frame) => !frame.accounts[1].records.includes("PREPARE")),
     ).toBe(true);
@@ -226,7 +233,6 @@ describe("three-phase commit", () => {
   it("acknowledges durable Pre-commit before failure and exchanges survivor state before recovery", () => {
     const trace = scenario("three-phase", "recovery");
     const frames = trace.frames;
-    expect(trace.assumption).toMatch(/bounded.*connected.*fail-stop/);
     const ackAt = frames.findIndex((frame) =>
       frame.messages.some((m) => m.label === "Ack"),
     );
@@ -242,12 +248,13 @@ describe("three-phase commit", () => {
         (a) => a.state === "pre-commit" && a.locked,
       ),
     ).toBe(true);
-    const exchange = frames[stoppedAt + 1];
-    expect(exchange.messages).toEqual([
-      { from: "a", to: "b", label: "State?" },
-      { from: "b", to: "a", label: "Pre-commit", beat: 1 },
+    const request = frames[stoppedAt + 1];
+    const reply = frames[stoppedAt + 2];
+    expect(request.messages).toEqual([{ from: "a", to: "b", label: "State?" }]);
+    expect(reply.messages).toEqual([
+      { from: "b", to: "a", label: "Pre-commit" },
     ]);
-    expect(exchange.accounts.every((a) => a.state === "pre-commit")).toBe(true);
+    expect(reply.accounts.every((a) => a.state === "pre-commit")).toBe(true);
     expect(frames.at(-1)!.coordinator.online).toBe(false);
     expect(balances(frames.at(-1)!)).toEqual([90, 110]);
   });

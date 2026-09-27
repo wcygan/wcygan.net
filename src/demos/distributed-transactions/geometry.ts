@@ -170,12 +170,22 @@ export function routeBetween(
     const rearTurn = planePoint(outside, backCenter[2]);
     let route: Point[];
     if (sameGroup) {
-      const frontTurn = planePoint(outside, frontCenter[2]);
+      // Enter the leader from behind. A side entry would overlap the
+      // leader-to-leader wire, making two dashed lines appear solid.
+      const approachZ =
+        frontCenter[2] - nodeRadius(layout, front) - ROUTE_CLEARANCE;
+      const approachTurn = planePoint(outside, approachZ);
+      const frontTurn = planePoint(frontCenter[0], approachZ);
+      const frontPort = planePoint(
+        frontCenter[0],
+        frontCenter[2] - nodeRadius(layout, front),
+      );
       route = [
         port(back, rearTurn),
         rearTurn,
+        approachTurn,
         frontTurn,
-        port(front, frontTurn),
+        frontPort,
       ];
     } else {
       // A replacement leader must first clear its neighbor in the back row.

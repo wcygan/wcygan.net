@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DEMOS } from "~/demos/distributed-transactions/model";
+import { readingTime } from "~/demos/distributed-transactions/motion";
 import type {
   DemoKind,
   TransactionFrame,
@@ -101,6 +102,7 @@ function setReduced(value: boolean) {
 
 const figure = () => document.querySelector<HTMLElement>("figure.dt-demo")!;
 const step = () => Number(figure().dataset.step);
+const hold = () => readingTime(scene.props!.frame);
 const button = (name: string) =>
   screen.getByRole("button", { name }) as HTMLButtonElement;
 
@@ -183,7 +185,7 @@ describe("distributed transaction autoplay", () => {
     expect(scene.props!.moving).toBe(false);
     await view(true, 0.5);
     tick();
-    tick(1099);
+    tick(hold() - 1);
     expect(scene.props!.moving).toBe(false);
     tick(1);
     expect(scene.props!.moving).toBe(true);
@@ -192,13 +194,29 @@ describe("distributed transaction autoplay", () => {
     expect(step()).toBe(1);
   });
 
+  it("shares the visible-time clock with the shell timer across pause and replay", async () => {
+    render(<DistributedTransactionDemo kind="two-phase" />);
+    await view(true);
+    const timer = () =>
+      figure().querySelector<HTMLElement>(".demo-workbench-timer-remaining")!;
+    expect(timer().style.transform).toBe("scaleX(1)");
+    elapse(hold() / 2);
+    expect(timer().style.transform).toBe("scaleX(0.5)");
+    fireEvent.click(button("Pause"));
+    elapse(60000);
+    expect(timer().style.transform).toBe("scaleX(0.5)");
+    fireEvent.click(button("Replay"));
+    expect(timer().style.transform).toBe("scaleX(1)");
+    expect(figure().dataset.playback).toBe("paused");
+  });
+
   it("holds the initial state, applies arrivals immediately, then gives the new state reading time", async () => {
     render(<DistributedTransactionDemo kind="placement" />);
     await view(true);
     expect(button("Pause").disabled).toBe(false);
     expect(screen.getByRole("status").getAttribute("aria-live")).toBe("off");
     tick();
-    tick(1099);
+    tick(hold() - 1);
     expect(scene.props!.moving).toBe(false);
     tick(1);
     expect(scene.props!.moving).toBe(true);
@@ -215,7 +233,7 @@ describe("distributed transaction autoplay", () => {
       scene.props!.frame.accounts.map((account) => account.pending),
     ).toEqual([-10, 10]);
     tick();
-    tick(1049);
+    tick(hold() + 400 - 1);
     expect(scene.props!.moving).toBe(false);
     tick(1);
     expect(scene.props!.moving).toBe(true);
@@ -249,7 +267,7 @@ describe("distributed transaction autoplay", () => {
     elapse(60000);
     hideDocument(false);
     tick();
-    tick(399);
+    tick(hold() - 701);
     expect(scene.props!.moving).toBe(false);
     tick(1);
     expect(scene.props!.moving).toBe(true);
@@ -304,7 +322,7 @@ describe("distributed transaction autoplay", () => {
     expect(figure().dataset.playback).toBe("paused");
     expect(scene.props!.moving).toBe(false);
     fireEvent.click(button("Play"));
-    elapse(1100);
+    elapse(hold());
     expect(scene.props!.moving).toBe(true);
     elapse(1200);
     expect(step()).toBe(1);
@@ -315,7 +333,7 @@ describe("distributed transaction autoplay", () => {
     await view(true);
     fireEvent.click(button("Reset view"));
     const cameraRevision = scene.props!.viewReset;
-    elapse(1100);
+    elapse(hold());
     elapse(250);
     const oldProgress = scene.props!.progress;
     fireEvent.click(button("Separate"));
@@ -357,7 +375,7 @@ describe("distributed transaction autoplay", () => {
     });
     expect(scene.props!.frame.coordinator.record).toBe("COMMIT");
     tick();
-    tick(3399);
+    tick(hold() + 400 - 1);
     expect(scene.props!.moving).toBe(false);
     expect(scene.props!.frame.coordinator.online).toBe(false);
     tick(1);
@@ -405,12 +423,11 @@ describe("distributed transaction manual controls and fallback", () => {
   it("makes Step skip reading, deliver exactly one event, and retain the old final progress sample", async () => {
     render(<DistributedTransactionDemo kind="two-phase" />);
     await view(true);
+    const initialCaption = screen.getByRole("status").textContent;
     fireEvent.click(button("Step"));
     expect(scene.props!.moving).toBe(true);
     expect(button("Step").disabled).toBe(true);
-    expect(screen.getByRole("status").textContent).toContain(
-      "In flight: Prepare",
-    );
+    expect(screen.getByRole("status").textContent).toBe(initialCaption);
     const inFlight = scene.props!.progress;
     tick();
     tick(600);
@@ -420,8 +437,12 @@ describe("distributed transaction manual controls and fallback", () => {
     ).toEqual([0, 0]);
     tick(599);
     expect(step()).toBe(0);
+    expect(screen.getByRole("status").textContent).toBe(initialCaption);
     tick(1);
     expect(step()).toBe(1);
+    expect(screen.getByRole("status").textContent).toContain(
+      "Delivered: Prepare",
+    );
     expect(inFlight.current).toBe(1);
     expect(scene.props!.progress).not.toBe(inFlight);
     expect(scene.props!.progress.current).toBe(0);
@@ -438,11 +459,12 @@ describe("distributed transaction manual controls and fallback", () => {
   it("lets Step resume only the paused in-flight event while Play resumes automatic playback", async () => {
     render(<DistributedTransactionDemo kind="two-phase" />);
     await view(true);
-    elapse(1100);
+    elapse(hold());
     elapse(400);
     const progress = scene.props!.progress.current;
+    const caption = screen.getByRole("status").textContent;
     fireEvent.click(button("Pause"));
-    expect(screen.getByRole("status").textContent).toContain("Paused: Prepare");
+    expect(screen.getByRole("status").textContent).toBe(caption);
     expect(button("Step").disabled).toBe(false);
     expect(requests.size).toBe(0);
     elapse(120000);
@@ -494,7 +516,7 @@ describe("distributed transaction manual controls and fallback", () => {
   it("cancels a flight on reduced-motion changes and does not restart on visibility or preference changes", async () => {
     render(<DistributedTransactionDemo kind="two-phase" />);
     await view(true);
-    elapse(1100);
+    elapse(hold());
     elapse(600);
     expect(scene.props!.progress.current).toBe(0.5);
     const cancelledProgress = scene.props!.progress;
@@ -524,11 +546,11 @@ describe("distributed transaction manual controls and fallback", () => {
     render(<DistributedTransactionDemo kind="placement" />);
     await view(true);
     expect(
-      screen.getByText(/3D is unavailable\. Follow every step/),
+      screen.getByText(/3D is unavailable\. Follow the transaction progress/),
     ).toBeTruthy();
     expect(button("Reset view").disabled).toBe(true);
     expect(screen.queryByText("Loading 3D demo…")).toBeNull();
-    elapse(1100);
+    elapse(readingTime(DEMOS.placement.scenarios[0].frames[0]));
     elapse(550);
     expect(step()).toBe(1);
     expect(figure().querySelector(".dt-balance")?.textContent).toContain(
@@ -543,6 +565,23 @@ describe("distributed transaction manual controls and fallback", () => {
     fireEvent.click(button("Replay"));
     expect(step()).toBe(0);
     expect(figure().dataset.playback).toBe("paused");
+  });
+
+  it("explains replicated progress in each step without a status block", async () => {
+    reduced = true;
+    render(<DistributedTransactionDemo kind="spanner" showLedger={false} />);
+    await view(true);
+    expect(figure().querySelector(".dt-protocol")).toBeNull();
+    for (const scenario of DEMOS.spanner.scenarios) {
+      fireEvent.click(button(scenario.label));
+      for (let index = 0; index < scenario.frames.length; index++) {
+        const frame = scenario.frames[index];
+        expect(screen.getByText(frame.status)).toBeTruthy();
+        if (index < scenario.frames.length - 1) {
+          fireEvent.click(button(frame.recoveryAction ?? "Step"));
+        }
+      }
+    }
   });
 
   it("cancels its pending frame and disconnects observation on unmount", async () => {
