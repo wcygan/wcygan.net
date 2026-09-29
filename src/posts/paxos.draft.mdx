@@ -1,0 +1,86 @@
+---
+title: "Paxos: How Distributed Systems Agree"
+date: "2026-09-26T12:00:00-05:00"
+description: Overlapping majorities preserve decisions across failures
+tags: [Distributed Systems]
+relatedReading: Database Internals
+draft: true
+---
+
+import { PaxosHistory3D } from "~/components/PaxosHistory3D";
+import { PaxosLeader3D } from "~/components/PaxosLeader3D";
+
+import { PaxosOverlap3D } from "~/components/PaxosOverlap3D";
+
+import { PaxosVotes3D } from "~/components/PaxosVotes3D";
+
+import { PaxosAgreement3D } from "~/components/PaxosAgreement3D";
+
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
+
+<DatabaseInternalsReference chapters={[{ number: 14, concept: "Paxos" }]} />
+
+When several servers hold copies of the same data, they need to agree on updates—even when machines crash or messages arrive late. **Paxos**, developed by Leslie Lamport, is a consensus algorithm that lets them choose a value without choosing conflicting values for the same decision. Its original presentation used a fictional parliament whose members regularly wandered away. [The Part-Time Parliament](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf)
+
+The central idea is **overlapping majorities plus durable memory**. With five voting servers, a majority is three. Any two majorities share at least one member. Paxos uses that overlap, together with rules about remembering earlier votes, to preserve decisions when leadership changes. Majority voting alone would not provide that protection. [The Part-Time Parliament](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf)
+
+A single decision involves three roles: **proposers** suggest values, **acceptors** vote, and **learners** discover the result. One server can perform all three. The protocol has two phases:
+
+1. **Prepare.** A proposer sends a unique, increasing proposal number. Acceptors promise to reject lower-numbered proposals and report their highest-numbered previously accepted proposal.
+2. **Accept.** After receiving promises from a majority, the proposer must reuse the value from the highest-numbered accepted proposal reported. If none was reported, it can choose a new value. Acceptors accept unless they have since promised a higher number. Once a majority accepts the same proposal, its value is chosen.
+
+That reuse rule carries earlier decisions forward, even when a previous proposer crashed before announcing success. Acceptors must preserve their promises and accepted proposals across restarts. [Paxos Made Simple](https://www.microsoft.com/en-us/research/wp-content/uploads/2014/03/paxos-simple.pdf)
+
+Paxos separates **safety**—never choosing conflicting values—from **progress**—eventually choosing something. Competing proposers or unavailable majorities can stall progress without breaking safety. Progress needs a sufficiently stable proposer communicating with a majority. Classic Paxos handles crashes and unreliable message delivery; it does not protect against dishonest participants. [Paxos Made Simple](https://www.microsoft.com/en-us/research/wp-content/uploads/2014/03/paxos-simple.pdf)
+
+For databases, one decision is only the beginning. **Multi-Paxos** extends consensus across an ordered log of operations. Replicas starting from the same state execute that log deterministically to maintain consistent data. A stable leader reduces repeated coordination work. Google’s implementation experience also shows how much remains beyond the algorithm: recovery, persistent storage, testing, and operational failures all require careful engineering. [Paxos Made Live](https://research.google.com/archive/paxos_made_live.pdf)
+
+## Diagrams
+
+These diagrams show how servers agree on decisions and build a shared history of operations.
+
+<span id="why-servers-need-to-agree" />
+
+### Servers Need a Consistent Order to Avoid Divergent State
+
+Servers must apply updates in the same order to keep their copies consistent. If the same two updates arrive in different orders, the servers can end up with different data.
+
+<PaxosAgreement3D />
+
+<span id="enough-votes-to-decide" />
+
+### A Majority Must Agree on the Order
+
+A quorum is the group of voters needed to choose a decision. In classic Paxos, that means a majority: three of five servers must accept the same proposal. The other two can be waiting or unavailable. Repeating this process for each log position establishes an agreed order.
+
+<PaxosVotes3D />
+
+<span id="majorities-always-share-a-member" />
+
+### Any Two Majority Quorums Share a Member
+
+Any two majority quorums among the same servers share at least one member. The shared member can differ from one pair of quorums to the next. Remembering earlier votes and following the Paxos reuse rule helps each new quorum preserve earlier decisions.
+
+<PaxosOverlap3D />
+
+<span id="a-new-leader-keeps-the-decision" />
+
+### Leadership Changes Preserve Earlier Decisions
+
+Changing leaders does not erase decisions that have already been chosen. A replacement leader consults a quorum, learns about earlier accepted values, and follows the Paxos reuse rule to carry them forward.
+
+<PaxosLeader3D />
+
+<span id="many-decisions-become-a-shared-history" />
+
+### Agreed Decisions Form the Cluster’s Shared History
+
+Multi-Paxos extends agreement from one decision to an ordered log. A quorum chooses each entry, and replicas apply the operations in that order to build a shared history across the cluster. A replica can fall behind, then catch up by applying the same operations.
+
+<PaxosHistory3D />
+
+## References used
+
+- Leslie Lamport, [_The Part-Time Parliament_ (1998)](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf). The original algorithm and its correctness argument.
+- Leslie Lamport, [_Paxos Made Simple_ (2001)](https://www.microsoft.com/en-us/research/wp-content/uploads/2014/03/paxos-simple.pdf). A direct explanation of the protocol, roles, and guarantees.
+- Tushar Chandra, Robert Griesemer, and Joshua Redstone, [_Paxos Made Live—An Engineering Perspective_ (2007)](https://research.google.com/archive/paxos_made_live.pdf). Lessons from building a production system.

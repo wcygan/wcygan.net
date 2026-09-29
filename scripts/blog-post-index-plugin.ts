@@ -13,7 +13,10 @@ const VIRTUAL_ID = "virtual:blog-post-index";
 const RESOLVED_ID = `\0${VIRTUAL_ID}`;
 const WORDS_PER_MINUTE = 200;
 
-function readBlogPosts(postsDirectory: string, includeDrafts: boolean): Post[] {
+export function readBlogPosts(
+  postsDirectory: string,
+  includeDrafts: boolean,
+): Post[] {
   if (!fs.existsSync(postsDirectory)) return [];
 
   const posts: Post[] = [];

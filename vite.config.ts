@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
@@ -8,7 +9,10 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
 import { addCopyButton } from "shiki-transformer-copy-button";
-import { blogPostIndexPlugin } from "./scripts/blog-post-index-plugin";
+import {
+  blogPostIndexPlugin,
+  readBlogPosts,
+} from "./scripts/blog-post-index-plugin";
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
 import { postReloadPlugin } from "./scripts/post-reload-plugin";
 import { recmaPostToc, remarkPostToc } from "./scripts/remark-post-toc";
@@ -18,6 +22,12 @@ import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
 installDenoWriteHeadHeaderPairsPatch();
 
 export default defineConfig(({ command }) => ({
+  // Concurrent previews and builds must not replace a running server's optimized
+  // dependencies. Portless supplies a distinct PORT; bare Vite runs use their PID.
+  cacheDir:
+    command === "serve"
+      ? `node_modules/.vite/dev-${process.env.PORT || process.pid}`
+      : "node_modules/.vite/build",
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     host: process.env.HOST || "localhost",
@@ -105,6 +115,16 @@ export default defineConfig(({ command }) => ({
     }),
     tanstackStart({
       srcDirectory: "src",
+      pages: [
+        { path: "/" },
+        ...readBlogPosts(
+          fileURLToPath(new URL("./src/posts", import.meta.url)),
+          false,
+        ).map((post) => ({
+          path: `/${post.slug}`,
+          ...(post.unlisted ? { sitemap: { exclude: true } } : {}),
+        })),
+      ],
       prerender: {
         enabled: true,
         crawlLinks: true,
