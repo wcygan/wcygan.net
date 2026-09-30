@@ -18036,3 +18036,180 @@ th {
     transition: none;
   }
 }
+
+/* Exactly-once processing: finite SVG sequences on the editorial canvas. */
+.exactly-once-demo {
+  --eo-surface: #f7f6f3;
+  --eo-ink: #21201c;
+  --eo-muted: #63635e;
+  --eo-line: #bcbbb5;
+  /* Outcome colors are supplementary to labels and line patterns. */
+  --eo-safe: #237044;
+  --eo-safe-surface: #eff6ee;
+  --eo-pending: #8a5b08;
+  --eo-pending-surface: #fbf3df;
+  --eo-failed: #b53045;
+  --eo-failed-surface: #fbedef;
+  color: var(--eo-ink);
+}
+.exactly-once-demo header {
+  display: grid;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+.exactly-once-demo .eo-stage {
+  padding: 12px 0;
+  background: var(--eo-surface);
+  border-radius: 4px;
+}
+.exactly-once-demo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: "JetBrains Mono", "Lilex", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  color: var(--eo-line);
+}
+.exactly-once-demo text {
+  fill: var(--eo-ink);
+  font-size: 17px;
+}
+.exactly-once-demo .eo-label {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+.exactly-once-demo .eo-detail {
+  fill: var(--eo-muted);
+  font-size: 13px;
+}
+.exactly-once-demo .eo-value {
+  font-size: 19px;
+  font-weight: 600;
+}
+.exactly-once-demo .eo-metric {
+  font-size: 16px;
+  font-weight: 500;
+}
+.eo-node > :is(rect, path) {
+  fill: var(--eo-surface);
+  stroke: var(--eo-line);
+  stroke-width: 1;
+}
+/* One inherited outcome token keeps nodes, labels, wires, and packets paired. */
+.exactly-once-demo [data-tone="safe"] {
+  --eo-state-ink: var(--eo-safe);
+  --eo-state-surface: var(--eo-safe-surface);
+}
+.exactly-once-demo [data-tone="pending"] {
+  --eo-state-ink: var(--eo-pending);
+  --eo-state-surface: var(--eo-pending-surface);
+}
+.exactly-once-demo [data-tone="failed"] {
+  --eo-state-ink: var(--eo-failed);
+  --eo-state-surface: var(--eo-failed-surface);
+}
+.exactly-once-demo [data-tone="neutral"] {
+  --eo-state-ink: var(--eo-ink);
+  --eo-state-surface: var(--eo-surface);
+}
+.eo-node:not([data-tone="neutral"]) > :is(rect, path) {
+  fill: var(--eo-state-surface);
+  stroke: var(--eo-state-ink);
+  stroke-width: 1.5;
+}
+.eo-node[data-tone] .eo-cap {
+  fill: none;
+}
+.eo-node[data-tone="pending"] > :is(rect, path),
+.eo-node[data-tone="failed"] > :is(rect, path) {
+  stroke-dasharray: 4 3;
+}
+.exactly-once-demo .eo-node:not([data-tone="neutral"]) .eo-value,
+.exactly-once-demo text[data-tone]:not([data-tone="neutral"]) {
+  fill: var(--eo-state-ink);
+}
+.exactly-once-demo figcaption strong[data-tone] {
+  color: var(--eo-state-ink);
+}
+.eo-wire > path {
+  stroke: var(--eo-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.eo-wire.eo-active {
+  color: var(--eo-state-ink);
+}
+.eo-wire.eo-active > path {
+  stroke: var(--eo-state-ink);
+  stroke-dasharray: none;
+}
+.eo-packet {
+  fill: var(--eo-state-ink);
+}
+.eo-options,
+.eo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.eo-controls {
+  margin-block: 16px 12px;
+}
+.exactly-once-demo :is(.eo-options, .eo-controls) button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--eo-line);
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: var(--eo-ink);
+  font:
+    500 14px/1.4 Inter,
+    sans-serif;
+  cursor: pointer;
+}
+.exactly-once-demo button[aria-pressed="true"] {
+  background: var(--eo-ink);
+  color: #fdfdfc;
+}
+.exactly-once-demo button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.exactly-once-demo button:focus-visible {
+  outline: 2px solid #466eaa;
+  outline-offset: 2px;
+}
+.eo-controls > span {
+  margin-inline-start: auto;
+  color: var(--eo-muted);
+  font:
+    14px/1.4 "Lilex",
+    ui-monospace,
+    monospace;
+}
+.exactly-once-demo figcaption {
+  min-height: 52px;
+  margin: 0;
+  color: var(--eo-muted);
+  font:
+    400 14px/1.6 Inter,
+    sans-serif;
+}
+.exactly-once-demo figcaption strong {
+  color: var(--eo-ink);
+  font-weight: 500;
+}
+@media (max-width: 639px) {
+  .exactly-once-demo .eo-stage {
+    padding-block: 8px;
+  }
+  .exactly-once-demo figcaption {
+    min-height: 88px;
+  }
+}

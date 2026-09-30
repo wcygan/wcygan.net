@@ -21,13 +21,25 @@ import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
 
 installDenoWriteHeadHeaderPairsPatch();
 
+const devCacheKey = process.env.PORT || process.pid;
+
 export default defineConfig(({ command }) => ({
   // Concurrent previews and builds must not replace a running server's optimized
   // dependencies. Portless supplies a distinct PORT; bare Vite runs use their PID.
   cacheDir:
     command === "serve"
-      ? `node_modules/.vite/dev-${process.env.PORT || process.pid}`
+      ? `node_modules/.vite/dev-${devCacheKey}`
       : "node_modules/.vite/build",
+  optimizeDeps: {
+    esbuildOptions: {
+      // Vite's browser hash omits cacheDir. Include its identity in the hashed
+      // optimizer options so cached dependencies cannot import an older dev
+      // server's React while React DOM loads from the current cache directory.
+      define: {
+        __WCYGAN_DEV_CACHE_KEY__: JSON.stringify(devCacheKey),
+      },
+    },
+  },
   server: {
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     host: process.env.HOST || "localhost",
