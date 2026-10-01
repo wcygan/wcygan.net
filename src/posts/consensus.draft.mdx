@@ -5,3 +5,19 @@ description: How Raft preserves decisions across failures
 tags: [Distributed Systems]
 draft: true
 ---
+
+Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
+
+- **Agreement**, meaning all correct processes decide on the same value.
+- **Validity**, meaning that value was proposed by one of the processes.
+- **Termination**, meaning all correct processes eventually reach a decision.
+
+A correct process is one that follows the algorithm and does not fail; termination depends on the algorithm’s assumptions about failures and communication.
+
+## Total Order Broadcast
+
+[Total order broadcast](https://en.wikipedia.org/wiki/Atomic_broadcast) reliably delivers the same messages to all participating correct processes in the same order, so replicas can apply operations consistently. This reliable form, also called atomic broadcast, is [equivalent to consensus under matching assumptions about the system and failures](https://cs.nyu.edu/~apanda/classes/sp26/papers/chandra-toueg.pdf): processes can broadcast proposals and decide on the first value delivered, while repeated consensus decisions can select the next batch of messages for ordered delivery. Ordering alone, without reliable delivery, is not enough.
+
+## Raft: Understandable Consensus
+
+[Raft](https://raft.github.io/) is a consensus algorithm designed to be easy to understand. It uses an elected leader to coordinate copying log entries across servers, so they agree on the same sequence of operations. The [Raft paper, In Search of an Understandable Consensus Algorithm](https://raft.github.io/raft.pdf), explains how this works.
