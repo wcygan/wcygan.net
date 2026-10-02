@@ -8,7 +8,7 @@ PROXY_PORT="${PORTLESS_PORT:-443}"
 HTTPS="${PORTLESS_HTTPS:-1}"
 
 if [[ ! -x "$PORTLESS_BIN" ]]; then
-  PORTLESS_BIN="portless"
+  PORTLESS_BIN="$(command -v portless)"
 fi
 
 export PORTLESS_STATE_DIR="$STATE_DIR"
@@ -44,7 +44,7 @@ stop_portless_proxy_on_port() {
     return 0
   fi
 
-  "$PORTLESS_BIN" proxy stop -p "$port" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
+  bun --bun "$PORTLESS_BIN" proxy stop -p "$port" >/dev/null 2>&1 || kill "$pid" >/dev/null 2>&1 || true
 }
 
 # Portless can leave its fallback proxy running on 1355 after a previous
@@ -60,9 +60,9 @@ fi
 
 if ! port_is_listening "$PROXY_PORT"; then
   if [[ "$HTTPS" == "0" ]]; then
-    "$PORTLESS_BIN" proxy start --port "$PROXY_PORT" --no-tls || true
+    bun --bun "$PORTLESS_BIN" proxy start --port "$PROXY_PORT" --no-tls || true
   else
-    "$PORTLESS_BIN" proxy start --port "$PROXY_PORT" --https || true
+    bun --bun "$PORTLESS_BIN" proxy start --port "$PROXY_PORT" --https || true
   fi
 fi
 

@@ -348,8 +348,8 @@ Chromium or Firefox to prove the WebM path still rotates.
 Inspect browser console warnings and errors, then run:
 
 ```bash
-deno task pre-commit
-deno task build
+bun run pre-commit
+bun run build
 git diff --check
 ```
 

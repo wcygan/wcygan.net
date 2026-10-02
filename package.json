@@ -5,6 +5,7 @@
   "devDependencies": {
     "@tanstack/react-router-devtools": "^1.166.13",
     "@testing-library/react": "^16.3.2",
+    "@types/bun": "1.3.10",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^25.6.2",
     "@types/react": "^19.2.14",
@@ -43,5 +44,25 @@
     "shiki-transformer-copy-button": "^0.0.6",
     "tailwindcss": "^3",
     "three": "^0.186.0"
-  }
+  },
+  "packageManager": "bun@1.4.0",
+  "scripts": {
+    "dev": "PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 scripts/ensure-portless-proxy.sh && PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 bun --bun run portless run bun run dev-vite",
+    "dev-vite": "bun --bun run vite dev",
+    "build": "bun run generate:embedding-land && bun scripts/build.mjs",
+    "generate:embedding-land": "bun scripts/generate-embedding-land.mjs",
+    "preview": "bun --bun run vite preview",
+    "preview-static": "bun scripts/preview-static.ts",
+    "benchmark:3d": "bun scripts/benchmark-3d-demos.ts",
+    "render:diagrams": "bun scripts/render-diagrams.mjs",
+    "deploy": "bun run build && bun --bun run wrangler deploy",
+    "test": "bun --bun run vitest run",
+    "fmt": "bun --bun run prettier --write .",
+    "typecheck": "bun --bun run tsc --noEmit",
+    "pre-commit": "bun run fmt && bun run typecheck && bun run test"
+  },
+  "trustedDependencies": [
+    "esbuild",
+    "lefthook"
+  ]
 }

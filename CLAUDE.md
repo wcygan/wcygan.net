@@ -10,9 +10,9 @@ content-first editorial design.
 just dev              # Portless dev server at https://wcygan.localhost
 
 # Quality and testing
-deno task pre-commit  # Format, typecheck, and tests
-deno task test        # Vitest unit tests
-deno task build       # Production build and prerendering
+bun run pre-commit  # Format, typecheck, and tests
+bun run test        # Vitest unit tests
+bun run build       # Production build and prerendering
 ```
 
 `just dev` runs Vite through Portless. It uses `portless.json` and
@@ -23,12 +23,12 @@ using `wcygan.localhost`.
 ## Technology stack
 
 - TanStack Start and TanStack Router for React 19 SSR
-- Deno for the runtime, package management, tasks, and tests
+- Bun for the runtime, package management, tasks, and tests
 - Tailwind CSS 3 with the Typography plugin
 - MDX through `@mdx-js/rollup`
 - Shiki for build-time syntax highlighting with the Idle Toes theme
-- Mermaid compiled to static SVG by `deno task render:diagrams`
-- Nitro with the `deno-server` preset for prerendering
+- Mermaid compiled to static SVG by `bun run render:diagrams`
+- Nitro with the `bun` preset for prerendering
 
 ## Design direction and authority
 
@@ -433,7 +433,7 @@ breakpoint when article navigation changes. Confirm:
 - responsive images, tables, code, maps, SVG, Canvas, and ASCII; and
 - reduced-motion behavior for animated content.
 
-Run `deno task pre-commit` before considering a change complete. Run
-`deno task build` when routes, MDX, static diagrams, or prerendering behavior
+Run `bun run pre-commit` before considering a change complete. Run
+`bun run build` when routes, MDX, static diagrams, or prerendering behavior
 change. Stop only when source checks pass and the affected rendered states have
 been inspected.

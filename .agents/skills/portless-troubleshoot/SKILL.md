@@ -96,7 +96,7 @@ the configuration lets Vite reload it without taking over another checkout.
 
 Completion requires repeated refreshes in the previously failing tab with
 article content still present after hydration and no new hook errors. Verify
-desktop and mobile, then run `deno task pre-commit` and the build when required
+desktop and mobile, then run `bun run pre-commit` and the build when required
 by the changed files. In the verified repair, all 24 draft paragraphs remained
 visible and the user confirmed recovery. Deno request cancellations and
 `THREE_CJS_DEPRECATED` appeared nearby in logs, but were not the demonstrated

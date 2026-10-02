@@ -21,9 +21,9 @@ paths, and labels can explain the system.
 | Application      | React 19 and TypeScript                 | Controls, lifecycle, accessible status, and simulation state      |
 | Blog integration | TanStack Start/Router and MDX           | SSR article routes and embedded React components                  |
 | Styling          | Tailwind CSS 3 and `src/styles/app.css` | Article layout, controls, and HTML labels                         |
-| Tooling          | Deno, Vite, and Vitest                  | Dependencies, development, builds, and model tests                |
+| Tooling          | Bun, Vite, and Vitest                   | Dependencies, development, builds, and model tests                |
 
-Read `package.json` and `deno.lock` for current dependency versions before using
+Read `package.json` and `bun.lock` for current dependency versions before using
 an API. Both examples use Three.js 0.186, Fiber 9, and Drei 10. Reuse the
 installed stack; a standalone app, physics engine, or external modeling pipeline
 is unnecessary for simple systems demos.

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { preferredTransparentIdentityVideoFormat } from "./identity-model-video";
+import {
+  preferredTransparentIdentityVideoFormat,
+  type BrowserIdentity,
+} from "./identity-model-video";
 
 function browserIdentity(
   userAgent: string,
-  overrides: Partial<Pick<Navigator, "maxTouchPoints" | "platform">> = {},
+  overrides: Partial<Pick<BrowserIdentity, "maxTouchPoints" | "platform">> = {},
 ) {
   return {
     maxTouchPoints: overrides.maxTouchPoints ?? 0,

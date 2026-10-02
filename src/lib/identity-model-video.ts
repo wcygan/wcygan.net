@@ -1,7 +1,8 @@
-export type BrowserIdentity = Pick<
-  Navigator,
-  "maxTouchPoints" | "platform" | "userAgent"
->;
+export interface BrowserIdentity {
+  maxTouchPoints: number;
+  platform: string;
+  userAgent: string;
+}
 
 export type TransparentIdentityVideoFormat = "hevc" | "webm";
 

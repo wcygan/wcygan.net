@@ -1,12 +1,12 @@
-# Run `deno task --eval "lefthook install"` once after `deno install` to wire up git hooks.
+# Run `bun run lefthook install` once after `bun install` to wire up git hooks.
 pre-commit:
   parallel: false
   commands:
     format:
       glob: "*.{ts,tsx,js,jsx,css,md,mdx,json,yml,yaml}"
-      run: deno run --allow-run=git,deno scripts/format-staged.mjs
+      run: bun scripts/format-staged.mjs
       stage_fixed: true
     typecheck:
-      run: deno task typecheck
+      run: bun run typecheck
     test:
-      run: deno task test
+      run: bun run test

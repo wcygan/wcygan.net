@@ -5,9 +5,6 @@ node_modules
 .pnpm-store
 repomix-output.txt
 
-# Deno
-.deno
-
 # Output
 .output
 .vercel

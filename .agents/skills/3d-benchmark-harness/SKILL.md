@@ -12,7 +12,7 @@ a production performance budget or a GPU draw-time profile.
 ## Run a recording
 
 1. Read [`benchmarks/3d/README.md`](../../../benchmarks/3d/README.md) for the
-   current metric and run options. Inspect `deno.json` and
+   current metric and run options. Inspect `package.json` and
    `scripts/benchmark-3d-demos.ts` if the task depends on a command, output
    schema, or coverage detail.
 2. Run the repository's `benchmark:3d` task from the project root. Allow the

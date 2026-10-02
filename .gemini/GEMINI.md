@@ -94,9 +94,9 @@ component; diagrams ship as plain images with no client-side JavaScript.
 
 1. Write the Mermaid source in `src/diagrams/<post-slug>/<name>.mmd` (include
    `accTitle` and `accDescr` lines for accessibility).
-2. Run `deno task render:diagrams` (script: `scripts/render-diagrams.mjs`). It
+2. Run `bun run render:diagrams` (script: `scripts/render-diagrams.mjs`). It
    compiles each `.mmd` to `public/<post-slug>/<name>.svg` and prints the
-   `width`/`height` to use. It also runs during `deno task build`.
+   `width`/`height` to use. It also runs during `bun run build`.
 3. An optional sibling `<name>.css` is inlined into the SVG for charts that need
    custom colors.
 

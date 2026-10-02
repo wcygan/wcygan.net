@@ -1,6 +1,6 @@
 # 3D first-frame benchmarks
 
-Run `deno task benchmark:3d` from the repository root. The harness starts an
+Run `bun run benchmark:3d` from the repository root. The harness starts an
 isolated Vite development server and a fresh headless Chrome profile, scans each
 MDX article route (including drafts), and scrolls the article to activate
 lazy-loaded scenes. `SceneCanvas` measurements are collected automatically, so a
@@ -9,12 +9,14 @@ with a unique, stable `sceneId`.
 
 The harness performs one unrecorded warmup pass over every article route, then
 three measured passes over routes that contained a scene. To change the sample
-count, use `deno task benchmark:3d --samples=5`. Chrome or Chromium must be
+count, use `bun run benchmark:3d --samples=5`. Chrome or Chromium must be
 installed; set `CHROME_BIN` when it is not in a standard location.
 
 Each run writes a new JSON file under `benchmarks/3d/runs/`. The file records
 each raw sample, the median, browser version, fixed viewport and device scale,
-route coverage, repository revision, and working-tree fingerprint. Commit run
+route coverage, repository revision, and working-tree fingerprint. New records
+use schema version 2 and `environment.runtime` with the Bun name and version;
+historical schema version 1 records retain `environment.denoVersion`. Commit run
 files when you want to preserve their observations in Git; the harness never
 overwrites earlier runs.
 

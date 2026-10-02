@@ -1,4 +1,5 @@
-#!/usr/bin/env -S deno run --allow-read=.
+#!/usr/bin/env bun
+import { readFile, readdir, stat } from "node:fs/promises";
 
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 
@@ -22,15 +23,17 @@ type AuditReport = {
   tests: string[];
 };
 
-const cliArgs = Deno.args.filter((argument) => argument !== "--json");
-const jsonOutput = Deno.args.includes("--json");
+const cliArgs = process.argv
+  .slice(2)
+  .filter((argument) => argument !== "--json");
+const jsonOutput = process.argv.slice(2).includes("--json");
 
 if (cliArgs.length !== 1) {
   console.error("Usage: audit-demo.ts <src/components/Demo.tsx> [--json]");
-  Deno.exit(2);
+  process.exit(2);
 }
 
-const repositoryRoot = await findRepositoryRoot(Deno.cwd());
+const repositoryRoot = await findRepositoryRoot(process.cwd());
 const componentPath = resolve(repositoryRoot, cliArgs[0]);
 const componentRelativePath = relative(repositoryRoot, componentPath);
 
@@ -39,7 +42,7 @@ if (
   extname(componentPath) !== ".tsx"
 ) {
   console.error("Component must be a .tsx file inside this repository.");
-  Deno.exit(2);
+  process.exit(2);
 }
 
 const componentSource = await readRequiredText(componentPath);
@@ -61,7 +64,7 @@ const implementationFiles = backingFiles.filter(
 const backingSources = await Promise.all(
   implementationFiles.map(async (path) => ({
     path,
-    source: await Deno.readTextFile(path),
+    source: await readFile(path, "utf8"),
   })),
 );
 const demoSource = [
@@ -88,7 +91,7 @@ const postFiles = await collectFiles(join(repositoryRoot, "src", "posts"), [
 const owningPosts = (
   await Promise.all(
     postFiles.map(async (path) => {
-      const source = await Deno.readTextFile(path);
+      const source = await readFile(path, "utf8");
       return source.includes(componentName)
         ? relative(repositoryRoot, path)
         : "";
@@ -331,11 +334,11 @@ async function collectFiles(directory: string, extensions: string[]) {
   if (!(await exists(directory))) return [];
 
   const files: string[] = [];
-  for await (const entry of Deno.readDir(directory)) {
+  for await (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
-    if (entry.isDirectory) {
+    if (entry.isDirectory()) {
       files.push(...(await collectFiles(path, extensions)));
-    } else if (entry.isFile && extensions.includes(extname(entry.name))) {
+    } else if (entry.isFile() && extensions.includes(extname(entry.name))) {
       files.push(path);
     }
   }
@@ -345,16 +348,16 @@ async function collectFiles(directory: string, extensions: string[]) {
 
 async function readRequiredText(path: string) {
   try {
-    return await Deno.readTextFile(path);
+    return await readFile(path, "utf8");
   } catch {
     console.error(`Could not read ${path}`);
-    Deno.exit(2);
+    process.exit(2);
   }
 }
 
 async function exists(path: string) {
   try {
-    await Deno.stat(path);
+    await stat(path);
     return true;
   } catch {
     return false;

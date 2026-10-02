@@ -1,35 +1,23 @@
+import { spawnSync } from "node:child_process";
+
 const FORMATTABLE_FILE = /\.(?:ts|tsx|js|jsx|css|md|mdx|json|ya?ml)$/;
-
-async function run(command, args) {
-  const result = await new Deno.Command(command, {
-    args,
-    stdout: "inherit",
-    stderr: "inherit",
-  }).output();
-
-  if (!result.success) {
-    Deno.exit(result.code);
-  }
+function run(command, args, capture = false) {
+  const result = spawnSync(command, args, {
+    stdio: capture ? ["ignore", "pipe", "inherit"] : "inherit",
+    encoding: "utf8",
+  });
+  if (result.error) console.error(result.error.message);
+  if (result.status !== 0) process.exit(result.status ?? 1);
+  return result.stdout;
 }
-
-const stagedFilesOutput = await new Deno.Command("git", {
-  args: ["diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
-  stdout: "piped",
-  stderr: "inherit",
-}).output();
-
-if (!stagedFilesOutput.success) {
-  Deno.exit(stagedFilesOutput.code);
-}
-
-const stagedFiles = new TextDecoder()
-  .decode(stagedFilesOutput.stdout)
+const stagedFiles = run(
+  "git",
+  ["diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
+  true,
+)
   .split("\0")
   .filter((file) => FORMATTABLE_FILE.test(file));
-
-if (stagedFiles.length === 0) {
-  Deno.exit(0);
+if (stagedFiles.length) {
+  run("bun", ["--bun", "run", "prettier", "--write", ...stagedFiles]);
+  run("git", ["add", "--update", "--", ...stagedFiles]);
 }
-
-await run("deno", ["task", "--eval", "prettier", "--write", ...stagedFiles]);
-await run("git", ["add", "--", ...stagedFiles]);

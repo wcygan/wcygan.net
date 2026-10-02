@@ -16,10 +16,7 @@ import {
 import { siteMetadataPlugin } from "./scripts/site-metadata-plugin";
 import { postReloadPlugin } from "./scripts/post-reload-plugin";
 import { recmaPostToc, remarkPostToc } from "./scripts/remark-post-toc";
-import { installDenoWriteHeadHeaderPairsPatch } from "./src/lib/utils/denoNodeHttp";
 import { idleToesTheme } from "./src/lib/syntax/idle-toes-theme";
-
-installDenoWriteHeadHeaderPairsPatch();
 
 const devCacheKey = process.env.PORT || process.pid;
 
@@ -149,7 +146,7 @@ export default defineConfig(({ command }) => ({
       },
     }),
     react(),
-    nitro({ preset: "deno-server" }),
+    nitro({ preset: "bun" }),
     siteMetadataPlugin(),
     postReloadPlugin(),
   ],

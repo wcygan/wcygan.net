@@ -28,7 +28,7 @@ repository differ.
 5. Run the audit helper from the repository root:
 
    ```bash
-   deno run --allow-read=. \
+   bun \
      .agents/skills/wcygan-demo-migrations/scripts/audit-demo.ts \
      src/components/ExampleDemo.tsx
    ```
@@ -149,12 +149,12 @@ or a one-time mount check is not sufficient.
 Run narrow checks first, then the repository gate:
 
 ```bash
-deno task test src/demos/<name>/model.test.ts
-deno task typecheck
-deno task pre-commit
+bun run test src/demos/<name>/model.test.ts
+bun run typecheck
+bun run pre-commit
 ```
 
-Run `deno task build` when MDX, routing, static diagrams, or prerender behavior
+Run `bun run build` when MDX, routing, static diagrams, or prerender behavior
 changes.
 
 Use `$agent-browser` on the real article route at `1440x900` and `390x844`.

@@ -59,7 +59,7 @@ the assets here, then run the sync — the public copies are build output.
 │       ├── README.md
 │       └── svgs/                            # Dual-theme (light & dark) vector SVGs
 └── scripts/
-    └── sync-public.ts                       # Deno task publishing canonical assets to public/
+    └── sync-public.ts                       # Bun script publishing canonical assets to public/
 ```
 
 ---
@@ -258,5 +258,5 @@ The design system shares a single token set across all bundles via CSS custom pr
 The skill maintains canonical sources under `assets/` and `references/`. The site serves files from `public/vendor/planetscale/`. After modifying any asset or reference, sync them:
 
 ```bash
-deno run --allow-read=. --allow-write=public .agents/skills/planet-scale-animation-design-system/scripts/sync-public.ts
+bun .agents/skills/planet-scale-animation-design-system/scripts/sync-public.ts
 ```

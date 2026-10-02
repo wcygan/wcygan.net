@@ -5,7 +5,7 @@ import { defineConfig } from "vitest/config";
 // tests this project runs and would slow discovery unnecessarily.
 export default defineConfig({
   test: {
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "scripts/**/*.test.ts"],
     environment: "node",
     globals: false,
   },

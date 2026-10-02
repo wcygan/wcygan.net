@@ -12,13 +12,18 @@ Managed on https://dash.cloudflare.com/
 
 ## Quickstart
 
-Install [Deno](https://deno.com/), [just](https://github.com/casey/just), and
+Install [Bun 1.4.0](https://bun.sh/), [just](https://github.com/casey/just), and
 [uv](https://docs.astral.sh/uv/).
 
 ```bash
 just install
 just dev
 ```
+
+JavaScript tasks use Bun 1.4.0. Install dependencies with `bun install`, and run
+tasks with `bun run <name>` (for example, `bun run pre-commit`). Vitest remains
+the test runner. CI installs from `bun.lock` with `bun install --frozen-lockfile`.
+Install Git hooks once with `bun run lefthook install`.
 
 Task runner recipes live in the `justfile` — run `just` to list them. Python
 helpers are executed via `uv run`.
@@ -55,7 +60,7 @@ diagram rendering using Puppeteer and Vitest.
 
 ### Prerequisites
 
-- Deno 2.x
+- Bun 1.4.0
 - Built project in `.output/public`
 - All dependencies installed via `just install`
 

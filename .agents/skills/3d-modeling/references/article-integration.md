@@ -50,6 +50,6 @@ For camera or playback changes, also exercise rotation, zoom, and
 reconfiguration during motion. Apply the domain-specific checks from the
 Kafka Partitioning or Failure Detectors reference.
 
-Run `deno task pre-commit`. Run `deno task build` when changing routes, MDX,
+Run `bun run pre-commit`. Run `bun run build` when changing routes, MDX,
 lazy-loading/SSR behavior, or prerendering. Report the checks and any limits on
 what was inspected.

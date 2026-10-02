@@ -152,7 +152,7 @@ imports. Do not remove shared infrastructure used by other demos.
 | Mobile         | `390x844`, readable labels, no packet/text collision, no page overflow                                |
 | Accessibility  | Stable title/description, current semantic values only, final announcement, focus, `44x44px` controls |
 | Geometry       | Computed text-to-border and moving-token clearance                                                    |
-| Project        | Focused tests, typecheck, `deno task pre-commit`; build when route/prerender scope changes            |
+| Project        | Focused tests, typecheck, `bun run pre-commit`; build when route/prerender scope changes              |
 
 Reject a migration that passes tests but was not rendered, looks polished while
 teaching the wrong order, depends on a legend, or hides the conclusion behind

@@ -66,12 +66,12 @@ topic.
 
 After editing related-reading metadata or components:
 
-1. Run the targeted component/index tests, then `deno task typecheck`.
+1. Run the targeted component/index tests, then `bun run typecheck`.
 2. Render the real homepage and each affected article with `agent-browser` at
    `1440x900` and `390x844`. Confirm the homepage has no related-reading mini
    indicators, while each affected article has the cover image, exact title,
    relevant links, and no horizontal overflow.
-3. Run `deno task pre-commit`; run `deno task build` when MDX, frontmatter,
+3. Run `bun run pre-commit`; run `bun run build` when MDX, frontmatter,
    routing, or prerendered output changed.
 4. Finish with `git diff --check` and review the scoped diff. Report any
    unrelated dirty files instead of folding them into the change.

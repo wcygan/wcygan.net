@@ -12,8 +12,8 @@ buffers in the browser. Profiling attributed about **1.32 seconds** to that
 generation. Sampling the same geography during the build and shipping
 quantized, generated positions reduced client decode-and-scale work to about
 **1.3 milliseconds** in the profile, roughly **99.9% less geometry-generation
-CPU**. The generated file is reproducible with `deno task generate:embedding-land`
-and refreshed by `deno task build`. Keep the source geography data authoritative
+CPU**. The generated file is reproducible with `bun run generate:embedding-land`
+and refreshed by `bun run build`. Keep the source geography data authoritative
 and verify generated output against it.
 
 This is the useful pattern for deterministic geometry: profile first, move

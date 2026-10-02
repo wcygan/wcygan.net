@@ -1,5 +1,19 @@
-// @ts-nocheck -- This Deno script uses Deno APIs and is checked with `deno check`.
-import { createServer } from "npm:vite@7.2.7";
+import {
+  readFile,
+  readdir,
+  stat,
+  mkdtemp,
+  mkdir,
+  writeFile,
+  rm,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createServer as createNetServer } from "node:net";
+import { execFile, spawn, type ChildProcess } from "node:child_process";
+import { promisify } from "node:util";
+const exec = promisify(execFile);
+import { createServer } from "vite";
 
 const DEFAULT_SAMPLES = 3;
 const VIEWPORT = { width: 1440, height: 900 };
@@ -135,10 +149,10 @@ class CdpConnection {
 function samplesFromArgs(args: string[]): number {
   if (args.includes("--help") || args.includes("-h")) {
     console.log(
-      "Usage: deno task benchmark:3d [--samples=3]\n" +
+      "Usage: bun run benchmark:3d [--samples=3]\n" +
         "Runs one unrecorded warmup, then records the requested number of samples.",
     );
-    Deno.exit(0);
+    process.exit(0);
   }
 
   let samples = DEFAULT_SAMPLES;
@@ -154,7 +168,7 @@ function samplesFromArgs(args: string[]): number {
 }
 
 async function findChrome(): Promise<string> {
-  const configured = Deno.env.get("CHROME_BIN");
+  const configured = process.env.CHROME_BIN;
   const candidates = [
     configured,
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -165,7 +179,7 @@ async function findChrome(): Promise<string> {
   ].filter((value): value is string => Boolean(value));
   for (const candidate of candidates) {
     try {
-      if ((await Deno.stat(candidate)).isFile) return candidate;
+      if ((await stat(candidate)).isFile()) return candidate;
     } catch {
       // Try the next supported Chrome location.
     }
@@ -177,8 +191,10 @@ async function findChrome(): Promise<string> {
 
 async function articleRoutes(): Promise<string[]> {
   const routes: string[] = [];
-  for await (const entry of Deno.readDir("src/posts")) {
-    if (!entry.isFile || !entry.name.endsWith(".mdx")) continue;
+  for await (const entry of await readdir("src/posts", {
+    withFileTypes: true,
+  })) {
+    if (!entry.isFile() || !entry.name.endsWith(".mdx")) continue;
     const slug = entry.name.replace(/\.draft\.mdx$/, "").replace(/\.mdx$/, "");
     routes.push(`/${slug}`);
   }
@@ -186,23 +202,20 @@ async function articleRoutes(): Promise<string[]> {
 }
 
 async function commandOutput(command: string, args: string[]): Promise<string> {
-  const result = await new Deno.Command(command, {
-    args,
-    stdout: "piped",
-    stderr: "null",
-  }).output();
-  if (!result.success) return "unknown";
-  return new TextDecoder().decode(result.stdout).trim();
+  try {
+    return (await exec(command, args)).stdout.trim();
+  } catch {
+    return "unknown";
+  }
 }
 
 async function sourceRevision() {
   const revision = await commandOutput("git", ["rev-parse", "HEAD"]);
   const status = await commandOutput("git", ["status", "--porcelain"]);
-  const diff = await new Deno.Command("git", {
-    args: ["diff", "HEAD", "--binary"],
-    stdout: "piped",
-    stderr: "null",
-  }).output();
+  const diff = await exec("git", ["diff", "HEAD", "--binary"], {
+    encoding: "buffer",
+    maxBuffer: 64 * 1024 * 1024,
+  });
   const untracked = await commandOutput("git", [
     "ls-files",
     "--others",
@@ -216,7 +229,7 @@ async function sourceRevision() {
   for (const path of extraFiles) {
     fingerprintChunks.push(encoder.encode(`\n${path}\n`));
     try {
-      fingerprintChunks.push(await Deno.readFile(path));
+      fingerprintChunks.push(await readFile(path));
     } catch {
       fingerprintChunks.push(encoder.encode("<unreadable>"));
     }
@@ -241,17 +254,28 @@ async function sourceRevision() {
 }
 
 async function findFreePort(): Promise<number> {
-  const listener = Deno.listen({ hostname: "127.0.0.1", port: 0 });
-  const port = (listener.addr as Deno.NetAddr).port;
-  listener.close();
-  return port;
+  return new Promise((resolve, reject) => {
+    const listener = createNetServer();
+    listener.once("error", reject);
+    listener.listen(0, "127.0.0.1", () => {
+      const address = listener.address();
+      if (!address || typeof address === "string") {
+        listener.close();
+        reject(new Error("No port allocated"));
+        return;
+      }
+      listener.close((error) =>
+        error ? reject(error) : resolve(address.port),
+      );
+    });
+  });
 }
 
 async function waitForFile(path: string, timeoutMs: number): Promise<string> {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     try {
-      return await Deno.readTextFile(path);
+      return await readFile(path, "utf8");
     } catch {
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
@@ -260,8 +284,9 @@ async function waitForFile(path: string, timeoutMs: number): Promise<string> {
 }
 
 async function startBrowser(chrome: string, profileDir: string) {
-  const browser = new Deno.Command(chrome, {
-    args: [
+  const browser = spawn(
+    chrome,
+    [
       "--headless=new",
       "--no-first-run",
       "--no-default-browser-check",
@@ -277,10 +302,9 @@ async function startBrowser(chrome: string, profileDir: string) {
       `--user-data-dir=${profileDir}`,
       "about:blank",
     ],
-    stdin: "null",
-    stdout: "null",
-    stderr: "null",
-  }).spawn();
+    { stdio: "ignore" },
+  );
+  browser.on("error", () => {});
 
   try {
     const activePort = await waitForFile(
@@ -458,8 +482,14 @@ function median(values: number[]): number {
     : ordered[middle];
 }
 
+function waitForExit(browser: ChildProcess): Promise<void> {
+  if (browser.exitCode !== null || browser.signalCode !== null)
+    return Promise.resolve();
+  return new Promise((resolve) => browser.once("exit", () => resolve()));
+}
+
 async function main() {
-  const sampleCount = samplesFromArgs(Deno.args);
+  const sampleCount = samplesFromArgs(process.argv.slice(2));
   const [chrome, routes, source] = await Promise.all([
     findChrome(),
     articleRoutes(),
@@ -471,13 +501,13 @@ async function main() {
     configFile: "vite.config.ts",
     server: { host: "127.0.0.1", port, strictPort: true },
   });
-  let browser: Deno.ChildProcess | undefined;
+  let browser: ChildProcess | undefined;
   let connection: CdpConnection | undefined;
   let profileDir: string | undefined;
 
   try {
     await server.listen();
-    const profile = await Deno.makeTempDir({ prefix: "wcygan-3d-bench-" });
+    const profile = await mkdtemp(join(tmpdir(), "wcygan-3d-bench-"));
     profileDir = profile;
     const running = await startBrowser(chrome, profile);
     browser = running.browser;
@@ -593,7 +623,7 @@ async function main() {
     const runId = new Date().toISOString().replace(/[:.]/g, "-");
     const outputPath = `benchmarks/3d/runs/${runId}.json`;
     const output = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       runId,
       recordedAt: new Date().toISOString(),
       scenario: "warm-local-development-first-frame",
@@ -607,8 +637,8 @@ async function main() {
         browser: browserVersion.Browser,
         viewport: VIEWPORT,
         deviceScaleFactor: 1,
-        os: `${Deno.build.os}-${Deno.build.arch}`,
-        denoVersion: Deno.version.deno,
+        os: `${process.platform}-${process.arch}`,
+        runtime: { name: "bun", version: Bun.version },
         gpuRenderer:
           warmup.find((result) => result.gpuRenderer)?.gpuRenderer ?? null,
         routeCountScanned: routes.length,
@@ -633,11 +663,8 @@ async function main() {
         ),
     };
 
-    await Deno.mkdir("benchmarks/3d/runs", { recursive: true });
-    await Deno.writeTextFile(
-      outputPath,
-      `${JSON.stringify(output, null, 2)}\n`,
-    );
+    await mkdir("benchmarks/3d/runs", { recursive: true });
+    await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`);
     console.table(
       output.scenes.map((scene) => ({
         route: scene.route,
@@ -653,7 +680,7 @@ async function main() {
       browser?.kill("SIGTERM");
       if (browser) {
         const exited = await Promise.race([
-          browser.status.then(() => true),
+          waitForExit(browser).then(() => true),
           new Promise<false>((resolve) =>
             setTimeout(() => resolve(false), 2_000),
           ),
@@ -661,7 +688,7 @@ async function main() {
         if (!exited) {
           browser.kill("SIGKILL");
           await Promise.race([
-            browser.status,
+            waitForExit(browser),
             new Promise((resolve) => setTimeout(resolve, 2_000)),
           ]);
         }
@@ -670,9 +697,11 @@ async function main() {
       // Chrome may already have exited.
     }
     if (profileDir) {
-      await Deno.remove(profileDir, { recursive: true }).catch(() => {});
+      await rm(profileDir, { recursive: true }).catch(() => {});
     }
-    server.httpServer?.closeAllConnections();
+    if (server.httpServer && "closeAllConnections" in server.httpServer) {
+      server.httpServer.closeAllConnections();
+    }
     await Promise.race([
       server.close(),
       new Promise<void>((resolve) => setTimeout(resolve, 3_000)),
@@ -683,9 +712,9 @@ async function main() {
 if (import.meta.main) {
   try {
     await main();
-    Deno.exit(0);
+    process.exit(0);
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
-    Deno.exit(1);
+    process.exit(1);
   }
 }
