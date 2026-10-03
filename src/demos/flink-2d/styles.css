@@ -1,0 +1,325 @@
+/* PlanetScale 2D: ordered records, face-derived connectors and direct state. */
+.flink-2d :is(p, dl, dd) {
+  margin: 0;
+}
+.flink-2d-stage {
+  min-inline-size: 0;
+}
+.flink-2d
+  :is(
+    svg,
+    .flink-2d-label,
+    .flink-2d-input,
+    .flink-2d-slots,
+    .flink-2d-sink-rows,
+    .flink-2d-conservation
+  ) {
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  font-variant-numeric: tabular-nums;
+}
+.flink-2d svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+.flink-2d-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-end: 16px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.flink-2d-input span {
+  padding: 4px 8px;
+  border: 1px dashed var(--flink-border);
+  border-radius: 3px;
+  color: var(--flink-muted);
+}
+.flink-2d-input [data-read="true"] {
+  border-style: solid;
+  border-color: var(--flink-blue);
+  color: var(--flink-text);
+  background: var(--flink-canvas);
+}
+.flink-2d-input [data-discarded="true"] {
+  color: var(--flink-text);
+  border-color: var(--flink-text);
+  text-decoration: line-through;
+  border-style: dashed;
+}
+.flink-2d-node {
+  fill: var(--flink-canvas);
+  stroke: var(--flink-tone);
+  stroke-width: 1.2;
+}
+.flink-2d-flow [data-active="true"] .flink-2d-node {
+  stroke-width: 2.5;
+  fill: var(--flink-panel);
+}
+.flink-2d-node-rail {
+  fill: var(--flink-tone);
+}
+.flink-2d-node-title {
+  fill: var(--flink-text);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.flink-2d-node-number {
+  fill: var(--flink-muted);
+  font-size: 11px;
+}
+.flink-2d-node-line {
+  fill: var(--flink-text);
+  font-size: 12px;
+}
+.flink-2d-wire {
+  fill: none;
+  stroke: var(--flink-dim);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+}
+.flink-2d-arrowhead {
+  fill: none;
+  stroke: var(--flink-dim);
+  stroke-width: 1.2;
+}
+.flink-2d .flink-2d-status {
+  margin-block-start: 16px;
+  color: var(--flink-text);
+  font-size: 14px;
+  line-height: 1.55;
+  min-block-size: 3.1em;
+}
+.flink-2d-controls,
+.flink-2d-speed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.flink-2d-controls {
+  margin-block-start: 16px;
+}
+.flink-2d-progress {
+  margin-inline-start: auto;
+  color: var(--flink-muted);
+  font:
+    12px/1.5 Lilex,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.flink-2d-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.flink-2d-comparison > section {
+  min-inline-size: 0;
+  border-block-start: 2px solid var(--flink-tone);
+  padding-block-start: 12px;
+}
+.flink-2d .flink-2d-label {
+  color: var(--flink-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.flink-2d-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-block: 12px;
+}
+.flink-2d-slots span {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: 1px dashed var(--flink-border);
+  border-radius: 3px;
+  color: var(--flink-muted);
+  font-size: 12px;
+}
+.flink-2d-slots [data-filled="true"] {
+  color: var(--flink-text);
+  border-style: solid;
+  border-color: var(--flink-tone, var(--flink-orange));
+  background: var(--flink-canvas);
+}
+.flink-2d .flink-2d-value {
+  color: var(--flink-text);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.flink-2d .flink-2d-detail {
+  margin-block-start: 4px;
+  color: var(--flink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.flink-2d-window {
+  fill: var(--flink-canvas);
+  stroke: var(--flink-blue);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 3;
+}
+.flink-2d-window[data-closed="true"] {
+  stroke: var(--flink-green);
+  stroke-dasharray: none;
+}
+.flink-2d-window-label,
+.flink-2d-axis-label {
+  fill: var(--flink-muted);
+  font-size: 11px;
+}
+.flink-2d-axis {
+  stroke: var(--flink-dim);
+  stroke-width: 1;
+}
+.flink-2d-event {
+  fill: var(--flink-blue);
+  stroke: var(--flink-blue);
+  stroke-width: 1;
+}
+.flink-2d-event-index {
+  fill: var(--flink-canvas);
+  font-weight: 700;
+  font-size: 11px;
+}
+.flink-2d-timeline [data-discarded="true"] .flink-2d-event {
+  fill: var(--flink-red);
+  stroke: var(--flink-red);
+}
+.flink-2d-watermark-line {
+  stroke: var(--flink-yellow);
+  stroke-width: 2;
+  stroke-dasharray: 2 3;
+}
+.flink-2d-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.flink-2d-metrics dt {
+  color: var(--flink-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.flink-2d-metrics dd {
+  color: var(--flink-text);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.flink-2d .flink-2d-conservation {
+  color: var(--flink-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.flink-2d-attempt {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-block-end: 16px;
+  color: var(--flink-muted);
+  font-size: 13px;
+}
+.flink-2d-attempt strong {
+  color: var(--flink-text);
+  font-weight: 500;
+}
+.flink-2d-sink-rows {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 6px;
+  min-block-size: 82px;
+  margin-block: 12px;
+}
+.flink-2d-sink-rows > span {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--flink-tone);
+  border-radius: 3px;
+  color: var(--flink-text);
+  background: var(--flink-canvas);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.flink-2d-sink-rows > [data-repeated="true"] {
+  border-style: dashed;
+  border-color: var(--flink-text);
+  color: var(--flink-text);
+}
+.flink-2d-sink-rows > .flink-2d-empty {
+  color: var(--flink-muted);
+  background: transparent;
+  border-color: transparent;
+}
+.flink-2d-enrichment-state {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-block: 12px;
+}
+.flink-2d-enrichment-state > div {
+  padding: 12px;
+  border: 1px solid var(--flink-orange);
+  background: var(--flink-canvas);
+}
+.flink-2d-enrichment-state dt {
+  color: var(--flink-muted);
+  font-size: 12px;
+}
+.flink-2d-enrichment-state dd {
+  color: var(--flink-text);
+  font:
+    500 18px/1.5 Lilex,
+    monospace;
+}
+.flink-2d-enriched {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 8px;
+  border-block-end: 1px dashed var(--flink-border);
+  font:
+    12px/1.6 Lilex,
+    monospace;
+}
+.flink-2d-enriched [data-unknown="true"] {
+  color: var(--flink-yellow);
+}
+.flink-2d-enriched > :last-child:not([data-unknown="true"]) {
+  color: var(--flink-text);
+}
+@media (max-width: 639px) {
+  .flink-2d-comparison {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .flink-2d-metrics {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .flink-2d-metrics > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .flink-2d-speed {
+    flex-basis: 100%;
+  }
+}

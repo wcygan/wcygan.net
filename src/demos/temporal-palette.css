@@ -1,0 +1,20 @@
+/* PlanetScale dark foundation, shared by the 2D and 3D Temporal explainers. */
+.temporal-graphic,
+.temporal-demo,
+.temporal-spatial-demo {
+  color-scheme: dark;
+  --temporal-canvas: oklch(0.178 0 0);
+  --temporal-panel: oklch(0.226 0 0);
+  --temporal-text: oklch(0.985 0 0);
+  --temporal-muted: oklch(0.855 0 0);
+  --temporal-dim: oklch(0.773 0 0);
+  --temporal-border: oklch(0.603 0 0);
+  --temporal-track: oklch(0.341 0 0);
+  --temporal-connector: oklch(0.603 0 0);
+  --temporal-orange: oklch(0.661 0.202 39.353);
+  --temporal-blue: oklch(0.552 0.161 252.205);
+  --temporal-green: oklch(0.681 0.191 146.483);
+  --temporal-yellow: oklch(0.809 0.165 84.552);
+  --temporal-red: oklch(0.668 0.22 18.688);
+  --temporal-focus: oklch(0.764 0.129 245.155);
+}

@@ -1,0 +1,30 @@
+groups:
+  - name: demo
+    rules:
+      - record: job_route:demo_http_requests:rate1m
+        expr: sum by (job, route) (rate(demo_http_requests_total[1m]))
+
+      - record: job:demo_http_requests:rate1m
+        expr: sum by (job) (rate(demo_http_requests_total[1m]))
+
+      - record: job:demo_http_errors:ratio1m
+        expr: |
+          sum by (job) (rate(demo_http_requests_total{status=~"5.."}[1m]))
+          /
+          sum by (job) (rate(demo_http_requests_total[1m]))
+
+      - alert: DemoHighErrorRatio
+        expr: job:demo_http_errors:ratio1m > 0.2 and job:demo_http_requests:rate1m > 0.1
+        for: 20s
+        labels:
+          severity: warning
+        annotations:
+          summary: More than 20% of demo requests are failing
+
+      - alert: DemoTargetDown
+        expr: up{job="demo"} == 0
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: Prometheus cannot scrape the demo app

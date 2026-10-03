@@ -1,0 +1,243 @@
+---
+title: Prometheus
+date: October 1, 2026
+description: Collect, query, and understand operational measurements
+tags: [Data, Observability, Architecture]
+---
+
+import {
+  PrometheusScrapeDemo,
+  PrometheusMetricTypesDemo,
+  PrometheusRateDemo,
+  PrometheusHistogramDemo,
+  PrometheusRecordingRuleDemo,
+} from "~/components/PrometheusDemos";
+import {
+  PrometheusArchitectureDemo,
+  PrometheusSeriesDemo,
+  PrometheusAlertsDemo,
+  PrometheusCardinalityDemo,
+  PrometheusStorageDemo,
+} from "~/components/PrometheusSpatialDemos";
+
+An API feels slow. Is traffic rising, are requests failing, or is work piling up?
+[Prometheus](https://github.com/prometheus/prometheus) answers with measurements
+over time. These ten teaching diagrams play when in view. Pause or replay them;
+with reduced motion, advance manually. Then try a real server below.
+
+## Follow a measurement
+
+Prometheus collects metrics, stores timestamped history in a **time-series
+database**, queries it, and evaluates alerts. Watch a measurement travel through
+the system. [Overview](https://prometheus.io/docs/introduction/overview/).
+
+<PrometheusArchitectureDemo />
+
+Use it for traffic, errors, latency, and resource limits. An **instance** is one
+target; a **job** groups targets; an **exporter** exposes another system's metrics.
+Metrics summarize behavior, rather than preserving every transaction.
+
+## Collect: scrape an endpoint
+
+The application exposes measurements at `/metrics`. Prometheus periodically
+requests that endpoint: a **scrape**. This is the ordinary write path.
+[Instrumentation](https://prometheus.io/docs/tutorials/instrumenting_http_server_in_go/).
+
+<PrometheusScrapeDemo />
+
+```text
+# TYPE demo_http_requests_total counter
+demo_http_requests_total{route="/fast",status="200"} 42
+demo_http_requests_total{route="/fail",status="500"} 3
+```
+
+Prometheus adds `up`: scrape success is `1`, failure is `0`. This doesn't prove
+business requests succeed.
+[Scrape health](https://prometheus.io/docs/concepts/jobs_instances/#automatically-generated-labels-and-time-series).
+
+## Identify: names, labels, samples
+
+A metric name and complete label set identify one **time series**: a sequence of
+timestamp/value samples. Changing a label creates a different series.
+[Data model](https://prometheus.io/docs/concepts/data_model/).
+
+<PrometheusSeriesDemo />
+
+```text
+demo_http_requests_total{job="demo",instance="app:8080",route="/fast",status="200"}
+
+12:00:00  42
+12:00:05  49
+12:00:10  58
+```
+
+There's no `CREATE TABLE`: define names, units, and labels in application code.
+Scraping adds `job` and `instance`.
+[Naming conventions](https://prometheus.io/docs/practices/naming/).
+
+## Limit: label combinations multiply
+
+**Cardinality** counts distinct series. Observe how one extra label multiplies
+them. Only observed combinations are stored.
+
+<PrometheusCardinalityDemo />
+
+More series costs memory and query work. Use bounded route labels; keep user IDs
+in logs or traces.
+[Label guidance](https://prometheus.io/docs/practices/instrumentation/#do-not-overuse-labels).
+
+## Measure: counters and gauges
+
+A **counter** accumulates events until its process resets. A **gauge** rises and
+falls, like requests in flight. A **histogram** records a distribution.
+[Metric types](https://prometheus.io/docs/concepts/metric_types/).
+
+<PrometheusMetricTypesDemo />
+
+```python
+from prometheus_client import Counter, Gauge, Histogram
+
+REQUESTS = Counter("demo_http_requests_total", "Completed requests", ["route", "status"])
+IN_FLIGHT = Gauge("demo_http_requests_in_flight", "Active requests", ["route"])
+DURATION = Histogram("demo_http_request_duration_seconds", "Request duration", ["route"])
+
+IN_FLIGHT.labels(route="/fast").inc()
+IN_FLIGHT.labels(route="/fast").dec()
+REQUESTS.labels(route="/fast", status="200").inc()
+DURATION.labels(route="/fast").observe(0.02)
+```
+
+[Python instrumentation](https://prometheus.github.io/client_python/instrumenting/).
+
+## Query: turn counts into rates
+
+**PromQL** queries metrics. `[1m]` selects a minute of samples; `rate` estimates
+counter growth per second, handling observed resets. Apply it **before** summing.
+[Query basics](https://prometheus.io/docs/prometheus/latest/querying/basics/).
+
+<PrometheusRateDemo />
+
+```text
+# Read cumulative counts
+demo_http_requests_total{job="demo",route="/fast"}
+
+# Requests per second, grouped by route
+sum by (route) (rate(demo_http_requests_total{job="demo"}[1m]))
+
+# Fraction of requests returning server errors
+sum(rate(demo_http_requests_total{job="demo",status=~"5.."}[1m]))
+/
+sum(rate(demo_http_requests_total{job="demo"}[1m]))
+```
+
+Rates need two samples. The diagram simplifies real `rate`'s boundary
+extrapolation. With no traffic, the error ratio is undefined.
+[Rate semantics](https://prometheus.io/docs/prometheus/latest/querying/functions/#rate).
+
+## Compare: the slow tail
+
+An average can hide slow requests. **Classic histogram** buckets count durations
+at or below their `le` boundary. Buckets overlap; `+Inf` includes everything.
+[Histograms](https://prometheus.io/docs/practices/histograms/).
+
+<PrometheusHistogramDemo />
+
+Estimate the 90th percentile in seconds:
+
+```text
+histogram_quantile(0.9,
+  sum by (le, route) (
+    rate(demo_http_request_duration_seconds_bucket{job="demo"}[1m])
+  )
+)
+```
+
+Keep `le` when combining classic buckets. Bucket boundaries affect accuracy;
+don't average per-instance percentiles.
+[Quantile calculation](https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile).
+
+## Reuse: record an aggregation
+
+A **recording rule** runs a query on a schedule, saving new series that dashboards
+can read directly.
+[Recording rules](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/).
+
+<PrometheusRecordingRuleDemo />
+
+```yaml
+groups:
+  - name: demo-rollups
+    interval: 5s
+    rules:
+      - record: job_route:demo_http_requests:rate1m
+        expr: sum by (job, route) (rate(demo_http_requests_total{job="demo"}[1m]))
+```
+
+Read this rollup with `job_route:demo_http_requests:rate1m`. It adds data; it doesn't
+replace raw samples or backfill history. Local storage doesn't automatically downsample.
+[Storage limitations](https://prometheus.io/docs/prometheus/latest/storage/).
+
+## Store: recent samples and older blocks
+
+Recent samples enter the **Head**. A **write-ahead log** (WAL) supports crash
+recovery. Older samples become persisted blocks; compaction combines them.
+[Storage layout](https://prometheus.io/docs/prometheus/latest/storage/#on-disk-layout).
+
+<PrometheusStorageDemo />
+
+Retention deletes expired blocks. Compaction preserves sample detail. Each
+server's local storage is independent.
+[Remote storage](https://prometheus.io/docs/prometheus/latest/storage/#remote-storage-integrations).
+
+## Alert: wait for a sustained problem
+
+An alert becomes **pending**, then **firing** if its condition persists for the
+configured duration. False evaluations reset the timer. Alertmanager routes
+notifications. [Alerting rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).
+
+<PrometheusAlertsDemo />
+
+## Try a real server
+
+With Docker and Compose, run the site's `examples/prometheus/` lab. It pins
+[Prometheus 3.15.0](https://github.com/prometheus/prometheus/releases/tag/v3.15.0)
+and [Python client 0.26.0](https://github.com/prometheus/client_python/releases/tag/v0.26.0).
+From the repository root:
+
+```bash
+cd examples/prometheus
+docker compose up -d --build
+docker compose exec -T app python traffic.py --seconds 90 --mode mixed
+```
+
+Open [metrics](http://127.0.0.1:18080/metrics) and
+[Prometheus](http://127.0.0.1:19090). Check that Targets shows a healthy `demo`.
+It scrapes every five seconds.
+
+Try the queries above. Compare `/fast` and `/slow` latency, inspect `/fail`'s
+errors, then open Alerts. Read a query through the API:
+
+```bash
+curl --get 'http://127.0.0.1:19090/api/v1/query' \
+  --data-urlencode 'query=sum(rate(demo_http_requests_total{job="demo"}[1m]))'
+```
+
+[Query API](https://prometheus.io/docs/prometheus/latest/querying/api/).
+
+Try three changes:
+
+1. `docker compose restart app`: observe counter resets and their rates.
+2. `docker compose stop app`: observe `up = 0`, then run `docker compose start app`.
+3. Read `job_route:demo_http_requests:rate1m` and compare the raw rate query.
+
+The lab shows alert state without notifications. Its README contains rule tests,
+configuration checks, and more experiments.
+
+```bash
+docker compose down
+```
+
+## Explain it in an interview
+
+“Instrument, scrape, query, and alert.” Explain what each step does, why labels
+cost resources, and why sampled metrics aren't an exact event ledger.

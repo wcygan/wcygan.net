@@ -1,0 +1,300 @@
+/* PlanetScale standalone foundation. Domain geometry stays in the renderers. */
+.post-content .tidb-learn {
+  --tl-canvas: oklch(0.178 0 0);
+  --tl-panel: oklch(0.226 0 0);
+  --tl-text: oklch(0.985 0 0);
+  --tl-muted: oklch(0.87 0 0);
+  --tl-border: oklch(0.603 0 0);
+  --tl-orange: oklch(0.661 0.202 39.353);
+  --tl-blue: oklch(0.667 0.15 241.774);
+  --tl-green: oklch(0.681 0.191 146.483);
+  --tl-yellow: oklch(0.809 0.164 84.552);
+  --tl-red: oklch(0.668 0.22 18.688);
+  color: var(--tl-text);
+  background: var(--tl-canvas);
+  border: 1px solid var(--tl-panel);
+  border-radius: 6px;
+  font-family: Lilex, ui-monospace, monospace;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: normal;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  isolation: isolate;
+}
+.tidb-learn [data-tone="neutral"] {
+  --tl-tone: var(--tl-border);
+}
+.tidb-learn [data-tone="orange"] {
+  --tl-tone: var(--tl-orange);
+}
+.tidb-learn [data-tone="blue"] {
+  --tl-tone: var(--tl-blue);
+}
+.tidb-learn [data-tone="green"] {
+  --tl-tone: var(--tl-green);
+}
+.tidb-learn [data-tone="yellow"] {
+  --tl-tone: var(--tl-yellow);
+}
+.tidb-learn [data-tone="red"] {
+  --tl-tone: var(--tl-red);
+}
+.tidb-learn .tidb-learn-intro {
+  padding: 24px 24px 16px;
+}
+.tidb-learn .tidb-learn-title {
+  color: var(--tl-text);
+  font:
+    500 14px / 1.6 Lilex,
+    ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+.tidb-learn .tidb-learn-question {
+  color: var(--tl-muted);
+  font:
+    400 16px / 1.5 Inter,
+    system-ui,
+    sans-serif;
+  margin: 8px 0 0;
+}
+.tidb-learn .tidb-learn-stage {
+  background: var(--tl-canvas);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+.tidb-learn .tidb-learn-svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  margin: 0;
+  color: var(--tl-text);
+  font:
+    400 14px / 1.5 Lilex,
+    ui-monospace,
+    monospace;
+  overflow: hidden;
+}
+.tidb-learn-svg text {
+  fill: var(--tl-text);
+  font-size: 14px;
+}
+.tidb-learn-svg .tidb-learn-muted {
+  fill: var(--tl-muted);
+}
+.tidb-learn-svg .tidb-learn-colored {
+  fill: color-mix(in oklab, var(--tl-tone) 40%, var(--tl-text));
+}
+.tidb-learn-node rect,
+.tidb-learn-region-group > rect,
+.tidb-learn-version rect {
+  fill: var(--tl-panel);
+  stroke: var(--tl-tone);
+  stroke-width: 1.5;
+  transition: stroke 180ms ease;
+}
+.tidb-learn-node rect {
+  fill: color-mix(in oklab, var(--tl-tone) 50%, var(--tl-panel));
+}
+.tidb-learn-node[data-tone="neutral"] rect {
+  fill: var(--tl-panel);
+}
+.tidb-learn-node .tidb-learn-muted {
+  fill: var(--tl-text);
+}
+.tidb-learn-node-band {
+  fill: none;
+  stroke: var(--tl-tone);
+  stroke-width: 3;
+}
+.tidb-learn-wire {
+  stroke: var(--tl-tone);
+  stroke-width: 1.5;
+}
+.tidb-learn-wire path {
+  fill: var(--tl-tone);
+  stroke: none;
+}
+.tidb-learn-unit {
+  fill: color-mix(in oklab, var(--tl-tone) 45%, var(--tl-panel));
+  stroke: var(--tl-tone);
+  stroke-width: 1.5;
+}
+.tidb-learn-tick {
+  stroke: var(--tl-border);
+}
+.tidb-learn-snapshot-pin line {
+  stroke: var(--tl-orange);
+  stroke-dasharray: 4 4;
+}
+.tidb-learn-snapshot-pin circle {
+  fill: var(--tl-orange);
+}
+.tidb-learn-face {
+  fill: color-mix(in oklab, var(--tl-tone) 68%, var(--tl-panel));
+  stroke: var(--tl-tone);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  transition:
+    fill 180ms ease,
+    stroke 180ms ease;
+}
+.tidb-learn-face[data-shade="front"] {
+  fill: color-mix(in oklab, var(--tl-tone) 42%, var(--tl-panel));
+}
+.tidb-learn-face[data-shade="side"] {
+  fill: color-mix(in oklab, var(--tl-tone) 26%, var(--tl-panel));
+}
+.tidb-learn-face[data-tone="neutral"] {
+  fill: var(--tl-panel);
+  stroke: color-mix(in oklab, var(--tl-border) 65%, var(--tl-panel));
+}
+.tidb-learn-world-label rect {
+  fill: var(--tl-canvas);
+}
+.tidb-learn-world-label line {
+  stroke: var(--tl-border);
+  stroke-width: 1;
+}
+.tidb-learn-cell-label text {
+  paint-order: stroke;
+  stroke: var(--tl-panel);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.tidb-learn-spatial {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+}
+.tidb-learn-spatial:active {
+  cursor: grabbing;
+}
+.tidb-learn .tidb-learn-camera,
+.tidb-learn .tidb-learn-playback,
+.tidb-learn .tidb-learn-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  margin: 0;
+}
+.tidb-learn .tidb-learn-options {
+  padding-block-start: 0;
+}
+.tidb-learn .tidb-learn-playback {
+  border-block-start: 1px solid var(--tl-panel);
+}
+.tidb-learn button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 8px 12px;
+  margin: 0;
+  color: var(--tl-text);
+  background: var(--tl-panel);
+  border: 1px solid var(--tl-border);
+  border-radius: 4px;
+  font:
+    400 14px / 1.4 Lilex,
+    ui-monospace,
+    monospace;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+}
+.tidb-learn button:hover:not(:disabled),
+.tidb-learn button[aria-pressed="true"] {
+  border-color: var(--tl-orange);
+}
+.tidb-learn button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.tidb-learn button:focus-visible,
+.tidb-learn-spatial:focus-visible {
+  outline: 2px solid var(--tl-orange);
+  outline-offset: 2px;
+}
+.tidb-learn .tidb-learn-guide,
+.tidb-learn .tidb-learn-motion-note {
+  font:
+    400 14px / 1.5 Lilex,
+    ui-monospace,
+    monospace;
+  color: var(--tl-muted);
+  margin: 0;
+  padding: 0 24px 16px;
+}
+.tidb-learn .tidb-learn-status {
+  padding: 12px 24px 20px;
+}
+.tidb-learn-status p {
+  font:
+    400 16px / 1.6 Inter,
+    system-ui,
+    sans-serif;
+  color: var(--tl-text);
+  margin: 12px 0 0;
+}
+.tidb-learn-status .tidb-learn-beat {
+  font:
+    500 14px / 1.6 Lilex,
+    ui-monospace,
+    monospace;
+  margin: 0;
+}
+.tidb-learn-beat span {
+  color: color-mix(in oklab, var(--tl-orange) 40%, var(--tl-text));
+  margin-inline-end: 8px;
+  white-space: nowrap;
+}
+.tidb-learn-status .tidb-learn-result {
+  color: var(--tl-text);
+  border-inline-start: 2px solid var(--tl-green);
+  padding-inline-start: 12px;
+  font-family: Lilex, ui-monospace, monospace;
+}
+figure.tidb-learn > figcaption {
+  font:
+    400 14px / 1.6 Inter,
+    system-ui,
+    sans-serif;
+  color: var(--tl-muted);
+  border-block-start: 1px solid var(--tl-panel);
+  padding: 16px 24px 24px;
+  margin: 0;
+  text-align: start;
+}
+@media (max-width: 480px) {
+  .tidb-learn .tidb-learn-intro {
+    padding: 20px 16px 12px;
+  }
+  .tidb-learn .tidb-learn-camera,
+  .tidb-learn .tidb-learn-playback,
+  .tidb-learn .tidb-learn-options {
+    padding-inline: 16px;
+  }
+  .tidb-learn .tidb-learn-guide,
+  .tidb-learn .tidb-learn-motion-note,
+  .tidb-learn .tidb-learn-status,
+  figure.tidb-learn > figcaption {
+    padding-inline: 16px;
+  }
+  .tidb-learn .tidb-learn-title {
+    letter-spacing: 0.035em;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tidb-learn *,
+  .tidb-learn *::before,
+  .tidb-learn *::after {
+    transition: none;
+    animation: none;
+  }
+}

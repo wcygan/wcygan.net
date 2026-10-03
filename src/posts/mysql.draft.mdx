@@ -1,0 +1,306 @@
+---
+title: MySQL
+date: October 1, 2026
+description: Relational data from first query to storage
+tags: [Databases, SQL, Architecture]
+draft: true
+---
+
+import {
+  MySqlRequestDemo,
+  MySqlRelationsDemo,
+  MySqlQueryDemo,
+  MySqlTransactionDemo,
+  MySqlConstraintsDemo,
+} from "~/components/MySqlPrimerDemos";
+import {
+  MySqlIndexDemo,
+  MySqlBufferPoolDemo,
+  MySqlLockingDemo,
+  MySqlRecoveryDemo,
+  MySqlReplicationDemo,
+} from "~/components/MySqlStorageDemos";
+
+[MySQL](https://dev.mysql.com/doc/refman/8.4/en/what-is-mysql.html) is a database server.
+It stores related records in tables; SQL reads and changes them.
+
+Follow a bookstore through ten visual lessons. These are teaching models for MySQL 8.4.
+
+## What runs where?
+
+Your application sends SQL; MySQL plans the work;
+[InnoDB](https://dev.mysql.com/doc/refman/8.4/en/innodb-introduction.html) accesses the stored rows.
+
+<MySqlRequestDemo />
+
+## Tables give data a shape
+
+A primary key identifies a row. A [foreign key](https://dev.mysql.com/doc/refman/8.4/en/create-table-foreign-keys.html)
+connects each order to its customer; a `JOIN` brings them together.
+
+<MySqlRelationsDemo />
+
+## Rules keep invalid data out
+
+Primary keys, foreign keys, and [CHECK constraints](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html)
+reject duplicate IDs, missing customers, and negative stock.
+
+<MySqlConstraintsDemo />
+
+## Ask for an answer with SQL
+
+`WHERE` selects Ada's orders. `SUM` adds their amounts: 7,400 cents.
+
+<MySqlQueryDemo />
+
+## Indexes narrow the search
+
+An [index](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html) locates matching entries.
+A covered query gets its answer there without fetching full rows.
+
+<MySqlIndexDemo />
+
+## Commit together or undo together
+
+A [transaction](https://dev.mysql.com/doc/refman/8.4/en/mysql-acid.html) keeps the order
+and stock change together: commit both, or roll both back.
+
+<MySqlTransactionDemo />
+
+## Two shoppers, one book
+
+A [locking read](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html)
+makes the second shopper wait. After the first sale commits, the second sees zero stock.
+
+<MySqlLockingDemo />
+
+## Memory before disk
+
+The [buffer pool](https://dev.mysql.com/doc/refman/8.4/en/innodb-buffer-pool.html)
+reuses pages already loaded into memory. Read the same page twice.
+
+<MySqlBufferPoolDemo />
+
+## A commit survives a crash
+
+Durable redo lets InnoDB reconstruct a committed change after a
+[crash](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html), even before its data page was flushed.
+
+<MySqlRecoveryDemo />
+
+## A replica can lag
+
+With [asynchronous replication](https://dev.mysql.com/doc/refman/8.4/en/replication.html),
+a replica can temporarily miss a committed order. Receiving a change is different from applying it.
+
+<MySqlReplicationDemo />
+
+## Where this helps
+
+- **Stores:** keep orders and inventory consistent
+- **Accounts:** connect users, organizations, and memberships
+- **Bookings:** coordinate competing reservations
+
+## Try it locally
+
+<details className="mysql-lab">
+<summary>Run the bookstore with Docker and SQL</summary>
+<div className="mysql-lab-content">
+
+**Create the bookstore**
+
+With Docker running, save these two files in a new directory. The
+[official image](https://hub.docker.com/_/mysql) initializes a fresh database;
+the volume keeps its data.
+
+```yaml
+name: mysql-primer-lab
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root-local-only
+      MYSQL_DATABASE: bookstore
+      MYSQL_USER: practice
+      MYSQL_PASSWORD: practice-local-only
+    ports:
+      - 127.0.0.1:3307:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${MYSQL_PASSWORD}"
+          mysql --protocol=TCP -h127.0.0.1 -u"$${MYSQL_USER}"
+          "$${MYSQL_DATABASE}" -e 'SELECT 1 FROM orders LIMIT 1'
+          >/dev/null 2>&1
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+volumes:
+  mysql-data:
+```
+
+Save this as `schema.sql`. Prices use integer cents; stock is remaining inventory.
+
+```sql
+USE bookstore;
+
+CREATE TABLE customers (
+  id INT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE inventory (
+  id INT PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  stock INT NOT NULL CHECK (stock >= 0),
+  unit_price_cents INT NOT NULL CHECK (unit_price_cents > 0)
+) ENGINE=InnoDB;
+
+CREATE TABLE orders (
+  id INT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  book_id INT NOT NULL,
+  quantity INT NOT NULL CHECK (quantity > 0),
+  total_cents INT NOT NULL CHECK (total_cents > 0),
+  INDEX orders_customer_id (customer_id),
+  INDEX orders_book_id (book_id),
+  FOREIGN KEY (customer_id) REFERENCES customers(id),
+  FOREIGN KEY (book_id) REFERENCES inventory(id)
+) ENGINE=InnoDB;
+
+INSERT INTO customers VALUES (1, 'Ada'), (2, 'Lin');
+INSERT INTO inventory VALUES
+  (1, 'SQL Basics', 2, 2900),
+  (2, 'Reliable Systems', 5, 4500);
+INSERT INTO orders VALUES
+  (101, 1, 1, 1, 2900),
+  (102, 1, 2, 1, 4500),
+  (103, 2, 1, 1, 2900);
+```
+
+Start MySQL and open its client:
+
+```sh
+docker compose up -d --wait --wait-timeout 180
+docker compose exec mysql mysql -upractice -p bookstore
+```
+
+Password: `practice-local-only`. A desktop SQL client can connect to
+`127.0.0.1:3307` with database `bookstore` and user `practice`.
+These are local exercise credentials; change port `3307` if occupied.
+
+**Read related records**
+
+At the `mysql>` prompt, paste these statements without the prompt itself:
+
+```sql
+SELECT VERSION();
+
+SELECT o.id, c.name, i.title, o.total_cents
+FROM orders AS o
+JOIN customers AS c ON c.id = o.customer_id
+JOIN inventory AS i ON i.id = o.book_id
+ORDER BY o.id;
+
+SELECT c.name, SUM(o.total_cents) AS spent_cents
+FROM customers AS c
+JOIN orders AS o ON o.customer_id = c.id
+GROUP BY c.id, c.name
+ORDER BY c.id;
+```
+
+The first join returns:
+
+| id  | name | title            | total_cents |
+| --- | ---- | ---------------- | ----------- |
+| 101 | Ada  | SQL Basics       | 2900        |
+| 102 | Ada  | Reliable Systems | 4500        |
+| 103 | Lin  | SQL Basics       | 2900        |
+
+The aggregate returns Ada with 7,400 cents and Lin with 2,900 cents.
+
+```sql
+SHOW INDEX FROM orders;
+EXPLAIN SELECT * FROM orders WHERE customer_id = 1;
+```
+
+[`EXPLAIN`](https://dev.mysql.com/doc/refman/8.4/en/explain.html) reports plan estimates,
+not timings. With only three rows, MySQL may choose a table scan despite the index.
+
+**Undo a checkout, then keep one**
+
+Start a transaction and lock the inventory row. Keep every statement in the same
+connection:
+
+```sql
+START TRANSACTION;
+SELECT stock, unit_price_cents
+FROM inventory WHERE id = 1 FOR UPDATE;
+
+UPDATE inventory SET stock = stock - 1
+WHERE id = 1 AND stock > 0;
+SELECT ROW_COUNT() AS reserved;
+```
+
+On the fresh seed, stock starts at 2 and `reserved` is 1. **Continue only when
+`reserved` is 1.** If it is 0, run `ROLLBACK;` and stop: no copy was reserved.
+An application must make this check and roll back on an error before proceeding.
+A statement error does not always undo the entire transaction automatically.
+See [InnoDB error handling](https://dev.mysql.com/doc/refman/8.4/en/innodb-error-handling.html).
+
+```sql
+INSERT INTO orders (id, customer_id, book_id, quantity, total_cents)
+VALUES (104, 2, 1, 1, 2900);
+
+SELECT stock FROM inventory WHERE id = 1;
+SELECT COUNT(*) AS order_count FROM orders;
+ROLLBACK;
+
+SELECT stock FROM inventory WHERE id = 1;
+SELECT COUNT(*) AS order_count FROM orders;
+```
+
+Before rollback, your transaction sees stock 1 and four orders. After rollback,
+stock returns to 2 and the order count returns to three. Repeat the same checkout,
+including the row-count check, and replace `ROLLBACK` with `COMMIT` to keep it.
+Then stock stays at 1 and the order count stays at four. Order ID 104 is a manual
+exercise ID: trying to insert it again after committing produces a duplicate-key
+error.
+
+**Keep or clear the data**
+
+Exit the client with `exit`, then stop the server:
+
+```sh
+docker compose down
+```
+
+Start it again with the earlier `up` command. The committed checkout survives
+because the volume remains. Initialization variables and `schema.sql` apply only
+to a fresh data directory; editing that file doesn't change an existing database.
+
+To stop the lab and erase its saved data:
+
+```sh
+docker compose down -v
+```
+
+The next start restores the seed. To test contention, run the same `FOR UPDATE`
+in two clients. The second waits until the first commits or rolls back.
+
+</div>
+</details>
+
+## Keep exploring
+
+[Official tutorial](https://dev.mysql.com/doc/refman/8.4/en/tutorial.html) ·
+[Connection pooling](/connection-pooling) ·
+[N+1 queries](/n-plus-one-sql-query) ·
+[Replication lag](/replication)

@@ -1,0 +1,103 @@
+:root {
+  /* JetBrains Mono is optional; Lilex is bundled locally by the site. */
+  --ch-font-mono:
+    "JetBrains Mono", "Lilex", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
+}
+
+/* One shared theme for every ClickHouse figure, independent of its renderer. */
+.clickhouse-demo[data-graphic-frame] {
+  --ch-bg: oklch(0.178 0 0);
+  --ch-panel: oklch(0.226 0 0);
+  --ch-text: oklch(0.985 0 0);
+  --ch-muted: oklch(0.851 0 0);
+  --ch-dim: oklch(0.783 0 0);
+  --ch-border: oklch(0.317 0 0);
+  --ch-node-border: oklch(0.39 0 0);
+  --ch-track: oklch(0.281 0 0);
+  --ch-orange: oklch(0.661 0.202 39.353);
+  --ch-blue: oklch(0.667 0.15 241.774);
+  --ch-green: oklch(0.681 0.191 146.483);
+  --ch-yellow: oklch(0.809 0.165 84.552);
+  --ch-red: oklch(0.668 0.22 18.688);
+  --ch-purple: oklch(0.726 0.165 298.651);
+  color-scheme: dark;
+  padding: 20px;
+  border: 1px solid var(--ch-border);
+  border-radius: 4px;
+  background: var(--ch-bg);
+  color: var(--ch-text);
+  font-family: var(--ch-font-mono);
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+.clickhouse-demo [data-graphic-stage] {
+  border-color: var(--ch-border);
+  border-radius: 4px;
+  background: var(--ch-panel);
+}
+
+.clickhouse-demo :is(.ch-title, .article-graphic-title) {
+  margin: 0;
+  color: var(--ch-text);
+  font: 500 14px/1.5 var(--ch-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.clickhouse-demo .ch-status {
+  color: var(--ch-text);
+  font: 400 13px/1.6 var(--ch-font-mono);
+}
+
+.clickhouse-demo :is(.ch-caption, figcaption) {
+  color: var(--ch-muted);
+  font: 400 12px/1.6 var(--ch-font-mono);
+}
+
+.clickhouse-demo :is(button, select, summary) {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  font: 500 12px/1.5 var(--ch-font-mono);
+}
+
+.clickhouse-demo button {
+  padding: 10px 12px;
+  border: 1px solid var(--ch-node-border);
+  border-radius: 3px;
+  background: var(--ch-panel);
+  color: var(--ch-text);
+  cursor: pointer;
+}
+
+.clickhouse-demo button:hover:enabled {
+  border-color: var(--ch-dim);
+}
+
+.clickhouse-demo button[aria-pressed="true"] {
+  border-color: var(--ch-orange);
+  background: var(--ch-orange);
+  color: var(--ch-bg);
+}
+
+.clickhouse-demo button:disabled {
+  color: var(--ch-dim);
+  cursor: default;
+}
+
+.site-container
+  .post-content
+  .clickhouse-demo
+  :is(button, select, summary):focus-visible,
+.clickhouse-demo [data-graphic-stage]:focus-visible {
+  outline: 2px solid var(--ch-blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+  .clickhouse-demo[data-graphic-frame] {
+    padding: 16px 12px;
+  }
+}

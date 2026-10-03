@@ -89,6 +89,8 @@ export default defineConfig(({ command }) => ({
               {
                 name: "strip-copy-button-inline-handler",
                 pre(node: any) {
+                  node.properties = node.properties || {};
+                  node.properties.tabIndex = 0;
                   for (const child of node.children ?? []) {
                     if (
                       child.type === "element" &&
@@ -97,6 +99,7 @@ export default defineConfig(({ command }) => ({
                     ) {
                       delete child.properties.onclick;
                       delete child.properties.onClick;
+                      child.properties["aria-label"] = "Copy code";
                     }
                   }
                 },

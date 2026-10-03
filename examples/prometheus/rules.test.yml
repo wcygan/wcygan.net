@@ -1,0 +1,79 @@
+rule_files:
+  - rules.yml
+
+evaluation_interval: 5s
+
+tests:
+  - name: sustained errors produce a recording and a firing alert
+    interval: 5s
+    input_series:
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fast",status="200"}
+        values: 0+5x24
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fail",status="500"}
+        values: 0+5x24
+    promql_expr_test:
+      - expr: job:demo_http_requests:rate1m
+        eval_time: 1m
+        exp_samples:
+          - labels: job:demo_http_requests:rate1m{job="demo"}
+            value: 2
+      - expr: job:demo_http_errors:ratio1m
+        eval_time: 1m
+        exp_samples:
+          - labels: job:demo_http_errors:ratio1m{job="demo"}
+            value: 0.5
+    alert_rule_test:
+      - eval_time: 10s
+        alertname: DemoHighErrorRatio
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: DemoHighErrorRatio
+        exp_alerts:
+          - exp_labels:
+              job: demo
+              severity: warning
+            exp_annotations:
+              summary: More than 20% of demo requests are failing
+
+  - name: exactly twenty percent errors do not trigger the alert
+    interval: 5s
+    input_series:
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fast",status="200"}
+        values: 0+4x24
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fail",status="500"}
+        values: 0+1x24
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: DemoHighErrorRatio
+        exp_alerts: []
+
+  - name: idle counters do not trigger an error-ratio alert
+    interval: 5s
+    input_series:
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fast",status="200"}
+        values: 0+0x24
+      - series: demo_http_requests_total{job="demo",instance="app:8080",route="/fail",status="500"}
+        values: 0+0x24
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: DemoHighErrorRatio
+        exp_alerts: []
+
+  - name: a missed scrape must persist before firing
+    interval: 5s
+    input_series:
+      - series: up{job="demo",instance="app:8080"}
+        values: 1 0+0x24
+    alert_rule_test:
+      - eval_time: 10s
+        alertname: DemoTargetDown
+        exp_alerts: []
+      - eval_time: 20s
+        alertname: DemoTargetDown
+        exp_alerts:
+          - exp_labels:
+              job: demo
+              instance: app:8080
+              severity: warning
+            exp_annotations:
+              summary: Prometheus cannot scrape the demo app

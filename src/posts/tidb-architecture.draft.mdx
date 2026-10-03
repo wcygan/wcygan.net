@@ -1,51 +1,138 @@
 ---
 title: TiDB Architecture
-date: "7000-09-16T21:00:00-05:00"
-description: Explore SQL, coordination, and replicated storage
+date: "2026-10-01T12:00:00-05:00"
+description: SQL across machines, from queries to replicas
 tags: [Data, Distributed Systems]
 ---
 
-import { TidbArchitectureDemo } from "~/components/TidbArchitectureDemo";
-import { TidbSecondaryIndexDemo } from "~/components/TidbSecondaryIndexDemo";
+import { TidbLearningDemo } from "~/components/TidbLearningDemos";
 
-[TiDB separates SQL compute, cluster coordination, and storage](https://docs.pingcap.com/tidb/stable/tidb-architecture/):
+**TiDB is a distributed SQL database:** one familiar SQL interface, with data and work spread across machines. These ten demos explore [TiDB Self-Managed](https://docs.pingcap.com/tidb/stable/tidb-architecture/), starting with the problem it solves.
 
-1. [TiDB Server](https://docs.pingcap.com/tidb/stable/tidb-computing/)
-2. [Placement Driver](https://docs.pingcap.com/tidb/stable/tidb-scheduling/)
-3. [TiKV Server](https://docs.pingcap.com/tidb/stable/tidb-storage/)
+Demos play as you scroll. **Pause** to inspect; drag 3D scenes to look around.
 
-Choose **Read** or **Write** below to follow a request from the application to storage.
+## Outgrowing one machine
 
-<TidbArchitectureDemo />
+More data and queries eventually compete for one host's resources. TiDB separates SQL compute from storage.
 
-## Reading through a secondary index
+<TidbLearningDemo lesson="capacity" />
 
-A secondary index can find a row’s handle without containing the full record. With a clustered integer primary key, that handle is the row’s ID. Follow TiDB’s [IndexLookUp](https://docs.pingcap.com/tidb/stable/explain-indexes/) plan: an `IndexRangeScan` finds matching handles in the email index, then a `TableRowIDScan` fetches their records. This query needs the second phase because `name` is not in the email index. A query covered by the index can skip it.
+## Meet the components
 
-Both the secondary index and the rows are stored in TiKV as separate [key ranges](https://docs.pingcap.com/tidb/stable/tidb-computing/), divided into [Regions](https://docs.pingcap.com/tidb/stable/tidb-storage/#region). The trays below show two example Regions with leaders on different TiKV nodes; actual placement varies, and either index can span many Regions. With a [clustered primary key](https://docs.pingcap.com/tidb/stable/clustered-indexes/), the primary-index entry contains the row itself.
+TiDB plans SQL. TiKV stores rows. **PD**, the Placement Driver, coordinates placement and timestamps. Optional TiFlash stores columns.
 
-TiKV reads these keys through [RocksDB](https://docs.pingcap.com/tidb/stable/rocksdb-overview/), which combines in-memory data with immutable sorted files called SSTs. Each SST has its own [block index](https://github.com/facebook/rocksdb/wiki/Index-Block-Format); a SQL index does not have one global set of block pointers. The ordered lists below show a **logical snapshot view**, not the layout of a file. A nonunique email-index key contains both the email and row handle.
+<TidbLearningDemo lesson="roles" />
 
-Both phases use the same [read timestamp](https://tikv.org/blog/how-tikv-reads-writes/). Here it is 120: row 427’s name at commit 100 is “Will”, while a later update at commit 140 changes it to “William”. TiKV returns “Will” to this query even though the newer version is already in memory. The timestamps are illustrative, and the example assumes no conflicting transaction locks.
+TiDB speaks the MySQL protocol. Check [compatibility](https://docs.pingcap.com/tidb/stable/mysql-compatibility/) before migrating; stored procedures and triggers are unsupported.
 
-<TidbSecondaryIndexDemo />
+## Split the data
 
-## Appendix
+A **Region** is a contiguous range of keys. Splitting creates smaller ranges that can be placed independently.
 
-### Reads
+<TidbLearningDemo lesson="regions" />
 
-- **Secondary-index read:** TiDB first retrieves the matching ID from the email index, then fetches the full record by its clustered primary key. This [index lookup](https://docs.pingcap.com/tidb/stable/explain-indexes/) has two logical read phases.
+## Follow a read
 
-- **Leader read:** The request goes to the Region’s leader, which returns the row using its valid leader lease. This is the [fast path](https://tikv.org/blog/lease-read/) shown in the demo.
-- **Caught-up follower read:** A follower checks with the leader to establish a safe read position, then returns the row because it has already applied the required changes. See [Follower Read](https://docs.pingcap.com/tidb/stable/follower-read/).
-- **Lagging follower read:** The follower performs the same check but must catch up before returning the row. It waits for the required changes rather than serving outdated data.
-- **Snapshots and stale reads:** All three scenarios read the transaction’s [snapshot](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/), which can predate a newer write. TiDB’s separate [Stale Read](https://docs.pingcap.com/tidb/stable/stale-read/) feature intentionally requests historical data and is not shown here.
+The application sends SQL. TiDB locates the right Region and requests a row from TiKV.
 
-### Writes
+<TidbLearningDemo lesson="routing" />
 
-- **Random write:** The leader copies a change to its followers and commits it once a majority has stored it: the leader plus two followers in this five-replica example. It then applies the change before replying; [storing and applying](https://tikv.org/blog/how-tikv-reads-writes/) are separate steps.
-- **Random write with failure:** One follower misses a delivery, but the other replicas still form a majority and allow the write to proceed. [Raft](https://raft.github.io/raft.pdf) retries delivery so the follower can catch up; the demo shows this recovery after the application receives its response.
+## Keep copies
 
-### What this demo simplifies
+Each Region uses **Raft**, a protocol for agreeing on changes. With three voting replicas, two must acknowledge a new entry.
 
-The first architecture demo follows one row and its Region’s replicas; it omits secondary indexes and the full [transaction commit protocol](https://docs.pingcap.com/tidb/stable/transaction-overview/). Message timing, key ranges, and replication positions are illustrative, and real requests and retries can overlap.
+<TidbLearningDemo lesson="quorum" />
+
+Try losing one follower, then two. Copies need separate failure domains: three processes on one laptop still fail together.
+
+## Commit across Regions
+
+An order and its inventory update can touch different Regions. A transaction protocol connects their outcomes.
+
+<TidbLearningDemo lesson="transaction" />
+
+## Look up an index
+
+The email index finds a row ID. A second lookup retrieves the requested name. A covering index can avoid that second lookup.
+
+<TidbLearningDemo lesson="index" />
+
+## Read a consistent snapshot
+
+A read timestamp fixes which committed versions are visible. Try snapshots **80**, **120**, and **160**.
+
+<TidbLearningDemo lesson="snapshot" />
+
+[Snapshot isolation](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/) can allow write skew; it does not guarantee serializable transactions.
+
+## Analyze columns
+
+Point lookups and large aggregations need different layouts. TiFlash adds columnar replicas for analytical queries over transactional data: **hybrid transactional and analytical processing (HTAP)**.
+
+<TidbLearningDemo lesson="tiflash" />
+
+TiFlash replicas are enabled per table. [Consistent reads](https://docs.pingcap.com/tidb/stable/tiflash-overview/) validate replication progress and may wait for catch-up.
+
+## Grow each layer
+
+Add TiDB servers for SQL execution, or TiKV stores for data capacity. Region replicas move as the cluster rebalances.
+
+<TidbLearningDemo lesson="scaling" />
+
+| Consider TiDB when…                             | Remember…                              |
+| ----------------------------------------------- | -------------------------------------- |
+| Transactional data or traffic outgrows one host | Network coordination adds cost         |
+| Analytics needs recent application data         | Test TiFlash on representative queries |
+| Compute and storage grow at different rates     | Hot keys can remain bottlenecks        |
+
+If one MySQL or PostgreSQL machine comfortably serves the workload, its simpler operation may be enough.
+
+## Try it locally
+
+[TiUP Playground](https://docs.pingcap.com/tidb/stable/quick-start-with-tidb/) runs a learning cluster on macOS or Linux. Install a MySQL client first. These v8.5.8 commands follow the documentation; I haven't run this lab yet.
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf \
+  https://tiup-mirrors.pingcap.com/install.sh | sh
+
+# Open a new terminal, then keep this running:
+tiup playground v8.5.8 --db 1 --pd 1 --kv 1 --tiflash 1
+```
+
+Check the [TiFlash requirements](https://docs.pingcap.com/tidb/stable/hardware-and-software-requirements/); use `--tiflash 0` if unsupported. This single-machine setup cannot demonstrate replica failover.
+
+In another terminal, connect to the address printed by Playground, normally:
+
+```sh
+mysql --comments --host 127.0.0.1 --port 4000 -u root
+```
+
+Run a tiny transaction and aggregation:
+
+```sql
+CREATE DATABASE tidb_learning;
+USE tidb_learning;
+CREATE TABLE orders (
+  id BIGINT PRIMARY KEY CLUSTERED,
+  buyer VARCHAR(32),
+  amount INT,
+  INDEX buyer_idx (buyer)
+);
+INSERT INTO orders VALUES
+  (1, 'Ada', 12), (2, 'Lin', 9),
+  (3, 'Sam', 18), (4, 'Jo', 5);
+
+BEGIN;
+UPDATE orders SET buyer = 'Will' WHERE id = 2;
+COMMIT;
+
+SELECT * FROM orders WHERE id = 2; -- Will, amount 9
+SELECT SUM(amount) FROM orders;   -- 44
+EXPLAIN SELECT * FROM orders WHERE buyer = 'Will';
+```
+
+Next, [enable a TiFlash replica](https://docs.pingcap.com/tidb/stable/create-tiflash-replicas/), wait until `AVAILABLE = 1`, and compare the aggregation's execution plans. Four rows teach query behavior; performance testing needs a realistic dataset.
+
+Press **Ctrl+C** in the Playground terminal to stop. Untagged data is disposable; [use a tag](https://docs.pingcap.com/tidb/stable/tiup-playground/) to keep it between runs.
+
+For deeper detail: PingCAP's [architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/), [storage](https://docs.pingcap.com/tidb/stable/tidb-storage/), and [transaction](https://docs.pingcap.com/tidb/stable/tidb-faq/#does-tidb-support-distributed-transactions) guides. Demo counts, boundaries, and timing are illustrative.

@@ -1,0 +1,119 @@
+@import "./mysql-visuals.css";
+.post-content .mysql-storage-demo .mysql-storage-stage {
+  position: relative;
+  height: 390px;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--mysql-canvas);
+  border: 1px solid var(--mysql-panel);
+  isolation: isolate;
+}
+.mysql-storage-canvas {
+  position: absolute;
+  inset: 0;
+}
+.mysql-storage-label {
+  display: block;
+  white-space: nowrap;
+  color: var(--mysql-ink);
+  background: oklch(0.178 0 0 / 0.92);
+  padding: 3px 5px;
+  border-radius: 2px;
+  font:
+    500 12px/1.25 "JetBrains Mono",
+    Lilex,
+    monospace;
+  font-feature-settings: normal;
+  pointer-events: none;
+}
+.mysql-storage-label-role {
+  color: var(--mysql-muted);
+  font-size: 11px;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+.mysql-storage-label[data-active="true"] {
+  color: var(--mysql-ink);
+  border-block-end: 1px solid var(--mysql-orange);
+}
+.post-content .mysql-storage-demo .mysql-storage-query {
+  margin: 16px 0;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: var(--mysql-ink);
+  font:
+    13px/1.5 Lilex,
+    monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.post-content .mysql-storage-demo .mysql-storage-query code {
+  color: inherit;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+.mysql-storage-fallback {
+  padding: 24px;
+  font:
+    14px/1.6 Inter,
+    sans-serif;
+  color: var(--mysql-muted);
+}
+.mysql-storage-fallback ol {
+  padding-inline-start: 20px;
+}
+.post-content .mysql-storage-demo .mysql-storage-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-block: 20px;
+  font:
+    13px/1.5 Lilex,
+    monospace;
+}
+.mysql-storage-counters dt {
+  color: var(--mysql-muted);
+}
+.mysql-storage-counters dd {
+  color: var(--mysql-ink);
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.mysql-storage-result {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.post-content .mysql-storage-demo .mysql-storage-result table {
+  margin: 16px 0;
+  width: 100%;
+  font:
+    13px/1.5 Lilex,
+    monospace;
+}
+.post-content .mysql-storage-demo .mysql-storage-result :is(th, td) {
+  padding: 8px;
+  color: var(--mysql-ink);
+  background: var(--mysql-panel);
+  text-align: start;
+  border-bottom: 1px solid var(--mysql-line);
+}
+@media (max-width: 639px) {
+  .post-content .mysql-storage-demo .mysql-storage-stage {
+    height: 350px;
+  }
+  .mysql-storage-label {
+    font-size: 11px;
+  }
+  .mysql-storage-label-role {
+    font-size: 10px;
+  }
+  .mysql-storage-camera {
+    gap: 4px;
+  }
+  .mysql-storage-counters {
+    gap: 16px;
+  }
+}

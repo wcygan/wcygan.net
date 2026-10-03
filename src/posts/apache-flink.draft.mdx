@@ -1,0 +1,266 @@
+---
+title: Apache Flink
+date: October 1, 2026
+description: Stateful computation over events as they arrive
+tags: [Data, Distributed Systems, Architecture]
+---
+
+import {
+  FlinkDataflowDemo,
+  FlinkBoundedDemo,
+  FlinkEventTimeDemo,
+  FlinkBackpressureDemo,
+  FlinkSinkDemo,
+  FlinkEnrichmentDemo,
+} from "~/components/FlinkDemos";
+import {
+  FlinkKeyedStateDemo,
+  FlinkRuntimeDemo,
+  FlinkRecoveryDemo,
+  FlinkShuffleDemo,
+  FlinkSkewDemo,
+  FlinkBarrierDemo,
+} from "~/components/FlinkSpatialDemos";
+
+import "~/demos/flink-shared/article.css";
+
+[Apache Flink](https://flink.apache.org/) processes events as they arrive,
+remembers earlier events, and recovers that state after failures. Think live
+revenue, fraud signals, or device alerts.
+
+The twelve demos play once as you scroll. **Pause** to inspect or **Step**
+through manually. Drag the 3D views to look around.
+
+## Follow a purchase
+
+A **source** reads purchases, an **operator** updates each customer's total,
+and a **sink** receives the results.
+[Dataflow](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/learn-flink/overview/).
+
+<FlinkDataflowDemo />
+
+## A file ends; a stream stays open
+
+A **bounded** input has a known end. An **unbounded** stream can keep receiving
+records. Flink handles both; batch execution requires bounded input.
+[Execution modes](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/execution_mode/).
+
+<FlinkBoundedDemo />
+
+An ongoing aggregate can emit changing results. Its sink must support those
+updates. [Dynamic tables](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/sql-table-concepts/dynamic_tables/).
+
+## Keep a counter per customer
+
+**State** remembers earlier records. `keyBy(customer)` sends the same customer's
+records to one operator **subtask**, which owns that customer's count.
+[Keyed state](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/state/).
+
+<FlinkKeyedStateDemo />
+
+### Bring the same key together
+
+Purchases can arrive at different sources. A **shuffle** redistributes them
+so the same customer's records reach the same owner.
+[Keyed streams](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/learn-flink/overview/#keyed-streams).
+
+<FlinkShuffleDemo />
+
+### One hot key limits parallelism
+
+If most purchases belong to one customer, its owner gets most of the work.
+Switch between **Hot key** and **Balanced keys** to compare.
+
+<FlinkSkewDemo />
+
+## Wait for late events
+
+**Event time** uses when a purchase happened, rather than when it arrived.
+A **watermark** tells the job how far event time has progressed, so it can
+close windows under a chosen lateness policy.
+[Time and watermarks](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/time/).
+
+<FlinkEventTimeDemo />
+
+A watermark does not prove that older events cannot arrive. This example
+discards a late purchase; another job could retain or revise its result.
+
+## Place work on workers
+
+The **JobManager** coordinates the job. **TaskManagers** execute tasks,
+keep working state, and exchange records.
+[Architecture](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/flink-architecture/).
+
+<FlinkRuntimeDemo />
+
+## Save a consistent snapshot
+
+A **checkpoint** saves source progress and operator state together.
+For an **aligned** checkpoint, an input waits at its barrier until matching
+barriers arrive on the other inputs.
+[Checkpoint barriers](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/concepts/stateful-stream-processing/#barriers).
+
+<FlinkBarrierDemo />
+
+### Restore state, then replay
+
+After a worker fails, restore a completed checkpoint and replay the records
+that followed it. The source must support replay.
+
+<FlinkRecoveryDemo />
+
+Checkpointing must be [enabled](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/checkpointing/).
+Its storage must survive the failures you want to recover from.
+
+### Repeating a record can repeat a write
+
+Exactly-once recovered state does not automatically make external effects
+happen once. Compare blind appends with **idempotent** writes: repeating an
+operation preserves its effect.
+[Sink guarantees](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/learn-flink/fault_tolerance/#exactly-once-guarantees).
+
+<FlinkSinkDemo />
+
+## A slow sink slows the source
+
+A full buffer slows upstream work. This is **backpressure**.
+Try a faster sink and watch the same twelve records drain.
+[Backpressure](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/monitoring/back_pressure/).
+
+<FlinkBackpressureDemo />
+
+## Add context to an event
+
+Remember customer-region updates, then attach the known region to each
+purchase. A later update changes future output.
+[Broadcast state](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/dev/datastream/fault-tolerance/broadcast_state/).
+
+<FlinkEnrichmentDemo />
+
+## Where it fits
+
+| Incoming events  | Remembered context  | Result           |
+| ---------------- | ------------------- | ---------------- |
+| Purchases        | Window totals       | Live revenue     |
+| Account activity | Recent patterns     | Fraud signals    |
+| Device readings  | Last report, timers | Alerts           |
+| Database changes | Reference data      | Enriched records |
+
+Flink becomes useful when **state, time, parallelism, and recovery** are central
+to the computation. A database query or small consumer may already be enough.
+[Use cases](https://flink.apache.org/what-is-flink/use-cases/).
+
+## Try real Flink locally
+
+The companion lab in `examples/flink/` runs Flink **2.3.0** with Docker Compose.
+It was verified on Linux ARM64: batch totals, new-file discovery, checkpoints,
+and worker recovery.
+
+<details className="flink-lab">
+<summary>Run the local SQL lab</summary>
+
+You need Docker with Compose and a few GB of Docker memory. From the repository root:
+
+```sh
+cd examples/flink
+docker compose up --build -d
+curl -fsS http://localhost:8081/overview
+```
+
+Repeat `curl` until one TaskManager and two slots appear. Open the
+[dashboard](http://localhost:8081).
+
+**Finish a bounded query**
+
+The script totals purchases per customer:
+
+```sql
+SELECT customer, COUNT(*), SUM(amount_cents)
+FROM orders
+GROUP BY customer;
+```
+
+Run once per clean lab; repeated runs append more output files.
+
+```sh
+docker compose run --rm sql-client \
+  /opt/flink/bin/sql-client.sh -f /lab/sql/batch.sql
+docker compose exec -T taskmanager \
+  sh -c 'cat /lab/state/output/batch/part-* | sort'
+```
+
+Expected rows: `customer,order_count,total_cents`.
+
+```text
+alice,3,3500
+bob,2,1500
+carol,1,525
+```
+
+**Keep accepting input**
+
+The streaming query cleans each arriving order:
+
+```sql
+SELECT order_id, LOWER(customer), amount_cents
+FROM arriving_orders
+WHERE amount_cents > 0;
+```
+
+Submit the job, then publish a complete file under a new path:
+
+```sh
+docker compose run --rm sql-client \
+  /opt/flink/bin/sql-client.sh -f /lab/sql/streaming.sql
+docker compose exec -T taskmanager sh -c \
+  'cp /lab/data/orders.jsonl /lab/state/input/.orders.pending &&
+   mv /lab/state/input/.orders.pending /lab/state/input/orders-001.jsonl'
+```
+
+Wait about 15 seconds, then inspect the six finished rows:
+
+```sh
+docker compose exec -T taskmanager \
+  sh -c 'cat /lab/state/output/streaming/part-* | sort -t, -k1,1n'
+```
+
+Publish the second file while the same job keeps running:
+
+```sh
+docker compose exec -T taskmanager sh -c \
+  'cp /lab/data/new-orders.jsonl /lab/state/input/.new-orders.pending &&
+   mv /lab/state/input/.new-orders.pending /lab/state/input/orders-002.jsonl'
+```
+
+After another short wait, repeat the output command. Expect eight rows,
+including `7,carol,1000` and `8,bob,300`. Names become lowercase; the negative
+order is filtered out.
+
+The source discovers new immutable paths, rather than edits to old files.
+Five-second checkpoints finalize rolled output files.
+[Filesystem source](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/table/filesystem/#directory-watching)
+and [file sink](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/connectors/datastream/filesystem/#part-file-lifecycle).
+
+**Recover a failed worker**
+
+Wait for eight output rows and a completed checkpoint in the dashboard:
+
+```sh
+docker compose restart taskmanager
+```
+
+The job should return to **RUNNING**, show a restored checkpoint, and retain
+eight output rows without duplicates. This lab keeps the JobManager and shared
+volume alive; restarting the whole stack requires resubmitting jobs.
+
+`examples/flink/README.md` has full expected output and additional exercises.
+Remove the lab containers and scratch data when finished:
+
+```sh
+docker compose down --volumes --remove-orphans
+```
+
+</details>
+
+For a deeper exercise, try the [SQL tutorial](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/getting-started/quickstart-sql/)
+or [operations playground](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/getting-started/flink-operations-playground/).

@@ -1,0 +1,293 @@
+.demo-workbench.temporal-spatial-demo {
+  background: var(--temporal-canvas);
+  color: var(--temporal-text);
+  border-radius: 8px;
+  font-family: Lilex, ui-monospace, monospace;
+  font-synthesis: none;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-header
+  .article-graphic-title,
+.demo-workbench.temporal-spatial-demo .demo-workbench-step,
+.demo-workbench.temporal-spatial-demo .temporal-spatial-payload > p {
+  color: var(--temporal-text);
+  font-family: Lilex, ui-monospace, monospace;
+  font-weight: 500;
+  font-size: 16px;
+}
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-header
+  .article-graphic-title {
+  letter-spacing: 0.025em;
+}
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-header
+  .demo-workbench-description,
+.demo-workbench.temporal-spatial-demo .demo-workbench-status > p,
+.demo-workbench.temporal-spatial-demo .demo-workbench-status > div > p {
+  color: var(--temporal-muted);
+  font:
+    400 16px/1.65 Inter,
+    system-ui,
+    sans-serif;
+}
+.demo-workbench.temporal-spatial-demo .demo-workbench-stage {
+  height: 420px;
+  border-color: var(--temporal-border);
+  background: var(--temporal-canvas);
+}
+.temporal-spatial-canvas {
+  position: absolute;
+  inset: 0;
+}
+.temporal-spatial-demo .temporal-spatial-event-source,
+.temporal-spatial-demo .temporal-spatial-event-source canvas {
+  /* Drei owns inline touch-action on R3F's event-source div and resets it on
+     reconnect. Preserve vertical article scrolling through that lifecycle. */
+  touch-action: pan-y !important;
+}
+.temporal-spatial-fallback {
+  display: grid;
+  gap: 16px;
+  place-content: center;
+  height: 100%;
+  padding: 24px;
+  color: var(--temporal-muted);
+  text-align: center;
+  font:
+    16px/1.6 Inter,
+    system-ui,
+    sans-serif;
+}
+.demo-workbench.temporal-spatial-demo button,
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-options
+  button[data-scenario] {
+  color: var(--temporal-text);
+  background: var(--temporal-panel);
+  border: 1px solid var(--temporal-border);
+  border-radius: 4px;
+  font:
+    500 13px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  min-height: 44px;
+  min-width: 44px;
+}
+.demo-workbench.temporal-spatial-demo button:hover:not(:disabled),
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-options
+  button[data-scenario]:hover:not(:disabled) {
+  background: var(--temporal-track);
+}
+.demo-workbench.temporal-spatial-demo button[aria-pressed="true"],
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-options
+  button[data-scenario][aria-pressed="true"] {
+  color: var(--temporal-text);
+  border-color: var(--temporal-text);
+  background: var(--temporal-track);
+}
+.demo-workbench.temporal-spatial-demo .demo-workbench-options button::before {
+  border-color: var(--temporal-muted);
+  background: transparent;
+}
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-options
+  button[aria-pressed="true"]::before {
+  border-color: var(--temporal-text);
+  background: var(--temporal-text);
+}
+.site-container
+  .post-content
+  .demo-workbench.temporal-spatial-demo
+  :is(button, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--temporal-focus);
+  outline-offset: 2px;
+}
+.temporal-spatial-camera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 8px;
+}
+.demo-workbench.temporal-spatial-demo .demo-workbench-guide,
+.demo-workbench.temporal-spatial-demo .temporal-spatial-key {
+  color: var(--temporal-dim);
+  font:
+    12px/1.6 Lilex,
+    ui-monospace,
+    monospace;
+}
+.demo-workbench.temporal-spatial-demo .demo-workbench-status {
+  min-height: 150px;
+}
+.demo-workbench.temporal-spatial-demo .demo-workbench-step > span {
+  color: var(--temporal-dim);
+}
+.demo-workbench.temporal-spatial-demo
+  .demo-workbench-status
+  .temporal-spatial-inflight {
+  color: var(--temporal-dim);
+  font-size: 13px;
+}
+.temporal-spatial-state {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-block: 16px 24px;
+}
+.temporal-spatial-state dt {
+  font:
+    12px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  color: var(--temporal-dim);
+}
+.temporal-spatial-state dd {
+  margin: 6px 0 0;
+  color: var(--temporal-text);
+  font:
+    14px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.temporal-spatial-history,
+.temporal-spatial-node-details {
+  margin-block: 16px;
+  font:
+    14px/1.6 Lilex,
+    ui-monospace,
+    monospace;
+}
+.temporal-spatial-demo summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--temporal-text);
+  text-decoration: underline;
+  text-decoration-color: var(--temporal-border);
+  text-underline-offset: 3px;
+}
+.temporal-spatial-record-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 8px 16px;
+}
+.temporal-spatial-payload {
+  padding-block: 12px;
+  border-block: 1px solid var(--temporal-track);
+}
+.temporal-spatial-payload dl,
+.temporal-spatial-node-details dl {
+  margin-block: 12px 0;
+}
+.temporal-spatial-payload dl > div,
+.temporal-spatial-node-details dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 12px;
+  margin-block: 8px;
+}
+.temporal-spatial-payload dt,
+.temporal-spatial-node-details dt {
+  color: var(--temporal-dim);
+}
+.temporal-spatial-payload dd,
+.temporal-spatial-node-details dd {
+  margin: 0;
+  color: var(--temporal-text);
+  overflow-wrap: anywhere;
+}
+.demo-workbench.temporal-spatial-demo .temporal-spatial-history-note {
+  margin-block-start: 16px;
+  color: var(--temporal-dim);
+  font:
+    13px/1.6 Inter,
+    system-ui,
+    sans-serif;
+}
+.demo-workbench.temporal-spatial-demo figcaption {
+  margin-block-start: 20px;
+  color: var(--temporal-muted);
+  font:
+    13px/1.65 Inter,
+    system-ui,
+    sans-serif;
+}
+.temporal-spatial-label-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.temporal-spatial-label-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.temporal-spatial-label-lines line {
+  stroke: var(--temporal-connector);
+  stroke-width: 1;
+}
+.temporal-spatial-label {
+  position: absolute;
+  width: max-content;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid var(--temporal-border);
+  border-radius: 2px;
+  background: var(--temporal-panel);
+  color: var(--temporal-text);
+  font:
+    500 12px/1.35 Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+.temporal-spatial-label[data-active="true"] {
+  border-color: var(--temporal-text);
+}
+.demo-workbench.temporal-spatial-demo .demo-scene-loading {
+  background: var(--temporal-canvas);
+}
+.temporal-spatial-demo .demo-scene-spinner {
+  border-color: var(--temporal-border);
+  border-top-color: var(--temporal-text);
+}
+@media (max-width: 639px) {
+  .demo-workbench.temporal-spatial-demo .demo-workbench-stage {
+    height: 380px;
+  }
+  .demo-workbench.temporal-spatial-demo .demo-workbench-status {
+    min-height: 190px;
+  }
+  .temporal-spatial-state {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .temporal-spatial-state > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 12px;
+    align-items: baseline;
+  }
+  .temporal-spatial-state dd {
+    margin: 0;
+  }
+  .temporal-spatial-camera button {
+    font-size: 12px;
+    padding-inline: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-workbench.temporal-spatial-demo button {
+    transition: none;
+  }
+}

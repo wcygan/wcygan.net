@@ -1,0 +1,97 @@
+@import "./mysql-visuals.css";
+.post-content .mysql-primer .mysql-primer-stage {
+  background: var(--mysql-canvas);
+  overflow: hidden;
+  border-color: var(--mysql-panel);
+}
+.mysql-primer-diagram {
+  display: block;
+  inline-size: 100%;
+  height: auto;
+  overflow: visible;
+  font:
+    500 15px/1.5 "JetBrains Mono",
+    Lilex,
+    monospace;
+  font-feature-settings: normal;
+}
+.mysql-tone-muted {
+  color: var(--mysql-line);
+}
+.mysql-tone-orange {
+  color: var(--mysql-orange);
+}
+.mysql-tone-blue {
+  color: var(--mysql-blue);
+}
+.mysql-tone-green {
+  color: var(--mysql-green);
+}
+.mysql-tone-yellow {
+  color: var(--mysql-yellow);
+}
+.mysql-tone-red {
+  color: var(--mysql-red);
+}
+.mysql-svg-node rect {
+  fill: var(--mysql-panel);
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
+.mysql-svg-node text {
+  fill: var(--mysql-ink);
+}
+.mysql-svg-node .mysql-svg-detail {
+  fill: var(--mysql-muted);
+  font-size: 12px;
+}
+.mysql-svg-meta {
+  fill: var(--mysql-muted);
+  font-size: 11px;
+  letter-spacing: 0.045em;
+}
+.mysql-svg-meta.mysql-tone-red,
+.mysql-svg-meta.mysql-tone-green {
+  fill: var(--mysql-ink);
+}
+.mysql-svg-wire {
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+.mysql-primer-joined {
+  display: grid;
+  gap: 4px;
+  padding-block-start: 16px;
+  color: var(--mysql-ink);
+  font:
+    13px/1.6 Lilex,
+    monospace;
+}
+
+.mysql-primer-mobile {
+  display: none;
+}
+@media (max-width: 639px) {
+  .mysql-primer-desktop {
+    display: none;
+  }
+  .mysql-primer-mobile {
+    display: block;
+    font-size: 15px;
+  }
+  .mysql-primer-mobile .mysql-svg-detail {
+    font-size: 12px;
+  }
+}
+
+.mysql-svg-node rect,
+.mysql-svg-wire {
+  transition: stroke 240ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mysql-svg-node rect,
+  .mysql-svg-wire {
+    transition: none;
+  }
+}

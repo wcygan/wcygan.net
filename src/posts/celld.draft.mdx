@@ -1,0 +1,219 @@
+---
+title: "celld: Durable Objects on Your Own Machines"
+date: "2026-10-01T22:00:00-05:00"
+description: Stateful JavaScript on machines and buckets you own
+tags: [Self Hosting, Distributed Systems, Data]
+draft: true
+---
+
+import {
+  CelldRequestRoutingDemo,
+  CelldOwnershipDemo,
+  CelldDurabilityDemo,
+  CelldRecoveryDemo,
+  CelldKeyChoiceDemo,
+} from "~/components/CelldDemos";
+import {
+  CelldNamedStateDemo,
+  CelldCellAnatomyDemo,
+  CelldPageChangesDemo,
+  CelldFleetDemo,
+  CelldFailureDomainsDemo,
+} from "~/components/CelldSpatialDemos";
+
+If I already have an S3-compatible object store, what else could I build on top of it? [celld](https://github.com/denoland/celld) offers an interesting answer: a runtime for small, named JavaScript servers, each with its own persistent state.
+
+The project brings Cloudflare's Durable Objects programming model to machines you operate. A chat room, collaborative document, or agent session can have its own JavaScript handler and SQLite database. celld takes care of finding that object's current owner and preserving its writes.
+
+The problem starts when a service needs to remember something. A JavaScript variable disappears when its process restarts. Running more processes also gives you more separate copies of that variable. An object store can preserve bytes, but the application still needs somewhere to run its code and a rule for which process can change the state. celld supplies that runtime and ownership protocol.
+
+This draft follows [v0.6.1](https://github.com/denoland/celld/releases/tag/v0.6.1), a **beta** release, researched on October 1, 2026. The diagrams are explanatory models; their steps and geometry are not measurements of a running cluster.
+
+## What is a cell?
+
+A **cell** is celld's name for a Durable Object: an addressable unit of application logic with private storage. An **actor** is the general pattern behind it: send a message to a named object and let that object manage its own state. A **node** is one celld process. Nodes using the same fleet bucket or bucket prefix form a **fleet**.
+
+Start with three named counters. Each cell owns a separate SQLite database. Incrementing `room:blue` changes that cell's counter, while the other two keep their values. An acknowledged database write can survive a runtime restart; temporary JavaScript memory cannot. The first model lets you inspect that distinction.
+
+Each demo plays a short sequence as you scroll. Pause to inspect a state, or replay the sequence.
+
+<CelldNamedStateDemo />
+
+Suppose every chat room gets a cell named `room:blue`, `room:green`, or `room:red`. A stateless Worker receives an HTTP request, derives the cell's ID, and calls it. The receiving node can forward that call to another node that owns the cell. The application addresses the room by name instead of remembering which machine currently hosts it. [The cell API](https://github.com/denoland/celld/blob/v0.6.1/docs/services/durable-objects.md) uses the familiar `idFromName()` and `get()` operations.
+
+<CelldRequestRoutingDemo />
+
+Each cell runs JavaScript on one thread. That makes synchronous storage operations easy to reason about, but an `await` can allow handlers to interleave unless an input gate prevents it. “One writer” does not make every asynchronous handler an indivisible transaction.
+
+## Inside the runtime
+
+celld combines three pieces:
+
+- **V8** executes the JavaScript application.
+- **SQLite** holds each cell's database on its owning node.
+- **LTX** describes committed changes to SQLite pages for replication and recovery.
+
+The bucket holds deployments, ownership records, and durable storage data. Live SQL operations use the cell's local database; the bucket does not execute SQL. Restoring a large database can involve fetching pages on demand, but that is a storage-recovery mechanism. [The storage contract](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#epoch-chain-restore) describes how epochs and page data fit together.
+
+Use the layer buttons below to inspect what each part does. The vertical stack separates responsibilities; it does not depict a physical memory layout or an exact file format.
+
+<CelldCellAnatomyDemo />
+
+What gets copied after a commit? With a database baseline already stored, this simplified later transaction changes SQLite pages 2 and 5. LTX carries new images of the changed pages, along with transaction and checksum metadata. It is not a stream of row-level events or a patch containing only the changed bytes. Initial snapshots and later compaction can contain more pages; the illustrated page numbers depend on the write.
+
+<CelldPageChangesDemo />
+
+celld also implements Workers bindings for KV, D1, Queues, R2, Workflows, and other services. A D1 database or KV namespace is itself backed by a cell. An R2 binding accesses objects in the fleet bucket. It does not turn celld into a public S3 server. Check the [compatibility matrix](https://github.com/denoland/celld/blob/v0.6.1/docs/cloudflare-compat.md) for the particular APIs your application uses.
+
+## How does one node become the writer?
+
+The bucket is part of the coordination protocol. A node claims a cell by conditionally creating or updating its ownership record. A **compare-and-swap** operation means “apply this update only if the record still matches the version I read.” Two competing nodes cannot both win the same update when the store implements that operation correctly.
+
+Node leases expire unless renewed. A node that loses its authority fences itself: it stops serving cells and exits. Each activation also receives a new **epoch**, a numbered generation with its own LTX storage prefix. A stale process cannot overwrite the new owner's storage lineage. [Ownership and fencing](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#the-ownership-record) depend on the bucket's actual behavior.
+
+<CelldOwnershipDemo />
+
+This removes the need to operate a separate consensus service alongside celld. It still relies on coordination supplied by the object store. If that store ignores conditional writes, the central ownership guarantee breaks.
+
+## When is a write acknowledged?
+
+A successful response must wait for a durability proof covering the writes it can reveal. There are two important paths:
+
+1. **One node:** the write waits for bucket storage before the response can succeed.
+2. **Multiple nodes, with a healthy follower ensemble:** peer nodes persist the change to disk before acknowledgment; bucket upload can finish later. An `fsync` asks the operating system to persist file data. A peer copy is a log copy, not another concurrently writable cell.
+
+The default fleet mode recruits up to two followers. Every member of the current follower ensemble must persist the write for a fleet proof. Without a usable ensemble, celld falls back to a bucket proof. Adding a second node can therefore change the critical path of a write, as well as adding compute capacity. The [acknowledgment rules](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#the-acknowledgement-rule-rpo0) contain the details.
+
+<CelldDurabilityDemo />
+
+That distinction matters when self-hosting: **the bucket may not yet contain every acknowledged write**. Persistent peer disks are part of the durability story during that interval.
+
+## What happens when the owner stops?
+
+A replacement must recover the prior owner's unuploaded log before restoring and serving the cell. On the successful path, it fences the prior log session, collects the complete retained follower tail, uploads the recovered data, and seals the session. It can then claim a new cell epoch and restore the database. An inconclusive peer failure can hold this recovery open. [The recovery gate](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#the-takeover-recovery-gate) explains why reading only the current bucket contents is insufficient.
+
+<CelldRecoveryDemo />
+
+The project's RPO=0 claim means no loss of acknowledged writes under its durability assumptions. It is not protection against losing every relevant disk before upload. The [implementation records possible loss](https://github.com/denoland/celld/blob/v0.6.1/crates/celld/node_log.rs#L5219) when no complete witness survives and the members' outcomes are conclusive. Keeping compute nodes and storage on one physical machine gives them a shared failure domain. A second process on that machine cannot protect against losing the machine.
+
+A **failure domain** is a group of resources that can fail together. Stopping one process, rebooting a machine with its disks intact, and permanently losing that machine's disks are different failures. The next model compares where a recent acknowledged write can survive before the bucket upload finishes. A surviving follower holds recovery data; it does not automatically become a second serving cell.
+
+<CelldFailureDomainsDemo />
+
+A timeout also does not prove that a write failed to commit. If clients retry an operation that must take effect once, give it a stable operation ID and make the handler recognize duplicates. Recovery alone does not make application effects exactly once.
+
+## What would I use it for?
+
+The useful boundary is a named unit whose state can mostly be managed independently.
+
+| Workload                   | Possible cell key | What the cell owns                        |
+| -------------------------- | ----------------- | ----------------------------------------- |
+| Chat or a multiplayer room | Room ID           | Membership, messages, game state          |
+| Collaborative editing      | Document ID       | Document changes and connected clients    |
+| Agent sessions             | Session ID        | Inbox, persisted memory, scheduled work   |
+| Shopping carts             | User ID           | One user's cart and reservations workflow |
+| Device coordination        | Device ID         | Configuration and recent device state     |
+
+These are application-design possibilities, not built-in features. An alarm can schedule future work, and WebSockets can keep clients connected, but the application still defines authentication, message semantics, and reconnect behavior.
+
+Choosing the key is a scaling decision. One globally shared cell remains one writer, even after adding machines. Independent cells can run in parallel. State that spans several cells requires an explicit coordination design; private SQLite databases do not supply a global SQL transaction. [The programming model](https://github.com/denoland/celld/blob/v0.6.1/docs/README.md#what-do-you-build-with-cells) is most useful when this division fits the workload.
+
+<CelldKeyChoiceDemo />
+
+The fleet view below shows ownership moving between machines. Adding node C makes more capacity available; it does not immediately split a hot cell into smaller writers. celld's current balancer moves **hibernated** cells and counts cells relative to node weight, rather than measuring each cell's CPU demand. [Those limits](https://github.com/denoland/celld/blob/v0.6.1/docs/limitations.md#fleets) affect placement expectations.
+
+<CelldFleetDemo />
+
+For a conventional application with lots of relational joins and transactions across users, a shared PostgreSQL database may fit better. I would start with celld when the named-object boundary simplifies the application and I want to operate the runtime myself.
+
+## Try the counter locally
+
+Start with the official counter example. This exercises cell naming, persistent storage, and restart behavior without setting up S3. The installer supports Linux x86-64, Linux ARM64, and Apple Silicon in this release. You need Git and a JavaScript package manager for esbuild.
+
+Download and inspect the [installer](https://celld.dev/install.sh), then install the pinned release:
+
+```sh
+curl -fsSL https://celld.dev/install.sh -o install-celld.sh
+less install-celld.sh
+CELLD_VERSION=v0.6.1 sh install-celld.sh
+export PATH="$HOME/.local/bin:$PATH"
+celld --version
+
+git clone --depth 1 --branch v0.6.1 https://github.com/denoland/celld.git
+cd celld/examples/counter
+
+npm install --no-save esbuild@0.25.12
+export PATH="$PWD/node_modules/.bin:$PATH"
+esbuild --version
+celld dev --port 19876
+```
+
+celld invokes [esbuild](https://esbuild.github.io/getting-started/) to bundle Worker code, so the executable must be on `PATH`. Leave the server running and use another terminal:
+
+```sh
+curl -sS 'http://127.0.0.1:19876/?name=blue'
+curl -sS 'http://127.0.0.1:19876/?name=blue'
+curl -sS 'http://127.0.0.1:19876/?name=green'
+```
+
+With fresh state, the `n` values should be **1, 2, and 1**. The response also includes the request URL. The two names address independent cells. Stop the server with Ctrl+C, run the same `celld dev --port 19876` command again, and request `blue`: its value should now be **3**.
+
+I ran this sequence on Apple Silicon using celld 0.6.1 and esbuild 0.25.12. The initial requests returned 1, 2, and 1; after restarting, blue returned 3 and green returned 2. This verifies the local example and its persisted state. It does not test distributed failover or an S3 implementation.
+
+The [example Worker](https://github.com/denoland/celld/blob/v0.6.1/examples/counter/index.js) reads the `name` parameter, calls `idFromName(name)`, and forwards the request to the resulting counter. Open its `wrangler.jsonc` to see how the `COUNTER` binding names the exported class. Editing a source file triggers a rebuild; state stays in `.celld/dev`. Use `celld dev --clean --port 19876` when you intentionally want to **delete that local test state** and begin again.
+
+## Try your own S3-compatible store
+
+The next experiment adds a real bucket and two nodes. The important first test is the storage contract:
+
+- Conditional creation and conditional replacement must actually reject conflicting writes.
+- Reads must see successful writes, and byte-range reads must return the correct bytes.
+- Enabling epoch garbage collection also requires listings to see successful writes.
+
+According to the [v0.6.1 qualification notes](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#what-the-bucket-must-provide), community MinIO passes the conditional-write test but is not qualified for production by celld. Those notes identify a broken September 6, 2025 release and recommend the September 7 release or later. Qualify the exact build you use; “S3-compatible” is not sufficient evidence.
+
+Create a dedicated test bucket. Configure credentials through celld's standard AWS credential chain, then replace these example values with your endpoint and region:
+
+```sh
+export CELLD_BUCKET=s3://celld-lab
+export S3_ENDPOINT=https://s3.example.internal
+export AWS_REGION=us-east-1
+
+celld diagnose --listen 127.0.0.1:0 --bucket "$CELLD_BUCKET" \
+  --endpoint "$S3_ENDPOINT" --region "$AWS_REGION"
+
+# Run from celld/examples/counter, with esbuild on PATH.
+celld deploy . --bucket "$CELLD_BUCKET" \
+  --endpoint "$S3_ENDPOINT" --region "$AWS_REGION"
+```
+
+`diagnose` writes and deletes a small probe object. The ephemeral `--listen` port avoids a collision with a running node. Check for `ok bucket conditional write (create, reject-create, update, reject-stale)`. Nodes additionally test ranged reads at startup. A successful probe is a useful prerequisite, not a complete durability certification.
+
+On node A, using a writable, persistent local state directory:
+
+```sh
+CELLD_WATCH=/var/lib/celld/node-a \
+celld --bucket "$CELLD_BUCKET" \
+  --endpoint "$S3_ENDPOINT" --region "$AWS_REGION" \
+  --listen 0.0.0.0:8080 \
+  --internal-listen 10.0.0.12:8081 \
+  --advertise 10.0.0.12:8081
+```
+
+Start the same version on node B with its own persistent directory, the same bucket credentials and deployment, and `10.0.0.13:8081` for both internal addresses. The example private IPs must correspond to your machines. Put the public Worker listener behind your TLS proxy; keep the internal listener on a trusted private network or encrypted overlay. [The security boundary](https://github.com/denoland/celld/blob/v0.6.1/docs/security.md) treats bucket access as fleet administration access.
+
+This fleet recipe is based on the documented CLI; I have not run it against a self-hosted S3 service for this draft. A useful lab sequence is:
+
+1. Request the same counter through both nodes and check that they share its value.
+2. Repeat the `celld diagnose` command above and inspect peer connectivity.
+3. Use the node logs to identify the counter's owner. First try a graceful stop; then, in a separate run of this disposable fleet, kill the owner abruptly with SIGKILL to exercise crash recovery. Preserve its disks, request the cell through the surviving node, and record the interruption and recovered value.
+4. Restart the stopped node. Repeat with a peer temporarily unreachable to distinguish retrying recovery from ordinary owner takeover.
+5. Compare write latency with one and two nodes, recording your endpoint, hardware, workload, and durability mode.
+
+Run real nodes under a restart supervisor, as the [operating contract](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#the-supervisor) requires. Do not infer a recovery-time guarantee from one successful run.
+
+## What I would evaluate before adopting it
+
+celld gives me an appealing way to build stateful services around named objects while keeping control of the machines and storage. Operating it means taking responsibility for the runtime, private network, durable disks, bucket semantics, backups, upgrades, and ingress.
+
+I would first test one workload with a clear cell boundary, check its required Cloudflare APIs against the compatibility matrix, and run failure experiments on the actual storage backend. The result I want is concrete: a named object whose state survives the failures I intend to tolerate, with latency and operational work I can live with.

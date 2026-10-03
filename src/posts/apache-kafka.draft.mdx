@@ -1,0 +1,269 @@
+---
+title: Apache Kafka
+date: October 1, 2026
+description: Keeping event history for independent readers
+tags: [Data, Distributed Systems, Architecture]
+draft: true
+---
+
+import {
+  KafkaEventDemo,
+  KafkaConsumerGroupsDemo,
+  KafkaOffsetsDemo,
+  KafkaRetentionDemo,
+  KafkaPipelineDemo,
+  KafkaDecouplingDemo,
+} from "~/components/KafkaIntroDemos";
+import {
+  KafkaRetainedLogDemo,
+  KafkaKeyRoutingDemo,
+  KafkaReplicationDemo,
+  KafkaHotKeyDemo,
+  KafkaPlacementDemo,
+  KafkaLagDemo,
+} from "~/components/KafkaIntroScenes";
+
+**Kafka keeps a shared history of events that applications can read independently.**
+One order can feed shipping, fraud checks, and analytics—even when those services
+run at different speeds.
+
+The demos below show how. Start with an order; end with a working local broker.
+
+## An event becomes a record
+
+A **producer** writes events; a **consumer** reads them. A **topic** names the
+stream, such as `orders`. Each topic contains **partitions**: ordered logs whose
+records have numbered positions called **offsets**.
+
+Publish the order to give it an offset.
+
+<KafkaEventDemo />
+
+## One service can fall behind
+
+Analytics is offline. Compare **Direct calls** with **Retained events**, then
+recover analytics. With Kafka available, checkout can finish before analytics
+processes the order.
+
+<KafkaDecouplingDemo />
+
+## Reading keeps the history
+
+Advance Billing while Analytics stays behind. Then replay Billing. Both readers
+use the same retained records; each keeps its own position.
+
+<KafkaRetainedLogDemo />
+
+## Keys choose a partition
+
+Send all six records. Matching keys share a partition; offsets count separately
+in each lane. Kafka guarantees order **within a partition**.
+
+<KafkaKeyRoutingDemo />
+
+Standard keyed routing stays stable while the partition count and strategy stay
+fixed. Changing either can change the mapping. See
+[producer routing](https://kafka.apache.org/43/configuration/producer-configs/#producerconfigs_partitioner.class).
+
+### One busy key creates a bottleneck
+
+Compare **Hot key** with **Balanced keys**. The busiest partition finishes last.
+Choose keys that preserve the ordering your application needs while spreading
+its work.
+
+<KafkaHotKeyDemo />
+
+### Partitions can span machines
+
+A **broker** is a Kafka server. Spread the three partition leaders across three
+brokers to distribute their work. Replicas come later.
+
+<KafkaPlacementDemo />
+
+## Groups share work
+
+Different **consumer groups** each read the whole stream. Within a regular group,
+members divide the partitions. Give Analytics four members: with three
+partitions, one member stays idle.
+
+<KafkaConsumerGroupsDemo />
+
+These demos use regular consumer groups. Kafka's
+[share groups](https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/consumer/KafkaShareConsumer.html)
+have different work-sharing rules.
+
+## A slow reader builds a backlog
+
+Produce faster than you process, then catch up. The log buffers work, but storage
+and retention limit how far behind a reader can fall.
+
+<KafkaLagDemo />
+
+## Save progress or read it again
+
+A **committed offset** saves where to resume: the next record to read.
+Read without saving, then restart. The reader returns to its checkpoint.
+
+<KafkaOffsetsDemo />
+
+A crash can cause repeated processing. Make external effects **idempotent**—safe
+to repeat. Kafka's [exactly-once guarantees](https://kafka.apache.org/43/design/design/#message-delivery-semantics)
+apply to defined workflows; an arbitrary payment or email needs its own handling.
+
+## Copies survive broker failures
+
+One partition, three copies. Fail the leader, elect a replacement, then try a
+write. Fail another broker and try again.
+
+<KafkaReplicationDemo />
+
+Here, `acks=all` and `min.insync.replicas=2` require at least two in-sync copies
+for a successful write. Real elections also account for
+[eligible leader replicas](https://kafka.apache.org/43/operations/eligible-leader-replicas/).
+Kafka's [KRaft controllers](https://kafka.apache.org/43/operations/kraft/) manage
+metadata and elections; brokers store records.
+
+## Choose what to keep
+
+**Delete retention** bounds history by age or size. **Compaction** eventually
+keeps the latest value per key. Switch policies and watch which offsets survive.
+
+<KafkaRetentionDemo />
+
+[Cleanup runs in the background](https://kafka.apache.org/43/design/design/#log-compaction).
+Topics can combine both policies. Replay only reaches records still retained.
+
+## Turn events into useful data
+
+| Problem                                    | What a stream enables                       |
+| ------------------------------------------ | ------------------------------------------- |
+| Several services need each order           | Independent readers                         |
+| Search or analytics needs database changes | [Change data capture](/change-data-capture) |
+| Totals need to stay current                | Continuous aggregation                      |
+| Measurements need later analysis           | Retained telemetry                          |
+
+Process three orders: **$42 → $60 → $133**.
+
+<KafkaPipelineDemo />
+
+[Streams](https://kafka.apache.org/43/streams/introduction/) is an application
+library for processing events. [Connect](https://kafka.apache.org/43/kafka-connect/overview/)
+moves data through configured connectors. Brokers store the records between them.
+
+## Try it locally
+
+You need Docker and an available port `9092`. This single-broker lab tests
+independent readers and replay. It uses the official `apache/kafka:4.3.1` image
+and [quickstart](https://kafka.apache.org/quickstart/).
+
+### Start a broker and create a topic
+
+```sh
+docker run -d --name kafka-lab \
+  -p 127.0.0.1:9092:9092 apache/kafka:4.3.1
+```
+
+Check readiness; repeat after a few seconds if startup is still in progress:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 --list
+```
+
+Create `orders` with three partitions, then inspect it:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 --create --topic orders \
+  --partitions 3 --replication-factor 1
+
+docker exec kafka-lab /opt/kafka/bin/kafka-topics.sh \
+  --bootstrap-server localhost:9092 --describe --topic orders
+```
+
+### Write six keyed records
+
+In Bash or Zsh, send six records. Before the first colon is the key; after it is
+the value:
+
+```sh
+docker exec -i kafka-lab /opt/kafka/bin/kafka-console-producer.sh \
+  --bootstrap-server localhost:9092 --topic orders \
+  --reader-property parse.key=true --reader-property key.separator=: \
+  --command-property acks=all <<'EOF'
+order-101:{"event":"OrderPlaced","orderId":"order-101","amount":42}
+order-102:{"event":"OrderPlaced","orderId":"order-102","amount":18}
+order-101:{"event":"OrderPaid","orderId":"order-101","amount":42}
+order-103:{"event":"OrderPlaced","orderId":"order-103","amount":73}
+order-102:{"event":"OrderPaid","orderId":"order-102","amount":18}
+order-103:{"event":"OrderPaid","orderId":"order-103","amount":73}
+EOF
+```
+
+### Let two applications read the same history
+
+Run the analytics reader. It prints six records and exits:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 --topic orders \
+  --group analytics --from-beginning --max-messages 6 \
+  --command-property enable.auto.commit=true \
+  --formatter-property print.key=true \
+  --formatter-property print.partition=true \
+  --formatter-property print.offset=true
+```
+
+Repeat with `--group fulfillment`: it also reads all six records.
+Compare order within each partition; cross-partition interleaving may differ.
+Different keys can share a partition.
+
+Inspect the saved group progress:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 --describe --group analytics
+```
+
+Compare `CURRENT-OFFSET`, `LOG-END-OFFSET`, and `LAG`.
+`--from-beginning` only applies without a usable committed offset; existing
+checkpoints take precedence.
+
+### Replay an existing group
+
+With the analytics consumer stopped, preview its offset reset:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 --group analytics --topic orders \
+  --reset-offsets --to-earliest --dry-run
+```
+
+Then apply the reset:
+
+```sh
+docker exec kafka-lab /opt/kafka/bin/kafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 --group analytics --topic orders \
+  --reset-offsets --to-earliest --execute
+```
+
+Run analytics again: it rereads all six records. [Offset resets](https://kafka.apache.org/43/operations/basic-kafka-operations/#managing-consumer-groups)
+require an inactive group. Replay repeats the application's effects too.
+
+Remove this lab's container and its temporary data when finished:
+
+```sh
+docker rm -f -v kafka-lab
+```
+
+## When to reach for Kafka
+
+Use Kafka when multiple applications need independent access to a durable event
+history. For a small workflow, an API call, database table, or task queue may be
+simpler to operate.
+
+Start with the experiment above: **publish once, read twice, replay later**.
+
+For more depth: [Kafka's introduction](https://kafka.apache.org/43/getting-started/introduction/),
+[use cases](https://kafka.apache.org/43/getting-started/uses/), and
+[partitioning](/kafka-partitioning).

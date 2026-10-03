@@ -1,2 +1,6 @@
 [features]
 hooks = true
+
+[mcp_servers.blender]
+command = "/Users/wcygan/.nix-profile/bin/uv"
+args = ["--directory", "/Users/wcygan/Development/tools/blender_mcp/mcp", "run", "--frozen", "blender-mcp"]

@@ -1,0 +1,86 @@
+.clickhouse-demo.ch-2d .ch-header {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+}
+.clickhouse-demo.ch-2d .ch-header > .ch-subtitle {
+  margin: 0;
+  color: var(--ch-muted);
+  font: 400 14px/1.6 var(--ch-font-mono);
+}
+.clickhouse-demo.ch-2d .ch-options {
+  margin-block-end: 16px;
+}
+.clickhouse-demo.ch-2d .ch-options > div,
+.clickhouse-demo.ch-2d .ch-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.clickhouse-demo.ch-2d .ch-stage {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--ch-border);
+  border-radius: 4px;
+  background: var(--ch-bg);
+}
+.clickhouse-demo.ch-2d .ch-query {
+  display: block;
+  margin-block: 0 0 16px;
+  padding: 8px 8px 16px;
+  border: 0;
+  border-block-end: 1px solid var(--ch-border);
+  background: transparent;
+  color: var(--ch-muted);
+  font: 400 13px/1.6 var(--ch-font-mono);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.clickhouse-demo.ch-2d .ch-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  font-family: var(--ch-font-mono);
+  font-feature-settings: normal;
+  font-variant-numeric: tabular-nums;
+}
+.clickhouse-demo.ch-2d .ch-controls {
+  margin-block: 16px;
+}
+.clickhouse-demo.ch-2d .ch-motion-note {
+  flex-basis: 100%;
+  color: var(--ch-muted);
+  font: 400 12px/1.5 var(--ch-font-mono);
+}
+.clickhouse-demo.ch-2d .ch-status {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+}
+.clickhouse-demo.ch-2d .ch-status > p {
+  margin: 0;
+}
+.clickhouse-demo.ch-2d .ch-step-count {
+  color: var(--ch-muted);
+  font: 400 12px/1.5 var(--ch-font-mono);
+  letter-spacing: 0.06em;
+}
+.clickhouse-demo.ch-2d .ch-readable-metrics {
+  color: var(--ch-muted);
+  font: 400 13px/1.6 var(--ch-font-mono);
+}
+.clickhouse-demo.ch-2d .ch-caption {
+  margin-block-start: 16px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--ch-border);
+}
+@media (max-width: 639px) {
+  .clickhouse-demo.ch-2d .ch-stage {
+    padding: 8px;
+  }
+  .clickhouse-demo.ch-2d .ch-query {
+    padding-inline: 8px;
+  }
+}

@@ -1,0 +1,120 @@
+/* PlanetScale spatial lessons: dark platforms, colored ownership, upright labels. */
+.flink-spatial-stage {
+  position: relative;
+  height: 380px;
+  overflow: hidden;
+}
+.flink-spatial-canvas {
+  position: absolute;
+  inset: 0;
+}
+.flink-spatial-stage .demo-scene-loading {
+  background: var(--flink-panel);
+}
+.flink-spatial-stage .demo-scene-spinner {
+  border-color: var(--flink-border);
+  border-top-color: var(--flink-muted);
+}
+.flink-spatial-fallback {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--flink-muted);
+}
+.flink-spatial-controls,
+.flink-spatial-camera,
+.flink-spatial-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 16px;
+}
+.flink-spatial-controls > span {
+  margin-inline-start: auto;
+  color: var(--flink-muted);
+  font:
+    12px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.flink-spatial-demo .flink-spatial-status {
+  color: var(--flink-text);
+  margin: 16px 0;
+  min-height: 44px;
+  font-size: 14px;
+}
+.flink-spatial-readout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.flink-spatial-readout dt {
+  color: var(--flink-muted);
+  font-size: 12px;
+}
+.flink-spatial-readout dd {
+  color: var(--flink-text);
+  margin: 4px 0 0;
+  font:
+    13px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.flink-spatial-demo .flink-spatial-detail {
+  color: var(--flink-muted);
+  margin: 0 0 16px;
+}
+.flink-spatial-label-layer {
+  pointer-events: none;
+}
+.flink-spatial-label-lines {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.flink-spatial-label {
+  position: absolute;
+  white-space: nowrap;
+  padding: 4px 6px;
+  color: var(--flink-text);
+  background: oklch(0.178 0 0 / 0.96);
+  border: 1px solid var(--flink-border);
+  border-radius: 2px;
+  font:
+    500 11px/1.3 "JetBrains Mono",
+    Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-numeric: tabular-nums;
+}
+.flink-spatial-label[data-active="true"] {
+  border-color: var(--flink-orange);
+}
+@media (max-width: 639px) {
+  .flink-spatial-stage {
+    height: 360px;
+  }
+  .flink-spatial-camera {
+    gap: 6px;
+  }
+  .post-content .flink-spatial-demo .flink-spatial-camera button {
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+  .flink-spatial-readout {
+    gap: 8px;
+  }
+  .flink-spatial-readout dd {
+    font-size: 12px;
+  }
+  .flink-spatial-label {
+    font-size: 10px;
+  }
+}

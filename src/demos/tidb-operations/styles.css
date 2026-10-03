@@ -1,0 +1,204 @@
+/* TiDB operations: persistent state and direct labels on the editorial canvas. */
+.tidb-ops-demo {
+  --tidb-ops-paper: #fdfdfc;
+  --tidb-ops-surface: #f7f6f3;
+  --tidb-ops-ink: #21201c;
+  --tidb-ops-muted: #63635e;
+  --tidb-ops-line: #bcbbb5;
+  --tidb-ops-hairline: #e4e3de;
+  color: var(--tidb-ops-ink);
+}
+.demo-workbench.tidb-ops-demo {
+  margin-inline: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.tidb-ops-demo .tidb-ops-stage {
+  margin-block: 12px;
+  padding: 16px;
+  border: 1px solid var(--tidb-ops-hairline);
+  border-radius: 6px;
+  background: var(--tidb-ops-surface);
+}
+.tidb-ops-demo .tidb-ops-label,
+.tidb-ops-demo .tidb-ops-count {
+  margin: 0;
+  font:
+    400 14px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  color: var(--tidb-ops-muted);
+  text-align: center;
+}
+.tidb-ops-demo .tidb-ops-count {
+  color: var(--tidb-ops-ink);
+  font-variant-numeric: tabular-nums;
+}
+.tidb-ops-svg {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 400px;
+  block-size: auto;
+  margin-inline: auto;
+  overflow: visible;
+  font-family: Lilex, ui-monospace, monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.tidb-ops-node {
+  fill: var(--tidb-ops-paper);
+  stroke: var(--tidb-ops-line);
+  stroke-width: 1;
+}
+.tidb-ops-region {
+  fill: transparent;
+  stroke: var(--tidb-ops-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.tidb-ops-wire,
+.tidb-ops-arrow {
+  fill: none;
+  stroke: var(--tidb-ops-ink);
+  stroke-width: 1.2;
+}
+.tidb-ops-wire {
+  stroke-dasharray: 4 4;
+}
+.tidb-ops-svg-label,
+.tidb-ops-svg-meta {
+  fill: var(--tidb-ops-ink);
+  font-size: 16px;
+  text-anchor: middle;
+}
+.tidb-ops-svg-meta {
+  fill: var(--tidb-ops-muted);
+}
+.tidb-ops-svg [data-offline="true"] .tidb-ops-node {
+  fill: var(--tidb-ops-surface);
+  stroke-dasharray: 3 3;
+}
+.tidb-ops-svg [data-offline="true"] text,
+.tidb-ops-svg .tidb-ops-wire[data-offline="true"] {
+  fill: var(--tidb-ops-muted);
+  stroke: none;
+}
+.tidb-ops-svg .tidb-ops-wire[data-offline="true"] {
+  fill: none;
+  stroke: var(--tidb-ops-line);
+}
+.tidb-ops-demo .demo-workbench-status {
+  min-block-size: 0;
+  margin-block: 12px;
+}
+.tidb-ops-demo .tidb-ops-takeaway {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.tidb-ops-demo .tidb-ops-header {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+}
+.tidb-ops-demo .tidb-ops-header p {
+  margin: 0;
+}
+.tidb-ops-demo .tidb-ops-commit-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding-inline-start: 24px;
+  font:
+    400 14px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.tidb-ops-demo .tidb-ops-commit-steps li {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.tidb-ops-scaling-stage {
+  display: grid;
+  gap: 24px;
+}
+.tidb-ops-resource {
+  display: grid;
+  gap: 12px;
+}
+.tidb-ops-demo .tidb-ops-resource-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.tidb-ops-resource-heading span {
+  color: var(--tidb-ops-muted);
+}
+.tidb-ops-demo .tidb-ops-node-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tidb-ops-demo .tidb-ops-node-list li {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-block-size: 88px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--tidb-ops-line);
+  border-radius: 4px;
+  background: var(--tidb-ops-paper);
+  font:
+    400 14px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.tidb-ops-node-list strong {
+  font-weight: 500;
+}
+.tidb-ops-node-list span {
+  color: var(--tidb-ops-muted);
+}
+.tidb-ops-demo .tidb-ops-node-list li[data-added="true"] {
+  border-style: dashed;
+  border-color: var(--tidb-ops-ink);
+}
+.tidb-ops-controls {
+  display: flex;
+  flex-wrap: wrap;
+  margin-block: 12px;
+}
+.tidb-ops-demo figcaption {
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (max-width: 420px) {
+  .tidb-ops-demo .tidb-ops-stage {
+    padding: 12px;
+  }
+  .tidb-ops-demo .tidb-ops-node-list {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tidb-ops-demo button {
+    transition: none;
+  }
+}

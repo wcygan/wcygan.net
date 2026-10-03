@@ -1,0 +1,210 @@
+/* Prometheus: discrete, inspectable 3D models on the editorial canvas. */
+.prometheus-spatial-demo {
+  color: oklch(0.232 0.008 96.719);
+  min-inline-size: 0;
+}
+
+.prometheus-spatial-header {
+  display: grid;
+  gap: 12px;
+  margin-block-end: 16px;
+}
+
+.prometheus-spatial-scenarios,
+.prometheus-spatial-actions,
+.prometheus-spatial-camera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prometheus-spatial-demo button {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid oklch(0.79 0.008 102.497);
+  border-radius: 4px;
+  background: oklch(0.994 0.001 106.424);
+  color: oklch(0.232 0.008 96.719);
+  font:
+    500 14px/1.4 Inter,
+    sans-serif;
+  cursor: pointer;
+}
+
+.prometheus-spatial-demo button:hover {
+  background: oklch(0.973 0.004 91.446);
+}
+
+.prometheus-spatial-demo button[aria-pressed="true"] {
+  background: oklch(0.232 0.008 96.719);
+  border-color: oklch(0.232 0.008 96.719);
+  color: oklch(0.994 0.001 106.424);
+}
+
+.prometheus-spatial-demo button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.prometheus-spatial-demo :is(button, [tabindex]):focus-visible {
+  outline: 2px solid oklch(0.661 0.202 39.353);
+  outline-offset: 2px;
+}
+
+.prometheus-spatial-stage {
+  position: relative;
+  block-size: 360px;
+  max-inline-size: 100%;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.prometheus-spatial-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.prometheus-spatial-label {
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 2px 4px;
+  background: oklch(0.178 0 0 / 0.94);
+  color: oklch(0.985 0 0);
+  font:
+    500 11px/1.3 "JetBrains Mono",
+    Lilex,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.prometheus-spatial-label--accent {
+  color: oklch(0.661 0.202 39.353);
+}
+
+.prometheus-spatial-actions {
+  margin-block-start: 16px;
+}
+
+.prometheus-spatial-camera {
+  margin-block-start: 8px;
+}
+
+.prometheus-spatial-demo .prometheus-spatial-guide {
+  margin: 12px 0 16px;
+  color: oklch(0.499 0.008 106.715);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.prometheus-spatial-status {
+  display: grid;
+  gap: 8px;
+}
+
+.prometheus-spatial-demo .prometheus-spatial-status p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.prometheus-spatial-demo .prometheus-spatial-series {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: oklch(0.499 0.008 106.715);
+  font:
+    400 12px/1.6 Lilex,
+    monospace;
+  overflow-wrap: anywhere;
+}
+
+.prometheus-spatial-step {
+  font-weight: 550;
+}
+
+.prometheus-spatial-readout {
+  color: oklch(0.499 0.008 106.715);
+  font-variant-numeric: tabular-nums;
+}
+
+.prometheus-spatial-fallback {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+  block-size: 100%;
+  padding: 20px;
+  color: oklch(0.499 0.008 106.715);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.prometheus-spatial-demo .prometheus-spatial-fallback p {
+  margin: 0;
+}
+
+.prometheus-spatial-fallback-count {
+  color: oklch(0.232 0.008 96.719);
+  font-weight: 550;
+}
+
+.prometheus-spatial-fallback-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.prometheus-spatial-fallback-grid > div {
+  display: flex;
+  justify-content: space-between;
+  border-block-end: 1px solid oklch(0.915 0.007 97.423);
+  padding-block-end: 8px;
+}
+
+.prometheus-spatial-fallback-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prometheus-spatial-fallback-blocks > span {
+  padding: 8px;
+  border: 1px solid oklch(0.79 0.008 102.497);
+  font:
+    400 12px/1.5 Lilex,
+    monospace;
+}
+
+@media (max-width: 639px) {
+  .prometheus-spatial-stage {
+    block-size: 340px;
+  }
+
+  .prometheus-spatial-camera {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .prometheus-spatial-label {
+    font-size: 10px;
+  }
+}
+
+.post-content .prometheus-spatial-stage {
+  background: oklch(0.178 0 0);
+  border: 1px solid oklch(0.32 0 0);
+  color: oklch(0.985 0 0);
+}
+.prometheus-spatial-stage .prometheus-spatial-fallback {
+  color: oklch(0.752 0 0);
+}
+.prometheus-spatial-stage .prometheus-spatial-fallback-count {
+  color: oklch(0.985 0 0);
+}
+.post-content .prometheus-spatial-stage code {
+  background: transparent;
+  color: inherit;
+}
+.prometheus-spatial-label {
+  letter-spacing: 0.03em;
+}

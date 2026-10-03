@@ -1,0 +1,6 @@
+{"order_id":1,"customer":"alice","amount_cents":1250}
+{"order_id":2,"customer":"bob","amount_cents":700}
+{"order_id":3,"customer":"alice","amount_cents":2000}
+{"order_id":4,"customer":"carol","amount_cents":525}
+{"order_id":5,"customer":"bob","amount_cents":800}
+{"order_id":6,"customer":"alice","amount_cents":250}

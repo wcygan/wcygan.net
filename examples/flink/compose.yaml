@@ -1,0 +1,37 @@
+name: flink-local-lab
+
+x-flink: &flink
+  build: .
+  environment:
+    FLINK_PROPERTIES: |
+      jobmanager.rpc.address: jobmanager
+      rest.address: jobmanager
+      taskmanager.numberOfTaskSlots: 2
+      parallelism.default: 1
+      jobmanager.memory.process.size: 1024m
+      taskmanager.memory.process.size: 1536m
+  volumes:
+    - ./sql:/lab/sql:ro
+    - ./data:/lab/data:ro
+    - lab-state:/lab/state
+
+services:
+  jobmanager:
+    <<: *flink
+    command: jobmanager
+    ports:
+      - 127.0.0.1:8081:8081
+
+  taskmanager:
+    <<: *flink
+    command: taskmanager
+    depends_on:
+      - jobmanager
+
+  sql-client:
+    <<: *flink
+    profiles: [tools]
+    command: /opt/flink/bin/sql-client.sh
+
+volumes:
+  lab-state:

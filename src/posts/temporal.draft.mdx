@@ -1,0 +1,422 @@
+---
+title: Temporal
+date: October 1, 2026
+description: Keeping application work alive across failures
+tags: [Distributed Systems, Architecture, Temporal]
+draft: true
+---
+
+import {
+  TemporalRecoveryDemo,
+  TemporalWorkflowDemo,
+  TemporalIdempotencyDemo,
+  TemporalTimerDemo,
+  TemporalSignalDemo,
+  TemporalRetryDemo,
+} from "~/components/TemporalDemos";
+import {
+  TemporalArchitectureDemo,
+  TemporalTaskQueueDemo,
+  TemporalHistoryDemo,
+  TemporalReplayDemo,
+  TemporalParallelDemo,
+  TemporalCompensationDemo,
+} from "~/components/TemporalSpatialDemos";
+
+An order needs inventory, payment, and fulfillment. Those operations might run
+in different services. A payment provider can time out, a worker can restart,
+and fulfillment can become unavailable after the customer has already paid.
+The interesting question is how the application remembers what happened and
+decides what to do next after the process running that code disappears.
+
+[Temporal](https://temporal.io/) is a platform for **durable execution**: running
+application processes whose progress survives failures. You describe the
+process in code; Temporal records enough information to recover its state and
+continue when the required infrastructure becomes available.
+[The platform overview](https://docs.temporal.io/temporal) describes this division
+between the Temporal Service and your application.
+
+This is a practical introduction to where Temporal fits, what its programming
+model feels like, and how to try it locally. My earlier post on
+[durable execution](/durable-execution) focuses on the underlying recovery idea.
+The twelve explainers here are small conceptual simulations; the experiment
+near the end runs a real Temporal Workflow. The demos play as they come into
+view, then hold their final state. Use **Pause** and **Next** to inspect each
+transition, or **Replay** to watch again. With reduced motion, use the manual
+steps. The 3D views also let you orbit the model. Their spatial layouts show
+responsibilities and relationships, rather than a literal arrangement of
+Temporal's machines.
+
+## The process can outlive its application
+
+Suppose a coordinator keeps an order's progress only in local variables.
+Inventory is reserved, but the process crashes before fulfillment. A fresh
+process cannot recover those variables and identify the next step by itself.
+The external reservation may still exist even though the coordinator has lost
+its place.
+
+<TemporalRecoveryDemo />
+
+In the durable path, an acknowledged result is recorded outside that process.
+A replacement can recover the execution's progress and continue. An application
+can implement persistence and recovery itself; Temporal supplies a platform
+and programming model for doing that coordination. It still needs application
+rules for permanent failures and uncertain external effects.
+
+## A process expressed as code
+
+A **Workflow Definition** describes the coordination: reserve inventory, charge
+the customer, provision the order, send confirmation. A **Workflow Execution**
+is one instance of that definition, such as the process for order `order-001`.
+Each execution has its own input, state, and history.
+[Workflow concepts](https://docs.temporal.io/workflows).
+
+An **Activity** does work outside the Workflow: calling a payment API, writing
+to a database, sending an email, or invoking a model. Workflow code decides
+which Activities to run and how to handle their results. Activity code performs
+the operation. An Activity can contain several implementation steps; it is not
+automatically a database transaction.
+[Activity Definitions](https://docs.temporal.io/activity-definition).
+
+<TemporalWorkflowDemo />
+
+The attraction is that a process can read like ordinary sequential code, with
+branches, loops, and waits, while its execution outlives any particular worker.
+The SDK supplies the durable operations; an arbitrary function does not become
+durable just because it uses `async` and `await`.
+
+## Who runs the code
+
+There are three main parts to a Temporal application:
+
+- A **Client** starts an execution or sends it a message.
+- The **Temporal Service** records history, manages timers, and dispatches
+  tasks through named Task Queues.
+- Your **Workers** poll those queues, execute Workflow and Activity code, and
+  report results to the Service.
+
+Workers can host both kinds of code, or you can separate them for deployment
+and scaling. A Task Queue routes work to compatible workers; its name is not
+the address of a particular machine. Workflow Tasks advance orchestration;
+Activity Tasks execute Activities.
+[Workers](https://docs.temporal.io/workers) and
+[Task Queues](https://docs.temporal.io/task-queue).
+
+<TemporalArchitectureDemo />
+
+You can run the open-source Service yourself or use **Temporal Cloud**, which
+operates the Service for you. With either choice, you deploy and operate the
+Workers that run your code. The local development server packages the Service
+for experimentation; production self-hosting has a larger operational footprint.
+[Hosting choices](https://docs.temporal.io/temporal#what-is-the-temporal-platform).
+
+## Work can move between workers
+
+A Task Queue is a named dispatch point. Workers poll the Service for tasks;
+the Service does not have to target one permanent application process. Several
+workers with compatible registered code can poll the same queue, giving the
+application capacity to process more work and tolerate a worker going offline.
+
+<TemporalTaskQueueDemo />
+
+The scene follows pending work and the available workers. An Activity already in
+progress is not instantly reassigned when its process disappears: Activity
+timeouts and retry policy govern that recovery. Workflow Tasks and Activity
+Tasks use separate logical queue types, even when they share a queue name.
+These queues do not guarantee that all application work executes in arrival order.
+[Task Queue behavior](https://docs.temporal.io/task-queue).
+
+## What history preserves
+
+The Service keeps an **Event History** for each execution. It records facts
+such as an Activity being scheduled, its completed result, a timer starting,
+or a Signal arriving. It is an ordered record of durable events, rather than
+a dump of the worker's memory.
+[Events and Event History](https://docs.temporal.io/workflow-execution/event).
+
+<TemporalHistoryDemo />
+
+The recorded result is the important boundary. If the Temporal Service recorded
+the reservation Activity's completed result, history can supply it later. History
+is ordered within an execution's run; it is not a transcript of every log
+message, every variable assignment, or every failed Activity attempt. The
+illustrated records are a simplified teaching sequence.
+
+## How a new worker reconstructs state
+
+Suppose `reserveInventory` returned `reservation-42`, and that completion was
+recorded. The worker then disappears. A replacement worker can run the Workflow
+code from the beginning. When it reaches the completed Activity, the SDK supplies
+the recorded result, reconstructing the `reservation` variable. It can then
+continue to the next operation. Reconstructing state this way is **replay**.
+Workers may also use cached Workflow state instead of replaying the entire
+history on every task.
+[How replay works](https://docs.temporal.io/workflows#how-workflow-replay-works).
+
+<TemporalReplayDemo />
+
+Replay requires **deterministic Workflow code**: the same recorded history must
+produce a compatible sequence of commands. Put direct network calls and other
+external I/O in Activities, and use the SDK's Workflow APIs for durable waits
+and replay-safe behavior. Changing the order of Activities in code while old
+executions are running can break replay.
+[Determinism and constraints](https://docs.temporal.io/workflow-definition#deterministic-constraints).
+
+## When I would reach for it
+
+I would consider Temporal when the recovery path is becoming a substantial part
+of the application. These examples are candidate designs, rather than a claim
+that every application in these categories needs a workflow engine:
+
+| Process                     | What needs to survive                                                    |
+| --------------------------- | ------------------------------------------------------------------------ |
+| Order fulfillment           | Payment succeeds while provisioning is temporarily unavailable           |
+| Account onboarding          | Several services and a human approval must finish                        |
+| Infrastructure provisioning | Resource creation needs retries and cleanup after partial success        |
+| Document processing         | A long job has independent steps and unreliable external services        |
+| Subscription lifecycle      | Reminders and renewals wait days between operations                      |
+| AI tool orchestration       | Model calls and tools need retries, recorded results, and approval gates |
+
+Temporal's [use cases](https://temporal.io/#common-patterns-and-use-cases)
+include orders, human input, infrastructure, and AI workflows. The shared
+pattern is coordination over time, across failure boundaries.
+
+My adoption test would be concrete: can I name the business process, its stable
+identity, its waiting points, and its recovery rules? A short request that does
+one database transaction may already have everything it needs. An independent
+background job may be adequately served by a queue. A streaming computation over
+millions of records has different needs.
+Those are design judgments to test against the actual workload.
+
+## Waiting without occupying a worker
+
+A subscription might wait until renewal. Keeping one application process
+sleeping for days would make that wait depend on the process staying alive.
+Temporal provides **durable timers** that preserve the waiting point instead.
+
+An SDK `sleep` records a timer through the Service. It does not reserve a worker
+thread for the entire wait. A worker can stop while the timer is pending, and
+the execution can continue after a compatible worker returns.
+[Durable timers](https://docs.temporal.io/develop/typescript/workflows/timers).
+
+<TemporalTimerDemo />
+
+The Service can record the timer firing while the worker is absent. Only a
+returning worker runs the next piece of Workflow code. The timer does not keep
+a sleeping process alive on your laptop or make an unavailable dependency run.
+
+## Human input can arrive later
+
+An onboarding process might need approval hours after it starts. A **Signal**
+is an asynchronous message to a running Workflow, such as `approve(orderId)`.
+Workflow code can wait on a condition changed by its Signal handler.
+
+A Signal is recorded when the Service accepts it. That acknowledgment does not
+mean a worker has already processed it. This distinction matters when every
+worker is offline: the message can be durable while application progress is
+still waiting for a worker.
+[Signal behavior](https://docs.temporal.io/develop/typescript/workflows/message-passing#signal-handlers).
+
+<TemporalSignalDemo />
+
+The human and application do not need to be active at the same instant. The
+scene separates a recorded approval message from the later worker execution
+that handles it. The application must still define who may send approval and
+what approval means for the business process.
+
+## Retries need a budget
+
+Activities have retry policies. A temporary outage might justify another
+attempt; an invalid order might require an explicit business failure instead.
+Configure the retry policy for the operation, including its backoff and any
+non-retryable errors. Activities retry by default; Workflow Executions do not
+have a retry policy by default.
+[Retry policies](https://docs.temporal.io/encyclopedia/retry-policies).
+
+Two timeout boundaries are useful to distinguish:
+
+- **Start-to-Close** bounds one Activity attempt after a worker starts it.
+- **Schedule-to-Close** bounds the whole Activity execution, including queue
+  waiting, retries, and backoff.
+
+If a worker crashes during an Activity, the Service may need a timeout to detect
+the missing result. It does not instantly learn that the process died.
+Long-running Activities can also use heartbeats to report progress and support
+faster detection through a configured heartbeat timeout.
+[Detecting Activity failures](https://docs.temporal.io/encyclopedia/detecting-activity-failures).
+
+<TemporalRetryDemo />
+
+The example allows three total attempts, with a one-second first backoff and
+two-second second backoff. It compresses the clock for inspection. These are
+chosen settings, not an assertion about every Temporal application's defaults.
+When the budget is exhausted, the Workflow must decide what to do with the
+failure.
+
+## A retry can repeat an external effect
+
+There is a gap between an external system accepting an operation and Temporal
+recording its completion. A payment provider could accept a charge, then the
+worker could crash before reporting success. The Activity can subsequently run
+again because Temporal has no recorded completion to reuse.
+
+Design Activities to be **idempotent**: repeating the operation should preserve
+the intended business result. One technique is a stable operation key that the
+provider durably deduplicates. Another is a database constraint or guarded
+update. The key's scope and the destination's deduplication contract must cover
+the retries you intend to tolerate.
+[Activity idempotency](https://docs.temporal.io/activity-definition#idempotency).
+
+<TemporalIdempotencyDemo />
+
+Both tracks retry the same logical charge. The stable-key track relies on the
+provider recognizing that request. The other track can charge twice. Durable
+Workflow execution does not give arbitrary external APIs exactly-once effects.
+
+## Independent work can run in parallel
+
+Inventory reservation and a risk check may be independent. Workflow code can
+schedule both Activities before waiting for their results, then continue only
+after both required results are available. In TypeScript, Activity proxy calls
+return Promises, so `Promise.all` can express this successful join.
+[Parallel execution](https://docs.temporal.io/design-patterns/parallel-execution).
+
+<TemporalParallelDemo />
+
+The faster Activity does not release the join by itself. Worker capacity and
+external services determine how much overlap actually happens. A failure also
+needs explicit handling: a rejected `Promise.all` does not automatically undo
+external work or cancel every other operation.
+
+## Undoing business work is another process
+
+If inventory is reserved and payment succeeds, but provisioning ultimately
+fails, the application may need to refund the payment and release inventory.
+These are **compensating actions**, often organized as a **Saga**.
+
+Compensation is application logic. A refund is a new business operation; it does
+not erase the original charge as an atomic database rollback would. It can fail
+and need its own retry policy or human intervention.
+[Temporal's compensation explanation](https://temporal.io/blog/compensating-actions-part-of-a-complete-breakfast-with-sagas).
+
+<TemporalCompensationDemo />
+
+Try the failed-refund scenario as well. An execution that remembers outstanding
+cleanup is useful, but the application still needs a policy for resolving it.
+
+## Try it on your own machine
+
+The smallest useful experiment is to stop the worker while an order is waiting,
+then start it again and inspect the history. This repository includes a small
+lab in `examples/temporal-intro`, included with
+[this blog's source code](https://github.com/wcygan/wcygan.net). Its Activities simulate reservation and
+fulfillment; they do not call payment systems or provision real resources.
+
+From a local checkout of the repository, use Node.js 22 or 24 for this lab.
+On macOS, install the CLI through Homebrew; other
+platforms have downloads in the
+[official TypeScript setup guide](https://docs.temporal.io/develop/typescript/set-up-your-local-typescript).
+
+```sh
+brew install temporal
+cd examples/temporal-intro
+npm ci
+```
+
+In one terminal, start the Service with a file-backed development database:
+
+```sh
+temporal server start-dev --db-filename ./temporal.db
+```
+
+By default the Service listens on `localhost:7233` and the Web UI on
+`http://localhost:8233`. The database flag preserves this disposable lab's state
+across Service restarts. Without it, the default development database is in
+memory. This server is for local development.
+[CLI development server](https://docs.temporal.io/cli/command-reference/server#start-dev).
+
+In another terminal, from the same lab directory, start your worker:
+
+```sh
+npm run worker
+```
+
+Then start one order with a 60-second durable wait:
+
+```sh
+npm run order -- order-001 60
+```
+
+The important Workflow code is small:
+
+```ts
+import { proxyActivities, sleep } from "@temporalio/workflow";
+import type * as activities from "./activities";
+
+const { reserveInventory, fulfillOrder } = proxyActivities<typeof activities>({
+  startToCloseTimeout: "10 seconds",
+  scheduleToCloseTimeout: "1 minute",
+  retry: { maximumAttempts: 3 },
+});
+
+export async function orderWorkflow(orderId: string, waitSeconds = 30) {
+  const reservation = await reserveInventory(orderId);
+  await sleep(waitSeconds * 1_000);
+  return fulfillOrder(orderId, reservation);
+}
+```
+
+`proxyActivities` creates the SDK calls used by Workflow code; the worker
+registers the real Activity implementations. `sleep` is the SDK timer operation.
+The lab's README contains the complete worker and client setup.
+[TypeScript application basics](https://docs.temporal.io/develop/typescript/core-application).
+
+Now inspect the failure boundary:
+
+1. Open the Web UI and select `order-001` in the default Namespace. Confirm that
+   reservation completed and a timer started.
+2. Stop the worker with `Ctrl+C` during the wait. Leave the Service running.
+3. Let the timer expire. The execution cannot run fulfillment without a worker.
+4. Start `npm run worker` again. Fetch the same execution's result and history:
+
+```sh
+npm run result -- order-001
+npm run history -- order-001
+```
+
+Look for a completed reservation, `TimerStarted`, `TimerFired`, and subsequent
+fulfillment. The recorded reservation result should be reused when the new
+worker reconstructs state. Starting a new Workflow would test something
+different; use the same execution ID for inspection. Choose a fresh ID, such as
+`order-002`, when repeating the experiment.
+
+This experiment exercises recovery after a completed Activity and a durable
+wait. The duplicate-effect window in the earlier visualization requires a
+separate test that interrupts an Activity after its external operation succeeds.
+
+In the local run for this draft, I killed the worker during a 30-second wait.
+`TimerFired` appeared while it was offline. After restarting the worker, the
+same execution completed with one recorded reservation completion and one
+recorded fulfillment completion. The restarted worker executed fulfillment
+without repeating reservation.
+
+## What I would evaluate next
+
+Temporal makes the most sense to me as a place to put the lifecycle of a
+business process: its completed work, waiting points, next actions, and cleanup.
+Before adopting it, I would run one representative process through these tests:
+
+- Restart workers during Activities and waits, and check the resulting history.
+- Make a dependency unavailable long enough to exhaust the intended retry
+  budget, then inspect the business outcome.
+- Prove duplicate requests are safe at the actual external destination.
+- Change Workflow code while old executions exist, using a deliberate deployment
+  and versioning strategy. [Safe deployments](https://docs.temporal.io/develop/safe-deployments).
+- Check history growth for a process that loops indefinitely. **Continue-As-New**
+  can start a new run with carried-forward state and a fresh history.
+  [Continue-As-New](https://docs.temporal.io/develop/typescript/workflows/continue-as-new).
+
+I would also decide who operates the Service, who scales the workers, and who
+responds when a process needs intervention. The useful result is a process whose
+behavior I can explain after a failure, and a recovery path I have actually
+tested.

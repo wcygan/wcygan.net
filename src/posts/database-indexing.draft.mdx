@@ -1,144 +1,96 @@
 ---
 title: Database Indexing
 date: October 1, 2026
-description: Stable identities and the cost of updates
+description: How indexes find records and trade off writes
 tags: [Databases, Architecture, Performance]
 draft: true
 ---
 
-An index helps a database find a record without scanning the entire table. But the entry that says where to find that record also determines how much work the database must do when the record changes.
+import { IndexingPrimerDemo } from "~/components/IndexingPrimerDemos";
 
-A [Hacker News comment by gopalv](https://news.ycombinator.com/item?id=49924039) connects [Uber’s PostgreSQL to MySQL migration](https://www.uber.com/us/en/blog/postgres-to-mysql-migration/) with [turbopuffer’s vector database redesign](https://turbopuffer.com/blog/rip-vector-database). The shared idea is a tradeoff between direct access and stable identity: an index can point to a record’s current location, or it can point to an identifier that resolves to that location.
+An index is an ordered structure that helps a database locate data. It trades storage space and write maintenance for less searching. These small demos show the basic mechanics; the page sizes, tree depth, and work counts are illustrative.
 
-That choice can turn one small update into work across many indexes—or keep most of those indexes untouched.
+## Finding a record
 
-## What an index points to
+A table can contain millions of records. Without a useful index for your filter, the engine may inspect every record to find the matches. Our example searches a name in records ordered by ID.
 
-Consider a document with ID `42`, category `invoice`, customer `Acme`, and a vector embedding. We might index its category and customer, and build a vector index for similarity search.
+<IndexingPrimerDemo lesson="scan" />
 
-Suppose the document moves from location A to location B. Its category and customer have not changed. Whether those indexes need maintenance depends on what they store.
+## Following a sorted tree
 
-| Index design   | Example entry          | Effect of moving the record                                                 |
-| -------------- | ---------------------- | --------------------------------------------------------------------------- |
-| Location based | `invoice → location A` | References to A must be updated or preserved through a forwarding mechanism |
-| Identity based | `invoice → ID 42`      | The ID remains valid; the mapping to its location changes                   |
+An index keeps keys in order. A B+ tree uses separator keys to route searches into smaller groups. It remains shallow because each page can have many children.
 
-An identity based lookup adds a resolution step. In exchange, other structures can refer to the record without depending on where it currently lives.
+<IndexingPrimerDemo lesson="tree" />
 
-```text
-Direct access:
-category index → record location → record
+## Reading storage pages
 
-Access through stable identity:
-category index → stable ID → location resolution → record
-```
+Each outlined page below holds three visible records. Real pages hold many more records than this illustration. Reading one page can make several neighboring records available.
 
-This is a simplified model. Real engines combine page layouts, caching, version chains, and sometimes covering indexes. The important distinction is the dependency: does another index depend on a changing location or on a stable identity?
+<IndexingPrimerDemo lesson="pages" />
 
-## PostgreSQL and the cost of new tuple versions
+## Inserting without a scan
 
-PostgreSQL normally stores table records in a heap, separate from its indexes. An ordinary index entry identifies a tuple using a tuple identifier, or TID: a heap page number and a position within that page.
+Knowing the new record’s key is enough to locate its destination leaf. This is why an insert does not need the name scan shown earlier.
 
-PostgreSQL also uses multiversion concurrency control, or MVCC. An update generally creates a new tuple version so concurrent transactions can continue seeing the version appropriate to their snapshot.
+<IndexingPrimerDemo lesson="insert" />
 
-For an update that cannot use PostgreSQL’s HOT optimization, the new tuple version needs new index entries, including in indexes whose indexed values did not change. The old tuple version and obsolete index entries eventually require cleanup.
+## Making room for new entries
 
-This creates **write amplification**: changing a small amount of application data causes substantially more storage work. Index maintenance, transaction logging, and later cleanup all contribute. The effect can grow with the number of indexes.
+Pages have finite space. Splits keep the tree usable as data grows, but they add work to a write. The capacity of three keys here is only for teaching.
 
-That mechanism explains the indexing concern in the Uber comparison. It should not be read as a universal conclusion that PostgreSQL is poor at updates or that MySQL is always faster.
+<IndexingPrimerDemo lesson="split" />
 
-## The HOT update exception
+## Searching a different column
 
-The statement that PostgreSQL changes every index on every update is too broad.
+InnoDB stores full records in its primary-key tree. A secondary index on name gives a name search its own sorted path. Its entries contain the primary key, which leads to the full record.
 
-PostgreSQL supports [heap only tuple updates, or HOT](https://www.postgresql.org/docs/current/storage-hot.html). When an update meets the relevant index restrictions and the new tuple version fits on the same heap page, existing index entries can lead to newer versions through a tuple chain. PostgreSQL can then avoid creating new entries in the ordinary indexes.
+<IndexingPrimerDemo lesson="secondary" />
 
-Available space on heap pages therefore matters. A lower table fill factor can leave room for future updates, although it also increases the table’s storage footprint.
+## Finding several neighboring keys
 
-HOT makes workload details essential: which fields change, which fields are indexed, and whether there is space for the new tuple version. Modern PostgreSQL behavior also deserves separate evaluation from a historical migration account.
+An ordered index is useful for more than equality. After seeking a starting key, a range search can follow the linked leaves until it reaches the end of the range.
 
-## InnoDB and stable primary keys
+<IndexingPrimerDemo lesson="range" />
 
-The MySQL engine relevant to this comparison is **InnoDB**. MySQL supports multiple storage engines, so this layout is not a property of every MySQL table.
+## Choosing the order of columns
 
-InnoDB stores a table’s row data in the leaves of its clustered index, normally organized by primary key. Secondary index entries contain the primary key as the locator.
+A compound index sorts by its first column, then its second. Its leading columns determine which filters naturally form a searchable continuous range. Engines may have additional strategies such as skip scans; this shows the basic ordering.
 
-```text
-Customer index: "Acme" → primary key 42
-Primary index:  42 → row data
-```
+<IndexingPrimerDemo lesson="compound" />
 
-When an update changes an unindexed field and leaves the primary key unchanged, the secondary index entry still identifies the correct row. It does not need a new locator merely because storage organization changes.
+## Answering from the index
 
-A secondary lookup that needs row data generally searches the secondary index and then the clustered index. That extra traversal is the read cost exchanged for stable secondary references. A covering index can sometimes answer a query without fetching the full row.
+A covering index contains every field needed by a query. It can avoid the usual second lookup for the table record. Adding fields also increases index size and write maintenance.
 
-InnoDB updates still produce logs and transaction history, maintain indexes whose values change, and may cause page splits or other storage work. Changing the primary key is especially consequential because secondary indexes store it. A wide primary key also makes secondary indexes larger.
+<IndexingPrimerDemo lesson="cover" />
 
-The [InnoDB index documentation](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html) describes this organization.
+## Skipping enough work to matter
 
-## The analogy to vector indexing
+Selectivity describes how narrow a filter is. An index is not automatically the cheapest plan. Fetching many scattered full records can cost more than scanning the table; caching, row size, and the requested fields all matter.
 
-ANN stands for approximate nearest neighbor search: finding vectors close to a query vector without comparing it against every stored vector.
+<IndexingPrimerDemo lesson="selectivity" />
 
-The Hacker News comment’s central advice is:
+## Paying for indexes on writes
 
-> don’t key on the ANN address
+Each index occupies space and must stay consistent with the table. Inserts add entries, deletes remove them, and updates maintain affected entries. The counts below describe structures maintained, not physical disk writes.
 
-The interpretation is that other database structures should avoid depending on a document’s current address within an ANN structure.
+<IndexingPrimerDemo lesson="writes" />
 
-Imagine that document 42 occupies ANN address A and its attribute indexes identify it using A. If vector index reorganization changes that address to B, those dependent structures may need corresponding updates, even though the attributes themselves have not changed.
+## Keeping references stable
 
-A stable document identity can break that dependency. Attribute indexes continue referring to document 42 while the ANN representation changes behind a mapping.
+InnoDB secondary entries use primary keys instead of physical record addresses. Keeping that key unchanged allows a reference to survive changes in storage placement. Here, a full row grows because an unindexed field changes. The primary leaf splits, but the name entry still stores the same ID. The split and tiny page capacities are illustrative.
 
-This is the parallel with InnoDB: stable references can reduce the maintenance caused by changing locations. It does not mean that turbopuffer uses InnoDB’s tree layout or PostgreSQL’s versioning system.
+<IndexingPrimerDemo lesson="stable" />
 
-**Source limitation:** this account of turbopuffer is an interpretation of the supplied comment. The linked article and the exact v3 implementation have not been independently reviewed for this draft. Its definition of “ANN address,” mapping design, and performance results need confirmation before publication.
+## What to remember
 
-The architectural argument nevertheless explains why throughput tuning might hit diminishing returns. Faster indexing code can reduce the cost of required work; removing a dependency can eliminate some of that work.
+Choose indexes around the filters, joins, and ordering your queries actually use. An index is useful when it avoids enough work to pay for its storage and maintenance. Use your database’s query plan to check whether it is used and how many records the query reads.
 
-## What the comments get right and oversimplify
+The primary and secondary layouts here describe MySQL’s InnoDB engine. Other engines organize records differently. PostgreSQL usually keeps rows in a separate heap; its update and index-maintenance behavior also depends on row versions and HOT updates.
 
-The stable identity analogy is useful. The claim that PostgreSQL favors good normalized schemas while MySQL favors bad denormalized schemas is much less useful.
+## Further reading
 
-Normalization concerns how data is divided into tables and relationships. Physical indexing concerns how those records are stored and located. Both engines support normalized and denormalized schemas. A wide table or many indexes can amplify maintenance costs, but neither is automatically bad design.
-
-Likewise, “PostgreSQL optimizes for reads and MySQL for writes” overstates one storage tradeoff. Primary key access, secondary lookups, covering indexes, update patterns, caching, and concurrency all affect the result.
-
-The joking reply, “TIL I should have been using mysql the whole time,” plays on the accusation of bad schema design. The [“Worse is better” reply](https://news.ycombinator.com/item?id=49924161) invokes Richard Gabriel’s argument about practical simplicity and adoption. Neither establishes which database is better for a particular workload.
-
-The NIMBLE reference gestures toward related concerns in wide table storage formats, but the supplied comment does not identify a specific mechanism. It is a lead for further investigation, rather than evidence for the comparison.
-
-## Clustered storage is a choice in some databases
-
-Another [comment](https://news.ycombinator.com/item?id=49925820) points out that SQL Server and Oracle offer alternative table organizations.
-
-A SQL Server clustered index contains the row data at its leaves. For a clustered table, nonclustered indexes generally use the clustering key to locate rows. Oracle offers index organized tables, which store records in a primary key index, as well as ordinary heap organized tables.
-
-This can help when most queries retrieve full rows by primary key: the index traversal reaches the row data directly. PostgreSQL normally traverses the primary key index and then visits the heap.
-
-PostgreSQL has a [CLUSTER command](https://www.postgresql.org/docs/current/sql-cluster.html), but it reorders a table at that moment. It does not create a continuously maintained clustered index.
-
-Clustered storage also has costs, including page splits and larger secondary index locators when the clustering key is wide. The choice depends on how the table is accessed and changed.
-
-## Choosing an identifier chooses a dependency
-
-The useful lesson extends beyond relational and vector databases. If many structures reference something that moves, that movement can trigger widespread maintenance. Stable identity puts a boundary around the change, at the cost of resolving the identity during reads.
-
-When evaluating an indexing design, ask what each index stores as its locator, when that locator changes, and how many structures depend on it. Then ask which optimizations avoid maintenance and what read cost those optimizations introduce.
-
-Those questions explain more than a blanket ranking of PostgreSQL, MySQL, or vector databases. They connect storage design to the actual work a workload demands.
-
-## References and further reading
-
-The first three links prompted this draft. The documentation links provide relevant technical background; the external pages and link destinations have not been independently checked for this draft.
-
-- [Uber on migrating from PostgreSQL to MySQL](https://www.uber.com/us/en/blog/postgres-to-mysql-migration/) — the historical migration account referenced in the discussion.
-- [turbopuffer on its vector database redesign](https://turbopuffer.com/blog/rip-vector-database) — the source to consult for the exact ANN storage and v3 changes.
-- [gopalv’s Hacker News comment](https://news.ycombinator.com/item?id=49924039) — the analogy examined here.
-- [PostgreSQL HOT updates](https://www.postgresql.org/docs/current/storage-hot.html) — conditions under which ordinary index maintenance can be avoided.
-- [PostgreSQL system columns](https://www.postgresql.org/docs/current/ddl-system-columns.html) — the distinction between a tuple’s physical location and a logical identifier.
-- [PostgreSQL CLUSTER](https://www.postgresql.org/docs/current/sql-cluster.html) — table reordering and its maintenance limits.
-- [InnoDB clustered and secondary indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html) — row storage and primary key locators.
-- [SQL Server clustered and nonclustered indexes](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described) — alternative index organizations.
-- [Oracle index organized tables](https://docs.oracle.com/en/database/oracle/oracle-database/19/cncpt/tables-and-table-clusters.html) — Oracle’s table organization choices.
-- [Richard Gabriel on Worse Is Better](https://www.dreamsongs.com/WorseIsBetter.html) — background for the philosophical aside in the replies.
+- [InnoDB clustered and secondary indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)
+- [InnoDB index pages](https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html)
+- [MySQL multiple-column indexes](https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html)
+- [Understanding EXPLAIN](https://dev.mysql.com/doc/refman/8.4/en/using-explain.html)

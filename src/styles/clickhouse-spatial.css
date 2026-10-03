@@ -1,0 +1,252 @@
+.clickhouse-spatial-demo[data-graphic-frame] {
+  padding: 0;
+}
+.clickhouse-spatial-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  padding: 20px 20px 12px;
+}
+.clickhouse-spatial-dimension {
+  color: var(--ch-muted);
+  font: 500 11px/1.5 var(--ch-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.clickhouse-spatial-demo .clickhouse-spatial-stage {
+  position: relative;
+  height: 360px;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: pan-y;
+  background: var(--ch-bg);
+  border: 0;
+  border-radius: 0;
+}
+.clickhouse-spatial-demo[data-graphic-key="clickhouse-cluster"]
+  .clickhouse-spatial-stage {
+  height: 410px;
+}
+.clickhouse-spatial-canvas {
+  position: absolute;
+  inset: 0;
+}
+.clickhouse-spatial-fallback {
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+  display: grid;
+  align-content: center;
+  gap: 16px;
+  color: var(--ch-muted);
+}
+.clickhouse-spatial-fallback > p {
+  margin: 0;
+  font: 500 13px/1.5 var(--ch-font-mono);
+}
+.clickhouse-spatial-demo .demo-scene-loading {
+  background: var(--ch-bg);
+}
+.clickhouse-spatial-demo .demo-scene-spinner {
+  border-color: var(--ch-track);
+  border-top-color: var(--ch-orange);
+}
+.clickhouse-spatial-playback,
+.clickhouse-spatial-actions,
+.clickhouse-spatial-camera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 12px 20px;
+}
+.clickhouse-spatial-playback {
+  border-block-end: 1px solid var(--ch-border);
+}
+.clickhouse-spatial-playback > span {
+  color: var(--ch-muted);
+  font: 400 12px/1.6 var(--ch-font-mono);
+}
+.clickhouse-spatial-camera {
+  border-block-start: 1px solid var(--ch-border);
+}
+.clickhouse-spatial-replicas {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.clickhouse-spatial-replicas > span {
+  min-width: 112px;
+  font: 500 12px/1.5 var(--ch-font-mono);
+  color: var(--ch-muted);
+}
+.clickhouse-spatial-demo .clickhouse-spatial-guide {
+  margin: 0;
+  padding: 4px 20px 16px;
+  color: var(--ch-muted);
+  font: 400 12px/1.6 var(--ch-font-mono);
+}
+.clickhouse-spatial-status {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+  border-block: 1px solid var(--ch-border);
+  min-height: 110px;
+}
+.clickhouse-spatial-status p {
+  margin: 0;
+}
+.clickhouse-spatial-demo .clickhouse-spatial-tour-step {
+  color: var(--ch-muted);
+  font: 500 12px/1.6 var(--ch-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.clickhouse-spatial-demo .clickhouse-spatial-narration {
+  color: var(--ch-text);
+}
+.clickhouse-spatial-demo .clickhouse-spatial-takeaway {
+  color: var(--ch-text);
+  padding-inline-start: 8px;
+  border-inline-start: 2px solid var(--ch-yellow);
+  font: 500 12px/1.6 var(--ch-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.clickhouse-spatial-data {
+  padding-inline: 20px;
+  color: var(--ch-muted);
+}
+.clickhouse-spatial-data summary {
+  min-height: 44px;
+  padding-block: 12px;
+  font: 500 12px/20px var(--ch-font-mono);
+  cursor: pointer;
+}
+.clickhouse-spatial-data[open] > div {
+  padding-block-end: 16px;
+}
+.clickhouse-spatial-data-list {
+  display: grid;
+  gap: 16px;
+}
+.clickhouse-spatial-data-list > div {
+  display: grid;
+  gap: 4px;
+  padding-inline-start: 12px;
+  border-inline-start: 1px solid var(--ch-node-border);
+  font: 400 12px/1.6 var(--ch-font-mono);
+  overflow-wrap: anywhere;
+}
+.clickhouse-spatial-data-list strong {
+  color: var(--ch-text);
+  font-weight: 500;
+}
+.clickhouse-spatial-table-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.clickhouse-spatial-demo .clickhouse-spatial-table-scroll table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font: 400 12px/1.6 var(--ch-font-mono);
+  color: var(--ch-text);
+  background: var(--ch-bg);
+}
+.clickhouse-spatial-demo .clickhouse-spatial-table-scroll :is(th, td) {
+  padding: 6px 8px;
+  border: 0;
+  border-block-end: 1px solid var(--ch-border);
+  text-align: start;
+  white-space: nowrap;
+  background: var(--ch-bg);
+}
+.clickhouse-spatial-demo .ch-caption {
+  margin: 0;
+  padding: 4px 20px 20px;
+}
+.clickhouse-spatial-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.clickhouse-spatial-labels svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.clickhouse-spatial-labels line {
+  stroke: var(--ch-muted);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.clickhouse-spatial-labels span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: 180px;
+  padding: 3px 6px;
+  border-inline-start: 2px solid transparent;
+  background: color-mix(in oklch, var(--ch-bg) 94%, transparent);
+  color: var(--ch-text);
+  font: 500 12px/1.4 var(--ch-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.clickhouse-spatial-labels [data-tone="orange"] {
+  border-inline-start-color: var(--ch-orange);
+}
+.clickhouse-spatial-labels [data-tone="blue"] {
+  border-inline-start-color: var(--ch-blue);
+}
+.clickhouse-spatial-labels [data-tone="green"] {
+  border-inline-start-color: var(--ch-green);
+}
+.clickhouse-spatial-labels [data-tone="yellow"] {
+  border-inline-start-color: var(--ch-yellow);
+}
+.clickhouse-spatial-labels [data-tone="purple"] {
+  border-inline-start-color: var(--ch-purple);
+}
+.clickhouse-spatial-labels [data-tone="muted"] {
+  color: var(--ch-muted);
+}
+@media (max-width: 639px) {
+  .clickhouse-spatial-demo .clickhouse-spatial-stage {
+    height: 330px;
+  }
+  .clickhouse-spatial-demo[data-graphic-key="clickhouse-cluster"]
+    .clickhouse-spatial-stage {
+    height: 360px;
+  }
+  .clickhouse-spatial-header,
+  .clickhouse-spatial-playback,
+  .clickhouse-spatial-actions,
+  .clickhouse-spatial-camera,
+  .clickhouse-spatial-status {
+    padding-inline: 12px;
+  }
+  .clickhouse-spatial-data {
+    padding-inline: 12px;
+  }
+  .clickhouse-spatial-demo .clickhouse-spatial-guide {
+    padding-inline: 12px;
+  }
+  .clickhouse-spatial-demo .ch-caption {
+    padding-inline: 12px;
+  }
+  .clickhouse-spatial-labels span {
+    font-size: 11px;
+    max-width: 150px;
+  }
+  .clickhouse-spatial-replicas > span {
+    flex-basis: 100%;
+  }
+}

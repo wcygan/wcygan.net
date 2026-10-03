@@ -1,0 +1,178 @@
+/* MySQL-only PlanetScale palette: role colors are shared by SVG and Three.js. */
+.post-content :is(.mysql-primer, .mysql-storage-demo) {
+  --mysql-canvas: oklch(0.178 0 0);
+  --mysql-panel: oklch(0.226 0 0);
+  --mysql-ink: oklch(0.985 0 0);
+  --mysql-muted: oklch(0.767 0 0);
+  --mysql-line: oklch(0.556 0 0);
+  --mysql-orange: oklch(0.661 0.202 39.353);
+  --mysql-blue: oklch(0.667 0.15 241.774);
+  --mysql-green: oklch(0.681 0.191 146.483);
+  --mysql-yellow: oklch(0.809 0.165 84.552);
+  --mysql-red: oklch(0.668 0.22 18.688);
+  color: var(--mysql-ink);
+  background: var(--mysql-canvas);
+  border: 1px solid var(--mysql-panel);
+  border-radius: 8px;
+  padding: 20px;
+  margin-inline: -20px;
+  font:
+    400 16px/1.6 Inter,
+    sans-serif;
+}
+.post-content :is(.mysql-primer, .mysql-storage-demo) :is(p, ol, dl) {
+  margin: 0;
+}
+.post-content
+  :is(.mysql-primer-header, .mysql-storage-demo .demo-workbench-header) {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 20px;
+}
+.post-content :is(.mysql-primer, .mysql-storage-demo) .article-graphic-title {
+  color: var(--mysql-ink);
+  font:
+    500 16px/1.5 "JetBrains Mono",
+    Lilex,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  header
+  > p:not(.article-graphic-title) {
+  color: var(--mysql-muted);
+  font-size: 14px;
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  :is(button, .demo-workbench-options button[data-scenario]) {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--mysql-line);
+  border-radius: 4px;
+  background: var(--mysql-panel);
+  color: var(--mysql-ink);
+  font:
+    500 13px/1.5 "JetBrains Mono",
+    Lilex,
+    monospace;
+  cursor: pointer;
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  :is(button, .demo-workbench-options button[data-scenario]):hover:not(
+    :disabled
+  ) {
+  border-color: var(--mysql-orange);
+  background: var(--mysql-panel);
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  :is(
+    button,
+    .demo-workbench-options button[data-scenario]
+  )[aria-pressed="true"] {
+  color: var(--mysql-orange);
+  border-color: var(--mysql-orange);
+  background: var(--mysql-panel);
+}
+.post-content
+  .mysql-storage-demo
+  .demo-workbench-options
+  button[aria-pressed="true"]::before {
+  background: var(--mysql-orange);
+  border-color: var(--mysql-orange);
+}
+.post-content :is(.mysql-primer, .mysql-storage-demo) button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  :is(button, [tabindex]):focus-visible {
+  outline: 2px solid var(--mysql-blue);
+  outline-offset: 3px;
+}
+.mysql-primer-controls,
+.mysql-storage-actions,
+.mysql-storage-camera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 16px;
+}
+.post-content
+  :is(.mysql-primer-status, .mysql-storage-demo .demo-workbench-status) {
+  color: var(--mysql-ink);
+  min-block-size: 52px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.post-content
+  :is(.mysql-primer, .mysql-storage-demo)
+  :is(figcaption, .demo-workbench-guide) {
+  color: var(--mysql-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-block: 16px 0;
+}
+.post-content
+  :is(
+    .mysql-primer-step,
+    .mysql-storage-actions > span,
+    .mysql-storage-camera-help,
+    .mysql-storage-metric
+  ) {
+  color: var(--mysql-muted);
+  font:
+    400 12px/1.6 Lilex,
+    monospace;
+}
+@media (max-width: 639px) {
+  .post-content :is(.mysql-primer, .mysql-storage-demo) {
+    margin-inline: -12px;
+    padding: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-content :is(.mysql-primer, .mysql-storage-demo) * {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Keep the runnable lab available without interrupting the visual walkthrough. */
+.post-content .mysql-lab > summary {
+  min-block-size: 44px;
+  padding-block: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.post-content .mysql-lab > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.post-content .mysql-lab-content > :is(p, pre, table) {
+  margin-block: 24px;
+}
+.post-content .mysql-lab-content {
+  min-inline-size: 0;
+}
+
+.mysql-playback-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 16px;
+}
+.post-content :is(.mysql-primer, .mysql-storage-demo) .mysql-playback-note {
+  color: var(--mysql-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
