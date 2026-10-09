@@ -111,7 +111,7 @@ export function GrowOnlyCounterDemo() {
       <header className="gc-header">
         <p className="gc-help">
           Increments by node: [<NodeLetter index={0} />,{" "}
-          <NodeLetter index={1} />, <NodeLetter index={2} />]
+          <NodeLetter index={1} />]
         </p>
       </header>
       <p className="gc-transfer" aria-hidden="true">
@@ -188,7 +188,7 @@ export function GrowOnlyCounterDemo() {
           </select>
         </label>
       </div>
-      <div className="gc-controls" aria-label="Client increments">
+      <div className="gc-actions" role="group" aria-label="Counter actions">
         <button
           type="button"
           disabled={pending || state.inProgress}
@@ -199,16 +199,10 @@ export function GrowOnlyCounterDemo() {
         <button
           type="button"
           disabled={pending || state.inProgress}
-          onClick={() => playback.increment("C")}
+          onClick={() => playback.increment("B")}
         >
-          Increment C
+          Increment B
         </button>
-      </div>
-      <p className="gc-help">
-        Deliver saved counts in any order—even twice. Incrementing a node
-        refreshes its messages.
-      </p>
-      <div className="gc-messages" aria-label="Saved messages">
         {state.messages.map((message) => (
           <button
             className="gc-message"
@@ -228,12 +222,10 @@ export function GrowOnlyCounterDemo() {
           </button>
         ))}
       </div>
-      <p id={cameraHelpId} className="gc-help">
-        Drag to orbit · Scroll to zoom
-        <span className="sr-only">
-          . With the view toggle focused, use arrow keys to rotate or zoom, and
-          Home to return to the side view.
-        </span>
+      <p id={cameraHelpId} className="sr-only">
+        With the view toggle focused, use arrow keys to rotate or zoom, and Home
+        to return to the side view. Drag the diagram to orbit and scroll to
+        zoom.
       </p>
       <div
         className={unavailable ? "gc-replicas" : "sr-only"}
@@ -263,8 +255,8 @@ export function GrowOnlyCounterDemo() {
       </div>
       {!state.inProgress && state.converged && (
         <figcaption>
-          All three replicas hold <VectorNotation value={state.replicas.A} />.
-          Each reads {state.replicas.A.join(" + ")} = {value(state.replicas.A)}:
+          Both replicas hold <VectorNotation value={state.replicas.A} />. Each
+          reads {state.replicas.A.join(" + ")} = {value(state.replicas.A)}:
           every increment is counted once.
         </figcaption>
       )}

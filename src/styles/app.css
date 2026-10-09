@@ -16587,8 +16587,10 @@ th {
   color: #63635e;
   font-size: 14px;
 }
-.gc-messages {
+.gc-actions {
+  margin-block-start: 12px;
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -16634,8 +16636,10 @@ th {
   position: absolute;
   inset: 0;
 }
-.gc-node-label,
-.gc-packet-label {
+.gc-node-label {
+  display: grid;
+  justify-items: center;
+  row-gap: 6px;
   pointer-events: none;
   white-space: nowrap;
   color: #21201c;
@@ -16644,18 +16648,8 @@ th {
     ui-monospace,
     monospace;
 }
-
-.gc-node-label {
-  display: grid;
-  justify-items: center;
-}
 .gc-node-label strong {
   font-size: 16px;
-}
-.gc-packet-label {
-  background: #fdfdfc;
-  padding: 2px 4px;
-  border-radius: 3px;
 }
 .gc-controls {
   margin-block-start: 12px;
@@ -16664,6 +16658,7 @@ th {
   gap: 8px;
 }
 .gc-controls button,
+.gc-actions button,
 .gc-message,
 .gc-speed select {
   min-height: 44px;
@@ -16676,7 +16671,7 @@ th {
   font: inherit;
   cursor: pointer;
 }
-.gc-messages .gc-message {
+.gc-actions .gc-message {
   padding: 4px 6px;
   font-size: 14px;
 }
@@ -16687,15 +16682,18 @@ th {
   color: #63635e;
 }
 .gc-controls button:hover:not(:disabled),
+.gc-actions button:hover:not(:disabled),
 .gc-message:hover:not(:disabled) {
   background: #f7f6f3;
 }
 .gc-controls button:disabled,
+.gc-actions button:disabled,
 .gc-message:disabled {
   opacity: 0.45;
   cursor: default;
 }
 .gc-controls button:focus-visible,
+.gc-actions button:focus-visible,
 .gc-message:focus-visible,
 .gc-speed select:focus-visible {
   outline: 2px solid #466eaa;
@@ -16741,9 +16739,6 @@ th {
 }
 .gc-letter-y {
   border-color: #386fc0;
-}
-.gc-letter-z {
-  border-color: #39834c;
 }
 .gc-changed {
   font-weight: 700;
@@ -16851,9 +16846,9 @@ th {
   box-shadow: inset 0 -2px #be4949;
   font-weight: 700;
 }
-.gc-merge-entry-c {
-  background: rgb(57 131 76 / 14%);
-  box-shadow: inset 0 -2px #39834c;
+.gc-merge-entry-b {
+  background: rgb(56 111 192 / 14%);
+  box-shadow: inset 0 -2px #386fc0;
   font-weight: 700;
 }
 .gc-merge-rule {
@@ -16926,8 +16921,7 @@ th {
     flex-direction: column;
     gap: 4px;
   }
-  .gc-node-label,
-  .gc-packet-label {
+  .gc-node-label {
     font-size: 12px;
   }
   .gc-order-comparison {

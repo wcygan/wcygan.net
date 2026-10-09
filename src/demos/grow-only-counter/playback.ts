@@ -19,7 +19,7 @@ export function createPlayback(now = () => performance.now()) {
   let messages: readonly Message[] = captureMessages(replicas);
   let action: Action | null = null;
   let status =
-    "A and C have each incremented once. Choose a client action or saved message.";
+    "A and B have each incremented once. Choose a client action or saved message.";
   let elapsed = 0;
   let anchor = now();
   let active = false;
@@ -107,7 +107,7 @@ export function createPlayback(now = () => performance.now()) {
     elapsed = 0;
     anchor = now();
     status =
-      "A and C have each incremented once. Choose a client action or saved message.";
+      "A and B have each incremented once. Choose a client action or saved message.";
     publish();
   }
   return {
@@ -142,7 +142,7 @@ export function createPlayback(now = () => performance.now()) {
       const message = messages.find((m) => m.id === id);
       if (message) start({ kind: "deliver", message });
     },
-    increment(node: Extract<NodeId, "A" | "C">) {
+    increment(node: NodeId) {
       start({
         kind: "increment",
         node,

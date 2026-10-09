@@ -77,7 +77,7 @@ it("keeps loading controls disabled until the first frame", async () => {
     ).disabled,
   ).toBe(true);
   expect(screen.getByLabelText("Current node counters").textContent).toContain(
-    "[1, 0, 0]",
+    "[1, 0]",
   );
 });
 it("keeps the full lesson usable without WebGL", async () => {
@@ -86,26 +86,21 @@ it("keeps the full lesson usable without WebGL", async () => {
     render(<GrowOnlyCounterDemo />);
   });
   expect(screen.getByText(/3D is unavailable/)).toBeTruthy();
-  expect(screen.getByLabelText("Saved messages")).toBeTruthy();
+  expect(screen.getByRole("group", { name: "Counter actions" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Increment A" }));
-  expect(screen.getByRole("status").textContent).toContain("[2, 0, 0]");
-  expect(screen.getByLabelText("Saved messages").textContent).toContain(
-    "[2, 0, 0]",
-  );
+  expect(screen.getByRole("status").textContent).toContain("[2, 0]");
+  expect(
+    screen.getByRole("button", { name: "Deliver A to B" }).textContent,
+  ).toContain("[2, 0]");
   fireEvent.click(screen.getByRole("button", { name: "Restart" }));
-  for (const name of [
-    "Deliver A to C",
-    "Deliver C to B",
-    "Deliver A to B",
-    "Deliver C to A",
-  ]) {
+  for (const name of ["Deliver A to B", "Deliver B to A"]) {
     fireEvent.click(screen.getByRole("button", { name }));
   }
-  expect(screen.getByText(/All three replicas hold/)).toBeTruthy();
+  expect(screen.getByText(/Both replicas hold/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Deliver again A to B" }));
   expect(screen.getByRole("status").textContent).toContain("No change");
   fireEvent.click(screen.getByRole("button", { name: "Restart" }));
-  expect(screen.getByText("0 of 4 saved messages delivered")).toBeTruthy();
+  expect(screen.getByText("0 of 2 saved messages delivered")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Step" })).toBeNull();
   expect(
     screen.queryByRole("button", { name: "Try your own order" }),
@@ -188,13 +183,13 @@ it("disables competing actions during animation but keeps restart available", as
       expect((button as HTMLButtonElement).disabled).toBe(true);
     }
     for (const button of screen.getAllByRole("button", {
-      name: /increment [AC]$/i,
+      name: /increment [AB]$/i,
     })) {
       expect((button as HTMLButtonElement).disabled).toBe(true);
     }
     fireEvent.click(restart);
     act(() => vi.advanceTimersByTime(8000));
-    expect(screen.getByText("0 of 4 saved messages delivered")).toBeTruthy();
+    expect(screen.getByText("0 of 2 saved messages delivered")).toBeTruthy();
   } finally {
     cleanup();
     vi.useRealTimers();

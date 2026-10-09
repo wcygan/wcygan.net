@@ -50,14 +50,12 @@ function MergeBrace() {
 
 function MergeEquationBody({ order }: { order: readonly [NodeId, NodeId] }) {
   const vectors: Record<NodeId, Vector> = {
-    A: [1, 0, 0],
-    B: [0, 0, 0],
-    C: [0, 0, 1],
+    A: [1, 0],
+    B: [0, 1],
   };
   const sources: Record<NodeId, readonly Source[]> = {
-    A: ["A", null, null],
-    B: [null, null, null],
-    C: [null, null, "C"],
+    A: ["A", null],
+    B: [null, "B"],
   };
 
   return (
@@ -77,7 +75,7 @@ function MergeEquationBody({ order }: { order: readonly [NodeId, NodeId] }) {
       </div>
       <div className="gc-merge-result">
         <span className="gc-merge-equals">=</span>
-        <EquationVector value={[1, 0, 1]} sources={["A", null, "C"]} />
+        <EquationVector value={[1, 1]} sources={["A", "B"]} />
       </div>
     </div>
   );
@@ -98,21 +96,21 @@ export function GrowOnlyCounterMergeEquation() {
       className="gc-merge-figure"
       data-graphic-frame="plate"
       data-graphic-key="grow-only-counter-merge"
-      data-graphic-label="A and C merge their grow-only counter vectors"
+      data-graphic-label="A and B merge their grow-only counter vectors"
     >
       <div
         className="gc-merge-paper"
         data-graphic-stage="padded"
         role="img"
-        aria-label="A holds 1, 0, 0. C holds 0, 0, 1. Taking the maximum in each column gives 1, 0, 1. The first 1 comes from A and the last 1 comes from C."
+        aria-label="A holds 1, 0. B holds 0, 1. Taking the maximum in each column gives 1, 1. The first 1 comes from A and the second 1 comes from B."
       >
         <div aria-hidden="true">
-          <MergeEquationBody order={["A", "C"]} />
+          <MergeEquationBody order={["A", "B"]} />
         </div>
       </div>
       <figcaption>
-        Keep the larger count in each column. The first 1 comes from A; the last
-        1 comes from C.
+        Keep the larger count in each column. The first 1 comes from A; the
+        second 1 comes from B.
       </figcaption>
     </figure>
   );
@@ -130,11 +128,11 @@ export function GrowOnlyCounterDeliveryOrderEquation() {
         className="gc-merge-paper gc-order-paper"
         data-graphic-stage="padded"
         role="img"
-        aria-label="Merging A's vector 1, 0, 0 with C's vector 0, 0, 1 gives 1, 0, 1. Reversing the order and merging C with A also gives 1, 0, 1."
+        aria-label="Merging A's vector 1, 0 with B's vector 0, 1 gives 1, 1. Reversing the order and merging B with A also gives 1, 1."
       >
         <div className="gc-order-comparison" aria-hidden="true">
-          <MergeCalculation order={["A", "C"]} />
-          <MergeCalculation order={["C", "A"]} />
+          <MergeCalculation order={["A", "B"]} />
+          <MergeCalculation order={["B", "A"]} />
         </div>
         <p className="gc-order-result" aria-hidden="true">
           Same result

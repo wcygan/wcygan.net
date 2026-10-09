@@ -1,8 +1,8 @@
-export const NODES = ["A", "B", "C"] as const;
+export const NODES = ["A", "B"] as const;
 export type NodeId = (typeof NODES)[number];
-export type Vector = readonly [number, number, number];
+export type Vector = readonly [number, number];
 export type Replicas = Record<NodeId, Vector>;
-export const COMPONENTS = ["x", "y", "z"] as const;
+export const COMPONENTS = ["x", "y"] as const;
 export const formatVector = (v: Vector) => `[${v.join(", ")}]`;
 export const value = (v: Vector) => v.reduce((sum, count) => sum + count, 0);
 export function increment(v: Vector, node: NodeId): Vector {
@@ -20,16 +20,15 @@ export interface Message {
   readonly vector: Vector;
 }
 export type Action =
-  | { kind: "increment"; node: "A" | "C"; client: string }
+  | { kind: "increment"; node: NodeId; client: string }
   | { kind: "deliver"; message: Message };
 export const INPUTS: readonly Action[] = [
   { kind: "increment", node: "A", client: "Client 1" },
-  { kind: "increment", node: "C", client: "Client 2" },
+  { kind: "increment", node: "B", client: "Client 2" },
 ];
 export const initialReplicas = (): Replicas => ({
-  A: [0, 0, 0],
-  B: [0, 0, 0],
-  C: [0, 0, 0],
+  A: [0, 0],
+  B: [0, 0],
 });
 export function apply(replicas: Replicas, action: Action): Replicas {
   const node = action.kind === "increment" ? action.node : action.message.to;
@@ -46,10 +45,8 @@ export const experimentReplicas = () => INPUTS.reduce(apply, initialReplicas());
 export function captureMessages(replicas: Replicas): readonly Message[] {
   return (
     [
-      ["C", "A"],
       ["A", "B"],
-      ["C", "B"],
-      ["A", "C"],
+      ["B", "A"],
     ] as const
   ).map(([from, to]) =>
     Object.freeze({
@@ -63,7 +60,7 @@ export function captureMessages(replicas: Replicas): readonly Message[] {
 export function refreshMessages(
   messages: readonly Message[],
   replicas: Replicas,
-  from: "A" | "C",
+  from: NodeId,
 ): readonly Message[] {
   return messages.map((message) =>
     message.from === from

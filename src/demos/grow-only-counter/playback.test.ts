@@ -41,35 +41,31 @@ it("supports chosen order, duplicate delivery, and bounded delivery tracking", (
   }
   expect(playback.getSnapshot().replicas).toEqual(before);
   expect(playback.getSnapshot().status).toContain("No change");
-  expect(playback.getSnapshot().delivered).toHaveLength(4);
+  expect(playback.getSnapshot().delivered).toHaveLength(2);
   playback.deliver("unknown");
   expect(playback.getSnapshot().inProgress).toBe(false);
   playback.dispose();
 });
 
-it("lets clients increment A and C and refreshes their outgoing snapshots", () => {
+it("lets either client increment and refreshes its outgoing snapshot", () => {
   const playback = create();
   playback.increment("A");
   vi.advanceTimersByTime(EVENT_MS);
-  expect(playback.getSnapshot().replicas.A).toEqual([2, 0, 0]);
-  expect(
-    playback.getSnapshot().messages.filter((message) => message.from === "A"),
-  ).toEqual([
-    expect.objectContaining({ id: "A-B", vector: [2, 0, 0] }),
-    expect.objectContaining({ id: "A-C", vector: [2, 0, 0] }),
-  ]);
-  playback.increment("C");
+  expect(playback.getSnapshot().replicas.A).toEqual([2, 0]);
+  expect(playback.getSnapshot().messages[0]).toEqual(
+    expect.objectContaining({ id: "A-B", vector: [2, 0] }),
+  );
+  playback.increment("B");
   vi.advanceTimersByTime(EVENT_MS);
-  expect(playback.getSnapshot().replicas.C).toEqual([0, 0, 2]);
+  expect(playback.getSnapshot().replicas.B).toEqual([0, 2]);
   for (const message of playback.getSnapshot().messages) {
     playback.deliver(message.id);
     vi.advanceTimersByTime(EVENT_MS);
   }
   expect(playback.getSnapshot().converged).toBe(true);
   expect(playback.getSnapshot().replicas).toEqual({
-    A: [2, 0, 2],
-    B: [2, 0, 2],
-    C: [2, 0, 2],
+    A: [2, 2],
+    B: [2, 2],
   });
   playback.dispose();
 });
@@ -82,12 +78,12 @@ it("suspends midflight and preserves progress through speed changes", () => {
   playback.setSpeed(2);
   vi.advanceTimersByTime(10000);
   expect(playback.getProgress()).toBe(0.25);
-  expect(playback.getSnapshot().replicas.B).toEqual([0, 0, 0]);
+  expect(playback.getSnapshot().replicas.B).toEqual([0, 1]);
   playback.setActive(true);
   vi.advanceTimersByTime(1499);
-  expect(playback.getSnapshot().replicas.B).toEqual([0, 0, 0]);
+  expect(playback.getSnapshot().replicas.B).toEqual([0, 1]);
   vi.advanceTimersByTime(1);
-  expect(playback.getSnapshot().replicas.B).toEqual([1, 0, 0]);
+  expect(playback.getSnapshot().replicas.B).toEqual([1, 1]);
   playback.dispose();
 });
 
@@ -98,7 +94,7 @@ it("changes speed midflight without resetting progress", () => {
   playback.setSpeed(4);
   expect(playback.getProgress()).toBe(0.25);
   vi.advanceTimersByTime(750);
-  expect(playback.getSnapshot().replicas.A).toEqual([2, 0, 0]);
+  expect(playback.getSnapshot().replicas.A).toEqual([2, 0]);
   playback.setSpeed(99);
   expect(playback.getSnapshot().speed).toBe(4);
   playback.dispose();
@@ -107,10 +103,10 @@ it("changes speed midflight without resetting progress", () => {
 it("ignores competing actions and cancels pending work on restart", () => {
   const playback = create();
   playback.deliver("A-B");
-  playback.deliver("C-B");
+  playback.deliver("B-A");
   vi.advanceTimersByTime(EVENT_MS);
-  expect(playback.getSnapshot().replicas.B).toEqual([1, 0, 0]);
-  playback.deliver("C-B");
+  expect(playback.getSnapshot().replicas.B).toEqual([1, 1]);
+  playback.deliver("B-A");
   vi.advanceTimersByTime(1000);
   playback.restart();
   vi.advanceTimersByTime(EVENT_MS);
@@ -125,16 +121,13 @@ it("uses immediate reduced-motion actions and settles an active action", () => {
   playback.increment("A");
   vi.advanceTimersByTime(1000);
   playback.setReduced(true);
-  expect(playback.getSnapshot().replicas.A).toEqual([2, 0, 0]);
+  expect(playback.getSnapshot().replicas.A).toEqual([2, 0]);
   expect(playback.getSnapshot().inProgress).toBe(false);
-  expect(
-    playback.getSnapshot().messages.filter((message) => message.from === "A"),
-  ).toEqual([
-    expect.objectContaining({ vector: [2, 0, 0] }),
-    expect.objectContaining({ vector: [2, 0, 0] }),
-  ]);
-  playback.deliver("C-B");
-  expect(playback.getSnapshot().replicas.B).toEqual([0, 0, 1]);
+  expect(playback.getSnapshot().messages[0]).toEqual(
+    expect.objectContaining({ vector: [2, 0] }),
+  );
+  playback.deliver("B-A");
+  expect(playback.getSnapshot().replicas.A).toEqual([2, 1]);
   playback.restart();
   expect(playback.getSnapshot().replicas).toEqual(experimentReplicas());
   playback.dispose();

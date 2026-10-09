@@ -40,12 +40,12 @@ export function VectorNotation({
 export function VectorText({ text }: { text: string }) {
   const parts = [];
   let start = 0;
-  for (const match of text.matchAll(/\[(\d+), (\d+), (\d+)\]/g)) {
+  for (const match of text.matchAll(/\[(\d+), (\d+)\]/g)) {
     parts.push(text.slice(start, match.index));
     parts.push(
       <VectorNotation
         key={match.index}
-        value={[Number(match[1]), Number(match[2]), Number(match[3])]}
+        value={[Number(match[1]), Number(match[2])]}
       />,
     );
     start = match.index + match[0].length;

@@ -8,17 +8,27 @@ import { INPUTS, type NodeId, NODES, value } from "./model";
 import type { Playback, PlaybackState } from "./playback";
 type Point = [number, number, number];
 const POSITIONS: Record<NodeId, Point> = {
-  A: [-2.3, 0.5, 1.3],
-  B: [0, 0.5, -2],
-  C: [2.3, 0.5, 1.3],
+  A: [1.1, 0.5, 2.1],
+  B: [1.1, 0.5, -2.1],
 };
-const CLIENT_POSITIONS: Record<"A" | "C", Point> = {
-  A: [-3, 0.5, -1.2],
-  C: [2.6, 0.5, -1.5],
+const CLIENT_POSITIONS: Record<NodeId, Point> = {
+  A: [-2.2, 0.5, 2.1],
+  B: [-2.2, 0.5, -2.1],
 };
-const SIDE_CAMERA: Point = [0, 8, 12];
+const LAPTOP_BASE_SIZE: Point = [0.9, 0.045, 0.58];
+const LAPTOP_BASE_POSITION: Point = [0, -0.16, 0.07];
+function clientConnectionPosition(node: NodeId): Point {
+  const [x, y, z] = CLIENT_POSITIONS[node];
+  return [
+    x + LAPTOP_BASE_SIZE[0] / 2,
+    y + LAPTOP_BASE_POSITION[1],
+    z + LAPTOP_BASE_POSITION[2],
+  ];
+}
+const SIDE_CAMERA: Point = [7, 4.2, 12];
 const TOP_CAMERA: Point = [0, 12, 0.01];
-const COLORS = { A: "#efba91", B: "#ead082", C: "#cbd5a3" };
+const CAMERA_TARGET: Point = [0, 0.1, 0];
+const COLORS = { A: "#efba91", B: "#ead082" };
 export type View = {
   kind: "reset" | "top" | "left" | "right" | "in" | "out";
   revision: number;
@@ -35,7 +45,7 @@ function Camera({
   onUnavailable,
 }: Pick<Props, "view" | "onUnavailable">) {
   const { camera, size, invalidate, gl } = useThree();
-  const fitted = Math.min(size.width / 8.2, size.height / 6.6);
+  const fitted = Math.min(size.width / 8.8, size.height / 7.6) * 0.9;
   useEffect(() => {
     const lost = (event: Event) => {
       event.preventDefault();
@@ -67,7 +77,7 @@ function Camera({
       spherical.theta += view.kind === "left" ? -Math.PI / 8 : Math.PI / 8;
       camera.position.setFromSpherical(spherical);
     }
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(...CAMERA_TARGET);
     camera.updateProjectionMatrix();
     invalidate();
     // Simulation updates and resizing must not reset the reader's orbit.
@@ -76,6 +86,7 @@ function Camera({
     <OrbitControls
       enablePan={false}
       enableDamping={false}
+      target={CAMERA_TARGET}
       minZoom={fitted * 0.6}
       maxZoom={fitted * 2}
       maxPolarAngle={Math.PI / 2.05}
@@ -160,14 +171,14 @@ function Packet({ state, playback }: Pick<Props, "state" | "playback">) {
     </group>
   );
 }
-function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
+function ClientInputs({ state, playback, view }: Props) {
   const request = useRef<Group>(null);
   const event = state.action;
   const input = event?.kind === "increment" ? event : undefined;
   useFrame(() => {
     if (!request.current || !input) return;
     const p = Math.min(1, playback.getProgress() / 0.65);
-    const from = CLIENT_POSITIONS[input.node];
+    const from = clientConnectionPosition(input.node);
     const to = POSITIONS[input.node];
     request.current.visible = !state.reduced && p < 1;
     request.current.position.set(
@@ -181,22 +192,62 @@ function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
       {INPUTS.filter((action) => action.kind === "increment").map((source) => (
         <group key={source.client}>
           <Line
-            points={[CLIENT_POSITIONS[source.node], POSITIONS[source.node]]}
+            points={[
+              clientConnectionPosition(source.node),
+              POSITIONS[source.node],
+            ]}
             color="#bcbbb5"
             lineWidth={1}
           />
           <group position={CLIENT_POSITIONS[source.node]}>
-            <mesh>
-              <boxGeometry args={[0.55, 0.36, 0.08]} />
-              <meshStandardMaterial color="#e4e3de" />
+            {/* Open laptop with a connected lid, hinge, aluminum deck, and screen. */}
+            <mesh position={[0, 0.125, -0.2]}>
+              <boxGeometry args={[0.78, 0.53, 0.055]} />
+              <meshStandardMaterial color="#b8b7b1" roughness={0.82} />
               <Edges color="#736f64" />
             </mesh>
-            <mesh position={[0, -0.2, 0.12]}>
-              <boxGeometry args={[0.65, 0.06, 0.4]} />
-              <meshStandardMaterial color="#bcbbb5" />
+            <mesh position={[0, 0.125, -0.166]}>
+              <boxGeometry args={[0.7, 0.45, 0.012]} />
+              <meshStandardMaterial color="#323232" roughness={0.85} />
+            </mesh>
+            <mesh position={[0, 0.125, -0.158]}>
+              <boxGeometry args={[0.64, 0.39, 0.006]} />
+              <meshStandardMaterial color="#555650" roughness={0.9} />
+            </mesh>
+            <mesh position={LAPTOP_BASE_POSITION}>
+              <boxGeometry args={LAPTOP_BASE_SIZE} />
+              <meshStandardMaterial color="#c4c3bd" roughness={0.82} />
               <Edges color="#736f64" />
             </mesh>
-            <Html center position={[0, 0.85, 0]} className="gc-client-label">
+            <mesh position={[0, -0.137, 0.055]}>
+              <boxGeometry args={[0.65, 0.012, 0.31]} />
+              <meshStandardMaterial color="#b8b7b1" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, -0.14, -0.205]}>
+              <boxGeometry args={[0.78, 0.035, 0.04]} />
+              <meshStandardMaterial color="#85837d" roughness={0.8} />
+            </mesh>
+            {[-0.065, 0, 0.065].flatMap((row) =>
+              Array.from({ length: 8 }, (_, index) => (
+                <mesh
+                  key={`${row}-${index}`}
+                  position={[(index - 3.5) * 0.07, -0.131, row]}
+                >
+                  <boxGeometry args={[0.055, 0.012, 0.045]} />
+                  <meshStandardMaterial color="#777670" roughness={0.9} />
+                </mesh>
+              )),
+            )}
+            <mesh position={[0, -0.132, 0.25]}>
+              <boxGeometry args={[0.2, 0.012, 0.11]} />
+              <meshStandardMaterial color="#d6d5cf" roughness={0.9} />
+              <Edges color="#a5a39c" />
+            </mesh>
+            <Html
+              center
+              position={view.kind === "top" ? [-1.2, 0, 0] : [0, 1.05, 0]}
+              className="gc-client-label"
+            >
               <strong>{source.client}</strong>
               <span>Increment +1</span>
             </Html>
@@ -210,38 +261,43 @@ function ClientInputs({ state, playback }: Pick<Props, "state" | "playback">) {
             <meshStandardMaterial color="#63635e" />
             <Edges color="#21201c" />
           </mesh>
-          <Html center position={[0, 0.5, 0]} className="gc-packet-label">
-            Increment +1
-          </Html>
         </group>
       )}
     </>
   );
 }
 /** Keep the whole label clear of the projected cube while the reader orbits. */
-function NodeLabel({ node, state }: { node: NodeId; state: PlaybackState }) {
+function NodeLabel({
+  node,
+  state,
+  view,
+}: {
+  node: NodeId;
+  state: PlaybackState;
+  view: View;
+}) {
   const anchor = useRef<Group>(null);
   const invalidate = useThree((s) => s.invalidate);
   useFrame(({ camera }) => {
     if (!anchor.current) return;
     const e = camera.matrixWorld.elements;
     const radius = 0.425 * (Math.abs(e[4]) + Math.abs(e[5]) + Math.abs(e[6]));
-    const distance = radius + 52 / (camera as OrthographicCamera).zoom;
+    const distance = radius + 82 / (camera as OrthographicCamera).zoom;
+    const next =
+      view.kind === "top"
+        ? [0, 0, 0]
+        : [-e[4] * distance, -e[5] * distance, -e[6] * distance];
     const changed =
-      Math.abs(anchor.current.position.x + e[4] * distance) +
-        Math.abs(anchor.current.position.y + e[5] * distance) +
-        Math.abs(anchor.current.position.z + e[6] * distance) >
+      Math.abs(anchor.current.position.x - next[0]) +
+        Math.abs(anchor.current.position.y - next[1]) +
+        Math.abs(anchor.current.position.z - next[2]) >
       0.00001;
-    anchor.current.position.set(
-      -e[4] * distance,
-      -e[5] * distance,
-      -e[6] * distance,
-    );
+    anchor.current.position.set(next[0], next[1], next[2]);
     if (changed) invalidate();
   });
   return (
     <group ref={anchor}>
-      <Html center className="gc-node-label">
+      <Html center position={[1.25, 0, 0]} className="gc-node-label">
         <strong>
           Node{" "}
           <span
@@ -268,13 +324,7 @@ function World(props: Props) {
       <Camera view={props.view} onUnavailable={props.onUnavailable} />
       <ambientLight intensity={1.6} />
       <directionalLight position={[-3, 8, 6]} intensity={2.2} />
-      {(
-        [
-          ["A", "B"],
-          ["C", "B"],
-          ["A", "C"],
-        ] as const
-      ).map(([a, b]) => (
+      {([["A", "B"]] as const).map(([a, b]) => (
         <group key={`${a}-${b}`}>
           <Line
             points={[POSITIONS[a], POSITIONS[b]]}
@@ -289,10 +339,10 @@ function World(props: Props) {
       {NODES.map((node) => (
         <group key={node} position={POSITIONS[node]}>
           <NodeBody node={node} state={state} playback={props.playback} />
-          <NodeLabel node={node} state={state} />
+          <NodeLabel node={node} state={state} view={props.view} />
         </group>
       ))}
-      <ClientInputs state={state} playback={props.playback} />
+      <ClientInputs {...props} />
       <Packet state={state} playback={props.playback} />
     </>
   );
