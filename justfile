@@ -8,9 +8,8 @@ default:
 # Development
 # ---------------------------------------------------------------------------
 
-# Start the dev server at https://wcygan.localhost (portless wraps Vite)
+# Start the dev server; linked worktrees get their own Portless URL
 dev:
-    (sleep 2 && open https://wcygan.localhost) &
     bun run dev
 
 # Start the bare Vite dev server on :3000 (CI / no-portless fallback)

@@ -47,7 +47,7 @@
   },
   "packageManager": "bun@1.4.0",
   "scripts": {
-    "dev": "PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 scripts/ensure-portless-proxy.sh && PORTLESS_STATE_DIR=$HOME/.portless PORTLESS_PORT=443 PORTLESS_HTTPS=1 bun --bun run portless run bun run dev-vite",
+    "dev": "scripts/dev.sh",
     "dev-vite": "bun --bun run vite dev",
     "build": "bun run generate:embedding-land && bun scripts/build.mjs",
     "generate:embedding-land": "bun scripts/generate-embedding-land.mjs",
