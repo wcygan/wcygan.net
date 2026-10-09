@@ -1,5 +1,11 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "**/node_modules",
+    "**/bower_components",
+    "**/jspm_packages",
+    "examples/temporal-intro"
+  ],
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
