@@ -12,11 +12,17 @@ git_dir="$(git rev-parse --absolute-git-dir)"
 git_common_dir="$(git rev-parse --path-format=absolute --git-common-dir)"
 
 app_name="wcygan"
-if [[ "$git_dir" != "$git_common_dir" ]]; then
+branch_name="$(git symbolic-ref --quiet --short HEAD || true)"
+
+if [[ "$git_dir" != "$git_common_dir" && -z "$branch_name" ]]; then
   worktree_hash="$(printf '%s' "$repo_root" | cksum | awk '{ print $1 }')"
   app_name="wcygan-${worktree_hash}"
+
+  # Detached worktrees have no branch name for Portless to use. Give them a
+  # stable checkout-specific name while normal worktrees use branch prefixes.
+  exec bun --bun run portless --name "$app_name" bun run dev-vite
 fi
 
-# Explicit-name mode skips Portless's branch prefix. The checkout path hash
-# also distinguishes detached worktrees and multiple checkouts of one branch.
-exec bun --bun run portless --name "$app_name" bun run dev-vite
+# Portless keeps the base hostname on main and prefixes linked worktrees with
+# their branch name (for example, codex/foo -> foo.wcygan.localhost).
+exec bun --bun run portless run --name "$app_name" bun run dev-vite
