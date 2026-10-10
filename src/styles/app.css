@@ -14844,6 +14844,287 @@ th {
     height: 320px;
   }
 }
+/* Two-phase commit: warm canvas, semantic protocol states, exact SVG ports. */
+.two-phase-demo {
+  --two-phase-ink: oklch(0.243 0.008 95.372);
+  --two-phase-muted: oklch(0.498 0.008 106.679);
+  --two-phase-line: oklch(0.64 0.008 98.912);
+  --two-phase-hairline: oklch(0.915 0.007 97.359);
+  --two-phase-paper: oklch(0.994 0.001 106.423);
+  --two-phase-stage: oklch(0.973 0.004 91.446);
+  --two-phase-hover: oklch(0.968 0.001 17.178);
+  --two-phase-focus: oklch(0.537 0.105 258.282);
+  --two-phase-blue-ink: oklch(0.43 0.105 250);
+  --two-phase-blue-line: oklch(0.55 0.14 250);
+  --two-phase-blue-wash: oklch(0.96 0.018 250);
+  --two-phase-amber-ink: oklch(0.43 0.085 75);
+  --two-phase-amber-line: oklch(0.62 0.115 75);
+  --two-phase-amber-wash: oklch(0.965 0.027 85);
+  --two-phase-green-ink: oklch(0.4 0.085 150);
+  --two-phase-green-line: oklch(0.53 0.11 150);
+  --two-phase-green-wash: oklch(0.96 0.025 150);
+  --two-phase-red-ink: oklch(0.43 0.13 25);
+  --two-phase-red-line: oklch(0.56 0.17 25);
+  --two-phase-red-wash: oklch(0.958 0.018 25);
+  --two-phase-teal-ink: oklch(0.4 0.065 190);
+  --two-phase-teal-line: oklch(0.53 0.08 190);
+  --two-phase-teal-wash: oklch(0.96 0.015 190);
+  margin-block: 28px;
+  color: var(--two-phase-ink);
+}
+.two-phase-demo [data-tone="neutral"],
+.two-phase-participant[data-state="staged"] {
+  --state-ink: var(--two-phase-ink);
+  --state-line: var(--two-phase-line);
+  --state-wash: var(--two-phase-paper);
+}
+.two-phase-demo [data-tone="info"],
+.two-phase-participant[data-state="requested"] {
+  --state-ink: var(--two-phase-blue-ink);
+  --state-line: var(--two-phase-blue-line);
+  --state-wash: var(--two-phase-blue-wash);
+}
+.two-phase-participant[data-state="prepared"] {
+  --state-ink: var(--two-phase-amber-ink);
+  --state-line: var(--two-phase-amber-line);
+  --state-wash: var(--two-phase-amber-wash);
+}
+.two-phase-demo [data-tone="yes"],
+.two-phase-participant[data-state="voted-yes"] {
+  --state-ink: var(--two-phase-green-ink);
+  --state-line: var(--two-phase-green-line);
+  --state-wash: var(--two-phase-green-wash);
+}
+.two-phase-demo [data-tone="commit"],
+.two-phase-participant[data-state="committed"] {
+  --state-ink: var(--two-phase-teal-ink);
+  --state-line: var(--two-phase-teal-line);
+  --state-wash: var(--two-phase-teal-wash);
+}
+.two-phase-demo [data-tone="no"],
+.two-phase-participant:is([data-state="rejected"], [data-state="aborted"]) {
+  --state-ink: var(--two-phase-red-ink);
+  --state-line: var(--two-phase-red-line);
+  --state-wash: var(--two-phase-red-wash);
+}
+.two-phase-demo .two-phase-description {
+  margin-block: 8px 16px;
+  color: var(--two-phase-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.two-phase-stage {
+  display: grid;
+  justify-items: center;
+  background: var(--two-phase-stage);
+}
+.two-phase-stage svg {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  overflow: visible;
+  font:
+    400 14px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  text-anchor: middle;
+}
+.two-phase-connector {
+  fill: none;
+  stroke: var(--state-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+.two-phase-route[data-active="true"] .two-phase-connector {
+  stroke-width: 2;
+}
+.two-phase-arrow {
+  fill: none;
+  stroke: var(--state-line);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.two-phase-route-label {
+  fill: var(--state-ink);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.two-phase-node :is(rect, .two-phase-database-body, .two-phase-database-cap) {
+  fill: var(--state-wash);
+  stroke: var(--state-line);
+  stroke-width: 1.3;
+}
+.two-phase-node .two-phase-node-divider {
+  fill: none;
+  stroke: var(--state-line);
+  stroke-width: 1;
+  stroke-opacity: 0.35;
+}
+.two-phase-node text {
+  fill: var(--two-phase-ink);
+}
+.two-phase-node .two-phase-node-name {
+  font:
+    550 14px/1.4 Inter,
+    system-ui,
+    sans-serif;
+}
+.two-phase-node .two-phase-node-state {
+  fill: var(--state-ink);
+  font-weight: 600;
+}
+.two-phase-node .two-phase-vote-rule {
+  fill: var(--state-ink);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.two-phase-node .two-phase-node-detail {
+  fill: var(--state-ink);
+  font:
+    400 14px/1.4 Inter,
+    system-ui,
+    sans-serif;
+}
+.two-phase-participant:is([data-state="prepared"], [data-state="voted-yes"])
+  :is(.two-phase-database-body, .two-phase-database-cap) {
+  stroke-dasharray: 3 3;
+}
+.two-phase-participant:is([data-state="committed"], [data-state="aborted"])
+  .two-phase-database-body {
+  stroke-width: 2;
+}
+.two-phase-port {
+  fill: var(--two-phase-paper);
+  stroke: var(--two-phase-line);
+  stroke-width: 1;
+}
+.two-phase-message rect {
+  fill: var(--state-line);
+  stroke: var(--two-phase-paper);
+  stroke-width: 2;
+}
+.two-phase-row {
+  --row-ink: var(--two-phase-muted);
+  --row-line: var(--two-phase-line);
+  --row-wash: var(--two-phase-paper);
+}
+.two-phase-row[data-locked="true"] {
+  --row-ink: var(--two-phase-amber-ink);
+  --row-line: var(--two-phase-amber-line);
+  --row-wash: var(--two-phase-amber-wash);
+}
+.two-phase-row > rect {
+  fill: var(--row-wash);
+  stroke: var(--row-line);
+  stroke-width: 1;
+}
+.two-phase-row text {
+  fill: var(--row-ink);
+  text-anchor: start;
+}
+.two-phase-row .two-phase-row-lock {
+  text-anchor: end;
+  font-weight: 500;
+}
+.two-phase-lock-icon :is(path, rect) {
+  fill: none;
+  stroke: var(--row-ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.two-phase-votes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-block: 16px 12px;
+}
+.two-phase-votes fieldset {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.two-phase-votes legend {
+  margin-block-end: 4px;
+  color: var(--two-phase-muted);
+  font-size: 14px;
+}
+.two-phase-votes button,
+.two-phase-controls button {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--two-phase-hairline);
+  border-radius: 4px;
+  background: var(--two-phase-paper);
+  color: var(--two-phase-ink);
+  font:
+    500 14px/1.4 Inter,
+    system-ui,
+    sans-serif;
+}
+.two-phase-votes button[data-vote="yes"] {
+  --vote-ink: var(--two-phase-green-ink);
+  --vote-line: var(--two-phase-green-line);
+  --vote-wash: var(--two-phase-green-wash);
+}
+.two-phase-votes button[data-vote="no"] {
+  --vote-ink: var(--two-phase-red-ink);
+  --vote-line: var(--two-phase-red-line);
+  --vote-wash: var(--two-phase-red-wash);
+}
+.two-phase-votes button {
+  color: var(--vote-ink);
+}
+.two-phase-votes button[aria-pressed="true"] {
+  border-color: var(--vote-line);
+  background: var(--vote-wash);
+  color: var(--vote-ink);
+  box-shadow: inset 0 -2px 0 var(--vote-line);
+}
+.two-phase-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+}
+.two-phase-controls > span {
+  margin-inline-start: auto;
+  color: var(--two-phase-muted);
+  font:
+    400 14px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+}
+.two-phase-demo button:not(:disabled):not([aria-pressed="true"]):hover {
+  background: var(--two-phase-hover);
+}
+.two-phase-demo button[aria-pressed="true"]:hover {
+  border-color: var(--vote-ink);
+}
+.two-phase-demo button:focus-visible {
+  outline: 2px solid var(--two-phase-focus);
+  outline-offset: 2px;
+}
+.two-phase-demo button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.two-phase-demo .two-phase-status > p,
+.two-phase-demo .two-phase-motion-note {
+  margin-block: 12px;
+  color: var(--two-phase-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
 .gossip-demo {
   --gossip-blue: oklch(0.546 0.245 262.881);
   --gossip-green: oklch(0.648 0.168 145.79);

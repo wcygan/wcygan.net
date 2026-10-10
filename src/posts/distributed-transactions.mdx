@@ -6,8 +6,9 @@ tags: [Distributed Systems, Databases]
 relatedReading: Database Internals
 ---
 
-import { DistributedTransactionDemo } from "~/components/DistributedTransactionDemo";
 import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
+import { TwoPhasePrepareDemo } from "~/components/TwoPhasePrepareDemo";
+import { TwoPhaseDecisionDemo } from "~/components/TwoPhaseDecisionDemo";
 
 <DatabaseInternalsReference
   chapters={[
@@ -18,93 +19,41 @@ import { DatabaseInternalsReference } from "~/components/DatabaseInternalsRefere
   ]}
 />
 
-A $10 transfer changes one account by <span className="transaction-amount transaction-amount--debit">−$10</span> and another by <span className="transaction-amount transaction-amount--credit">+$10</span>. Atomic commitment makes both changes succeed or fail together.
-
-Here, “distributed” means the accounts live on separate database shards. A transaction local to one shard cannot protect changes on both. [MySQL XA transactions](https://dev.mysql.com/doc/refman/9.7/en/xa.html) use two-phase commit (2PC) to coordinate multiple transactional resources.
+[Distributed transactions](https://en.wikipedia.org/wiki/Distributed_transaction) change data on more than one database node. [Atomic commit](https://en.wikipedia.org/wiki/Atomic_commit) gives all participants one outcome: commit or abort. [Two-Phase Commit](https://en.wikipedia.org/wiki/Two-phase_commit_protocol) (2PC) is a common way to reach that outcome.
 
 ## Two-Phase Commit
 
-Two-Phase Commit (2PC) uses a coordinator to agree on one outcome across participating shards. In MySQL XA, a client transaction manager fills that role. At a high level, it follows this process:
+A coordinator manages the transaction. The database nodes taking part in the transaction are called participants. First, the coordinator asks whether each participant can commit. Then, based on how the participants vote, it sends everyone the same decision (either commit or abort).
 
-1. **Prepare:** The coordinator asks every shard to <span className="transaction-decision transaction-decision--prepare">PREPARE</span> and waits for each vote (yes or no).
-2. **Commit or abort:** If all vote yes, the coordinator records and sends <span className="transaction-decision transaction-decision--commit">COMMIT</span>; otherwise, it records and sends <span className="transaction-decision transaction-decision--abort">ABORT</span>. Each shard applies the decision, records the outcome, and acknowledges it.
+### Phase One: Prepare
 
-After every shard votes yes, an unavailable coordinator can leave prepared shards [blocked](https://www.cs.ubc.ca/~bestchai/teaching/cs416_2016w2/lectures/lecture-mar22-part2.pdf#page=2). They cannot safely choose <span className="transaction-decision transaction-decision--commit">commit</span> or <span className="transaction-decision transaction-decision--abort">abort</span> from a timeout alone. If the coordinator stays unavailable, the wait has no bound. When it recovers, it checks its durable transaction log and resends any recorded decision; the shards keep their locks until they receive and apply it.
+The coordinator sends **PREPARE** to every participant, asking whether it can commit.
 
-In this account-row example, a prepared transaction holds locks on the [rows it touched](https://dev.mysql.com/doc/refman/9.7/en/innodb-locking.html). Work on unrelated rows can continue, while [writes that need those locked rows must wait](https://dev.mysql.com/doc/refman/9.7/en/innodb-information-schema-understanding-innodb-locking.html) for the decision.
+After PREPARE arrives each participant checks whether it can commit. A yes voter saves its prepared state and sends **YES**. A no voter rolls back its local transaction, releases its locks, and sends **NO**.
 
-<figure className="static-mermaid-figure">
-  <div
-    className="static-mermaid-frame static-mermaid-frame-pan static-mermaid-frame-sequence"
-    role="region"
-    aria-label="Scrollable two-phase commit sequence diagram"
-    tabIndex={0}
-  >
-    <img
-      className="static-mermaid-diagram"
-      src="/distributed-transactions/two-phase-commit.svg?v=2"
-      alt="Sequence diagram focused on the coordinator: it asks both shards to prepare. If both vote yes, it sends teal commit messages and receives green committed acknowledgements. If either votes no, it sends red abort messages and receives red aborted acknowledgements."
-      width={653}
-      height={979}
-    />
-  </div>
-  <figcaption className="static-mermaid-mobile-hint">
-    Scroll horizontally to read the full diagram.
-  </figcaption>
-</figure>
+<TwoPhasePrepareDemo />
 
-<DistributedTransactionDemo kind="two-phase" showLedger={false} />
+### Phase Two: Commit or Abort
 
-## Three-Phase Commit
+If everyone votes yes, the coordinator chooses **COMMIT**. If anyone votes no, it chooses **ABORT**. It can also abort if a vote does not arrive in time, as long as it has not already recorded commit. It records the decision in storage that survives a restart before sending it.
 
-Three-Phase Commit (3PC) adds a pre-commit round before the final decision to reduce blocking when the coordinator fails.
+Each participant saves the outcome so it survives a restart, then commits its changes or rolls back its local transaction. It releases its locks and sends an acknowledgement.
 
-With bounded message and processing delays and no network partition, 3PC can avoid the coordinator-failure blocking problem of 2PC. Outside those assumptions, a timeout cannot reliably distinguish a crashed participant from an unreachable one.
+<TwoPhaseDecisionDemo />
 
-During a network partition, a participant that received <span className="transaction-decision transaction-decision--pre-commit">PRE-COMMIT</span> may time out and <span className="transaction-decision transaction-decision--abort"><a href="https://www.cs.ubc.ca/~bestchai/teaching/cs416_2016w2/lectures/lecture-mar22-part2.pdf#page=10">commit while participants that did not receive it abort</a></span>, violating atomicity. The extra phase allows progress only while the timing and connectivity assumptions hold.
+## Guarantees and Costs
 
-<figure className="static-mermaid-figure">
-  <div
-    className="static-mermaid-frame static-mermaid-frame-pan static-mermaid-frame-sequence"
-    role="region"
-    aria-label="Scrollable three-phase commit sequence diagram"
-    tabIndex={0}
-  >
-    <img
-      className="static-mermaid-diagram"
-      src="/distributed-transactions/three-phase-commit.svg"
-      alt="Sequence diagram of three-phase commit: the coordinator gathers prepare votes, sends Pre-commit and gathers acknowledgements, then sends Commit and receives committed replies. Prepare messages are orange, Pre-commit messages are purple, Commit messages are teal, and committed acknowledgements are green."
-      width={650}
-      height={819}
-    />
-  </div>
-  <figcaption>
-    Three-phase commit adds a Pre-commit round before the final decision.
-    <span className="static-mermaid-mobile-hint">
-      Scroll horizontally to read the full diagram.
-    </span>
-  </figcaption>
-</figure>
+2PC gives participants one commit-or-abort outcome. The extra coordination has a cost:
 
-<DistributedTransactionDemo kind="three-phase" showLedger={false} />
+- Votes and decisions take network round trips.
+- Participants and the coordinator must save records for recovery.
+- Slow participants delay the transaction.
+- Prepared participants may hold locks while they wait.
 
-## Transactions Across Replicated Shards
+## Failures and Recovery
 
-Sharding spreads data across groups. Replication stores multiple copies of each group's data. A transaction that spans replicated shards needs one consistent outcome across the groups.
+A participant that voted yes cannot safely abort just because it times out. The coordinator may already have recorded commit and told another participant. If the decision is unavailable, the prepared participant can remain [blocked](https://www.cs.ubc.ca/~bestchai/teaching/cs416_2016w2/lectures/lecture-mar22-part2.pdf#page=2), holding locks while it waits.
 
-Production distributed databases combine these effects in different ways:
+## Distributed SQL
 
-- [Google Spanner](<https://docs.cloud.google.com/spanner/docs/whitepapers/life-of-reads-and-writes#:~:text=We%20implement%20two%2Dphase%20commit%20(2PC)%20for%20transactions%20that%20span%20splits>) replicates each split with Paxos and uses two-phase commit for transactions that span splits. TrueTime supports its commit-wait step.
-- In [TiDB and TiKV](https://docs.pingcap.com/tidb/stable/tikv-overview/), each TiKV Region is replicated with Raft. In the standard 2PC path, TiDB's TiKV client [prewrites mutations](https://github.com/tikv/client-go/blob/b9fc0b7719d3ea62bd9904cd31fbd27715ff08bc/txnkv/transaction/2pc.go#L1895-L1898) and then [commits them](https://github.com/tikv/client-go/blob/b9fc0b7719d3ea62bd9904cd31fbd27715ff08bc/txnkv/transaction/2pc.go#L2070-L2079); TiKV's storage code [writes the prepared lock](https://github.com/tikv/tikv/blob/548812e1ef57aef077a2062a9cc356640a6347f5/src/storage/txn/actions/prewrite.rs#L750-L767) and [records the commit](https://github.com/tikv/tikv/blob/548812e1ef57aef077a2062a9cc356640a6347f5/src/storage/txn/actions/commit.rs#L218-L244).
-- [CockroachDB](https://www.cockroachlabs.com/blog/parallel-commits/) replicates key ranges with Raft and uses its [Parallel Commits protocol](https://github.com/cockroachdb/cockroach/blob/d30c905fff79ef825adc96bcc647f1872a90f2ff/pkg/kv/kvclient/kvcoord/txn_interceptor_committer.go#L166-L259), an atomic commit optimization for transactions across ranges.
-
-The demo transfers $10 from Shard A to Shard B. Each shard has three replicas, and two replicas form a **quorum**: enough copies to safely record a decision. A's leader also coordinates the transfer.
-
-1. **Lock both accounts.** A and B hold their account locks while the transfer is pending.
-2. **B prepares and tells A it is ready.** B stores <span className="transaction-decision transaction-decision--prepare">PREPARE</span> on two replicas before sending its Yes vote to A.
-3. **A records the decision.** A stores <span className="transaction-decision transaction-decision--commit">COMMIT</span> on two replicas, together with its debit and the commit timestamp. The decision is now fixed.
-4. **Both shards apply the transfer.** After a short clock-related wait, A applies the debit and sends <span className="transaction-decision transaction-decision--commit">COMMIT</span> to B. B records it on two replicas, applies the credit, and releases its lock. The balances finish at $90 and $110.
-
-This is a simplified version of [Spanner’s protocol (§4.2.1)](https://www.usenix.org/system/files/conference/osdi12/osdi12-final-16.pdf#page=8): A skips its own <span className="transaction-decision transaction-decision--prepare">PREPARE</span> record, and the clock-related wait is specific to Spanner. Replicas with blank records can catch up later. The displayed balances show internal progress; a consistent read cannot return the temporary $90/$100 pair.
-
-<DistributedTransactionDemo kind="spanner" showLedger={false} />
+Distributed SQL databases combine transaction coordination across shards with consensus replication within each shard. Systems such as [Spanner](https://cloud.google.com/spanner), [TiDB](https://www.pingcap.com/tidb/), [YugabyteDB](https://www.yugabyte.com/), and [CockroachDB](https://www.cockroachlabs.com/product/cockroachdb/) use these building blocks to keep transactions consistent across replicated data.
