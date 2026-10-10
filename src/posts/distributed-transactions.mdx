@@ -9,6 +9,7 @@ relatedReading: Database Internals
 import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
 import { TwoPhasePrepareDemo } from "~/components/TwoPhasePrepareDemo";
 import { TwoPhaseDecisionDemo } from "~/components/TwoPhaseDecisionDemo";
+import { ReplicatedShardsDemo } from "~/components/ReplicatedShardsDemo";
 
 <DatabaseInternalsReference
   chapters={[
@@ -43,12 +44,14 @@ Each participant saves the outcome so it survives a restart, then commits its ch
 
 ## Guarantees and Costs
 
-2PC gives participants one commit-or-abort outcome. The extra coordination has a cost:
+2PC coordinates participants on a single commit-or-abort decision.
 
-- Votes and decisions take network round trips.
-- Participants and the coordinator must save records for recovery.
-- Slow participants delay the transaction.
-- Prepared participants may hold locks while they wait.
+That coordination has a cost:
+
+- Votes and decisions require network round trips.
+- The coordinator and participants must durably record information for recovery.
+- The coordinator waits for every participant’s vote, so a slow participant can delay the decision.
+- After voting yes, participants may hold locks while waiting for the decision, blocking other work.
 
 ## Failures and Recovery
 
@@ -57,3 +60,9 @@ A participant that voted yes cannot safely abort just because it times out. The 
 ## Distributed SQL
 
 Distributed SQL databases combine transaction coordination across shards with consensus replication within each shard. Systems such as [Spanner](https://cloud.google.com/spanner), [TiDB](https://www.pingcap.com/tidb/), [YugabyteDB](https://www.yugabyte.com/), and [CockroachDB](https://www.cockroachlabs.com/product/cockroachdb/) use these building blocks to keep transactions consistent across replicated data.
+
+### Replicated Shards
+
+Each participant in the 2PC exchange can itself be a replicated shard. A shard leader waits for its local consensus group to durably prepare the change before voting YES. The coordinator then gathers one vote from each shard and records a single transaction decision. This simplified view highlights the two coordination boundaries; implementations and optimizations differ.
+
+<ReplicatedShardsDemo />

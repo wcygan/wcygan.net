@@ -14844,6 +14844,209 @@ th {
     height: 320px;
   }
 }
+/* Replicated-shard transaction overview: one vote per shard, local quorum per group. */
+.replicated-shards-demo {
+  --rs-ink: var(--two-phase-ink, oklch(0.243 0.008 95.372));
+  --rs-muted: var(--two-phase-muted, oklch(0.498 0.008 106.679));
+  --rs-line: var(--two-phase-line, oklch(0.64 0.008 98.912));
+  --rs-paper: var(--two-phase-paper, oklch(0.994 0.001 106.423));
+  --rs-stage: var(--two-phase-stage, oklch(0.973 0.004 91.446));
+  --rs-blue: var(--two-phase-blue-ink, oklch(0.43 0.105 250));
+  --rs-blue-line: var(--two-phase-blue-line, oklch(0.55 0.14 250));
+  --rs-blue-wash: var(--two-phase-blue-wash, oklch(0.96 0.018 250));
+  --rs-amber: var(--two-phase-amber-ink, oklch(0.43 0.085 75));
+  --rs-amber-line: var(--two-phase-amber-line, oklch(0.62 0.115 75));
+  --rs-amber-wash: var(--two-phase-amber-wash, oklch(0.965 0.027 85));
+  --rs-green: var(--two-phase-green-ink, oklch(0.4 0.085 150));
+  --rs-green-line: var(--two-phase-green-line, oklch(0.53 0.11 150));
+  --rs-green-wash: var(--two-phase-green-wash, oklch(0.96 0.025 150));
+  --rs-red: var(--two-phase-red-ink, oklch(0.43 0.13 25));
+  --rs-red-line: var(--two-phase-red-line, oklch(0.56 0.17 25));
+  --rs-red-wash: var(--two-phase-red-wash, oklch(0.958 0.018 25));
+  --rs-teal: var(--two-phase-teal-ink, oklch(0.4 0.065 190));
+  --rs-teal-line: var(--two-phase-teal-line, oklch(0.53 0.08 190));
+  --rs-teal-wash: var(--two-phase-teal-wash, oklch(0.96 0.015 190));
+  margin-block: 28px;
+  color: var(--rs-ink);
+}
+.replicated-shards-description {
+  margin-block: 8px 16px;
+  color: var(--rs-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.replicated-shards-stage {
+  display: grid;
+  justify-items: center;
+  background: var(--rs-stage);
+}
+.replicated-shards-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font:
+    400 12px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.replicated-shards-node-surface,
+.replicated-shards-coordinator rect {
+  fill: var(--rs-paper);
+  stroke: var(--rs-line);
+  stroke-width: 1.2;
+}
+.replicated-shards-node[data-record="PREPARE"] .replicated-shards-node-surface {
+  fill: var(--rs-amber-wash);
+  stroke: var(--rs-amber-line);
+}
+.replicated-shards-node[data-record="COMMIT"] .replicated-shards-node-surface {
+  fill: var(--rs-teal-wash);
+  stroke: var(--rs-teal-line);
+}
+.replicated-shards-leader .replicated-shards-node-surface {
+  stroke-width: 1.8;
+}
+.replicated-shards-node-role,
+.replicated-shards-group-label,
+.replicated-shards-coordinator-role {
+  fill: var(--rs-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.replicated-shards-node-state {
+  fill: var(--rs-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.replicated-shards-node[data-record="PREPARE"] .replicated-shards-node-state,
+.replicated-shards-node[data-record="PREPARE"] .replicated-shards-node-role {
+  fill: var(--rs-amber);
+}
+.replicated-shards-node[data-record="COMMIT"] .replicated-shards-node-state,
+.replicated-shards-node[data-record="COMMIT"] .replicated-shards-node-role {
+  fill: var(--rs-teal);
+}
+.replicated-shards-quorum {
+  fill: var(--rs-muted);
+  font-size: 9px;
+}
+.replicated-shards-quorum[data-quorum="true"] {
+  fill: var(--rs-green);
+}
+.replicated-shards-node
+  .replicated-shards-quorum
+  .replicated-shards-quorum-outline {
+  fill: var(--rs-green-wash);
+  stroke: var(--rs-green-line);
+  stroke-width: 1;
+}
+.replicated-shards-replica-tree,
+.replicated-shards-link {
+  fill: none;
+  stroke: var(--rs-line);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+.replicated-shards-packet rect {
+  fill: var(--rs-blue-line);
+  stroke: var(--rs-stage);
+  stroke-width: 1.5;
+}
+.replicated-shards-packet[data-tone="replication"] rect {
+  fill: var(--rs-amber-line);
+}
+.replicated-shards-packet[data-tone="yes"] rect {
+  fill: var(--rs-green-line);
+}
+.replicated-shards-packet[data-tone="commit"] rect {
+  fill: var(--rs-teal-line);
+}
+.replicated-shards-packet text {
+  fill: var(--rs-muted);
+  font-size: 10px;
+}
+.replicated-shards-coordinator[data-record="COMMIT"] rect {
+  fill: var(--rs-teal-wash);
+  stroke: var(--rs-teal-line);
+}
+.replicated-shards-coordinator-role {
+  fill: var(--rs-muted);
+}
+.replicated-shards-coordinator-state {
+  fill: var(--rs-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.replicated-shards-tally {
+  fill: var(--rs-red);
+  font-size: 13px;
+  font-weight: 600;
+}
+.replicated-shards-coordinator[data-votes="2"] .replicated-shards-tally {
+  fill: var(--rs-green);
+}
+.replicated-shards-coordinator[data-record="COMMIT"] .replicated-shards-tally {
+  fill: var(--rs-teal);
+}
+.replicated-shards-quorum-note {
+  fill: var(--rs-muted);
+  font-size: 10px;
+}
+.replicated-shards-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+}
+.replicated-shards-controls button {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--two-phase-hairline, oklch(0.915 0.007 97.359));
+  border-radius: 4px;
+  background: var(--rs-paper);
+  color: var(--rs-ink);
+  font:
+    500 14px/1.4 Inter,
+    system-ui,
+    sans-serif;
+}
+.replicated-shards-controls button:focus-visible {
+  outline: 2px solid var(--two-phase-focus, oklch(0.537 0.105 258.282));
+  outline-offset: 2px;
+}
+.replicated-shards-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.replicated-shards-controls > span {
+  margin-inline-start: auto;
+  color: var(--rs-muted);
+  font:
+    400 14px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+}
+.replicated-shards-status > p,
+.replicated-shards-motion-note {
+  margin-block: 12px;
+  color: var(--rs-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 639px) {
+  .replicated-shards-stage svg {
+    min-width: 600px;
+  }
+  .replicated-shards-stage {
+    overflow-x: auto;
+  }
+}
+
 /* Two-phase commit: warm canvas, semantic protocol states, exact SVG ports. */
 .two-phase-demo {
   --two-phase-ink: oklch(0.243 0.008 95.372);

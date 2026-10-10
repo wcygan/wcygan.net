@@ -195,8 +195,8 @@ export function TwoPhaseProtocolDemo({ phase }: { phase: Phase }) {
       </p>
       <p className="two-phase-description">
         {phase === "prepare"
-          ? "Prepare, validate, then vote yes"
-          : "Resume from the votes, then commit or roll back"}
+          ? "Coordinator sends PREPARE to participants, asking them to vote"
+          : "Coordinator receives votes and decides to COMMIT or ABORT"}
       </p>
       <div ref={stage} className="two-phase-stage" data-graphic-stage="flush">
         <svg viewBox="0 0 400 415" aria-hidden="true">
