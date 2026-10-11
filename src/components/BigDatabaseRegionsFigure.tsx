@@ -104,8 +104,9 @@ function DatabaseNode({ value }: { value: Server }) {
       <text
         className="big-db-region-role"
         x={value.cx}
-        y={value.cy + 6}
+        y={value.cy + 5}
         textAnchor="middle"
+        dominantBaseline="middle"
       >
         {value.primary ? "Primary" : "Replica"}
       </text>

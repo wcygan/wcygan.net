@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { TechnicalIconGlyph } from "./BigDatabaseTechnicalIcon";
 import { pointOnPath, type Point } from "~/demos/big-database/query-flow";
 import { CACHE_LANE_COUNT } from "~/demos/big-database/working-set";
 import { useWorkingSetPlayback } from "~/demos/big-database/use-working-set-playback";
@@ -49,7 +50,7 @@ export function BigDatabaseWorkingSetFigure() {
       </header>
       <div className="big-db-stage" data-graphic-stage="padded">
         <svg
-          viewBox="0 0 360 460"
+          viewBox="-48 0 456 460"
           className="big-db-reuse-svg"
           role="img"
           aria-labelledby={`${id}-svg-title ${id}-desc`}
@@ -165,6 +166,36 @@ export function BigDatabaseWorkingSetFigure() {
           <text x="312" y="380" textAnchor="end" className="big-db-reuse-muted">
             SSD access
           </text>
+          <g
+            className="big-db-reuse-hardware"
+            data-hardware="ram"
+            transform="translate(364 172)"
+          >
+            <g
+              className="big-db-icon big-db-hardware-icon"
+              transform="scale(0.833333)"
+            >
+              <TechnicalIconGlyph kind="ram" />
+            </g>
+            <text x="20" y="62" textAnchor="middle">
+              RAM
+            </text>
+          </g>
+          <g
+            className="big-db-reuse-hardware"
+            data-hardware="disk"
+            transform="translate(364 332)"
+          >
+            <g
+              className="big-db-icon big-db-hardware-icon"
+              transform="scale(0.833333)"
+            >
+              <TechnicalIconGlyph kind="ssd" />
+            </g>
+            <text x="20" y="62" textAnchor="middle">
+              Disk
+            </text>
+          </g>
           <text x="200" y="284" className="big-db-reuse-muted">
             cache miss
           </text>

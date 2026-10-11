@@ -21206,7 +21206,7 @@ stop.big-db-id-tone {
   --cache-hit: oklch(0.75 0.105 250);
   --cache-miss: oklch(0.75 0.135 40);
   display: block;
-  inline-size: min(100%, 460px);
+  inline-size: min(100%, 582px);
   block-size: auto;
   margin-inline: auto;
   font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
@@ -21268,6 +21268,17 @@ stop.big-db-id-tone {
 }
 .big-db-reuse-svg .big-db-reuse-latency {
   font-size: 22px;
+}
+
+.big-db-reuse-hardware[data-hardware="ram"] {
+  color: var(--cache-hit);
+}
+.big-db-reuse-hardware[data-hardware="disk"] {
+  color: var(--cache-miss);
+}
+.big-db-reuse-svg .big-db-reuse-hardware text {
+  font-size: 14px;
+  fill: currentColor;
 }
 
 /* Three separated regions with directly labeled database roles. */
