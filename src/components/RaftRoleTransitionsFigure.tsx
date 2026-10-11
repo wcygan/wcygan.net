@@ -2,11 +2,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import { scenarios, type Phase, type Scenario } from "~/demos/raft-roles/model";
 
 const roles = [
-  { label: "Follower", y: 20, height: 148 },
-  { label: "Candidate", y: 270, height: 194 },
-  { label: "Leader", y: 580, height: 148 },
+  { label: "Follower", y: 16, height: 104 },
+  { label: "Candidate", y: 176, height: 132 },
+  { label: "Leader", y: 372, height: 104 },
 ];
-const node = { x: 20, width: 248 };
+const node = { x: 20, width: 360 };
 const centerX = node.x + node.width / 2;
 const rightX = node.x + node.width;
 const heartPath =
@@ -22,6 +22,7 @@ export function RaftRoleTransitionsFigure() {
   const [playing, setPlaying] = useState(true);
   const [reduced, setReduced] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [incomingLeft, setIncomingLeft] = useState(-60);
   const [documentVisible, setDocumentVisible] = useState(true);
   const phases: readonly Phase[] = scenarios[scenario].phases;
   const destination = phases[position.index];
@@ -113,6 +114,27 @@ export function RaftRoleTransitionsFigure() {
       preference.removeEventListener("change", updateMotion);
       document.removeEventListener("visibilitychange", updateVisibility);
     };
+  }, []);
+
+  useEffect(() => {
+    const element = stage.current;
+    const svg = element?.querySelector("svg");
+    if (!element || !svg) return;
+    const measure = () => {
+      const bounds = svg.getBoundingClientRect();
+      if (!bounds.width) return;
+      // The SVG is centered inside the stage; include its outer gutter so
+      // messages enter from the stage edge at every viewport width.
+      setIncomingLeft(
+        -60 -
+          ((bounds.left - element.getBoundingClientRect().left) * 560) /
+            bounds.width,
+      );
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    measure();
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -220,7 +242,7 @@ export function RaftRoleTransitionsFigure() {
         ref={stage}
       >
         <svg
-          viewBox="-100 0 480 748"
+          viewBox="-60 0 560 492"
           role="img"
           aria-labelledby={`${id}-title ${id}-description`}
         >
@@ -250,20 +272,20 @@ export function RaftRoleTransitionsFigure() {
               </marker>
             ))}
           </defs>
-          {wire(`M ${centerX} 168 V 270`, highlight === "election", "election")}
-          {wire(`M ${centerX} 464 V 580`, highlight === "majority", "majority")}
+          {wire(`M ${centerX} 120 V 176`, highlight === "election", "election")}
+          {wire(`M ${centerX} 308 V 372`, highlight === "majority", "majority")}
           {wire(
-            `M ${rightX} 654 H 284 V 94 H ${rightX}`,
+            `M ${rightX} 424 H 400 V 68 H ${rightX}`,
             highlight === "leader-term",
             "leader-term",
           )}
           {wire(
-            `M ${rightX} 367 H 284 V 94 H ${rightX}`,
+            `M ${rightX} 242 H 400 V 68 H ${rightX}`,
             highlight === "candidate-term" || highlight === "leader-found",
             "candidate-term",
           )}
           {wire(
-            `M ${centerX} 270 V 250 H 244 V 270`,
+            `M ${centerX} 176 V 156 H 356 V 176`,
             highlight === "retry",
             "retry",
           )}
@@ -298,17 +320,17 @@ export function RaftRoleTransitionsFigure() {
               />
               <text
                 className="raft-roles-label"
-                x={centerX}
+                x={node.x + 16}
                 y={role.y + 29}
-                textAnchor="middle"
+                textAnchor="start"
               >
                 {role.label}
               </text>
               <text
                 className="raft-roles-term"
-                x={centerX}
-                y={role.y + 57}
-                textAnchor="middle"
+                x={rightX - 16}
+                y={role.y + 29}
+                textAnchor="end"
               >
                 Term{" "}
                 {current.role === role.label
@@ -323,7 +345,7 @@ export function RaftRoleTransitionsFigure() {
                   <text
                     className="raft-roles-detail"
                     x={centerX}
-                    y={role.y + 85}
+                    y={role.y + 57}
                     textAnchor="middle"
                   >
                     Election timeout
@@ -331,24 +353,24 @@ export function RaftRoleTransitionsFigure() {
                   <rect
                     className="raft-roles-timer-track"
                     x="36"
-                    y={role.y + 102}
-                    width="216"
+                    y={role.y + 70}
+                    width="328"
                     height="8"
                     rx="2"
                   />
                   <g
-                    transform={`translate(36 ${role.y + 102}) scale(${current.role === "Follower" ? timer : 0} 1)`}
+                    transform={`translate(36 ${role.y + 70}) scale(${current.role === "Follower" ? timer : 0} 1)`}
                   >
                     <rect
                       className="raft-roles-timer-fill"
-                      width="216"
+                      width="328"
                       height="8"
                     />
                   </g>
                   <text
                     className="raft-roles-detail"
                     x={centerX}
-                    y={role.y + 133}
+                    y={role.y + 96}
                     textAnchor="middle"
                   >
                     {current.role === "Follower"
@@ -361,24 +383,24 @@ export function RaftRoleTransitionsFigure() {
                 <g>
                   <text
                     className="raft-roles-stats"
-                    x="79"
-                    y={role.y + 85}
+                    x="112"
+                    y={role.y + 57}
                     textAnchor="middle"
                   >
                     Cluster: 5
                   </text>
                   <text
                     className="raft-roles-stats"
-                    x="209"
-                    y={role.y + 85}
+                    x="288"
+                    y={role.y + 57}
                     textAnchor="middle"
                   >
                     Majority: 3
                   </text>
                   <text
                     className="raft-roles-detail"
-                    x="114"
-                    y={role.y + 118}
+                    x="200"
+                    y={role.y + 80}
                     textAnchor="middle"
                   >
                     Votes: {votes} / 3
@@ -387,8 +409,8 @@ export function RaftRoleTransitionsFigure() {
                     <text
                       className="raft-roles-received-check"
                       data-failed={noMajority}
-                      x="233"
-                      y={role.y + 125}
+                      x="310"
+                      y={role.y + 80}
                       textAnchor="middle"
                     >
                       {noMajority ? "×" : "✓"}
@@ -399,16 +421,16 @@ export function RaftRoleTransitionsFigure() {
                       <text
                         className="raft-roles-vote"
                         data-vote={vote}
-                        x={52 + index * 46}
-                        y={role.y + 152}
+                        x={64 + index * 68}
+                        y={role.y + 100}
                         textAnchor="middle"
                       >
                         {symbols[vote]}
                       </text>
                       <text
                         className="raft-roles-voter"
-                        x={52 + index * 46}
-                        y={role.y + 177}
+                        x={64 + index * 68}
+                        y={role.y + 122}
                         textAnchor="middle"
                       >
                         {index === 0 ? "Self" : ["B", "C", "D", "E"][index - 1]}
@@ -416,11 +438,11 @@ export function RaftRoleTransitionsFigure() {
                     </g>
                   ))}
                   <g
-                    transform={`translate(36 ${role.y + 186}) scale(${current.role === "Candidate" ? timer : 0} 1)`}
+                    transform={`translate(36 ${role.y + 128}) scale(${current.role === "Candidate" ? timer : 0} 1)`}
                   >
                     <rect
                       className="raft-roles-timer-fill"
-                      width="216"
+                      width="328"
                       height="4"
                     />
                   </g>
@@ -431,14 +453,14 @@ export function RaftRoleTransitionsFigure() {
                   <circle
                     className="raft-roles-heart-track"
                     cx={centerX}
-                    cy={role.y + 137}
-                    r="26"
+                    cy={role.y + role.height / 2}
+                    r="21"
                   />
                   <circle
                     className="raft-roles-heart-progress"
                     cx={centerX}
-                    cy={role.y + 137}
-                    r="26"
+                    cy={role.y + role.height / 2}
+                    r="21"
                     pathLength="100"
                     strokeDasharray="100"
                     strokeDashoffset={
@@ -446,17 +468,21 @@ export function RaftRoleTransitionsFigure() {
                         ? 100 * (1 - heartbeatProgress)
                         : 100
                     }
-                    transform={`rotate(-90 ${centerX} ${role.y + 99})`}
+                    transform={`rotate(-90 ${centerX} ${role.y + role.height / 2})`}
                   />
                   <g
-                    transform={`translate(${centerX} ${role.y + 99}) scale(${heartbeatPulse})`}
+                    transform={`translate(${centerX} ${role.y + role.height / 2}) scale(${heartbeatPulse})`}
                   >
-                    <path className="raft-roles-heart" d={heartPath} />
+                    <path
+                      className="raft-roles-heart"
+                      d={heartPath}
+                      transform="translate(0 1)"
+                    />
                   </g>
                   <text
                     className="raft-roles-voter"
                     x={centerX}
-                    y={role.y + 137}
+                    y={role.y + 96}
                     textAnchor="middle"
                   >
                     Sends heartbeats
@@ -469,7 +495,7 @@ export function RaftRoleTransitionsFigure() {
             <g key={reply.index} aria-hidden="true">
               {replyProgress(order) < 1 && (
                 <g
-                  transform={`translate(${-80 + 112 * replyProgress(order)} 385)`}
+                  transform={`translate(${incomingLeft - 14 + (node.x + 14 - (incomingLeft - 14)) * replyProgress(order)} 260)`}
                 >
                   <rect
                     className="raft-roles-response"
@@ -495,7 +521,7 @@ export function RaftRoleTransitionsFigure() {
             <g
               className="raft-roles-incoming"
               aria-hidden="true"
-              transform={`translate(${-48 + 68 * messageProgress} ${roles.find((role) => role.label === current.role)!.y + 112})`}
+              transform={`translate(${incomingLeft - 46 + (node.x - (incomingLeft - 46)) * messageProgress} ${roles.find((role) => role.label === current.role)!.y + 78})`}
             >
               {current.message.kind === "heartbeat" &&
               current.role === "Follower" ? (
@@ -533,44 +559,44 @@ export function RaftRoleTransitionsFigure() {
             current.message?.kind === "heartbeat" &&
             current.role === "Follower" &&
             !reduced && (
-              <g transform="translate(46 151) scale(0.6)">
+              <g transform="translate(46 105) scale(0.6)">
                 <path className="raft-roles-heart" d={heartPath} />
               </g>
             )}
           <text
             className="raft-roles-condition"
-            x="128"
-            y="207"
+            x="184"
+            y="141"
             textAnchor="end"
           >
-            <tspan x="128">Election</tspan>
-            <tspan x="128" dy="20">
+            <tspan x="184">Election</tspan>
+            <tspan x="184" dy="18">
               timeout
             </tspan>
           </text>
           <text
             className="raft-roles-condition"
-            x="128"
-            y="509"
+            x="184"
+            y="333"
             textAnchor="end"
           >
-            <tspan x="128">Majority</tspan>
-            <tspan x="128" dy="20">
+            <tspan x="184">Majority</tspan>
+            <tspan x="184" dy="18">
               vote
             </tspan>
           </text>
-          <text className="raft-roles-condition" x="300" y="207">
-            <tspan x="300">
+          <text className="raft-roles-condition" x="416" y="141">
+            <tspan x="416">
               {current.edge === "leader-found" ? "Leader" : "Higher"}
             </tspan>
-            <tspan x="300" dy="20">
+            <tspan x="416" dy="18">
               {current.edge === "leader-found" ? "found" : "term"}
             </tspan>
           </text>
           <text
             className="raft-roles-retry-label"
-            x="194"
-            y="242"
+            x="280"
+            y="148"
             textAnchor="middle"
           >
             Retry

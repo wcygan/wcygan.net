@@ -21648,13 +21648,15 @@ stop.big-db-id-tone {
   margin-block: 0 16px;
 }
 .raft-roles-stage {
+  overflow: hidden;
   padding: 20px;
   background: #f7f6f3;
   border-color: #e4e3de;
 }
 .raft-roles-stage svg {
+  overflow: visible;
   display: block;
-  inline-size: min(100%, 560px);
+  inline-size: min(100%, 480px);
   block-size: auto;
   margin-inline: auto;
   font-family: Lilex, ui-monospace, monospace;
@@ -21684,12 +21686,12 @@ stop.big-db-id-tone {
 }
 .raft-roles-label {
   fill: #21201c;
-  font-size: 24px;
+  font-size: 17px;
   font-weight: 500;
 }
 .raft-roles-condition {
   fill: #63635e;
-  font-size: 18px;
+  font-size: 13px;
 }
 @media (max-width: 639px) {
   .raft-roles-stage {
@@ -21739,31 +21741,31 @@ stop.big-db-id-tone {
 }
 .raft-roles-detail {
   fill: #21201c;
-  font-size: 20px;
+  font-size: 14px;
 }
 .raft-roles-vote {
   fill: #21201c;
-  font-size: 26px;
+  font-size: 19px;
 }
 .raft-roles-vote[data-vote="pending"] {
   opacity: 0.5;
 }
 .raft-roles-voter {
   fill: #21201c;
-  font-size: 18px;
+  font-size: 13px;
 }
 .raft-roles-retry-label {
   fill: #21201c;
-  font-size: 14px;
+  font-size: 12px;
 }
 .raft-roles-term {
   fill: #21201c;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
 }
 .raft-roles-stats {
   fill: #21201c;
-  font-size: 18px;
+  font-size: 13px;
 }
 .raft-roles-timer-track {
   fill: #fdfdfc;
@@ -21794,7 +21796,7 @@ stop.big-db-id-tone {
   cursor: default;
 }
 .raft-roles-status {
-  min-block-size: 88px;
+  min-block-size: 64px;
   margin-block-end: 12px;
 }
 .raft-roles-status p {
@@ -21815,7 +21817,7 @@ stop.big-db-id-tone {
 
 .raft-roles-received-check {
   fill: #13862e;
-  font-size: 32px;
+  font-size: 23px;
   font-weight: 700;
 }
 .raft-roles-vote[data-vote="granted"] {
@@ -21866,8 +21868,8 @@ stop.big-db-id-tone {
 }
 
 .raft-roles-incoming .raft-roles-voter {
-  font-size: 10px;
+  font-size: 13px;
 }
 .raft-roles-incoming .raft-roles-detail {
-  font-size: 12px;
+  font-size: 14px;
 }
