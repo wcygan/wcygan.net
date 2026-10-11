@@ -3,8 +3,6 @@ title: The Big Database at Work
 date: October 10, 2026
 description: Small lookups across billions of rows
 tags: [Databases, MySQL, Performance]
-draft: true
-draftNotes: "Before publication, clarify what the three primaries own, which writes each accepts, and why the topology is described as unsharded. Confirm whether the 15 TB dataset and 100 GB buffer pool are per instance or fleet totals; the hardware diagram currently compares them with one server's capacity. Clarify whether 10,000 SELECTs/s is a combined regional rate or an average of regional rates. Confirm the 100 writes/s shown in the illustrative traffic chart. Define the 0.48 ms query timing boundary and measurement window; add p95/p99 if available. Match documentation links to the deployed MySQL version."
 ---
 
 import {
