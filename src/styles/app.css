@@ -21354,7 +21354,6 @@ stop.big-db-id-tone {
   }
 }
 
-/* Compare the relative order of six entries across two replicated logs. */
 .total-order-figure {
   --total-order-ink: #21201c;
   --total-order-muted: #63635e;
@@ -21481,6 +21480,166 @@ stop.big-db-id-tone {
 @media (max-width: 639px) {
   .total-order-stage {
     padding: 16px 12px;
+  }
+}
+
+/* Compare operation order and resulting state across two replicas. */
+.operation-order-figure {
+  --operation-order-ink: #21201c;
+  --operation-order-muted: #63635e;
+  --operation-order-track: #e4e3de;
+  --operation-order-orange: #f35815;
+  --operation-order-blue: #0e73cc;
+  --operation-order-green: #13862e;
+  --operation-order-yellow: #f2b600;
+}
+.operation-order-figure > header {
+  margin-block: 0 16px;
+}
+.operation-order-stage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  color: var(--operation-order-ink);
+}
+.operation-order-replica {
+  --operation-order-accent: var(--operation-order-green);
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--operation-order-track);
+  border-radius: 5px;
+  background: #fdfdfc;
+}
+.operation-order-replica--reordered {
+  --operation-order-accent: var(--operation-order-orange);
+}
+.operation-order-replica-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.operation-order-replica-name {
+  margin: 0;
+  font-weight: 550;
+}
+.operation-order-replica-state,
+.operation-order-result > span {
+  color: var(--operation-order-muted);
+  font:
+    10px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  letter-spacing: 0.08em;
+}
+.operation-order-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+.operation-order-step {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-inline-size: 0;
+  padding-inline-end: 2px;
+}
+.operation-order-index {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border: 3px solid #fdfdfc;
+  border-radius: 50%;
+  background: var(--operation-order-step-color);
+  color: #fff;
+  font:
+    11px/1 Lilex,
+    ui-monospace,
+    monospace;
+}
+.operation-order-step code {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  max-inline-size: 100%;
+  padding: 5px 6px;
+  border: 1px solid var(--total-order-track, #e4e3de);
+  border-radius: 3px;
+  background: #f7f6f3;
+  color: var(--operation-order-ink);
+  font:
+    500 12px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  white-space: nowrap;
+}
+.operation-order-connector {
+  position: absolute;
+  z-index: 0;
+  inset-block-start: 10px;
+  inset-inline-start: 18px;
+  inline-size: calc(100% - 20px);
+  border-block-start: 1px dashed #818181;
+  pointer-events: none;
+}
+.operation-order-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 36px;
+  margin: 0;
+  padding-block-start: 10px;
+  border-block-start: 1px solid var(--operation-order-track);
+}
+.operation-order-result > span {
+  color: var(--operation-order-muted);
+}
+.operation-order-result code {
+  padding: 4px 8px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--operation-order-accent) 12%, white);
+  color: var(--operation-order-accent);
+  font:
+    700 14px/1.4 Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.operation-order-step:nth-child(1) {
+  --operation-order-step-color: var(--operation-order-green);
+}
+.operation-order-step:nth-child(2) {
+  --operation-order-step-color: var(--operation-order-blue);
+}
+.operation-order-step:nth-child(3) {
+  --operation-order-step-color: var(--operation-order-yellow);
+}
+.operation-order-replica--reordered .operation-order-step:nth-child(2),
+.operation-order-replica--reordered .operation-order-step:nth-child(3) {
+  --operation-order-step-color: var(--operation-order-orange);
+}
+.operation-order-replica--ordered .operation-order-result code {
+  background: color-mix(in srgb, var(--operation-order-green) 12%, white);
+  color: var(--operation-order-green);
+}
+.operation-order-replica--reordered .operation-order-result code {
+  background: color-mix(in srgb, var(--operation-order-orange) 12%, white);
+  color: #b83d0b;
+}
+@media (max-width: 639px) {
+  .operation-order-stage[data-graphic-stage] {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .operation-order-replica + .operation-order-replica {
+    padding-block-start: 14px;
   }
 }
 

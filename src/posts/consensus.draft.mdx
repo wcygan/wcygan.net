@@ -7,6 +7,7 @@ draft: true
 ---
 
 import { TotalOrderBroadcastFigure } from "~/components/TotalOrderBroadcastFigure";
+import { OperationOrderFigure } from "~/components/OperationOrderFigure";
 import { RaftRoleTransitionsFigure } from "~/components/RaftRoleTransitionsFigure";
 
 Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
@@ -17,13 +18,17 @@ Consensus algorithms let multiple processes in a distributed system agree on a v
 
 A correct process is one that follows the algorithm and does not fail; termination depends on the algorithm’s assumptions about failures and communication.
 
+## Why Ordering Matters
+
+Applying the same operations in a different order can produce a different result.
+
+<OperationOrderFigure />
+
 ## Total Order Broadcast
 
-[Total order broadcast](https://en.wikipedia.org/wiki/Atomic_broadcast) reliably delivers the same messages to all participating correct processes in the same order, so replicas can apply operations consistently. This reliable form, also called atomic broadcast, is [equivalent to consensus under matching assumptions about the system and failures](https://cs.nyu.edu/~apanda/classes/sp26/papers/chandra-toueg.pdf): processes can broadcast proposals and decide on the first value delivered, while repeated consensus decisions can select the next batch of messages for ordered delivery. Ordering alone, without reliable delivery, is not enough.
+[Total order broadcast](https://en.wikipedia.org/wiki/Atomic_broadcast) ensures every participating correct process delivers the same messages in the same order, so each replica applies the operations consistently. This reliable form, also called atomic broadcast, is [equivalent to consensus under matching assumptions about the system and failures](https://cs.nyu.edu/~apanda/classes/sp26/papers/chandra-toueg.pdf): processes can broadcast proposals and decide on the first value delivered, while repeated consensus decisions can select the next batch of messages for ordered delivery. Ordering alone, without reliable delivery, is not enough.
 
 <TotalOrderBroadcastFigure />
-
-Log ordering is important because it allows multiple nodes in a distributed system to agree on the order of operations. For example, if a node crashes it can replay it's log to reconcile the last known good state.
 
 ## Raft: Understandable Consensus
 
