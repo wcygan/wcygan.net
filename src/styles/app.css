@@ -21353,3 +21353,133 @@ stop.big-db-id-tone {
     font-size: 17px;
   }
 }
+
+/* Compare the relative order of six entries across two replicated logs. */
+.total-order-figure {
+  --total-order-ink: #21201c;
+  --total-order-muted: #63635e;
+  --total-order-line: #8f8c83;
+  --total-order-track: #e4e3de;
+  --total-order-paper: #e4e1d8;
+}
+.total-order-figure > header {
+  margin-block: 0 16px;
+}
+.total-order-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  padding: 20px;
+  background: #f7f6f3;
+  border-color: var(--total-order-track);
+  color: var(--total-order-ink);
+}
+.total-order-case {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 8px;
+  align-items: start;
+}
+.total-order-case-label,
+.total-order-log-label,
+.total-order-summary {
+  margin: 0;
+}
+.total-order-case-label {
+  padding-block-start: 2px;
+  color: var(--total-order-ink);
+  font-weight: 550;
+}
+.total-order-logs {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 48px;
+}
+.total-order-connections {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.total-order-connections path {
+  fill: none;
+  stroke: var(--entry-color);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.total-order-log {
+  position: relative;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+.total-order-log-label {
+  color: var(--total-order-muted);
+  font:
+    12px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  letter-spacing: 0.04em;
+}
+.total-order-log ol {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 8px;
+  border: 1px solid var(--total-order-line);
+  border-radius: 2px;
+  background: var(--total-order-paper);
+  list-style: none;
+}
+.total-order-log li {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  color: #000;
+  font:
+    500 16px/1 Lilex,
+    ui-monospace,
+    monospace;
+  min-inline-size: 0;
+  border: 1px solid #393833;
+  background: var(--entry-color);
+}
+/* Match the record identities in shared/replication-palette.ts. */
+.total-order-figure [data-entry="1"] {
+  --entry-color: #d87842;
+}
+.total-order-figure [data-entry="2"] {
+  --entry-color: #527cad;
+}
+.total-order-figure [data-entry="3"] {
+  --entry-color: #66886b;
+}
+.total-order-figure [data-entry="4"] {
+  --entry-color: #b45d62;
+}
+.total-order-figure [data-entry="5"] {
+  --entry-color: #9561c9;
+}
+.total-order-figure [data-entry="6"] {
+  --entry-color: #cda52e;
+}
+.total-order-summary {
+  color: var(--total-order-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.total-order-case + .total-order-case {
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--total-order-track);
+}
+
+@media (max-width: 639px) {
+  .total-order-stage {
+    padding: 16px 12px;
+  }
+}
