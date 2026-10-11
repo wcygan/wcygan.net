@@ -28,12 +28,6 @@ export function BigDatabaseWorkingSetFigure() {
   const id = useId();
   const playback = useWorkingSetPlayback();
   const state = playback.snapshot;
-  const status =
-    !playback.reduced && state.diskWaiting
-      ? "A disk read waits while memory reads keep returning."
-      : !playback.reduced && state.packets.some((read) => read.phase === "fill")
-        ? "A disk page returns through the buffer pool."
-        : "99% from memory · 1% from disk";
   return (
     <figure
       ref={playback.figure}
@@ -45,7 +39,7 @@ export function BigDatabaseWorkingSetFigure() {
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
-          Small cache, frequent reuse
+          Most reads stay in memory
         </p>
       </header>
       <div className="big-db-stage" data-graphic-stage="padded">
@@ -272,20 +266,7 @@ export function BigDatabaseWorkingSetFigure() {
       </div>
       <figcaption id={`${id}-caption`}>
         <p className="big-db-flow-status" role="status">
-          {status}
-        </p>
-        <p>
-          Illustrative page reads: 99% memory, 1% disk, rounding the reported
-          98.7% hit rate. Timing is slowed for visibility. A miss loads the page
-          into RAM; disk keeps the persistent copy.
-        </p>
-        <p>
-          <a href="https://planetscale.com/blog/io-devices-and-latency">
-            Hardware-access examples
-          </a>
-          : RAM ~100 ns, local NVMe ~50 µs (about 500× longer). These are
-          reference values, not measured buffer-pool, page-read, or query
-          latencies for this system.
+          Illustrative page reads: 99% memory · 1% disk.
         </p>
       </figcaption>
     </figure>

@@ -4,7 +4,7 @@ date: October 10, 2026
 description: Small lookups across billions of rows
 tags: [Databases, MySQL, Performance]
 draft: true
-draftNotes: "Before publication, clarify what the three primaries own and why the topology is described as unsharded. Confirm whether storage, buffer pool, hardware, and write rate are per server or fleet totals. Confirm the query timing boundary, measurement window, p95/p99, and replica lag metric. The two-week working set is a workload explanation, not a measured cache-capacity claim."
+draftNotes: "Before publication, clarify what the three primaries own, which writes each accepts, and why the topology is described as unsharded. Confirm whether the 15 TB dataset and 100 GB buffer pool are per instance or fleet totals; the hardware diagram currently compares them with one server's capacity. Clarify whether 10,000 SELECTs/s is a combined regional rate or an average of regional rates. Confirm the 100 writes/s shown in the illustrative traffic chart. Define the 0.48 ms query timing boundary and measurement window; add p95/p99 if available. Match documentation links to the deployed MySQL version."
 ---
 
 import {
@@ -15,25 +15,28 @@ import {
 import { BigDatabaseRegionsFigure } from "~/components/BigDatabaseRegionsFigure";
 import { BigDatabaseWorkingSetFigure } from "~/components/BigDatabaseWorkingSetFigure";
 
-At LinkedIn, my team runs a [multi-primary](https://en.wikipedia.org/wiki/Multi-master_replication) MySQL system with roughly 20 billion rows across six tables
-and 15 TB of stored data. The tables aren't partitioned, and the system isn't sharded. Yet, our queries are still _surprisingly fast_.
+At LinkedIn, my team runs a [multi-primary](https://en.wikipedia.org/wiki/Multi-master_replication) MySQL system with roughly 20 billion rows across six tables and 15 TB of stored data. The tables aren't partitioned, and the system isn't sharded. Yet, our queries are still _surprisingly fast_. Most requests are small indexed lookups, and they repeatedly touch pages already in memory.
 
-It helps that we run large MySQL instances with 32 cores, 256 GB of RAM, and 24 TB of disk. But why is it still fast?
-
-We see about 10,000 SELECTs per second as the mean across all three regions, with a reported
-average query time of 0.48 milliseconds as we mainly serve point lookups or search on [indexed fields](https://dev.mysql.com/doc/refman/9.7/en/mysql-indexes.html). Each query touches only a small number of rows and pages, so the database doesn't need to read through billions of rows to answer a request. The [buffer pool](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html) for our database is sized at 100 GB
-and its [reported hit rate](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html#innodb-buffer-pool-monitoring) is 98.7%! That rate measures page accesses served from memory (rather than being read from disk).
-
-Since the primary-key IDs for our rows increase with time, new entries are written nearby each other in InnoDB's [clustered index](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html), which stores rows in primary-key order. Recent rows tend to occupy nearby pages. Secondary indexes follow their own key order. Repeated reads make those pages hot and useful to keep in the buffer pool; older history is rarely retrieved in this workload.
-
-In essence, this workload serves "hot" data where most page reads are served from memory (in the buffer pool), so we rarely need to read pages from disk. Frequently accessed pages tend to stay in memory; less frequently used pages "age out" as space is needed. This depends on page access and cache pressure, not the age of the rows themselves.
+The system spans three regions, each with one primary and two local replicas.
 
 <BigDatabaseRegionsFigure />
 
+Each instance has 32 cores, 256 GB of RAM, and 24 TB of disk. InnoDB's [buffer pool](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html) caches data and index pages in memory, so frequently accessed pages can be read without fetching them from disk.
+
 <BigDatabaseHardwareFigure />
+
+We see about 10,000 SELECTs per second, reported as the mean across all three regions. The average query time is 0.48 milliseconds. We mainly serve point lookups or lookups on [indexed columns](https://dev.mysql.com/doc/refman/9.7/en/mysql-indexes.html). Each query touches only a small number of rows and pages, so the database doesn't need to read through billions of rows to answer a request.
 
 <BigDatabaseTrafficFigure />
 
+This workload mostly reads recent rows. Because our primary-key IDs increase over time, those rows tend to occupy nearby pages in InnoDB's [clustered index](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html), which stores rows in primary-key order. Secondary indexes follow their own key order. Repeated reads make those pages hot and useful to keep in the buffer pool; older history is rarely retrieved in this workload.
+
 <BigDatabaseIncreasingIdsFigure />
 
+Our buffer-pool size is 100 GB, with a [hit rate](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html#innodb-buffer-pool-monitoring) of 98.7%. That rate measures page accesses served from memory rather than from disk. Frequently accessed pages tend to stay in memory; less frequently used pages can be evicted as space is needed. This depends on page access and cache pressure.
+
 <BigDatabaseWorkingSetFigure />
+
+## Conclusion
+
+This workload combines small indexed lookups with repeated reads of recent rows. Those reads reuse pages in the buffer pool, which helps explain the high cache hit rate and fast average query time.

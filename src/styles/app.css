@@ -20755,7 +20755,7 @@ th {
   stroke-width: 1.5;
 }
 .big-db-id-tree {
-  --tree-read: oklch(0.75 0.105 250);
+  --tree-read: var(--big-db-read);
   --tree-found: oklch(0.85 0.12 145);
   display: block;
   inline-size: 100%;
@@ -20789,22 +20789,22 @@ th {
   stroke: var(--big-db-line);
 }
 .big-db-id-tone[data-temperature="0"] {
-  --big-db-temperature: oklch(0.75 0.105 250);
+  --big-db-temperature: var(--big-db-read);
 }
 .big-db-id-tone[data-temperature="1"] {
-  --big-db-temperature: oklch(0.75 0.065 250);
+  --big-db-temperature: oklch(0.58 0.105 252.205);
 }
 .big-db-id-tone[data-temperature="2"] {
-  --big-db-temperature: oklch(0.75 0.025 250);
+  --big-db-temperature: oklch(0.6 0.045 252.205);
 }
 .big-db-id-tone[data-temperature="3"] {
-  --big-db-temperature: oklch(0.75 0.035 55);
+  --big-db-temperature: oklch(0.62 0.055 39.353);
 }
 .big-db-id-tone[data-temperature="4"] {
-  --big-db-temperature: oklch(0.75 0.085 55);
+  --big-db-temperature: oklch(0.641 0.125 39.353);
 }
 .big-db-id-tone[data-temperature="5"] {
-  --big-db-temperature: oklch(0.75 0.135 40);
+  --big-db-temperature: var(--big-db-write);
 }
 stop.big-db-id-tone {
   stop-color: var(--big-db-temperature);
@@ -20831,7 +20831,7 @@ stop.big-db-id-tone {
   stroke: var(--big-db-temperature);
 }
 .big-db-id-temperature {
-  fill: var(--big-db-temperature);
+  fill: var(--big-db-ink);
   font-size: 18px;
   text-anchor: middle;
 }
@@ -21203,8 +21203,8 @@ stop.big-db-id-tone {
 
 /* Frequent page reads share the fast buffer-pool path; misses wait on disk. */
 .big-db-reuse-svg {
-  --cache-hit: oklch(0.75 0.105 250);
-  --cache-miss: oklch(0.75 0.135 40);
+  --cache-hit: var(--big-db-read);
+  --cache-miss: var(--big-db-write);
   display: block;
   inline-size: min(100%, 582px);
   block-size: auto;
@@ -21261,10 +21261,10 @@ stop.big-db-id-tone {
   stroke-width: 2;
 }
 .big-db-reuse-svg .big-db-reuse-hit-label {
-  fill: var(--cache-hit);
+  fill: var(--big-db-ink);
 }
 .big-db-reuse-svg .big-db-reuse-miss-label {
-  fill: var(--cache-miss);
+  fill: var(--big-db-ink);
 }
 .big-db-reuse-svg .big-db-reuse-latency {
   font-size: 22px;
@@ -21278,7 +21278,7 @@ stop.big-db-id-tone {
 }
 .big-db-reuse-svg .big-db-reuse-hardware text {
   font-size: 14px;
-  fill: currentColor;
+  fill: var(--big-db-ink);
 }
 
 /* Three separated regions with directly labeled database roles. */

@@ -347,8 +347,8 @@ export function BigDatabaseIncreasingIdsFigure() {
   return (
     <Figure
       figureRef={playback.figure}
-      title="Increasing IDs extend the right edge"
-      caption="Illustrative reads favor the hot leaves: 5%, 25%, and 70% from left to right. Green outlines mark pages found."
+      title="Reads favor recent rows"
+      caption="In this example, most reads reach newer rows on the right."
     >
       <svg
         className="big-db-id-tree"

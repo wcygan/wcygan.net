@@ -73,7 +73,7 @@ it("preserves the explanation without moving packets under reduced motion", () =
   visible(true);
   advance(40000);
   expect(view.getByRole("status").textContent).toBe(
-    "99% from memory · 1% from disk",
+    "Illustrative page reads: 99% memory · 1% disk.",
   );
   expect(view.container.querySelector(".big-db-reuse-packet")).toBeNull();
   expect(view.getByText("100 GB · 99% hits")).toBeTruthy();
