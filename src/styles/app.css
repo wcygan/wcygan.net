@@ -20552,6 +20552,25 @@ th {
 }
 
 /* Big database: static, article-native capacity and lookup explanations. */
+.big-db-figure > header {
+  margin-block: 0 16px;
+}
+.big-db-figure > figcaption {
+  margin-block: 12px 0;
+}
+.big-db-figure > figcaption > p {
+  margin: 0;
+  font: inherit;
+}
+.big-db-figure > figcaption > p + p {
+  margin-block-start: 8px;
+}
+.big-db-figure > figcaption > .big-db-flow-status {
+  min-block-size: 0;
+}
+.big-db-figure > header > .big-db-flow-controls {
+  margin-block: 12px 0;
+}
 .big-db-figure {
   --big-db-ink: oklch(0.985 0 0);
   --big-db-muted: oklch(0.738 0 0);
@@ -20621,6 +20640,21 @@ th {
 .big-db-resource > * + * {
   margin-block-start: 8px;
 }
+.big-db-hardware-resource {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: center;
+}
+.big-db-hardware-resource > * {
+  grid-column: 2;
+  margin-block-start: 0;
+}
+.big-db-hardware-resource > .big-db-hardware-icon {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--big-db-active);
+}
 .big-db-bar,
 .big-db-cores {
   display: block;
@@ -20661,53 +20695,13 @@ th {
   font-size: 16px;
   font-weight: 550;
 }
-.big-db-traffic-summary > div > span:last-child {
-  color: var(--big-db-muted);
-  font-size: 14px;
-}
+
 .big-db-traffic-chart {
-  display: block;
   inline-size: 100%;
-  overflow: visible;
-}
-.big-db-traffic-chart text {
-  fill: var(--big-db-muted);
-  font:
-    14px Lilex,
-    ui-monospace,
-    monospace;
-}
-.big-db-traffic-grid {
-  stroke: var(--big-db-track);
-  stroke-width: 1;
-}
-.big-db-traffic-line,
-.big-db-traffic-average {
-  fill: none;
-  stroke: var(--big-db-active);
-  vector-effect: non-scaling-stroke;
-}
-.big-db-traffic-line {
-  stroke-width: 2.5;
-  stroke-linejoin: round;
-}
-.big-db-traffic-average {
-  stroke-width: 1;
-  stroke-dasharray: 5 5;
-}
-.big-db-traffic-peak {
-  fill: var(--big-db-active);
-}
-@media (max-width: 639px) {
-  .big-db-traffic-chart text {
-    font-size: 22px;
-  }
-}
-.big-db-stage .big-db-takeaway {
-  padding-block-start: 16px;
-  border-block-start: 1px solid var(--big-db-track);
-  font-size: 16px;
-  font-weight: 550;
+  min-inline-size: 0;
+  font-family: Lilex, ui-monospace, monospace;
+  --ts-chart-tooltip-background: var(--big-db-paper);
+  --ts-chart-tooltip-color: var(--big-db-ink);
 }
 .big-db-replication-group {
   display: grid;
@@ -20761,169 +20755,95 @@ th {
   stroke-width: 1.5;
 }
 .big-db-id-tree {
-  max-inline-size: 680px;
-  margin-inline: auto;
-  color: var(--big-db-ink);
-  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-}
-.big-db-id-root-row {
-  display: flex;
-  justify-content: center;
-}
-.big-db-id-root,
-.big-db-id-page {
-  border: 1px solid var(--big-db-line);
-  background: var(--big-db-paper);
-}
-.big-db-id-root {
-  display: grid;
-  gap: 4px;
-  min-inline-size: 172px;
-  padding: 8px 12px;
-  text-align: center;
-}
-.big-db-id-root > span,
-.big-db-id-page-label,
-.big-db-id-growth > span,
-.big-db-id-cache > span {
-  color: var(--big-db-muted);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-}
-.big-db-id-root strong {
-  font-size: 13px;
-  font-weight: 550;
-}
-.big-db-id-branches {
+  --tree-read: oklch(0.75 0.105 250);
+  --tree-found: oklch(0.85 0.12 145);
   display: block;
   inline-size: 100%;
-  block-size: 42px;
-  overflow: visible;
+  max-inline-size: 560px;
+  block-size: auto;
+  margin-inline: auto;
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
 }
 .big-db-id-branches path {
   fill: none;
   stroke: var(--big-db-line);
-  stroke-width: 1.5px;
+  stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
-.big-db-id-leaves {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  position: relative;
+.big-db-id-routing rect,
+.big-db-id-leaf rect {
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
-.big-db-id-leaves::after {
-  position: absolute;
-  inset-inline: 8px;
-  inset-block-end: -9px;
-  border-block-end: 1px dashed var(--big-db-line);
-  content: "";
+.big-db-id-routing rect {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-line);
 }
-.big-db-id-page {
-  position: relative;
-  z-index: 1;
-  min-inline-size: 0;
-  padding: 8px;
+.big-db-id-routing path,
+.big-db-id-leaf path {
+  fill: none;
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
-.big-db-id-page[data-recent="true"] {
-  border-color: var(--big-db-read);
-  background: var(--big-db-read-surface);
+.big-db-id-routing path {
+  stroke: var(--big-db-line);
 }
-.big-db-id-page-label {
-  display: block;
-  margin-block-end: 8px;
-  white-space: normal;
+.big-db-id-tone[data-temperature="0"] {
+  --big-db-temperature: oklch(0.75 0.105 250);
 }
-.big-db-id-keys {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
+.big-db-id-tone[data-temperature="1"] {
+  --big-db-temperature: oklch(0.75 0.065 250);
 }
-.big-db-id-keys span {
-  padding: 4px 2px;
-  border: 1px solid var(--big-db-track);
-  background: oklch(0.178 0 0);
-  text-align: center;
-  font-size: 12px;
+.big-db-id-tone[data-temperature="2"] {
+  --big-db-temperature: oklch(0.75 0.025 250);
 }
-.big-db-id-access {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-block-start: 20px;
+.big-db-id-tone[data-temperature="3"] {
+  --big-db-temperature: oklch(0.75 0.035 55);
 }
-.big-db-id-access > div {
-  display: grid;
-  gap: 8px;
-  padding-block-start: 8px;
-  border-block-start: 2px solid var(--big-db-line);
+.big-db-id-tone[data-temperature="4"] {
+  --big-db-temperature: oklch(0.75 0.085 55);
 }
-.big-db-id-access .big-db-id-hot {
-  grid-column: span 2;
-  border-color: var(--big-db-read);
+.big-db-id-tone[data-temperature="5"] {
+  --big-db-temperature: oklch(0.75 0.135 40);
 }
-.big-db-id-access strong {
-  font-size: 12px;
-  font-weight: 500;
+stop.big-db-id-tone {
+  stop-color: var(--big-db-temperature);
 }
-.big-db-id-access span {
-  color: var(--big-db-muted);
-  font-size: 11px;
+.big-db-id-leaf rect {
+  fill: color-mix(in oklab, var(--big-db-temperature) 14%, var(--big-db-paper));
+  stroke: var(--tree-leaf-outline, var(--big-db-temperature));
 }
-.big-db-id-read-dots {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 4px;
-  align-items: center;
+.big-db-id-leaf[data-found="true"] {
+  --tree-leaf-outline: var(--tree-found);
 }
-.big-db-id-read-dots i {
-  display: block;
-  width: 5px;
-  height: 5px;
-  background: var(--big-db-read);
-  border-radius: 50%;
+.big-db-id-leaf[data-found="true"] rect {
+  stroke-width: 3;
 }
-.big-db-id-idle {
-  line-height: 5px;
+.big-db-id-read {
+  fill: var(--tree-read);
 }
-.big-db-id-growth {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  margin-block-start: 18px;
-  color: var(--big-db-storage);
+.big-db-id-read-share {
+  fill: var(--big-db-ink);
+  font-size: 14px;
+  text-anchor: middle;
 }
-.big-db-id-growth strong {
-  font-size: 13px;
-  font-weight: 600;
+.big-db-id-leaf path {
+  stroke: var(--big-db-temperature);
 }
-.big-db-id-cache {
-  margin-block-start: 20px;
-  padding-block-start: 12px;
-  border-block-start: 1px solid var(--big-db-track);
+.big-db-id-temperature {
+  fill: var(--big-db-temperature);
+  font-size: 18px;
+  text-anchor: middle;
 }
-.big-db-id-cache > div {
-  display: flex;
-  gap: 8px;
-  margin-block-start: 8px;
+.big-db-id-axis {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
-.big-db-id-cache > div span {
-  padding: 4px 8px;
-  border: 1px solid var(--big-db-line);
-  color: var(--big-db-muted);
-  font-size: 11px;
-}
-.big-db-id-cache > div span[data-recent="true"] {
-  border-color: var(--big-db-read);
-  color: var(--big-db-ink);
-}
-.big-db-stage .big-db-id-cache p {
-  margin-block-start: 8px;
-  color: var(--big-db-muted);
-  font-size: 12px;
-  line-height: 1.5;
+.big-db-id-axis-label,
+.big-db-id-context {
+  fill: var(--big-db-muted);
+  font-size: 16px;
 }
 .big-db-icon-label {
   display: inline-flex;
@@ -20939,6 +20859,20 @@ th {
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.big-db-hardware-icon {
+  inline-size: 40px;
+  block-size: 40px;
+  stroke-width: 1.8;
+}
+.big-db-row:has(.big-db-hardware-icon) {
+  align-items: center;
+}
+.big-db-icon-case {
+  fill: color-mix(in oklab, currentColor 18%, var(--big-db-paper));
+}
+.big-db-icon-inset {
+  fill: var(--big-db-paper);
 }
 .big-db-icon-label .big-db-icon {
   color: var(--big-db-read);
@@ -21267,196 +21201,144 @@ th {
   }
 }
 
-/* Age and access frequency are distinct from cache capacity. */
-.big-db-age-regions {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
-  margin-block: 16px;
-}
-.big-db-age-regions section {
-  min-inline-size: 0;
-}
-.big-db-age-regions section > p {
-  font-size: 14px;
-  margin-block: 8px;
-}
-.big-db-age-band {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid var(--big-db-line);
-  background: var(--big-db-track);
-  color: var(--big-db-muted);
-}
-.big-db-age-hot .big-db-age-band {
-  color: var(--big-db-ink);
-  border-color: var(--big-db-read);
-  background: var(--big-db-read-surface);
-}
-.big-db-read-marks {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
-  min-block-size: 40px;
-}
-.big-db-read-marks span {
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: 50%;
-  background: var(--big-db-read);
-}
-.big-db-age-cold .big-db-read-marks span {
-  background: var(--big-db-muted);
-}
-.big-db-age-regions .big-db-icon-label {
-  flex-wrap: wrap;
-}
-@media (max-width: 639px) {
-  .big-db-age-regions {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .big-db-age-regions .big-db-label {
-    font-size: 11px;
-    letter-spacing: 0.02em;
-  }
-  .big-db-read-marks {
-    gap: 6px;
-  }
-}
-
-/* Repeated reads reuse buffered pages; SSD fills only the missing page. */
-.big-db-reuse-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
-}
-.big-db-reuse-metrics strong {
-  font-size: 20px;
-  color: var(--big-db-read);
-}
+/* Frequent page reads share the fast buffer-pool path; misses wait on disk. */
 .big-db-reuse-svg {
+  --cache-hit: oklch(0.75 0.105 250);
+  --cache-miss: oklch(0.75 0.135 40);
   display: block;
-  width: 100%;
-  height: auto;
-  margin-block-start: 16px;
-  overflow: visible;
+  inline-size: min(100%, 460px);
+  block-size: auto;
+  margin-inline: auto;
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
 }
 .big-db-reuse-svg text {
   fill: var(--big-db-ink);
-  font:
-    14px ui-monospace,
-    monospace;
+  font-size: 16px;
 }
 .big-db-reuse-svg .big-db-reuse-muted {
   fill: var(--big-db-muted);
-  font-size: 12px;
+  font-size: 14px;
 }
-.big-db-reuse-node {
+.big-db-reuse-database {
+  fill: none;
+  stroke: var(--big-db-line);
+}
+.big-db-reuse-node,
+.big-db-reuse-pool,
+.big-db-reuse-disk {
   fill: var(--big-db-paper);
   stroke: var(--big-db-line);
 }
 .big-db-reuse-pool {
-  fill: var(--big-db-paper);
-  stroke: var(--big-db-read);
-  stroke-width: 2;
+  stroke: var(--cache-hit);
 }
-.big-db-reuse-page {
-  fill: var(--big-db-read-surface);
-  stroke: var(--big-db-read);
+.big-db-reuse-disk {
+  stroke: var(--cache-miss);
 }
-.big-db-reuse-page[data-empty="true"] {
+.big-db-reuse-track {
   fill: none;
   stroke: var(--big-db-line);
-  stroke-dasharray: 4 4;
-}
-.big-db-reuse-page[data-active="true"] {
-  stroke-width: 3;
+  stroke-width: 1;
+  opacity: 0.4;
 }
 .big-db-reuse-wire {
   fill: none;
-  stroke: var(--big-db-line);
-  stroke-dasharray: 4 6;
-  opacity: 0.5;
+  stroke: var(--cache-hit);
+  stroke-width: 1.5;
 }
-.big-db-reuse-route {
-  fill: none;
-  stroke: var(--big-db-read);
-  color: var(--big-db-read);
-  stroke-width: 2;
-  stroke-dasharray: 4 4;
+.big-db-reuse-wire[data-miss="true"] {
+  stroke: var(--cache-miss);
 }
 .big-db-reuse-packet {
-  fill: var(--big-db-read);
-}
-.big-db-reuse-route[data-miss="true"] {
-  stroke: var(--big-db-write);
-  color: var(--big-db-write);
+  fill: var(--cache-hit);
 }
 .big-db-reuse-packet[data-miss="true"] {
-  fill: var(--big-db-write);
+  fill: var(--cache-miss);
+}
+.big-db-reuse-wait {
+  fill: none;
+  stroke: var(--cache-miss);
+  stroke-width: 2;
+}
+.big-db-reuse-svg .big-db-reuse-hit-label {
+  fill: var(--cache-hit);
+}
+.big-db-reuse-svg .big-db-reuse-miss-label {
+  fill: var(--cache-miss);
+}
+.big-db-reuse-svg .big-db-reuse-latency {
+  font-size: 22px;
 }
 
-.big-db-reuse-svg .big-db-reuse-transfer-label {
-  fill: var(--big-db-ink);
-  font-size: 11px;
+/* Three separated regions with directly labeled database roles. */
+.big-db-regions-figure .big-db-stage {
+  padding: 16px 8px;
 }
-
-/* Regional identity stays consistent across primary and local replicas. */
 .big-db-regions-svg {
   display: block;
-  width: 100%;
-  height: auto;
-  margin-block: 16px;
+  inline-size: 100%;
+  block-size: auto;
+  margin-inline: auto;
+  font:
+    14px Lilex,
+    ui-monospace,
+    monospace;
 }
 .big-db-regions-svg text {
   fill: var(--big-db-ink);
-  font:
-    12px ui-monospace,
-    monospace;
 }
-.big-db-region[data-region="A"] {
+.big-db-regions-figure [data-region="A"] {
   --region-color: var(--big-db-read);
 }
-.big-db-region[data-region="B"] {
+.big-db-regions-figure [data-region="B"] {
   --region-color: var(--big-db-storage);
 }
-.big-db-region[data-region="C"] {
+.big-db-regions-figure [data-region="C"] {
   --region-color: var(--big-db-write);
 }
-.big-db-region-boundary {
-  fill: var(--big-db-paper);
-  stroke: var(--big-db-line);
-  stroke-dasharray: 4 5;
-}
-.big-db-region-primary {
-  fill: var(--big-db-paper);
+.big-db-region-body,
+.big-db-region-cap {
   stroke: var(--region-color);
-  stroke-width: 2;
-}
-.big-db-region-replica {
+  stroke-width: 1.5;
   fill: var(--big-db-paper);
-  stroke: var(--region-color);
 }
-.big-db-regions-svg .big-db-region-label {
-  fill: var(--region-color);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+.big-db-region-server[data-server-role="primary"] .big-db-region-body {
+  fill: color-mix(in oklab, var(--region-color) 14%, var(--big-db-paper));
 }
-.big-db-region-icon {
-  stroke: var(--region-color);
-  stroke-width: 2;
+.big-db-region-cap {
+  fill: color-mix(in oklab, var(--region-color) 24%, var(--big-db-paper));
 }
+.big-db-regions-svg .big-db-region-role {
+  font-weight: 500;
+}
+.big-db-region-peer,
 .big-db-region-local {
   fill: none;
-  stroke: var(--region-color);
-  stroke-dasharray: 4 4;
+  stroke-width: 1.2;
 }
-.big-db-region-cross {
-  fill: none;
+.big-db-region-peer {
   stroke: var(--big-db-ink);
-  stroke-dasharray: 4 5;
+  stroke-dasharray: 3 4;
+}
+.big-db-region-local {
+  stroke: var(--region-color);
+}
+.big-db-region-divider {
+  stroke: var(--big-db-line);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+.big-db-regions-svg .big-db-region-heading {
+  fill: var(--big-db-muted);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 639px) {
+  .big-db-regions-svg .big-db-region-role {
+    font-size: 18px;
+  }
+  .big-db-regions-svg .big-db-region-heading {
+    font-size: 17px;
+  }
 }

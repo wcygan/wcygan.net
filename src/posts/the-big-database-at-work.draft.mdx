@@ -1,5 +1,5 @@
 ---
-title: the big database at work
+title: The Big Database at Work
 date: October 10, 2026
 description: Small lookups across billions of rows
 tags: [Databases, MySQL, Performance]
@@ -10,7 +10,6 @@ draftNotes: "Before publication, clarify what the three primaries own and why th
 import {
   BigDatabaseHardwareFigure,
   BigDatabaseTrafficFigure,
-  BigDatabaseCacheFigure,
   BigDatabaseIncreasingIdsFigure,
 } from "~/components/BigDatabaseFigures";
 import { BigDatabaseRegionsFigure } from "~/components/BigDatabaseRegionsFigure";
@@ -19,24 +18,22 @@ import { BigDatabaseWorkingSetFigure } from "~/components/BigDatabaseWorkingSetF
 At LinkedIn, my team runs a [multi-primary](https://en.wikipedia.org/wiki/Multi-master_replication) MySQL system with roughly 20 billion rows across six tables
 and 15 TB of stored data. The tables aren't partitioned, and the system isn't sharded. Yet, our queries are still _surprisingly fast_.
 
-<BigDatabaseRegionsFigure />
-
-<BigDatabaseHardwareFigure />
-
 It helps that we run large MySQL instances with 32 cores, 256 GB of RAM, and 24 TB of disk. But why is it still fast?
 
 We see about 10,000 SELECTs per second as the mean across all three regions, with a reported
 average query time of 0.48 milliseconds as we mainly serve point lookups or search on [indexed fields](https://dev.mysql.com/doc/refman/9.7/en/mysql-indexes.html). Each query touches only a small number of rows and pages, so the database doesn't need to read through billions of rows to answer a request. The [buffer pool](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html) for our database is sized at 100 GB
 and its [reported hit rate](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html#innodb-buffer-pool-monitoring) is 98.7%! That rate measures page accesses served from memory (rather than being read from disk).
 
-<BigDatabaseTrafficFigure />
-
 Since the primary-key IDs for our rows increase with time, new entries are written nearby each other in InnoDB's [clustered index](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html), which stores rows in primary-key order. Recent rows tend to occupy nearby pages. Secondary indexes follow their own key order. Repeated reads make those pages hot and useful to keep in the buffer pool; older history is rarely retrieved in this workload.
 
 In essence, this workload serves "hot" data where most page reads are served from memory (in the buffer pool), so we rarely need to read pages from disk. Frequently accessed pages tend to stay in memory; less frequently used pages "age out" as space is needed. This depends on page access and cache pressure, not the age of the rows themselves.
 
-<BigDatabaseCacheFigure />
+<BigDatabaseRegionsFigure />
 
-<BigDatabaseWorkingSetFigure />
+<BigDatabaseHardwareFigure />
+
+<BigDatabaseTrafficFigure />
 
 <BigDatabaseIncreasingIdsFigure />
+
+<BigDatabaseWorkingSetFigure />

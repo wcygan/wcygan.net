@@ -1,259 +1,261 @@
-import { useEffect, useId, useState } from "react";
+import { useId } from "react";
 import { pointOnPath, type Point } from "~/demos/big-database/query-flow";
+import { CACHE_LANE_COUNT } from "~/demos/big-database/working-set";
 import { useWorkingSetPlayback } from "~/demos/big-database/use-working-set-playback";
+
+const LANES = Array.from({ length: CACHE_LANE_COUNT }, (_, lane) => {
+  const x = 48 + lane * 36;
+  return {
+    request: [
+      [x, 60],
+      [x, 158],
+    ] as Point[],
+    response: [
+      [x, 158],
+      [x, 60],
+    ] as Point[],
+  };
+});
+const DISK: Point[] = [
+  [180, 242],
+  [180, 318],
+];
+const path = (points: readonly Point[]) =>
+  points.map(([x, y], i) => `${i ? "L" : "M"}${x} ${y}`).join(" ");
 
 export function BigDatabaseWorkingSetFigure() {
   const id = useId();
   const playback = useWorkingSetPlayback();
-  const [compact, setCompact] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 639px)");
-    const update = () => setCompact(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
   const state = playback.snapshot;
-  const width = compact ? 320 : 600;
-  const center = width / 2;
-  const pool = { x: 16, y: 120, w: width - 32, h: compact ? 242 : 168 };
-  const disk = { x: 16, y: pool.y + pool.h + 90, w: width - 32, h: 110 };
-  const source: Point = [center, 74];
-  const tileWidth = compact ? 112 : 118;
-  const tiles = ["P1", "P2", "P3", "P4"].map((page, i) => ({
-    page,
-    x: pool.x + 16 + (i % (compact ? 2 : 4)) * (tileWidth + 12),
-    y: pool.y + 90 + (compact ? Math.floor(i / 2) * 62 : 0),
-  }));
-  const target = tiles.find((tile) => tile.page === state.page)!;
-  const targetPort: Point = [target.x + tileWidth / 2, target.y];
-  const diskPort: Point = [center, disk.y];
-  const lookup: Point[] = [
-    source,
-    [center, 100],
-    [8, 100],
-    [8, target.y - 8],
-    [targetPort[0], target.y - 8],
-    targetPort,
-  ];
-  const missing = tiles[3];
-  const diskPath: Point[] = [
-    [missing.x + tileWidth / 2, missing.y + 48],
-    [missing.x + tileWidth / 2, pool.y + pool.h + 36],
-    [center, pool.y + pool.h + 36],
-    diskPort,
-  ];
-  const fill: Point[] = [
-    diskPort,
-    [width - 8, disk.y],
-    [width - 8, missing.y + 24],
-    [missing.x + tileWidth, missing.y + 24],
-  ];
-  const route =
-    state.phase === "disk"
-      ? diskPath
-      : state.phase === "fill"
-        ? fill
-        : state.phase === "return"
-          ? [...lookup].reverse()
-          : lookup;
-  const packet = pointOnPath(route, state.progress);
-  const orange = state.read === 6 && state.phase !== "return";
-  const path = (points: readonly Point[]) =>
-    points.map(([x, y], i) => `${i ? "L" : "M"}${x} ${y}`).join(" ");
-  const status = state.complete
-    ? "Read once from SSD. Reuse from RAM."
-    : state.phase === "disk"
-      ? "Miss · read P4 from SSD"
-      : state.phase === "fill"
-        ? "Copy P4 into RAM"
-        : state.phase === "return"
-          ? state.read === 6
-            ? "Return · P4 now cached"
-            : `Hit · return from ${state.page}`
-          : `Read ${state.read + 1} → ${state.page}`;
+  const status =
+    !playback.reduced && state.diskWaiting
+      ? "A disk read waits while memory reads keep returning."
+      : !playback.reduced && state.packets.some((read) => read.phase === "fill")
+        ? "A disk page returns through the buffer pool."
+        : "99% from memory · 1% from disk";
   return (
     <figure
       ref={playback.figure}
       className="big-db-figure big-db-flow"
-      data-graphic-frame="workbench"
+      data-graphic-frame="plate"
       data-graphic-kind="svg"
       aria-labelledby={`${id}-title`}
+      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
-          Recent pages, repeated reads
+          Small cache, frequent reuse
         </p>
       </header>
-      <div className="big-db-flow-controls" aria-label="Working-set playback">
-        <button type="button" onClick={playback.run}>
-          {playback.reduced
-            ? "Show result"
-            : playback.playing
-              ? "Pause"
-              : "Play"}
-        </button>
-        <button type="button" onClick={playback.step} disabled={state.complete}>
-          Step
-        </button>
-        <button type="button" onClick={playback.replay}>
-          Replay
-        </button>
-      </div>
-      <div
-        className="big-db-stage big-db-reuse-stage"
-        data-graphic-stage="padded"
-      >
-        <div className="big-db-reuse-metrics">
-          <span>
-            <strong>98.7%</strong> RAM page reads
-          </span>
-          <span>
-            <strong>1.3%</strong> misses
-          </span>
-        </div>
+      <div className="big-db-stage" data-graphic-stage="padded">
         <svg
-          viewBox={`0 0 ${width} ${disk.y + disk.h + 16}`}
+          viewBox="0 0 360 460"
           className="big-db-reuse-svg"
           role="img"
           aria-labelledby={`${id}-svg-title ${id}-desc`}
         >
           <title id={`${id}-svg-title`}>
-            Repeated reads reuse recent pages in the buffer pool
+            Frequent memory reads and occasional slow disk reads
           </title>
           <desc id={`${id}-desc`}>
-            Six reads hit cached pages. A seventh read misses, copies page P4
-            from SSD to RAM, then returns. Two more reads hit RAM, including the
-            new copy. SSD keeps its persistent copies.
+            The application sends concurrent page-read requests along eight
+            parallel lanes to the database. Its 100 GB buffer pool serves 99
+            percent from memory. One percent miss and wait on the 15 TB disk,
+            then load the page into the buffer pool before returning. Blue
+            requests return quickly; orange requests take longer. This
+            illustrative sample rounds the reported 98.7 percent hit rate.
           </desc>
           <defs>
             <marker
               id={`${id}-arrow`}
-              viewBox="0 -4 8 8"
-              refX="8"
+              viewBox="0 -5 10 10"
+              refX="10"
               refY="0"
               markerUnits="userSpaceOnUse"
-              markerWidth="8"
-              markerHeight="8"
+              markerWidth="7"
+              markerHeight="7"
               orient="auto"
             >
-              <path d="M0 -3L8 0L0 3" fill="none" stroke="context-stroke" />
+              <path d="M0 -5L10 0L0 5Z" fill="context-stroke" />
             </marker>
           </defs>
           <rect
-            x={center - 70}
-            y="26"
-            width="140"
-            height="48"
-            className="big-db-reuse-node"
+            x="8"
+            y="112"
+            width="344"
+            height="336"
+            rx="3"
+            className="big-db-reuse-database"
           />
-          <text x={center} y="55" textAnchor="middle">
-            READ {state.complete ? "9 / 9" : `${state.read + 1} / 9`}
+          <text x="28" y="438" className="big-db-reuse-muted">
+            DATABASE
           </text>
-          <rect
-            x={pool.x}
-            y={pool.y}
-            width={pool.w}
-            height={pool.h}
-            className="big-db-reuse-pool"
-          />
-          <text x={pool.x + 16} y={pool.y + 26}>
-            100 GB BUFFER POOL
-          </text>
-          <text x={pool.x + 16} y={pool.y + 52} className="big-db-reuse-muted">
-            Index pages · cached
-          </text>
-          <text x={pool.x + 16} y={pool.y + 78} className="big-db-reuse-muted">
-            Recent orders · last ~2 weeks
-          </text>
-          {tiles.map((tile) => {
-            const cached = tile.page !== "P4" || state.cached;
-            return (
-              <g key={tile.page} data-page={tile.page} data-cached={cached}>
-                <rect
-                  x={tile.x}
-                  y={tile.y}
-                  width={tileWidth}
-                  height="48"
-                  className="big-db-reuse-page"
-                  data-empty={!cached}
-                  data-active={state.page === tile.page && !state.complete}
-                />
-                <text
-                  x={tile.x + tileWidth / 2}
-                  y={tile.y + 29}
-                  textAnchor="middle"
-                >
-                  {cached ? tile.page : "P4 · absent"}
-                </text>
-              </g>
-            );
-          })}
-          <rect
-            x={disk.x}
-            y={disk.y}
-            width={disk.w}
-            height={disk.h}
-            className="big-db-reuse-node"
-          />
-          <text x={disk.x + 16} y={disk.y + 26}>
-            15 TB SSD
-          </text>
-          <text x={disk.x + 16} y={disk.y + 52} className="big-db-reuse-muted">
-            P1 · P2 · P3 · P4 · persistent copies
-          </text>
-          <text x={disk.x + 16} y={disk.y + 80} className="big-db-reuse-muted">
-            Older history · rarely read
-          </text>
-          <path d={path(diskPath)} className="big-db-reuse-wire" />
-          <path d={path(fill)} className="big-db-reuse-wire" />
-          {!state.complete && (
+          {LANES.map((lane, i) => (
             <path
-              d={path(route)}
-              className="big-db-reuse-route"
-              data-miss={orange}
+              key={i}
+              d={path(lane.request)}
+              className="big-db-reuse-track"
               markerEnd={`url(#${id}-arrow)`}
             />
-          )}
-          {!state.complete && !playback.reduced && (
-            <g>
-              <rect
-                x={packet[0] - (state.phase === "fill" ? 14 : 5)}
-                y={packet[1] - (state.phase === "fill" ? 12 : 5)}
-                width={state.phase === "fill" ? 28 : 10}
-                height={state.phase === "fill" ? 24 : 10}
-                className="big-db-reuse-packet"
-                data-miss={orange}
-              />
-              {state.phase === "fill" && (
-                <text
-                  x={packet[0]}
-                  y={packet[1] + 4}
-                  textAnchor="middle"
-                  className="big-db-reuse-transfer-label"
-                >
-                  P4
-                </text>
-              )}
-            </g>
-          )}
-          <text
-            x={center}
-            y={disk.y - 16}
-            textAnchor="middle"
-            className="big-db-reuse-muted"
-          >
-            {state.ssdReads} SSD page read{state.ssdReads === 1 ? "" : "s"}
+          ))}
+          <path
+            d={path(DISK)}
+            className="big-db-reuse-wire"
+            data-miss="true"
+            markerEnd={`url(#${id}-arrow)`}
+          />
+          <rect
+            x="28"
+            y="12"
+            width="304"
+            height="48"
+            rx="2"
+            className="big-db-reuse-node"
+          />
+          <text x="180" y="42" textAnchor="middle">
+            APPLICATION
           </text>
+          <rect
+            x="28"
+            y="158"
+            width="304"
+            height="84"
+            rx="2"
+            className="big-db-reuse-pool"
+          />
+          <text x="48" y="189">
+            Buffer pool
+          </text>
+          <text x="48" y="220" className="big-db-reuse-hit-label">
+            100 GB · 99% hits
+          </text>
+          <text
+            x="312"
+            y="189"
+            textAnchor="end"
+            className="big-db-reuse-latency big-db-reuse-hit-label"
+          >
+            ~100 ns
+          </text>
+          <text x="312" y="220" textAnchor="end" className="big-db-reuse-muted">
+            RAM access
+          </text>
+          <rect
+            x="28"
+            y="318"
+            width="304"
+            height="84"
+            rx="2"
+            className="big-db-reuse-disk"
+          />
+          <text x="48" y="349">
+            Disk (SSD)
+          </text>
+          <text x="48" y="380" className="big-db-reuse-miss-label">
+            15 TB · 1% misses
+          </text>
+          <text
+            x="312"
+            y="349"
+            textAnchor="end"
+            className="big-db-reuse-latency big-db-reuse-miss-label"
+          >
+            ~50 µs
+          </text>
+          <text x="312" y="380" textAnchor="end" className="big-db-reuse-muted">
+            SSD access
+          </text>
+          <text x="200" y="284" className="big-db-reuse-muted">
+            cache miss
+          </text>
+          {!playback.reduced &&
+            state.packets.map((read) => {
+              const lane = LANES[read.lane];
+              let position: Point;
+              switch (read.phase) {
+                case "lookup":
+                  position = pointOnPath(lane.request, read.progress);
+                  break;
+                case "memory":
+                  position = lane.request[1];
+                  break;
+                case "disk":
+                  position = pointOnPath(DISK, read.progress);
+                  break;
+                case "wait":
+                  position = [180, 318];
+                  break;
+                case "fill":
+                  position = pointOnPath([...DISK].reverse(), read.progress);
+                  break;
+                case "return":
+                  position = pointOnPath(lane.response, read.progress);
+                  break;
+              }
+              const waiting = read.phase === "wait";
+              return (
+                <g
+                  key={read.id}
+                  data-request={read.id}
+                  data-lane={read.lane}
+                  data-phase={read.phase}
+                  data-waiting={waiting}
+                >
+                  {read.phase === "fill" ? (
+                    <rect
+                      x={position[0] - 6}
+                      y={position[1] - 7}
+                      width="12"
+                      height="14"
+                      rx="1"
+                      className="big-db-reuse-packet"
+                      data-miss="true"
+                    />
+                  ) : read.phase === "return" ? (
+                    <path
+                      d={`M${position[0]} ${position[1] - 4}l-3.5 7h7Z`}
+                      className="big-db-reuse-packet"
+                      data-miss={read.miss}
+                    />
+                  ) : (
+                    <circle
+                      cx={position[0]}
+                      cy={position[1]}
+                      r={read.miss ? 6 : 3}
+                      className="big-db-reuse-packet"
+                      data-miss={read.miss}
+                    />
+                  )}
+                  {waiting && (
+                    <circle
+                      cx={position[0]}
+                      cy={position[1]}
+                      r="11"
+                      className="big-db-reuse-wait"
+                    />
+                  )}
+                </g>
+              );
+            })}
         </svg>
       </div>
-      <p className="big-db-flow-status" role="status">
-        {status}
-      </p>
-      <figcaption>
-        Illustrative sequence and working-set fit, slowed for teaching. The
-        reported 98.7% measures page reads served from RAM, not the fraction of
-        recent data cached. SSD retains all persistent pages.
+      <figcaption id={`${id}-caption`}>
+        <p className="big-db-flow-status" role="status">
+          {status}
+        </p>
+        <p>
+          Illustrative page reads: 99% memory, 1% disk, rounding the reported
+          98.7% hit rate. Timing is slowed for visibility. A miss loads the page
+          into RAM; disk keeps the persistent copy.
+        </p>
+        <p>
+          <a href="https://planetscale.com/blog/io-devices-and-latency">
+            Hardware-access examples
+          </a>
+          : RAM ~100 ns, local NVMe ~50 µs (about 500× longer). These are
+          reference values, not measured buffer-pool, page-read, or query
+          latencies for this system.
+        </p>
       </figcaption>
     </figure>
   );

@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { act, cleanup, render } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { BigDatabaseWorkingSetFigure } from "./BigDatabaseWorkingSetFigure";
 
@@ -39,55 +39,47 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
-it("pauses offscreen, steps through the miss, and restores empty RAM on replay", () => {
+const packets = (view: ReturnType<typeof render>) =>
+  Array.from(
+    view.container.querySelectorAll("[data-request]"),
+    (node) => node.outerHTML,
+  );
+
+it("runs continuously across cycle boundaries and suspends offscreen", () => {
   const { view, visible, advance } = setup();
+  expect(view.queryByRole("button")).toBeNull();
+  const initial = packets(view);
   advance(3000);
-  expect(view.getByRole("status").textContent).toBe("Read 1 → P1");
+  expect(packets(view)).toEqual(initial);
   visible(true);
-  advance(2200);
-  expect(view.getByRole("status").textContent).toBe("Read 2 → P2");
-  fireEvent.click(view.getByRole("button", { name: "Pause" }));
-  const paused = view.getByRole("status").textContent;
-  advance(3000);
-  expect(view.getByRole("status").textContent).toBe(paused);
-  fireEvent.click(view.getByRole("button", { name: "Replay" }));
-  fireEvent.click(view.getByRole("button", { name: "Pause" }));
-  for (let i = 0; i < 14; i++)
-    fireEvent.click(view.getByRole("button", { name: "Step" }));
-  expect(view.getByRole("status").textContent).toBe("Copy P4 into RAM");
+  advance(40000);
   expect(
-    view.container
-      .querySelector('[data-page="P4"]')
-      ?.getAttribute("data-cached"),
-  ).toBe("false");
-  fireEvent.click(view.getByRole("button", { name: "Step" }));
+    view.container.querySelectorAll("[data-request]").length,
+  ).toBeGreaterThan(20);
   expect(
-    view.container
-      .querySelector('[data-page="P4"]')
-      ?.getAttribute("data-cached"),
-  ).toBe("true");
-  fireEvent.click(view.getByRole("button", { name: "Replay" }));
-  expect(
-    view.container
-      .querySelector('[data-page="P4"]')
-      ?.getAttribute("data-cached"),
-  ).toBe("false");
+    Math.max(
+      ...Array.from(view.container.querySelectorAll("[data-request]"), (node) =>
+        Number(node.getAttribute("data-request")),
+      ),
+    ),
+  ).toBeGreaterThan(600);
   visible(false);
-  advance(4000);
-  expect(view.getByRole("status").textContent).toBe("Read 1 → P1");
+  const before = packets(view);
+  advance(5000);
+  expect(packets(view)).toEqual(before);
 });
-it("settles under reduced motion and permits discrete steps after replay", () => {
-  const { view } = setup(true);
+it("preserves the explanation without moving packets under reduced motion", () => {
+  const { view, visible, advance } = setup(true);
+  visible(true);
+  advance(40000);
   expect(view.getByRole("status").textContent).toBe(
-    "Read once from SSD. Reuse from RAM.",
+    "99% from memory · 1% from disk",
   );
   expect(view.container.querySelector(".big-db-reuse-packet")).toBeNull();
-  fireEvent.click(view.getByRole("button", { name: "Replay" }));
-  fireEvent.click(view.getByRole("button", { name: "Step" }));
-  expect(view.getByRole("status").textContent).toBe("Hit · return from P1");
+  expect(view.getByText("100 GB · 99% hits")).toBeTruthy();
+  expect(view.getByText("15 TB · 1% misses")).toBeTruthy();
 });
-
-it("suspends playback while the document is hidden and resumes without catching up", () => {
+it("suspends while the document is hidden and resumes without catching up", () => {
   const { view, visible, advance } = setup();
   let hidden = false;
   const visibility = vi
@@ -95,14 +87,14 @@ it("suspends playback while the document is hidden and resumes without catching 
     .mockImplementation(() => hidden);
   visible(true);
   advance(1200);
-  const before = view.getByRole("status").textContent;
+  const before = packets(view);
   hidden = true;
   act(() => document.dispatchEvent(new Event("visibilitychange")));
   advance(5000);
-  expect(view.getByRole("status").textContent).toBe(before);
+  expect(packets(view)).toEqual(before);
   hidden = false;
   act(() => document.dispatchEvent(new Event("visibilitychange")));
   advance(1100);
-  expect(view.getByRole("status").textContent).toBe("Read 2 → P2");
+  expect(packets(view)).not.toEqual(before);
   visibility.mockRestore();
 });

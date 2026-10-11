@@ -1,29 +1,84 @@
-import { type ReactNode, useId } from "react";
+import { type ReactNode, type Ref, useId } from "react";
+import { defineChart, lineY } from "@tanstack/charts";
+import { Chart } from "@tanstack/charts/react";
+import { scaleLinear } from "@tanstack/charts/scales/linear";
+import { tooltip } from "@tanstack/charts/tooltip";
+import { useVisibleAnimationClock } from "~/demos/big-database/use-visible-animation-clock";
+import { treeReadSnapshot, TREE_LEAF_X } from "~/demos/big-database/tree-reads";
 import { trafficSamples, trafficSummary } from "~/demos/big-database/traffic";
 import { DatabaseIcon } from "~/components/icons/DatabaseIcon";
 
 type IconKind = "cpu" | "ram" | "ssd" | "read" | "write" | "page" | "search";
 
 function TechnicalIcon({ kind }: { kind: IconKind }) {
+  const hardware = kind === "cpu" || kind === "ram" || kind === "ssd";
   const shapes: Record<IconKind, ReactNode> = {
     cpu: (
       <>
-        <rect x="6" y="6" width="12" height="12" rx="1" />
-        <rect x="9" y="9" width="6" height="6" />
-        <path d="M8 3v3m4-3v3m4-3v3M8 18v3m4-3v3m4-3v3M3 8h3m-3 4h3m-3 4h3m12-8h3m-3 4h3m-3 4h3" />
+        {[14, 19, 24, 29, 34].map((position) => (
+          <path
+            key={position}
+            d={`M${position} 4v4m0 32v4M4 ${position}h4m32 0h4`}
+          />
+        ))}
+        <rect
+          className="big-db-icon-case"
+          x="8"
+          y="8"
+          width="32"
+          height="32"
+          rx="3"
+        />
+        <rect
+          className="big-db-icon-inset"
+          x="14"
+          y="14"
+          width="20"
+          height="20"
+          rx="2"
+        />
+        <path d="M19 20h10v8H19z" />
       </>
     ),
     ram: (
       <>
-        <rect x="3" y="6" width="18" height="11" rx="1" />
-        <path d="M6 9h3v4H6zm5 0h3v4h-3zm5 0h2v4h-2zM6 17v3m4-3v3m4-3v3m4-3v3" />
+        <path
+          className="big-db-icon-case"
+          d="M4 13h40q2 0 2 2v5a3 3 0 0 0 0 6v7q0 2-2 2H30v-4h-4v4H4q-2 0-2-2v-7a3 3 0 0 0 0-6v-5q0-2 2-2Z"
+        />
+        {[7, 16, 25, 34].map((x) => (
+          <rect
+            key={x}
+            className="big-db-icon-inset"
+            x={x}
+            y="17"
+            width="7"
+            height="10"
+            rx="1"
+          />
+        ))}
+        {[7, 11, 15, 19, 23, 33, 37, 41].map((x) => (
+          <path key={x} d={`M${x} 31v4`} />
+        ))}
       </>
     ),
     ssd: (
       <>
-        <rect x="4" y="3" width="16" height="18" rx="2" />
-        <rect x="8" y="6" width="8" height="7" rx="1" />
-        <path d="M8 17h5m3 0h1" />
+        <rect
+          className="big-db-icon-case"
+          x="8"
+          y="3"
+          width="32"
+          height="42"
+          rx="4"
+        />
+        <circle className="big-db-icon-inset" cx="24" cy="19" r="11" />
+        <circle cx="24" cy="19" r="3" />
+        <path
+          className="big-db-icon-inset"
+          d="M13 35l9-10-5 13a3 3 0 0 1-4-3Z"
+        />
+        <path d="M24 36h10v5H24zM13 8h2m18 0h2M13 41h2" />
       </>
     ),
     read: (
@@ -51,8 +106,8 @@ function TechnicalIcon({ kind }: { kind: IconKind }) {
   };
   return (
     <svg
-      className="big-db-icon"
-      viewBox="0 0 24 24"
+      className={`big-db-icon${hardware ? " big-db-hardware-icon" : ""}`}
+      viewBox={hardware ? "0 0 48 48" : "0 0 24 24"}
       fill="none"
       aria-hidden="true"
       focusable="false"
@@ -78,10 +133,12 @@ function IconLabel({
 }
 
 function Figure({
+  figureRef,
   title,
   caption,
   children,
 }: {
+  figureRef?: Ref<HTMLElement>;
   title: string;
   caption: string;
   children: ReactNode;
@@ -89,6 +146,7 @@ function Figure({
   const id = useId();
   return (
     <figure
+      ref={figureRef}
       className="big-db-figure"
       data-graphic-frame="plate"
       data-graphic-kind="dom"
@@ -146,14 +204,18 @@ function Bar({
 export function BigDatabaseHardwareFigure() {
   return (
     <Figure
-      title="The hardware"
-      caption="Reported machine profile; per-server scope still needs confirmation. Bars show aggregate CPU utilization, RAM allocation, and stored data relative to SSD capacity. Remaining capacity is not a measurement of free resources."
+      title="The hardware each MySQL instance runs on"
+      caption="Each MySQL instance runs on heavyweight hardware."
     >
-      <section className="big-db-resource" data-tone="cpu">
+      <section
+        className="big-db-resource big-db-hardware-resource"
+        data-tone="cpu"
+      >
         <div className="big-db-row">
-          <IconLabel kind="cpu">CPU</IconLabel>
+          <span className="big-db-label">CPU</span>
           <strong>32 cores · 5% utilization</strong>
         </div>
+        <TechnicalIcon kind="cpu" />
         <svg
           className="big-db-cores"
           viewBox="0 0 636 28"
@@ -181,14 +243,15 @@ export function BigDatabaseHardwareFigure() {
           ))}
         </svg>
         <p className="big-db-note">
-          Each slot represents one core of capacity, not its measured activity.
+          Each slot represents one core of capacity.
         </p>
       </section>
-      <section className="big-db-resource">
+      <section className="big-db-resource big-db-hardware-resource">
         <div className="big-db-row">
-          <IconLabel kind="ram">RAM</IconLabel>
+          <span className="big-db-label">RAM</span>
           <strong>256 GB · 39.1% buffer pool</strong>
         </div>
+        <TechnicalIcon kind="ram" />
         <Bar
           percent={(100 / 256) * 100}
           label="100 of 256 gigabytes allocated to the buffer pool, about 39.1 percent"
@@ -199,15 +262,19 @@ export function BigDatabaseHardwareFigure() {
         </div>
         <p className="big-db-note">8 × 32 GB RAM modules</p>
       </section>
-      <section className="big-db-resource">
+      <section
+        className="big-db-resource big-db-hardware-resource"
+        data-tone="storage"
+      >
         <div className="big-db-row">
-          <IconLabel kind="ssd">SSD</IconLabel>
+          <span className="big-db-label">Disk</span>
           <strong>24 TB · 62.5% stored data</strong>
         </div>
+        <TechnicalIcon kind="ssd" />
         <Bar
           percent={(15 / 24) * 100}
           tone="storage"
-          label="15 terabytes of reported stored data relative to 24 terabytes of SSD capacity, 62.5 percent"
+          label="15 terabytes of reported stored data relative to 24 terabytes of disk capacity, 62.5 percent"
         />
         <div className="big-db-row big-db-note">
           <span>15 TB stored data</span>
@@ -218,108 +285,102 @@ export function BigDatabaseHardwareFigure() {
   );
 }
 
-export function BigDatabaseTrafficFigure() {
-  const id = useId();
-  // Equal vertical distances represent tenfold changes in statement rate.
-  const x = (hour: number) => 72 + (hour / 24) * 496;
-  const y = (rate: number) =>
-    276 - ((Math.log10(rate) - 1) / (Math.log10(20000) - 1)) * 248;
-  const path = (series: "reads" | "writes") =>
-    trafficSamples
-      .map(
-        (sample, i) =>
-          `${i ? "L" : "M"}${x(sample.hour).toFixed(2)},${y(sample[series]).toFixed(2)}`,
-      )
-      .join(" ");
+const wholeRate = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+});
 
+const trafficChart = defineChart({
+  marks: [
+    lineY(trafficSamples, {
+      id: "Reads",
+      x: "hour",
+      y: "reads",
+      z: () => "Reads",
+      stroke: "var(--big-db-read)",
+      strokeWidth: 2.5,
+    }),
+    lineY(trafficSamples, {
+      id: "Writes",
+      x: "hour",
+      y: "writes",
+      z: () => "Writes",
+      stroke: "var(--big-db-write)",
+      strokeWidth: 2.5,
+    }),
+  ],
+  scales: {
+    x: {
+      scale: scaleLinear().domain([0, 24]),
+      axis: {
+        label: "Hour of day",
+        ticks: {
+          values: [0, 6, 12, 18, 24],
+          format: (hour) => String(hour).padStart(2, "0"),
+        },
+      },
+    },
+    y: {
+      scale: scaleLinear().domain([0, 12000]),
+      grid: true,
+      axis: {
+        label: "Statements / second",
+        ticks: {
+          values: [0, 4000, 8000, 12000],
+          format: (rate) => wholeRate.format(rate),
+        },
+      },
+    },
+  },
+  theme: {
+    foreground: "var(--big-db-muted)",
+    muted: "var(--big-db-muted)",
+    grid: "var(--big-db-track)",
+  },
+  focus: "group-x",
+  tooltip: {
+    use: tooltip,
+    items: [
+      {
+        channel: "x",
+        label: "Time",
+        text: (point) => {
+          const minutes = Math.round(point.xValue * 60);
+          return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+        },
+      },
+      {
+        channel: "y",
+        text: (point) => `${wholeRate.format(point.yValue)} / s`,
+      },
+    ],
+  },
+});
+
+export function BigDatabaseTrafficFigure() {
   return (
     <Figure
       title="Reads and writes over 24 hours"
-      caption="Illustrative daily pattern, not a measured trace. Each rate is the arithmetic mean across all three regions, not their combined total. Dashed lines show arithmetic averages over the full 24 hours. The vertical scale is logarithmic: each major step is 10×. Rates count statements, not rows or disk operations."
+      caption="Illustrative daily pattern; rates are means across all three regions."
     >
-      <p className="big-db-note">Statements / second · mean across 3 regions</p>
       <div className="big-db-traffic-summary">
         {(["reads", "writes"] as const).map((series) => (
-          <div key={series} data-tone={series === "reads" ? "read" : "write"}>
+          <div key={series}>
             <IconLabel kind={series === "reads" ? "read" : "write"}>
               {series}
             </IconLabel>
             <strong>
-              {trafficSummary[series].average.toLocaleString("en-US")} / s
-              average
+              {trafficSummary[series].average.toLocaleString("en-US")} / s mean
             </strong>
-            <span>
-              {trafficSummary[series].peak.toLocaleString("en-US")} / s peak
-            </span>
           </div>
         ))}
       </div>
-      <svg
+      <Chart
         className="big-db-traffic-chart"
-        viewBox="0 0 600 324"
-        role="img"
-        aria-labelledby={`${id}-chart-title ${id}-chart-desc`}
-      >
-        <title id={`${id}-chart-title`}>
-          24-hour read and write rates on a logarithmic scale
-        </title>
-        <desc id={`${id}-chart-desc`}>
-          An illustrative regional mean peaks at 14:00, reaching 12,000 reads
-          and 200 writes per second. The daily arithmetic averages are 10,000
-          reads and 100 writes per second. Solid curves show rates; dashed
-          horizontal lines show daily averages.
-        </desc>
-        {[10, 100, 1000, 10000].map((rate) => (
-          <g key={rate}>
-            <line
-              className="big-db-traffic-grid"
-              x1={x(0)}
-              x2={x(24)}
-              y1={y(rate)}
-              y2={y(rate)}
-            />
-            <text x="60" y={y(rate)} dy="0.35em" textAnchor="end">
-              {rate.toLocaleString("en-US")}
-            </text>
-          </g>
-        ))}
-        {[0, 6, 12, 18, 24].map((hour) => (
-          <g key={hour}>
-            <line
-              className="big-db-traffic-grid"
-              x1={x(hour)}
-              x2={x(hour)}
-              y1="28"
-              y2="276"
-            />
-            <text x={x(hour)} y="308" textAnchor="middle">
-              {String(hour).padStart(2, "0")}
-            </text>
-          </g>
-        ))}
-        {(["reads", "writes"] as const).map((series) => (
-          <g key={series} data-tone={series === "reads" ? "read" : "write"}>
-            <line
-              className="big-db-traffic-average"
-              x1={x(0)}
-              x2={x(24)}
-              y1={y(trafficSummary[series].average)}
-              y2={y(trafficSummary[series].average)}
-            />
-            <path className="big-db-traffic-line" d={path(series)} />
-            <circle
-              className="big-db-traffic-peak"
-              cx={x(14)}
-              cy={y(trafficSummary[series].peak)}
-              r="4"
-            />
-          </g>
-        ))}
-      </svg>
-      <p className="big-db-note">
-        Hour of day · solid = rate · dashed = 24-hour average
-      </p>
-      <p className="big-db-takeaway">0.48 ms reported average query time</p>
+        definition={trafficChart}
+        height={260}
+        ariaLabel="Reads and writes over 24 hours on a linear scale"
+        ariaDescription="Illustrative rates averaged across three regions. Reads average 10,000 per second and peak at 12,000. Writes average 100 per second and peak at 200. Both lines share a zero-based linear axis."
+      />
     </Figure>
   );
 }
@@ -386,174 +447,117 @@ export function BigDatabaseTopologyFigure() {
   );
 }
 
-export function BigDatabaseCacheFigure() {
-  return (
-    <Figure
-      title="Small cache, frequent reuse"
-      caption="The capacity ratio and hit rate have different denominators. 100 GB / 15 TB is about 0.67% in comparable units. 98.7% describes logical page reads served by the buffer pool, not complete queries. Hot and cold describe access frequency, not separate storage tiers."
-    >
-      <div className="big-db-resource">
-        <div className="big-db-row">
-          <IconLabel kind="ram">Cache / stored data</IconLabel>
-          <strong>≈ 0.67%</strong>
-        </div>
-        <Bar
-          percent={(100 / 15000) * 100}
-          label="Buffer pool capacity is about 0.67 percent of stored data"
-        />
-        <div className="big-db-row big-db-note">
-          <span>100 GB cache</span>
-          <span>15 TB dataset</span>
-        </div>
-      </div>
-      <div className="big-db-resource">
-        <div className="big-db-row">
-          <IconLabel kind="read">Page reads from RAM</IconLabel>
-          <strong>98.7%</strong>
-        </div>
-        <Bar
-          percent={98.7}
-          label="98.7 percent of logical page reads served from memory, 1.3 percent require disk reads"
-        />
-        <div className="big-db-row big-db-note">
-          <span>98.7% buffer-pool hits</span>
-          <span>1.3% misses</span>
-        </div>
-      </div>
-      <div
-        className="big-db-age-timeline"
-        role="img"
-        aria-label="Read activity concentrates on orders from roughly the last two weeks. Older history is almost never accessed. The timeline is illustrative, not a measured age or access distribution."
-      >
-        <p className="big-db-label">Orders by age · older → newer</p>
-        <div className="big-db-age-regions">
-          <section className="big-db-age-cold">
-            <IconLabel kind="ssd">Cold history</IconLabel>
-            <p>Older than ~2 weeks</p>
-            <div className="big-db-age-band" aria-hidden="true">
-              <TechnicalIcon kind="page" />
-            </div>
-            <p className="big-db-age-activity">Almost never accessed</p>
-            <div className="big-db-read-marks" aria-hidden="true">
-              <span />
-            </div>
-          </section>
-          <section className="big-db-age-hot">
-            <IconLabel kind="ram">Hot orders</IconLabel>
-            <p>Last ~2 weeks</p>
-            <div className="big-db-age-band" aria-hidden="true">
-              <TechnicalIcon kind="page" />
-            </div>
-            <p className="big-db-age-activity">Read repeatedly</p>
-            <div className="big-db-read-marks" aria-hidden="true">
-              {Array.from({ length: 24 }, (_, i) => (
-                <span key={i} />
-              ))}
-            </div>
-          </section>
-        </div>
-        <p className="big-db-note">
-          Dots illustrate reads: many return to recent orders; very few reach
-          older history. Widths and dot counts are schematic, not measured
-          proportions.
-        </p>
-      </div>
-      <p className="big-db-note">
-        Index routing pages are also hot because lookups reuse them. Cached
-        pages remain stored on SSD; an uncached page is loaded into RAM when
-        needed.
-      </p>
-    </Figure>
-  );
-}
-
 export function BigDatabaseIncreasingIdsFigure() {
+  const playback = useVisibleAnimationClock();
+  const reads = treeReadSnapshot(playback.elapsed);
+  const temperatureId = useId();
   return (
     <Figure
+      figureRef={playback.figure}
       title="Increasing IDs extend the right edge"
-      caption="Illustrative access pattern: older orders are rarely requested, while recent orders repeatedly reuse neighboring leaf pages. Increasing IDs place new rows near the right edge; pages fill and split, so recent data spans nearby pages rather than one page. Hot describes access frequency, not age alone."
+      caption="Illustrative reads favor the hot leaves: 5%, 25%, and 70% from left to right. Green outlines mark pages found."
     >
-      <div
+      <svg
         className="big-db-id-tree"
+        viewBox="0 -36 360 336"
         role="img"
-        aria-label="A clustered B-plus-tree with three ordered leaf pages. Leaf 01 holds older, cold orders and is rarely read. Leaves 02 and 03 hold nearby recent orders and are repeatedly read, making them hot. New increasing IDs extend the right edge; cached copies of both recent pages are reused in the buffer pool."
+        aria-label="A clustered B-plus-tree with cold, rarely read leaves on the left and hot, frequently read leaves on the right. The line below runs from lower IDs and older rows on the left to higher IDs and newer rows on the right: IDs increase over time. Reads follow the right subtree to hot leaves, with 5 percent reaching its left leaf, 25 percent its middle leaf, and 70 percent its far-right leaf. A green border marks a page found."
       >
-        <div className="big-db-id-root-row">
-          <div className="big-db-id-root">
-            <span>ROOT · routing keys</span>
-            <strong>1005&nbsp; | &nbsp;1009</strong>
-          </div>
-        </div>
-        <svg
-          className="big-db-id-branches"
-          viewBox="0 0 600 52"
-          preserveAspectRatio="none"
-          aria-hidden="true"
+        <defs>
+          <linearGradient id={temperatureId}>
+            {Array.from({ length: 6 }, (_, i) => (
+              <stop
+                key={i}
+                className="big-db-id-tone"
+                data-temperature={i}
+                offset={`${i * 20}%`}
+              />
+            ))}
+          </linearGradient>
+        </defs>
+        <text className="big-db-id-context" x="8" y="-10">
+          One B+ tree in the database
+        </text>
+        <g className="big-db-id-branches">
+          <path d="M180 42V62M84 82V62H276V82" />
+          <path d="M84 110V132M28 154V132H140V154M84 132V154" />
+          <path d="M276 110V132M220 154V132H332V154M276 132V154" />
+        </g>
+        <g className="big-db-id-routing">
+          <rect x="152" y="14" width="56" height="28" rx="2" />
+          <path d="M180 21V35" />
+          {[84, 276].map((x) => (
+            <g key={x}>
+              <rect x={x - 28} y="82" width="56" height="28" rx="2" />
+              <path d={`M${x - 9} 89v14m18-14v14`} />
+            </g>
+          ))}
+        </g>
+        {TREE_LEAF_X.map((x, i) => (
+          <g
+            key={x}
+            className="big-db-id-leaf big-db-id-tone"
+            data-temperature={i}
+            data-found={playback.reduced ? i >= 3 : reads.found.has(i)}
+          >
+            <rect x={x - 20} y="154" width="40" height="36" rx="2" />
+            {i < 3 ? (
+              [164, 172, 180].map((y) => (
+                <path key={y} d={`M${x - 11} ${y}h22`} />
+              ))
+            ) : (
+              <text className="big-db-id-read-share" x={x} y="177">
+                {[5, 25, 70][i - 3]}%
+              </text>
+            )}
+          </g>
+        ))}
+        {!playback.reduced &&
+          reads.packets.map((read) => (
+            <circle
+              key={read.id}
+              data-tree-read={read.id}
+              data-target-leaf={read.leaf}
+              cx={read.position[0]}
+              cy={read.position[1]}
+              r="3"
+              className="big-db-id-read"
+            />
+          ))}
+        <text
+          className="big-db-id-temperature big-db-id-tone"
+          x="84"
+          y="217"
+          data-temperature="0"
         >
-          <path d="M300 0V18M100 52V35H500V52M300 18V35" />
-        </svg>
-        <div className="big-db-id-leaves">
-          <section className="big-db-id-page">
-            <span className="big-db-id-page-label">LEAF 01 · cold</span>
-            <div className="big-db-id-keys">
-              <span>1001</span>
-              <span>1002</span>
-              <span>1003</span>
-              <span>1004</span>
-            </div>
-          </section>
-          <section className="big-db-id-page" data-recent="true">
-            <span className="big-db-id-page-label">LEAF 02 · hot</span>
-            <div className="big-db-id-keys">
-              <span>1005</span>
-              <span>1006</span>
-              <span>1007</span>
-              <span>1008</span>
-            </div>
-          </section>
-          <section className="big-db-id-page" data-recent="true">
-            <span className="big-db-id-page-label">LEAF 03 · hot</span>
-            <div className="big-db-id-keys">
-              <span>1009</span>
-              <span>1010</span>
-              <span>1011</span>
-              <span>1012</span>
-            </div>
-          </section>
-        </div>
-        <div className="big-db-id-access">
-          <div className="big-db-id-cold">
-            <strong>Older history</strong>
-            <span>Rarely retrieved</span>
-            <span className="big-db-id-idle" aria-hidden="true">
-              —
-            </span>
-          </div>
-          <div className="big-db-id-hot">
-            <strong>Recent orders · nearby pages</strong>
-            <span>Repeated reads → hot pages</span>
-            <div className="big-db-id-read-dots" aria-hidden="true">
-              {Array.from({ length: 12 }, (_, i) => (
-                <i key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="big-db-id-growth">
-          <span>NEW ROWS · RIGHT EDGE</span>
-          <strong>1013 →</strong>
-        </div>
-        <div className="big-db-id-cache">
-          <span className="big-db-id-page-label">
-            BUFFER POOL · REUSED PAGES
-          </span>
-          <div>
-            <span data-recent="true">LEAF 02</span>
-            <span data-recent="true">LEAF 03</span>
-          </div>
-          <p>Nearby recent rows → reused pages → hot cached copies.</p>
-        </div>
-      </div>
+          Cold
+        </text>
+        <text
+          className="big-db-id-temperature big-db-id-tone"
+          x="276"
+          y="217"
+          data-temperature="5"
+        >
+          Hot
+        </text>
+        <path
+          className="big-db-id-axis"
+          stroke={`url(#${temperatureId})`}
+          d="M8 246H352M15 239l-7 7 7 7M345 239l7 7-7 7"
+        />
+        <text className="big-db-id-axis-label" x="8" y="277">
+          Lower IDs
+          <tspan x="8" dy="20">
+            Older rows
+          </tspan>
+        </text>
+        <text className="big-db-id-axis-label" x="352" y="277" textAnchor="end">
+          Higher IDs
+          <tspan x="352" dy="20">
+            Newer rows
+          </tspan>
+        </text>
+      </svg>
     </Figure>
   );
 }
