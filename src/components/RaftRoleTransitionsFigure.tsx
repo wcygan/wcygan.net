@@ -34,6 +34,7 @@ export function RaftRoleTransitionsFigure() {
     ? current.duration
     : Math.max(0, position.elapsed - travelDuration);
   const complete =
+    !playing &&
     position.index === phases.length - 1 &&
     position.elapsed >= destination.duration + travelDuration;
   const transitionPath =
@@ -48,7 +49,7 @@ export function RaftRoleTransitionsFigure() {
           (transitionPath.getTotalLength() * position.elapsed) / travelDuration,
         )
       : undefined;
-  const active = playing && !complete && visible && documentVisible && !reduced;
+  const active = playing && visible && documentVisible && !reduced;
   const messageProgress = reduced ? 1 : Math.min(1, elapsed / 1400);
   const messageArrived = !!current.message && messageProgress === 1;
   const timer =
@@ -148,20 +149,12 @@ export function RaftRoleTransitionsFigure() {
         const elapsed = old.elapsed + delta;
         if (
           elapsed >=
-            phases[old.index].duration +
-              (phases[old.index].edge && old.index > 0 ? 900 : 0) &&
-          old.index < phases.length - 1
+          phases[old.index].duration +
+            (phases[old.index].edge && old.index > 0 ? 900 : 0)
         ) {
-          return { index: old.index + 1, elapsed: 0 };
+          return { index: (old.index + 1) % phases.length, elapsed: 0 };
         }
-        return {
-          index: old.index,
-          elapsed: Math.min(
-            elapsed,
-            phases[old.index].duration +
-              (phases[old.index].edge && old.index > 0 ? 900 : 0),
-          ),
-        };
+        return { index: old.index, elapsed };
       });
       frame = requestAnimationFrame(tick);
     };
@@ -606,11 +599,11 @@ export function RaftRoleTransitionsFigure() {
       <div className="raft-roles-controls">
         <button
           type="button"
-          disabled={reduced || complete}
+          disabled={reduced}
           title={reduced ? "Use Next with reduced motion" : undefined}
           onClick={() => setPlaying((old) => !old)}
         >
-          {playing && !complete ? "Pause" : "Play"}
+          {playing ? "Pause" : "Play"}
         </button>
         <button type="button" disabled={complete} onClick={next}>
           Next
@@ -622,7 +615,7 @@ export function RaftRoleTransitionsFigure() {
       <div
         className="raft-roles-status"
         role="status"
-        aria-live="polite"
+        aria-live={active ? "off" : "polite"}
         aria-atomic="true"
       >
         <p className="raft-roles-state">

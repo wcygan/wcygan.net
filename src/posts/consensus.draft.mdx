@@ -8,6 +8,8 @@ draft: true
 
 import { TotalOrderBroadcastFigure } from "~/components/TotalOrderBroadcastFigure";
 import { OperationOrderFigure } from "~/components/OperationOrderFigure";
+import { RaftLeaderElectionFigure } from "~/components/RaftLeaderElectionFigure";
+import { RaftMajorityOverlapFigure } from "~/components/RaftMajorityOverlapFigure";
 import { RaftRoleTransitionsFigure } from "~/components/RaftRoleTransitionsFigure";
 
 Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
@@ -47,6 +49,20 @@ A **term** is a numbered election round. Each term starts with an election and h
 <RaftRoleTransitionsFigure />
 
 ### Leader Election
+
+Followers expect regular heartbeats from the leader. If those messages stop arriving, a follower eventually starts an election. It asks the other servers for their votes; in a five-server cluster, three votes are enough to become leader.
+
+Each server votes for at most one candidate per term. Followers use randomized election timeouts to reduce the chance of starting competing elections together. If the vote splits, they try again in a new term.
+
+<RaftLeaderElectionFigure />
+
+A majority elects the leader. Randomized timing helps the cluster reach that majority.
+
+Any two majorities must share at least one server. That shared server cannot vote for two candidates in the same term, so both candidates cannot win in that term.
+
+<RaftMajorityOverlapFigure />
+
+Once elected, the leader coordinates the order of new log entries.
 
 ### Log Replication
 

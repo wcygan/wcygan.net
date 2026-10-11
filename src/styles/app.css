@@ -21873,3 +21873,349 @@ stop.big-db-id-tone {
 .raft-roles-incoming .raft-roles-detail {
   font-size: 14px;
 }
+
+/* A cluster-wide view of a Raft election. */
+.leader-election-figure,
+.majority-overlap-figure {
+  --election-canvas: oklch(0.973 0.004 91.446);
+  --election-paper: oklch(0.994 0.001 106.423);
+  --election-ink: oklch(0.243 0.008 95.372);
+  --election-muted: oklch(0.498 0.008 106.679);
+  --election-line: oklch(0.54 0.014 91.583);
+  --election-track: oklch(0.915 0.007 97.359);
+  --election-blue: oklch(0.46 0.104 250);
+  --election-orange: oklch(0.46 0.091 55);
+  --election-green: oklch(0.445 0.095 150);
+  --election-green-surface: oklch(0.94 0.025 150);
+  --election-red: oklch(0.46 0.145 25);
+  --election-purple: oklch(0.46 0.196 300);
+  --election-purple-surface: oklch(0.94 0.02 300);
+  --election-teal: oklch(0.46 0.067 180);
+  --election-teal-surface: oklch(0.94 0.052 180);
+  --election-rose: oklch(0.46 0.154 350);
+  --election-rose-surface: oklch(0.94 0.021 350);
+  --election-blue-surface: oklch(0.94 0.018 250);
+  --election-orange-surface: oklch(0.94 0.021 55);
+}
+.leader-election-figure > header,
+.majority-overlap-figure > header {
+  margin-block-end: 16px;
+}
+.leader-election-scenario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-end: 16px;
+  color: #63635e;
+  font-size: 14px;
+}
+.leader-election-scenario select {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+}
+.leader-election-stage {
+  padding: 16px 20px;
+  background: var(--election-canvas);
+  border-color: var(--election-track);
+  color: var(--election-ink);
+}
+.leader-election-stage-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--election-muted);
+  font:
+    12px/20px Lilex,
+    ui-monospace,
+    monospace;
+}
+.leader-election-scene {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 600px;
+  block-size: auto;
+  margin-inline: auto;
+  font-family: Lilex, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.leader-election-scene text {
+  fill: var(--election-ink);
+}
+:is(.leader-election-figure, .majority-overlap-figure) [data-identity="A"] {
+  --identity-color: var(--election-purple);
+  --identity-surface: var(--election-purple-surface);
+}
+:is(.leader-election-figure, .majority-overlap-figure) [data-identity="B"] {
+  --identity-color: var(--election-blue);
+  --identity-surface: var(--election-blue-surface);
+}
+:is(.leader-election-figure, .majority-overlap-figure) [data-identity="C"] {
+  --identity-color: var(--election-teal);
+  --identity-surface: var(--election-teal-surface);
+}
+:is(.leader-election-figure, .majority-overlap-figure) [data-identity="D"] {
+  --identity-color: var(--election-orange);
+  --identity-surface: var(--election-orange-surface);
+}
+:is(.leader-election-figure, .majority-overlap-figure) [data-identity="E"] {
+  --identity-color: var(--election-rose);
+  --identity-surface: var(--election-rose-surface);
+}
+.leader-election-node {
+  fill: var(--identity-surface);
+  stroke: var(--identity-color);
+  stroke-width: 1;
+}
+.leader-election-server[data-role="Candidate"] .leader-election-node,
+.leader-election-server[data-role="Leader"] .leader-election-node {
+  stroke-width: 2;
+}
+.leader-election-scene .leader-election-server-name {
+  fill: var(--identity-color);
+  font-size: 16px;
+  font-weight: 600;
+}
+.leader-election-scene .leader-election-role {
+  fill: var(--election-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.leader-election-ballot {
+  font-size: 12px;
+}
+.leader-election-scene .leader-election-node-state {
+  fill: var(--election-muted);
+  font-size: 10px;
+}
+.leader-election-scene .leader-election-known-leader[data-identity] {
+  fill: var(--identity-color);
+}
+.leader-election-vote rect {
+  fill: var(--election-paper);
+  stroke: var(--election-track);
+  stroke-width: 1;
+}
+.leader-election-vote[data-identity] rect {
+  fill: var(--identity-surface);
+  stroke: var(--identity-color);
+}
+.leader-election-scene .leader-election-vote text {
+  fill: var(--election-muted);
+}
+.leader-election-scene .leader-election-vote[data-identity] text {
+  fill: var(--identity-color);
+}
+.leader-election-server[data-role="Candidate"] .leader-election-role {
+  fill: var(--identity-color);
+}
+.leader-election-server[data-role="Leader"] .leader-election-role {
+  fill: var(--election-green);
+}
+.leader-election-scene .leader-election-tally-label {
+  fill: var(--election-muted);
+  font-size: 11px;
+}
+.leader-election-timer {
+  fill: var(--election-track);
+}
+.leader-election-timer-fill {
+  fill: var(--identity-color);
+}
+.leader-election-message {
+  --message-color: var(--identity-color);
+}
+.leader-election-wire {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.leader-election-arrow {
+  fill: var(--election-line);
+}
+.leader-election-reply {
+  --reply-color: var(--election-red);
+}
+.leader-election-reply[data-granted="true"] {
+  --reply-color: var(--election-green);
+}
+.leader-election-reply rect {
+  fill: var(--election-paper);
+  stroke: var(--reply-color);
+  stroke-width: 1;
+}
+.leader-election-scene .leader-election-reply text {
+  fill: var(--reply-color);
+  font-size: 11px;
+  font-weight: 600;
+}
+.leader-election-message circle {
+  fill: var(--message-color);
+}
+.leader-election-heart {
+  fill: var(--election-red);
+}
+.leader-election-tally text {
+  font-size: 20px;
+}
+.leader-election-tally [data-identity] {
+  fill: var(--identity-color);
+}
+.leader-election-majority rect {
+  fill: var(--election-green-surface);
+  stroke: var(--election-green);
+  stroke-width: 1;
+}
+.leader-election-scene .leader-election-majority text {
+  fill: var(--election-green);
+  font-size: 12px;
+  font-weight: 600;
+}
+.leader-election-scene .leader-election-tally-label[data-majority="true"] {
+  fill: var(--election-green);
+}
+.leader-election-controls,
+.majority-overlap-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 16px;
+}
+.leader-election-controls button,
+.majority-overlap-controls button {
+  min-inline-size: 72px;
+  min-block-size: 44px;
+  padding: 8px 16px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+  cursor: pointer;
+}
+.leader-election-controls button:disabled,
+.majority-overlap-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.leader-election-status,
+.majority-overlap-status {
+  min-block-size: 64px;
+  margin-block-end: 12px;
+}
+.leader-election-status p,
+.majority-overlap-status p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.leader-election-status p:first-child,
+.majority-overlap-status p:first-child {
+  margin-block-end: 8px;
+  font-weight: 550;
+}
+@media (max-width: 639px) {
+  .leader-election-stage {
+    padding: 12px 8px;
+  }
+  .leader-election-stage-heading {
+    font-size: 11px;
+  }
+}
+
+/* Compare consecutive majorities while keeping server identities fixed. */
+.majority-overlap-stage {
+  padding: 16px 20px;
+  background: var(--election-canvas);
+  color: var(--election-ink);
+  font:
+    12px/20px Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.majority-overlap-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--election-muted);
+}
+.majority-overlap-groups {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  margin-block: 12px 8px;
+}
+.majority-overlap-groups p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.majority-overlap-groups p::before {
+  content: "";
+  inline-size: 20px;
+  border-block-start: 1.5px solid var(--election-ink);
+}
+.majority-overlap-groups .majority-overlap-previous-label {
+  color: var(--election-muted);
+}
+.majority-overlap-groups .majority-overlap-previous-label::before {
+  border-block-start: 1.5px dashed var(--election-line);
+}
+.majority-overlap-scene {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 400px;
+  block-size: auto;
+  margin-inline: auto;
+}
+.majority-overlap-previous-bound {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.majority-overlap-current-bound {
+  fill: color-mix(in oklab, var(--election-ink) 4%, transparent);
+  stroke: var(--election-ink);
+  stroke-width: 1.8;
+}
+.majority-overlap-previous-ring {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.majority-overlap-shared-ring {
+  fill: var(--election-green-surface);
+  stroke: var(--election-green);
+  stroke-width: 3;
+}
+.majority-overlap-node {
+  fill: var(--identity-surface);
+  stroke: var(--identity-color);
+  stroke-width: 1.5;
+}
+.majority-overlap-server text {
+  fill: var(--identity-color);
+  font-size: 18px;
+  font-weight: 600;
+}
+.majority-overlap-status p:first-child {
+  color: var(--election-green);
+}
+@media (max-width: 639px) {
+  .majority-overlap-stage {
+    padding: 12px 8px;
+  }
+}
