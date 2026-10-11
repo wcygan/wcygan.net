@@ -20550,3 +20550,913 @@ th {
     font-size: 11px;
   }
 }
+
+/* Big database: static, article-native capacity and lookup explanations. */
+.big-db-figure {
+  --big-db-ink: oklch(0.985 0 0);
+  --big-db-muted: oklch(0.738 0 0);
+  --big-db-line: oklch(0.51 0 0);
+  --big-db-track: oklch(0.26 0 0);
+  --big-db-paper: oklch(0.226 0 0);
+  --big-db-read: oklch(0.552 0.161 252.205);
+  --big-db-write: oklch(0.661 0.202 39.353);
+  --big-db-cpu: oklch(0.809 0.166 84.552);
+  --big-db-storage: oklch(0.681 0.191 146.483);
+  --big-db-read-surface: color-mix(
+    in oklab,
+    var(--big-db-read) 16%,
+    var(--big-db-paper)
+  );
+  --big-db-write-surface: color-mix(
+    in oklab,
+    var(--big-db-write) 12%,
+    var(--big-db-paper)
+  );
+  --big-db-storage-surface: color-mix(
+    in oklab,
+    var(--big-db-storage) 12%,
+    var(--big-db-paper)
+  );
+  --big-db-active: var(--big-db-read);
+}
+.big-db-figure .big-db-stage {
+  padding: 20px;
+  background: oklch(0.178 0 0);
+  border-color: var(--big-db-track);
+  color: var(--big-db-ink);
+}
+.big-db-stage p {
+  margin: 0;
+}
+.big-db-stage > * + * {
+  margin-block-start: 24px;
+}
+.big-db-row {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.big-db-row strong {
+  font-weight: 550;
+}
+.big-db-stage .big-db-label {
+  font:
+    500 12px/1.5 "JetBrains Mono",
+    Lilex,
+    ui-monospace,
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.big-db-stage .big-db-note {
+  color: var(--big-db-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.big-db-resource > * + * {
+  margin-block-start: 8px;
+}
+.big-db-bar,
+.big-db-cores {
+  display: block;
+  inline-size: 100%;
+  block-size: 24px;
+}
+.big-db-track {
+  fill: var(--big-db-track);
+}
+.big-db-fill {
+  fill: var(--big-db-active);
+}
+.big-db-figure [data-tone="cpu"] {
+  --big-db-active: var(--big-db-cpu);
+}
+.big-db-figure [data-tone="write"] {
+  --big-db-active: var(--big-db-write);
+}
+.big-db-figure [data-tone="storage"] {
+  --big-db-active: var(--big-db-storage);
+}
+.big-db-hatch {
+  fill: none;
+  stroke: var(--big-db-paper);
+  stroke-width: 2;
+}
+.big-db-traffic-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.big-db-traffic-summary > div {
+  display: grid;
+  gap: 4px;
+}
+.big-db-traffic-summary strong {
+  font-size: 16px;
+  font-weight: 550;
+}
+.big-db-traffic-summary > div > span:last-child {
+  color: var(--big-db-muted);
+  font-size: 14px;
+}
+.big-db-traffic-chart {
+  display: block;
+  inline-size: 100%;
+  overflow: visible;
+}
+.big-db-traffic-chart text {
+  fill: var(--big-db-muted);
+  font:
+    14px Lilex,
+    ui-monospace,
+    monospace;
+}
+.big-db-traffic-grid {
+  stroke: var(--big-db-track);
+  stroke-width: 1;
+}
+.big-db-traffic-line,
+.big-db-traffic-average {
+  fill: none;
+  stroke: var(--big-db-active);
+  vector-effect: non-scaling-stroke;
+}
+.big-db-traffic-line {
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.big-db-traffic-average {
+  stroke-width: 1;
+  stroke-dasharray: 5 5;
+}
+.big-db-traffic-peak {
+  fill: var(--big-db-active);
+}
+@media (max-width: 639px) {
+  .big-db-traffic-chart text {
+    font-size: 22px;
+  }
+}
+.big-db-stage .big-db-takeaway {
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--big-db-track);
+  font-size: 16px;
+  font-weight: 550;
+}
+.big-db-replication-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 50px minmax(0, 1fr);
+  align-items: center;
+}
+.big-db-topology {
+  display: grid;
+  gap: 20px;
+}
+.big-db-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  block-size: 76px;
+  border: 1px solid var(--big-db-storage);
+  background: var(--big-db-storage-surface);
+  font:
+    14px/1.5 "JetBrains Mono",
+    Lilex,
+    ui-monospace,
+    monospace;
+}
+.big-db-primary {
+  background: var(--big-db-write-surface);
+  border-color: var(--big-db-write);
+  font-weight: 600;
+}
+.big-db-replicas {
+  display: grid;
+  gap: 12px;
+}
+.big-db-trunk {
+  display: block;
+  inline-size: 50px;
+  block-size: 164px;
+}
+.big-db-wire {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.big-db-trunk .big-db-wire {
+  stroke: var(--big-db-storage);
+}
+.big-db-arrow {
+  fill: none;
+  stroke: var(--big-db-storage);
+  stroke-width: 1.5;
+}
+.big-db-id-tree {
+  max-inline-size: 680px;
+  margin-inline: auto;
+  color: var(--big-db-ink);
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.big-db-id-root-row {
+  display: flex;
+  justify-content: center;
+}
+.big-db-id-root,
+.big-db-id-page {
+  border: 1px solid var(--big-db-line);
+  background: var(--big-db-paper);
+}
+.big-db-id-root {
+  display: grid;
+  gap: 4px;
+  min-inline-size: 172px;
+  padding: 8px 12px;
+  text-align: center;
+}
+.big-db-id-root > span,
+.big-db-id-page-label,
+.big-db-id-growth > span,
+.big-db-id-cache > span {
+  color: var(--big-db-muted);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+.big-db-id-root strong {
+  font-size: 13px;
+  font-weight: 550;
+}
+.big-db-id-branches {
+  display: block;
+  inline-size: 100%;
+  block-size: 42px;
+  overflow: visible;
+}
+.big-db-id-branches path {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+.big-db-id-leaves {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  position: relative;
+}
+.big-db-id-leaves::after {
+  position: absolute;
+  inset-inline: 8px;
+  inset-block-end: -9px;
+  border-block-end: 1px dashed var(--big-db-line);
+  content: "";
+}
+.big-db-id-page {
+  position: relative;
+  z-index: 1;
+  min-inline-size: 0;
+  padding: 8px;
+}
+.big-db-id-page[data-recent="true"] {
+  border-color: var(--big-db-read);
+  background: var(--big-db-read-surface);
+}
+.big-db-id-page-label {
+  display: block;
+  margin-block-end: 8px;
+  white-space: normal;
+}
+.big-db-id-keys {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+.big-db-id-keys span {
+  padding: 4px 2px;
+  border: 1px solid var(--big-db-track);
+  background: oklch(0.178 0 0);
+  text-align: center;
+  font-size: 12px;
+}
+.big-db-id-access {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-block-start: 20px;
+}
+.big-db-id-access > div {
+  display: grid;
+  gap: 8px;
+  padding-block-start: 8px;
+  border-block-start: 2px solid var(--big-db-line);
+}
+.big-db-id-access .big-db-id-hot {
+  grid-column: span 2;
+  border-color: var(--big-db-read);
+}
+.big-db-id-access strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.big-db-id-access span {
+  color: var(--big-db-muted);
+  font-size: 11px;
+}
+.big-db-id-read-dots {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+  align-items: center;
+}
+.big-db-id-read-dots i {
+  display: block;
+  width: 5px;
+  height: 5px;
+  background: var(--big-db-read);
+  border-radius: 50%;
+}
+.big-db-id-idle {
+  line-height: 5px;
+}
+.big-db-id-growth {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 18px;
+  color: var(--big-db-storage);
+}
+.big-db-id-growth strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+.big-db-id-cache {
+  margin-block-start: 20px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--big-db-track);
+}
+.big-db-id-cache > div {
+  display: flex;
+  gap: 8px;
+  margin-block-start: 8px;
+}
+.big-db-id-cache > div span {
+  padding: 4px 8px;
+  border: 1px solid var(--big-db-line);
+  color: var(--big-db-muted);
+  font-size: 11px;
+}
+.big-db-id-cache > div span[data-recent="true"] {
+  border-color: var(--big-db-read);
+  color: var(--big-db-ink);
+}
+.big-db-stage .big-db-id-cache p {
+  margin-block-start: 8px;
+  color: var(--big-db-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.big-db-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.big-db-icon {
+  display: block;
+  inline-size: 24px;
+  block-size: 24px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.big-db-icon-label .big-db-icon {
+  color: var(--big-db-read);
+}
+.big-db-icon-label[data-icon="cpu"] .big-db-icon {
+  color: var(--big-db-cpu);
+}
+.big-db-icon-label[data-icon="ssd"] .big-db-icon {
+  color: var(--big-db-storage);
+}
+.big-db-icon-label[data-icon="write"] .big-db-icon {
+  color: var(--big-db-write);
+}
+.big-db-database-icon {
+  inline-size: 40px;
+  block-size: 40px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--big-db-storage);
+  stroke-width: 1.5;
+}
+.big-db-primary .big-db-database-icon {
+  stroke: var(--big-db-write);
+}
+.big-db-page-glyph {
+  fill: none;
+  stroke: var(--big-db-read);
+  stroke-width: 1;
+}
+
+@media (max-width: 639px) {
+  .big-db-figure .big-db-stage {
+    padding: 16px 12px;
+  }
+  .big-db-node {
+    flex-direction: column;
+    gap: 0;
+    font-size: 12px;
+  }
+  .big-db-database-icon {
+    inline-size: 32px;
+    block-size: 32px;
+  }
+}
+
+/* Finite page-read playback shares the big-database palette and geometry. */
+.big-db-flow-intro {
+  color: #63635e;
+  font-size: 14px;
+  margin-block: 8px 12px;
+}
+.big-db-flow-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 12px;
+}
+.big-db-flow-controls button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font:
+    500 13px/1.5 Inter,
+    sans-serif;
+  cursor: pointer;
+}
+.big-db-flow-controls button:focus-visible {
+  outline: 2px solid #466eaa;
+  outline-offset: 2px;
+}
+.big-db-flow-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.big-db-flow .big-db-flow-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.big-db-flow-svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
+}
+.big-db-flow-wire {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.big-db-flow-wire[data-active="true"] {
+  stroke: var(--big-db-read);
+  stroke-width: 2;
+}
+.big-db-flow-wire[data-route="disk"][data-active="true"],
+.big-db-flow-wire[data-route="fill"][data-active="true"] {
+  stroke: var(--big-db-storage);
+}
+.big-db-flow-arrow {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1.5;
+}
+.big-db-flow-node {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-line);
+  stroke-width: 1.5;
+}
+.big-db-flow-svg [data-current="true"] .big-db-flow-node {
+  fill: var(--big-db-read-surface);
+  stroke: var(--big-db-read);
+  stroke-width: 2;
+}
+.big-db-flow-svg [data-node="ssd"][data-current="true"] .big-db-flow-node {
+  fill: var(--big-db-storage-surface);
+  stroke: var(--big-db-storage);
+}
+.big-db-flow-node-title {
+  font-size: 14px;
+  fill: var(--big-db-ink);
+}
+.big-db-flow-meta,
+.big-db-flow-route-label {
+  font-size: 10px;
+  fill: var(--big-db-muted);
+}
+.big-db-flow-icon {
+  fill: none;
+  stroke: var(--big-db-read);
+  stroke-width: 1.2;
+}
+.big-db-flow-svg [data-node="ssd"] .big-db-flow-icon {
+  stroke: var(--big-db-storage);
+}
+.big-db-flow-packet {
+  fill: var(--big-db-cpu);
+  stroke: var(--big-db-paper);
+  stroke-width: 2;
+}
+.big-db-flow-explanation ol {
+  padding-inline-start: 20px;
+  margin-block: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--big-db-muted);
+}
+.big-db-flow-explanation li + li {
+  margin-block-start: 12px;
+}
+.big-db-flow-explanation li[aria-current="step"] {
+  color: var(--big-db-ink);
+}
+.big-db-flow-explanation li[data-done="true"]::marker {
+  color: var(--big-db-storage);
+}
+.big-db-stage .big-db-flow-count {
+  font:
+    500 14px/1.5 "JetBrains Mono",
+    Lilex,
+    monospace;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--big-db-track);
+}
+.big-db-flow-status {
+  margin-block: 12px 0;
+  min-block-size: 48px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 639px) {
+  .big-db-flow .big-db-flow-stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .big-db-flow-svg {
+    max-inline-size: 320px;
+    margin-inline: auto;
+  }
+}
+
+.big-db-flow-key {
+  fill: var(--big-db-ink);
+  stroke: none;
+  font-size: 11px;
+}
+
+.big-db-flow .big-db-tree-flow-stage {
+  grid-template-columns: minmax(0, 1fr);
+}
+.big-db-real-tree-scroll {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+.big-db-real-tree-scroll:focus-visible {
+  outline: 2px solid var(--big-db-read);
+  outline-offset: 2px;
+}
+.big-db-real-tree {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 600px;
+  font:
+    13px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+  fill: var(--big-db-ink);
+}
+.big-db-real-tree-node {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-line);
+}
+.big-db-real-tree-links path {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1;
+}
+.big-db-real-tree-links .leaf-link {
+  stroke-dasharray: 2 3;
+}
+.big-db-real-tree [data-tree-current="true"] .big-db-real-tree-node {
+  stroke: var(--big-db-read);
+  stroke-width: 2;
+}
+.big-db-real-tree-small {
+  fill: var(--big-db-muted);
+  font-size: 11px;
+}
+.big-db-real-tree-heading {
+  letter-spacing: 0.06em;
+  font-size: 12px;
+}
+.big-db-real-tree-route {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.big-db-real-tree-route[data-visited="true"] {
+  stroke: var(--big-db-read);
+  stroke-width: 2;
+}
+.big-db-real-tree-route[data-handoff="true"][data-visited="true"] {
+  stroke: var(--big-db-write);
+}
+.big-db-real-tree-route[data-active="true"] {
+  stroke-dasharray: none;
+}
+.big-db-real-tree-found {
+  fill: var(--big-db-read-surface);
+  stroke: var(--big-db-read);
+}
+.big-db-real-tree-handoff {
+  fill: var(--big-db-muted);
+  font-size: 12px;
+}
+
+.big-db-btree-demo {
+  margin-block: 48px;
+}
+.big-db-btree-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-block-end: 12px;
+}
+.big-db-btree-header > div {
+  min-width: 0;
+}
+.site-container .post-content .big-db-btree-header p {
+  margin: 0;
+}
+.site-container .post-content .big-db-btree-header p + p {
+  margin-block-start: 4px;
+  color: var(--big-db-muted);
+}
+.big-db-btree-header button {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--big-db-line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--big-db-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.big-db-btree-header button:hover {
+  background: var(--big-db-paper);
+}
+.big-db-btree-header button:focus-visible {
+  outline: 2px solid var(--big-db-read);
+  outline-offset: 2px;
+}
+.big-db-btree-stage {
+  overflow: hidden;
+  background: #111;
+}
+.big-db-btree-stage iframe {
+  display: block;
+  width: 100%;
+  min-height: 360px;
+  border: 0;
+  background: transparent;
+}
+.big-db-btree-demo figcaption {
+  margin-block-start: 8px;
+  color: var(--big-db-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+@media (max-width: 639px) {
+  .big-db-btree-header {
+    align-items: center;
+  }
+  .big-db-btree-stage iframe {
+    min-height: 440px;
+  }
+}
+
+/* Age and access frequency are distinct from cache capacity. */
+.big-db-age-regions {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 16px;
+  margin-block: 16px;
+}
+.big-db-age-regions section {
+  min-inline-size: 0;
+}
+.big-db-age-regions section > p {
+  font-size: 14px;
+  margin-block: 8px;
+}
+.big-db-age-band {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--big-db-line);
+  background: var(--big-db-track);
+  color: var(--big-db-muted);
+}
+.big-db-age-hot .big-db-age-band {
+  color: var(--big-db-ink);
+  border-color: var(--big-db-read);
+  background: var(--big-db-read-surface);
+}
+.big-db-read-marks {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  min-block-size: 40px;
+}
+.big-db-read-marks span {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  background: var(--big-db-read);
+}
+.big-db-age-cold .big-db-read-marks span {
+  background: var(--big-db-muted);
+}
+.big-db-age-regions .big-db-icon-label {
+  flex-wrap: wrap;
+}
+@media (max-width: 639px) {
+  .big-db-age-regions {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .big-db-age-regions .big-db-label {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+  }
+  .big-db-read-marks {
+    gap: 6px;
+  }
+}
+
+/* Repeated reads reuse buffered pages; SSD fills only the missing page. */
+.big-db-reuse-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.big-db-reuse-metrics strong {
+  font-size: 20px;
+  color: var(--big-db-read);
+}
+.big-db-reuse-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-block-start: 16px;
+  overflow: visible;
+}
+.big-db-reuse-svg text {
+  fill: var(--big-db-ink);
+  font:
+    14px ui-monospace,
+    monospace;
+}
+.big-db-reuse-svg .big-db-reuse-muted {
+  fill: var(--big-db-muted);
+  font-size: 12px;
+}
+.big-db-reuse-node {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-line);
+}
+.big-db-reuse-pool {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-read);
+  stroke-width: 2;
+}
+.big-db-reuse-page {
+  fill: var(--big-db-read-surface);
+  stroke: var(--big-db-read);
+}
+.big-db-reuse-page[data-empty="true"] {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-dasharray: 4 4;
+}
+.big-db-reuse-page[data-active="true"] {
+  stroke-width: 3;
+}
+.big-db-reuse-wire {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-dasharray: 4 6;
+  opacity: 0.5;
+}
+.big-db-reuse-route {
+  fill: none;
+  stroke: var(--big-db-read);
+  color: var(--big-db-read);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.big-db-reuse-packet {
+  fill: var(--big-db-read);
+}
+.big-db-reuse-route[data-miss="true"] {
+  stroke: var(--big-db-write);
+  color: var(--big-db-write);
+}
+.big-db-reuse-packet[data-miss="true"] {
+  fill: var(--big-db-write);
+}
+
+.big-db-reuse-svg .big-db-reuse-transfer-label {
+  fill: var(--big-db-ink);
+  font-size: 11px;
+}
+
+/* Regional identity stays consistent across primary and local replicas. */
+.big-db-regions-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-block: 16px;
+}
+.big-db-regions-svg text {
+  fill: var(--big-db-ink);
+  font:
+    12px ui-monospace,
+    monospace;
+}
+.big-db-region[data-region="A"] {
+  --region-color: var(--big-db-read);
+}
+.big-db-region[data-region="B"] {
+  --region-color: var(--big-db-storage);
+}
+.big-db-region[data-region="C"] {
+  --region-color: var(--big-db-write);
+}
+.big-db-region-boundary {
+  fill: var(--big-db-paper);
+  stroke: var(--big-db-line);
+  stroke-dasharray: 4 5;
+}
+.big-db-region-primary {
+  fill: var(--big-db-paper);
+  stroke: var(--region-color);
+  stroke-width: 2;
+}
+.big-db-region-replica {
+  fill: var(--big-db-paper);
+  stroke: var(--region-color);
+}
+.big-db-regions-svg .big-db-region-label {
+  fill: var(--region-color);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.big-db-region-icon {
+  stroke: var(--region-color);
+  stroke-width: 2;
+}
+.big-db-region-local {
+  fill: none;
+  stroke: var(--region-color);
+  stroke-dasharray: 4 4;
+}
+.big-db-region-cross {
+  fill: none;
+  stroke: var(--big-db-ink);
+  stroke-dasharray: 4 5;
+}
