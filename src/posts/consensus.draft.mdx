@@ -7,6 +7,7 @@ draft: true
 ---
 
 import { TotalOrderBroadcastFigure } from "~/components/TotalOrderBroadcastFigure";
+import { RaftRoleTransitionsFigure } from "~/components/RaftRoleTransitionsFigure";
 
 Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
 
@@ -26,4 +27,26 @@ Log ordering is important because it allows multiple nodes in a distributed syst
 
 ## Raft: Understandable Consensus
 
-[Raft](https://raft.github.io/) is a consensus algorithm designed to be easy to understand. It uses an elected leader to decide ordering and coordinate copying log entries across servers, so they agree on the same sequence of operations. The [Raft paper, In Search of an Understandable Consensus Algorithm](https://raft.github.io/raft.pdf), explains how this works.
+[Raft](https://raft.github.io/) is a consensus algorithm designed to be easy to understand. Its elected leader orders new log entries and coordinates copying them across servers, so the servers apply committed operations in the same order. The [Raft paper, _In Search of an Understandable Consensus Algorithm_](https://raft.github.io/raft.pdf), explains how this works.
+
+### Roles and Terms
+
+Each server has one of three roles:
+
+- **Follower:** responds to the leader and votes in elections.
+- **Candidate:** asks for votes to become leader.
+- **Leader:** orders new log entries and sends them to followers.
+
+A **term** is a numbered election round. Each term starts with an election and has at most one leader. An election can finish without choosing a leader.
+
+<RaftRoleTransitionsFigure />
+
+### Leader Election
+
+### Log Replication
+
+### Committing and Applying Entries
+
+### Leader Failure and Recovery
+
+### Repairing Conflicting Logs

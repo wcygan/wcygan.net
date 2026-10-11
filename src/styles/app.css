@@ -21483,3 +21483,57 @@ stop.big-db-id-tone {
     padding: 16px 12px;
   }
 }
+
+/* Main state changes for one Raft server. */
+.raft-roles-figure > header {
+  margin-block: 0 16px;
+}
+.raft-roles-stage {
+  padding: 20px;
+  background: #f7f6f3;
+  border-color: #e4e3de;
+}
+.raft-roles-stage svg {
+  display: block;
+  inline-size: min(100%, 360px);
+  block-size: auto;
+  margin-inline: auto;
+  font-family: Lilex, ui-monospace, monospace;
+}
+.raft-roles-node {
+  fill: var(--raft-role-color);
+  stroke: #8f8c83;
+  stroke-width: 1;
+}
+.raft-roles-node[data-role="Follower"] {
+  --raft-role-color: oklch(0.82 0.07 250);
+}
+.raft-roles-node[data-role="Candidate"] {
+  --raft-role-color: oklch(0.82 0.1 75);
+}
+.raft-roles-node[data-role="Leader"] {
+  --raft-role-color: oklch(0.82 0.09 145);
+}
+.raft-roles-wire {
+  fill: none;
+  stroke: #63635e;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.raft-roles-arrow {
+  fill: #63635e;
+}
+.raft-roles-label {
+  fill: #21201c;
+  font-size: 16px;
+  font-weight: 500;
+}
+.raft-roles-condition {
+  fill: #63635e;
+  font-size: 14px;
+}
+@media (max-width: 639px) {
+  .raft-roles-stage {
+    padding: 16px 12px;
+  }
+}
