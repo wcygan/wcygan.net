@@ -21654,7 +21654,7 @@ stop.big-db-id-tone {
 }
 .raft-roles-stage svg {
   display: block;
-  inline-size: min(100%, 360px);
+  inline-size: min(100%, 560px);
   block-size: auto;
   margin-inline: auto;
   font-family: Lilex, ui-monospace, monospace;
@@ -21684,15 +21684,190 @@ stop.big-db-id-tone {
 }
 .raft-roles-label {
   fill: #21201c;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 500;
 }
 .raft-roles-condition {
   fill: #63635e;
-  font-size: 14px;
+  font-size: 18px;
 }
 @media (max-width: 639px) {
   .raft-roles-stage {
     padding: 16px 12px;
   }
+}
+
+.raft-roles-scenario {
+  display: grid;
+  gap: 8px;
+  margin-block-end: 16px;
+  color: #63635e;
+  font-size: 14px;
+}
+.raft-roles-scenario select {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+}
+.raft-roles-wire-active {
+  fill: none;
+  stroke: #21201c;
+  stroke-width: 2.5;
+  stroke-dasharray: 4 4;
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.raft-roles-active-arrow {
+  fill: #21201c;
+}
+.raft-roles-node-active {
+  fill: none;
+  stroke: var(--diagram-yellow, #f2b600);
+  stroke-width: 4;
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.raft-roles-wire-active[data-active="true"],
+.raft-roles-node-active[data-active="true"] {
+  opacity: 1;
+}
+.raft-roles-detail {
+  fill: #21201c;
+  font-size: 20px;
+}
+.raft-roles-vote {
+  fill: #21201c;
+  font-size: 26px;
+}
+.raft-roles-vote[data-vote="pending"] {
+  opacity: 0.5;
+}
+.raft-roles-voter {
+  fill: #21201c;
+  font-size: 18px;
+}
+.raft-roles-retry-label {
+  fill: #21201c;
+  font-size: 14px;
+}
+.raft-roles-term {
+  fill: #21201c;
+  font-size: 20px;
+  font-weight: 700;
+}
+.raft-roles-stats {
+  fill: #21201c;
+  font-size: 18px;
+}
+.raft-roles-timer-track {
+  fill: #fdfdfc;
+  opacity: 0.6;
+}
+.raft-roles-timer-fill {
+  fill: #21201c;
+}
+.raft-roles-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 16px;
+}
+.raft-roles-controls button {
+  min-inline-size: 72px;
+  min-block-size: 44px;
+  padding: 8px 16px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+  cursor: pointer;
+}
+.raft-roles-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.raft-roles-status {
+  min-block-size: 88px;
+  margin-block-end: 12px;
+}
+.raft-roles-status p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.raft-roles-status .raft-roles-state {
+  margin-block-end: 8px;
+  font-weight: 550;
+}
+@media (prefers-reduced-motion: reduce) {
+  .raft-roles-wire-active,
+  .raft-roles-node-active {
+    transition: none;
+  }
+}
+
+.raft-roles-received-check {
+  fill: #13862e;
+  font-size: 32px;
+  font-weight: 700;
+}
+.raft-roles-vote[data-vote="granted"] {
+  fill: #13862e;
+}
+.raft-roles-response {
+  fill: #fdfdfc;
+  stroke: #13862e;
+  stroke-width: 2;
+}
+.raft-roles-response[data-vote="denied"] {
+  stroke: #d92038;
+}
+.raft-roles-response-label {
+  fill: #21201c;
+  font-size: 14px;
+}
+.raft-roles-heart-track,
+.raft-roles-heart-progress {
+  fill: none;
+  stroke-width: 3;
+}
+.raft-roles-heart-track {
+  stroke: #fdfdfc;
+  opacity: 0.6;
+}
+.raft-roles-heart-progress {
+  stroke: #d92038;
+}
+.raft-roles-heart {
+  fill: #d92038;
+}
+
+.raft-roles-transition-marker {
+  fill: var(--diagram-yellow, #f2b600);
+  stroke: #21201c;
+  stroke-width: 1.5;
+}
+
+.raft-roles-received-check[data-failed="true"],
+.raft-roles-vote[data-vote="denied"] {
+  fill: #d92038;
+}
+.raft-roles-leader-request {
+  fill: #fdfdfc;
+  stroke: #466eaa;
+  stroke-width: 2;
+}
+
+.raft-roles-incoming .raft-roles-voter {
+  font-size: 10px;
+}
+.raft-roles-incoming .raft-roles-detail {
+  font-size: 12px;
 }

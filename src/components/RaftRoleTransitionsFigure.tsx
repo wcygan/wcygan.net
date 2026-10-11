@@ -1,72 +1,281 @@
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { scenarios, type Phase, type Scenario } from "~/demos/raft-roles/model";
 
 const roles = [
-  { label: "Follower", y: 24 },
-  { label: "Candidate", y: 164 },
-  { label: "Leader", y: 304 },
+  { label: "Follower", y: 20, height: 148 },
+  { label: "Candidate", y: 270, height: 194 },
+  { label: "Leader", y: 580, height: 148 },
 ];
-const node = { x: 24, width: 168, height: 56 };
+const node = { x: 20, width: 248 };
 const centerX = node.x + node.width / 2;
 const rightX = node.x + node.width;
+const heartPath =
+  "M 0 11 C -4 7 -13 1 -13 -5 C -13 -13 -3 -14 0 -7 C 3 -14 13 -13 13 -5 C 13 1 4 7 0 11 Z";
+const symbols = { granted: "✓", denied: "×", pending: "·" };
 
 export function RaftRoleTransitionsFigure() {
   const id = useId();
-  const arrow = `${id}-arrow`;
+  const stage = useRef<HTMLDivElement>(null);
+  const paths = useRef<Record<string, SVGPathElement | null>>({});
+  const [scenario, setScenario] = useState<Scenario>("win");
+  const [position, setPosition] = useState({ index: 0, elapsed: 0 });
+  const [playing, setPlaying] = useState(true);
+  const [reduced, setReduced] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [documentVisible, setDocumentVisible] = useState(true);
+  const phases: readonly Phase[] = scenarios[scenario].phases;
+  const destination = phases[position.index];
+  const previous = phases[position.index - 1];
+  const travelDuration = destination.edge && previous ? 900 : 0;
+  const traveling = !reduced && position.elapsed < travelDuration;
+  const current = traveling && previous ? previous : destination;
+  const elapsed = traveling
+    ? current.duration
+    : Math.max(0, position.elapsed - travelDuration);
+  const complete =
+    position.index === phases.length - 1 &&
+    position.elapsed >= destination.duration + travelDuration;
+  const transitionPath =
+    paths.current[
+      destination.edge === "leader-found"
+        ? "candidate-term"
+        : (destination.edge ?? "")
+    ];
+  const marker =
+    traveling && transitionPath
+      ? transitionPath.getPointAtLength(
+          (transitionPath.getTotalLength() * position.elapsed) / travelDuration,
+        )
+      : undefined;
+  const active = playing && !complete && visible && documentVisible && !reduced;
+  const messageProgress = reduced ? 1 : Math.min(1, elapsed / 1400);
+  const messageArrived = !!current.message && messageProgress === 1;
+  const timer =
+    messageArrived && current.message?.kind === "heartbeat"
+      ? 0
+      : current.timer[0] +
+        (current.timer[1] - current.timer[0]) *
+          Math.min(1, elapsed / current.duration);
+  const replies =
+    !traveling &&
+    current.role === "Candidate" &&
+    previous?.role === "Candidate" &&
+    previous.term === current.term
+      ? current.votes.flatMap((vote, index) =>
+          index > 0 && vote !== "pending" && vote !== previous.votes[index]
+            ? [{ index, vote }]
+            : [],
+        )
+      : [];
+  const replyProgress = (order: number) =>
+    reduced ? 1 : Math.min(1, Math.max(0, (elapsed - order * 200) / 1400));
+  const receivedVotes = current.votes.map((vote, index) => {
+    const order = replies.findIndex((reply) => reply.index === index);
+    return order >= 0 && replyProgress(order) < 1 ? "pending" : vote;
+  });
+  const votes = receivedVotes.filter((vote) => vote === "granted").length;
+  const receivedGrant = replies.some(
+    (reply, order) => reply.vote === "granted" && replyProgress(order) === 1,
+  );
+  const receivedDenial = replies.some(
+    (reply, order) => reply.vote === "denied" && replyProgress(order) === 1,
+  );
+  const noMajority =
+    current.role === "Candidate" &&
+    (receivedDenial || (current.noMajority && (reduced || elapsed >= 1400)));
+  const heartbeatCycle = elapsed % 1000;
+  const heartbeatProgress =
+    complete || reduced ? 1 : Math.min(1, heartbeatCycle / 850);
+  const heartbeatPulse =
+    current.role === "Leader" && !complete && !reduced && heartbeatCycle >= 850
+      ? 1 + 0.16 * Math.sin((Math.PI * (heartbeatCycle - 850)) / 150)
+      : 1;
+  const highlight = !playing || traveling ? destination.edge : undefined;
+
+  useEffect(() => {
+    const preference = matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => {
+      setReduced(preference.matches);
+      if (preference.matches) setPlaying(false);
+    };
+    const updateVisibility = () => setDocumentVisible(!document.hidden);
+    updateMotion();
+    updateVisibility();
+    preference.addEventListener("change", updateMotion);
+    document.addEventListener("visibilitychange", updateVisibility);
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting),
+      { threshold: 0 },
+    );
+    if (stage.current) observer.observe(stage.current);
+    return () => {
+      observer.disconnect();
+      preference.removeEventListener("change", updateMotion);
+      document.removeEventListener("visibilitychange", updateVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) return;
+    let frame = 0;
+    let previous: number | undefined;
+    const tick = (now: number) => {
+      const delta = previous === undefined ? 0 : Math.min(100, now - previous);
+      previous = now;
+      setPosition((old) => {
+        const elapsed = old.elapsed + delta;
+        if (
+          elapsed >=
+            phases[old.index].duration +
+              (phases[old.index].edge && old.index > 0 ? 900 : 0) &&
+          old.index < phases.length - 1
+        ) {
+          return { index: old.index + 1, elapsed: 0 };
+        }
+        return {
+          index: old.index,
+          elapsed: Math.min(
+            elapsed,
+            phases[old.index].duration +
+              (phases[old.index].edge && old.index > 0 ? 900 : 0),
+          ),
+        };
+      });
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active, phases]);
+
+  const reset = (nextScenario = scenario, play = true) => {
+    setScenario(nextScenario);
+    setPosition({ index: 0, elapsed: 0 });
+    setPlaying(play && !reduced);
+  };
+  const next = () => {
+    setPlaying(false);
+    setPosition((old) => ({
+      index: Math.min(old.index + 1, phases.length - 1),
+      elapsed:
+        phases[Math.min(old.index + 1, phases.length - 1)].duration +
+        (phases[Math.min(old.index + 1, phases.length - 1)].edge ? 900 : 0),
+    }));
+  };
+  const wire = (path: string, highlighted: boolean, key: string) => (
+    <g key={key}>
+      <path
+        className="raft-roles-wire"
+        ref={(element) => {
+          paths.current[key] = element;
+        }}
+        d={path}
+        markerEnd={`url(#${id}-arrow)`}
+      />
+      <path
+        className="raft-roles-wire-active"
+        data-active={highlighted}
+        d={path}
+        markerEnd={`url(#${id}-active-arrow)`}
+      />
+    </g>
+  );
 
   return (
-    <figure className="raft-roles-figure" data-graphic-frame="plate">
+    <figure
+      className="raft-roles-figure"
+      data-graphic-frame="workbench"
+      aria-labelledby={`${id}-heading`}
+    >
       <header>
-        <p className="article-graphic-title">Changing roles</p>
+        <p className="article-graphic-title" id={`${id}-heading`}>
+          Changing roles
+        </p>
       </header>
-      <div className="raft-roles-stage" data-graphic-stage="padded">
+      <label className="raft-roles-scenario" htmlFor={`${id}-scenario`}>
+        Scenario
+        <select
+          id={`${id}-scenario`}
+          value={scenario}
+          onChange={(event) => reset(event.target.value as Scenario)}
+        >
+          {Object.entries(scenarios).map(([key, value]) => (
+            <option value={key} key={key}>
+              {value.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div
+        className="raft-roles-stage"
+        data-playback={
+          complete
+            ? "complete"
+            : active
+              ? "playing"
+              : playing
+                ? "suspended"
+                : "paused"
+        }
+        data-graphic-stage="padded"
+        ref={stage}
+      >
         <svg
-          viewBox="0 0 320 384"
+          viewBox="-100 0 480 748"
           role="img"
           aria-labelledby={`${id}-title ${id}-description`}
         >
-          <title id={`${id}-title`}>Raft role transitions</title>
+          <title id={`${id}-title`}>Raft role transitions for one server</title>
           <desc id={`${id}-description`}>
-            A follower becomes a candidate after an election timeout. A
-            candidate becomes leader after winning a majority vote. A candidate
-            or leader returns to follower after learning of a higher term.
+            Five servers need three votes to elect a leader. Followers become
+            candidates on election timeout. Candidates become leaders with three
+            votes, retry in a new term on timeout, or follow an elected leader.
+            Candidates and leaders become followers on discovering a higher
+            term. Current role: {current.role}. Term: {current.term}.{" "}
+            {current.event}
           </desc>
           <defs>
-            <marker
-              id={arrow}
-              viewBox="0 0 8 8"
-              refX="8"
-              refY="4"
-              markerWidth="8"
-              markerHeight="8"
-              markerUnits="userSpaceOnUse"
-              orient="auto"
-            >
-              <path d="M 0 0 L 8 4 L 0 8" className="raft-roles-arrow" />
-            </marker>
+            {["arrow", "active-arrow"].map((name) => (
+              <marker
+                key={name}
+                id={`${id}-${name}`}
+                viewBox="0 0 8 8"
+                refX="8"
+                refY="4"
+                markerWidth="8"
+                markerHeight="8"
+                markerUnits="userSpaceOnUse"
+                orient="auto"
+              >
+                <path d="M 0 0 L 8 4 L 0 8" className={`raft-roles-${name}`} />
+              </marker>
+            ))}
           </defs>
-          {roles.slice(0, 2).map((role, index) => (
-            <path
-              key={role.label}
-              className="raft-roles-wire"
-              d={`M ${centerX} ${role.y + node.height} V ${roles[index + 1].y}`}
-              markerEnd={`url(#${arrow})`}
+          {wire(`M ${centerX} 168 V 270`, highlight === "election", "election")}
+          {wire(`M ${centerX} 464 V 580`, highlight === "majority", "majority")}
+          {wire(
+            `M ${rightX} 654 H 284 V 94 H ${rightX}`,
+            highlight === "leader-term",
+            "leader-term",
+          )}
+          {wire(
+            `M ${rightX} 367 H 284 V 94 H ${rightX}`,
+            highlight === "candidate-term" || highlight === "leader-found",
+            "candidate-term",
+          )}
+          {wire(
+            `M ${centerX} 270 V 250 H 244 V 270`,
+            highlight === "retry",
+            "retry",
+          )}
+          {marker && (
+            <circle
+              className="raft-roles-transition-marker"
+              cx={marker.x}
+              cy={marker.y}
+              r="5"
+              aria-hidden="true"
             />
-          ))}
-          <path
-            className="raft-roles-wire"
-            d={`M ${rightX} ${roles[2].y + node.height / 2} H 224 V ${roles[0].y + node.height / 2} H ${rightX}`}
-            markerEnd={`url(#${arrow})`}
-          />
-          <path
-            className="raft-roles-wire"
-            d={`M ${rightX} ${roles[1].y + node.height / 2} H 224`}
-          />
-          <circle
-            cx="224"
-            cy={roles[1].y + node.height / 2}
-            r="3"
-            className="raft-roles-arrow"
-          />
+          )}
           {roles.map((role) => (
             <g key={role.label}>
               <rect
@@ -75,57 +284,330 @@ export function RaftRoleTransitionsFigure() {
                 x={node.x}
                 y={role.y}
                 width={node.width}
-                height={node.height}
+                height={role.height}
+                rx="2"
+              />
+              <rect
+                className="raft-roles-node-active"
+                data-active={current.role === role.label}
+                x={node.x}
+                y={role.y}
+                width={node.width}
+                height={role.height}
                 rx="2"
               />
               <text
                 className="raft-roles-label"
                 x={centerX}
-                y={role.y + node.height / 2}
+                y={role.y + 29}
                 textAnchor="middle"
-                dominantBaseline="middle"
               >
                 {role.label}
               </text>
+              <text
+                className="raft-roles-term"
+                x={centerX}
+                y={role.y + 57}
+                textAnchor="middle"
+              >
+                Term{" "}
+                {current.role === role.label
+                  ? current.term
+                  : (phases
+                      .slice(0, position.index + (traveling ? 0 : 1))
+                      .findLast((phase) => phase.role === role.label)?.term ??
+                    "—")}
+              </text>
+              {role.label === "Follower" && (
+                <g>
+                  <text
+                    className="raft-roles-detail"
+                    x={centerX}
+                    y={role.y + 85}
+                    textAnchor="middle"
+                  >
+                    Election timeout
+                  </text>
+                  <rect
+                    className="raft-roles-timer-track"
+                    x="36"
+                    y={role.y + 102}
+                    width="216"
+                    height="8"
+                    rx="2"
+                  />
+                  <g
+                    transform={`translate(36 ${role.y + 102}) scale(${current.role === "Follower" ? timer : 0} 1)`}
+                  >
+                    <rect
+                      className="raft-roles-timer-fill"
+                      width="216"
+                      height="8"
+                    />
+                  </g>
+                  <text
+                    className="raft-roles-detail"
+                    x={centerX}
+                    y={role.y + 133}
+                    textAnchor="middle"
+                  >
+                    {current.role === "Follower"
+                      ? `${Math.round(timer * 100)}%`
+                      : "Waiting for leader"}
+                  </text>
+                </g>
+              )}
+              {role.label === "Candidate" && (
+                <g>
+                  <text
+                    className="raft-roles-stats"
+                    x="79"
+                    y={role.y + 85}
+                    textAnchor="middle"
+                  >
+                    Cluster: 5
+                  </text>
+                  <text
+                    className="raft-roles-stats"
+                    x="209"
+                    y={role.y + 85}
+                    textAnchor="middle"
+                  >
+                    Majority: 3
+                  </text>
+                  <text
+                    className="raft-roles-detail"
+                    x="114"
+                    y={role.y + 118}
+                    textAnchor="middle"
+                  >
+                    Votes: {votes} / 3
+                  </text>
+                  {(receivedGrant || noMajority) && (
+                    <text
+                      className="raft-roles-received-check"
+                      data-failed={noMajority}
+                      x="233"
+                      y={role.y + 125}
+                      textAnchor="middle"
+                    >
+                      {noMajority ? "×" : "✓"}
+                    </text>
+                  )}
+                  {receivedVotes.map((vote, index) => (
+                    <g key={index}>
+                      <text
+                        className="raft-roles-vote"
+                        data-vote={vote}
+                        x={52 + index * 46}
+                        y={role.y + 152}
+                        textAnchor="middle"
+                      >
+                        {symbols[vote]}
+                      </text>
+                      <text
+                        className="raft-roles-voter"
+                        x={52 + index * 46}
+                        y={role.y + 177}
+                        textAnchor="middle"
+                      >
+                        {index === 0 ? "Self" : ["B", "C", "D", "E"][index - 1]}
+                      </text>
+                    </g>
+                  ))}
+                  <g
+                    transform={`translate(36 ${role.y + 186}) scale(${current.role === "Candidate" ? timer : 0} 1)`}
+                  >
+                    <rect
+                      className="raft-roles-timer-fill"
+                      width="216"
+                      height="4"
+                    />
+                  </g>
+                </g>
+              )}
+              {role.label === "Leader" && (
+                <g>
+                  <circle
+                    className="raft-roles-heart-track"
+                    cx={centerX}
+                    cy={role.y + 137}
+                    r="26"
+                  />
+                  <circle
+                    className="raft-roles-heart-progress"
+                    cx={centerX}
+                    cy={role.y + 137}
+                    r="26"
+                    pathLength="100"
+                    strokeDasharray="100"
+                    strokeDashoffset={
+                      current.role === "Leader"
+                        ? 100 * (1 - heartbeatProgress)
+                        : 100
+                    }
+                    transform={`rotate(-90 ${centerX} ${role.y + 99})`}
+                  />
+                  <g
+                    transform={`translate(${centerX} ${role.y + 99}) scale(${heartbeatPulse})`}
+                  >
+                    <path className="raft-roles-heart" d={heartPath} />
+                  </g>
+                  <text
+                    className="raft-roles-voter"
+                    x={centerX}
+                    y={role.y + 137}
+                    textAnchor="middle"
+                  >
+                    Sends heartbeats
+                  </text>
+                </g>
+              )}
             </g>
           ))}
+          {replies.map((reply, order) => (
+            <g key={reply.index} aria-hidden="true">
+              {replyProgress(order) < 1 && (
+                <g
+                  transform={`translate(${-80 + 112 * replyProgress(order)} 385)`}
+                >
+                  <rect
+                    className="raft-roles-response"
+                    data-vote={reply.vote}
+                    x="-14"
+                    y="-12"
+                    width="28"
+                    height="24"
+                    rx="3"
+                  />
+                  <text
+                    className="raft-roles-response-label"
+                    textAnchor="middle"
+                    y="5"
+                  >
+                    {["Self", "B", "C", "D", "E"][reply.index]}
+                  </text>
+                </g>
+              )}
+            </g>
+          ))}
+          {current.message && !messageArrived && (
+            <g
+              className="raft-roles-incoming"
+              aria-hidden="true"
+              transform={`translate(${-48 + 68 * messageProgress} ${roles.find((role) => role.label === current.role)!.y + 112})`}
+            >
+              {current.message.kind === "heartbeat" &&
+              current.role === "Follower" ? (
+                <g>
+                  <path className="raft-roles-heart" d={heartPath} />
+                  <text className="raft-roles-voter" textAnchor="middle" y="30">
+                    Term {current.message.term}
+                  </text>
+                </g>
+              ) : (
+                <g>
+                  <rect
+                    className="raft-roles-leader-request"
+                    x="-46"
+                    y="-25"
+                    width="92"
+                    height="48"
+                    rx="3"
+                  />
+                  <text className="raft-roles-voter" textAnchor="middle" y="-5">
+                    Leader request
+                  </text>
+                  <text
+                    className="raft-roles-detail"
+                    textAnchor="middle"
+                    y="13"
+                  >
+                    Term {current.message.term}
+                  </text>
+                </g>
+              )}
+            </g>
+          )}
+          {messageArrived &&
+            current.message?.kind === "heartbeat" &&
+            current.role === "Follower" &&
+            !reduced && (
+              <g transform="translate(46 151) scale(0.6)">
+                <path className="raft-roles-heart" d={heartPath} />
+              </g>
+            )}
           <text
             className="raft-roles-condition"
-            x="92"
-            y="116"
+            x="128"
+            y="207"
             textAnchor="end"
           >
-            <tspan x="92">Election</tspan>
-            <tspan x="92" dy="20">
+            <tspan x="128">Election</tspan>
+            <tspan x="128" dy="20">
               timeout
             </tspan>
           </text>
           <text
             className="raft-roles-condition"
-            x="92"
-            y="256"
+            x="128"
+            y="509"
             textAnchor="end"
           >
-            <tspan x="92">Majority</tspan>
-            <tspan x="92" dy="20">
+            <tspan x="128">Majority</tspan>
+            <tspan x="128" dy="20">
               vote
             </tspan>
           </text>
-          <text
-            className="raft-roles-condition"
-            x="240"
-            y="116"
-            textAnchor="start"
-          >
-            <tspan x="240">Higher</tspan>
-            <tspan x="240" dy="20">
-              term
+          <text className="raft-roles-condition" x="300" y="207">
+            <tspan x="300">
+              {current.edge === "leader-found" ? "Leader" : "Higher"}
             </tspan>
+            <tspan x="300" dy="20">
+              {current.edge === "leader-found" ? "found" : "term"}
+            </tspan>
+          </text>
+          <text
+            className="raft-roles-retry-label"
+            x="194"
+            y="242"
+            textAnchor="middle"
+          >
+            Retry
           </text>
         </svg>
       </div>
+      <div className="raft-roles-controls">
+        <button
+          type="button"
+          disabled={reduced || complete}
+          title={reduced ? "Use Next with reduced motion" : undefined}
+          onClick={() => setPlaying((old) => !old)}
+        >
+          {playing && !complete ? "Pause" : "Play"}
+        </button>
+        <button type="button" disabled={complete} onClick={next}>
+          Next
+        </button>
+        <button type="button" onClick={() => reset(scenario, true)}>
+          Replay
+        </button>
+      </div>
+      <div
+        className="raft-roles-status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <p className="raft-roles-state">
+          Role: {current.role} · Term: {current.term}
+        </p>
+        <p>{current.event}</p>
+      </div>
       <figcaption>
-        A candidate also returns to follower when it accepts the elected leader.
+        One server in a five-server cluster. Three votes elect a leader,
+        including its own. Timing is slowed for the walkthrough.{" "}
+        {reduced && "Use Next to advance each event."}
       </figcaption>
     </figure>
   );
