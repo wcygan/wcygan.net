@@ -21876,7 +21876,8 @@ stop.big-db-id-tone {
 
 /* A cluster-wide view of a Raft election. */
 .leader-election-figure,
-.majority-overlap-figure {
+.majority-overlap-figure,
+.log-replication-figure {
   --election-canvas: oklch(0.973 0.004 91.446);
   --election-paper: oklch(0.994 0.001 106.423);
   --election-ink: oklch(0.243 0.008 95.372);
@@ -21898,7 +21899,8 @@ stop.big-db-id-tone {
   --election-orange-surface: oklch(0.94 0.021 55);
 }
 .leader-election-figure > header,
-.majority-overlap-figure > header {
+.majority-overlap-figure > header,
+.log-replication-figure > header {
   margin-block-end: 16px;
 }
 .leader-election-scenario {
@@ -21948,15 +21950,18 @@ stop.big-db-id-tone {
 .leader-election-scene text {
   fill: var(--election-ink);
 }
-:is(.leader-election-figure, .majority-overlap-figure) [data-identity="A"] {
+:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+  [data-identity="A"] {
   --identity-color: var(--election-purple);
   --identity-surface: var(--election-purple-surface);
 }
-:is(.leader-election-figure, .majority-overlap-figure) [data-identity="B"] {
+:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+  [data-identity="B"] {
   --identity-color: var(--election-blue);
   --identity-surface: var(--election-blue-surface);
 }
-:is(.leader-election-figure, .majority-overlap-figure) [data-identity="C"] {
+:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+  [data-identity="C"] {
   --identity-color: var(--election-teal);
   --identity-surface: var(--election-teal-surface);
 }
@@ -22083,14 +22088,16 @@ stop.big-db-id-tone {
   fill: var(--election-green);
 }
 .leader-election-controls,
-.majority-overlap-controls {
+.majority-overlap-controls,
+.log-replication-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-block: 16px;
 }
 .leader-election-controls button,
-.majority-overlap-controls button {
+.majority-overlap-controls button,
+.log-replication-controls button {
   min-inline-size: 72px;
   min-block-size: 44px;
   padding: 8px 16px;
@@ -22102,23 +22109,27 @@ stop.big-db-id-tone {
   cursor: pointer;
 }
 .leader-election-controls button:disabled,
-.majority-overlap-controls button:disabled {
+.majority-overlap-controls button:disabled,
+.log-replication-controls button:disabled {
   opacity: 0.5;
   cursor: default;
 }
 .leader-election-status,
-.majority-overlap-status {
+.majority-overlap-status,
+.log-replication-status {
   min-block-size: 64px;
   margin-block-end: 12px;
 }
 .leader-election-status p,
-.majority-overlap-status p {
+.majority-overlap-status p,
+.log-replication-status p {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
 }
 .leader-election-status p:first-child,
-.majority-overlap-status p:first-child {
+.majority-overlap-status p:first-child,
+.log-replication-status p:first-child {
   margin-block-end: 8px;
   font-weight: 550;
 }
@@ -22128,6 +22139,170 @@ stop.big-db-id-tone {
   }
   .leader-election-stage-heading {
     font-size: 11px;
+  }
+}
+
+/* Log entries align across replicas; their commit boundaries advance locally. */
+.log-replication-figure {
+  --replication-pending-outline: oklch(0.6 0.17 50);
+}
+.log-replication-stage {
+  padding: 16px 20px;
+  background: var(--election-canvas);
+  border-color: var(--election-track);
+  color: var(--election-ink);
+}
+.log-replication-heading,
+.log-replication-confirmations,
+.log-replication-summary {
+  font:
+    12px/20px Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.log-replication-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--election-muted);
+}
+.log-replication-confirmations {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-block: 4px 8px;
+  color: var(--election-muted);
+}
+.log-replication-confirmations strong {
+  color: var(--election-ink);
+  font-weight: 550;
+}
+.log-replication-summary {
+  min-block-size: 28px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.log-replication-summary[data-majority="true"] {
+  background: var(--election-green-surface);
+}
+.log-replication-summary[data-majority="true"],
+.log-replication-heading [data-majority="true"] {
+  color: var(--election-green);
+}
+.log-replication-scene {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 560px;
+  block-size: auto;
+  margin-inline: auto;
+  font:
+    14px Lilex,
+    ui-monospace,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+.log-replication-scene text {
+  fill: var(--election-ink);
+}
+.log-replication-wire {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.log-replication-node {
+  fill: var(--election-paper);
+  stroke: var(--identity-color);
+  stroke-width: 1;
+}
+.log-replication-node-header {
+  fill: var(--identity-surface);
+}
+.log-replication-scene .log-replication-id {
+  fill: var(--identity-color);
+  font-size: 18px;
+  font-weight: 700;
+}
+.log-replication-role {
+  font-size: 14px;
+}
+.log-replication-scene .log-replication-term,
+.log-replication-scene .log-replication-field-labels text {
+  fill: var(--election-muted);
+}
+.log-replication-value,
+.log-replication-field-labels {
+  font-weight: 550;
+}
+.log-replication-scene .log-replication-value {
+  fill: var(--election-ink);
+}
+.log-replication-entry-meta {
+  font-size: 16px;
+}
+.log-replication-entry rect {
+  fill: var(--election-paper);
+  stroke: var(--election-track);
+}
+.log-replication-entry[data-present="false"] rect {
+  fill: none;
+  stroke: var(--identity-color);
+  stroke-dasharray: 3 3;
+}
+.log-replication-entry[data-present="true"][data-committed="false"] rect {
+  stroke: var(--replication-pending-outline);
+  stroke-width: 2;
+}
+.log-replication-entry[data-committed="true"] rect {
+  fill: var(--election-green-surface);
+  stroke: var(--election-green);
+  stroke-width: 2;
+}
+.log-replication-command {
+  font-size: 16px;
+}
+.log-replication-scene[data-compact="true"] .log-replication-command {
+  font-size: 14px;
+}
+.log-replication-writing {
+  font-size: 12px;
+}
+.log-replication-scene .log-replication-check,
+.log-replication-scene .log-replication-committed {
+  fill: var(--election-green);
+}
+.log-replication-boundary {
+  fill: none;
+  stroke: var(--election-green);
+  stroke-width: 2;
+}
+.log-replication-payload rect {
+  fill: var(--election-paper);
+  stroke: var(--election-line);
+}
+.log-replication-payload text {
+  font-size: 12px;
+}
+.log-replication-scene[data-compact="true"] .log-replication-payload text {
+  font-size: 14px;
+}
+.log-replication-heart {
+  fill: var(--election-red);
+}
+@media (max-width: 639px) {
+  .log-replication-stage {
+    padding: 12px 8px;
+  }
+  .log-replication-heading,
+  .log-replication-summary {
+    font-size: 11px;
+  }
+  .log-replication-heading,
+  .log-replication-confirmations {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
