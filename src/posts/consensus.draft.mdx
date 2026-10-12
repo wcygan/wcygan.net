@@ -67,15 +67,20 @@ Once elected, the leader coordinates the order of new log entries.
 
 ### Log Replication
 
-The leader gives each new command a position in its log, then sends copies to the followers. Each entry records the command and the term in which the leader accepted it. Followers store the entries in the same order and confirm when they have been saved.
+<p id="committing-and-applying-entries">
+  The leader gives each new command a position in its log, then sends copies to
+  the followers. Each entry records the command and the term in which the leader
+  accepted it. Followers store the entries in the same order and confirm when
+  they have been saved.
+</p>
 
 <RaftLogReplicationFigure />
 
-The leader can commit a new entry once a majority has stored it, without waiting for every follower. A lagging follower can catch up by receiving several missing entries together.
+The leader can commit a new entry from its current term once a majority has stored it, without waiting for every follower. A lagging follower can catch up by receiving several missing entries together.
 
-Storing an entry and knowing it is committed are separate steps. The leader includes its commit index in messages that copy entries and in heartbeats; followers update their own commit index when they receive that information.
+Storing an entry and knowing it is committed are separate steps. The commit index marks the highest entry a node knows is committed. The leader shares its commit index in messages that copy entries and in heartbeats; followers update their own position when they receive that information.
 
-### Committing and Applying Entries
+Each node applies the commands it knows are committed to its local state, in log order. Last applied marks the highest entry it has executed and can lag behind the commit index. When commands produce the same result from the same input state, nodes that start alike and apply the same log in order reach the same final state.
 
 ### Leader Failure and Recovery
 
