@@ -149,7 +149,7 @@ export function RaftLeaderElectionFigure() {
     >
       <header>
         <p className="article-graphic-title" id={id + "-title"}>
-          Choosing a leader
+          Leader election
         </p>
       </header>
       <label className="leader-election-scenario" htmlFor={id + "-scenario"}>
@@ -463,20 +463,27 @@ export function RaftLeaderElectionFigure() {
         aria-live="polite"
         aria-atomic="true"
       >
-        <p>{step.name}</p>
         <p>
+          {step.traffic?.[0]?.kind === "vote" && !repliesArrived
+            ? recordingVotes
+              ? "Followers record their votes"
+              : "Votes return to the candidates"
+            : step.name}
+        </p>
+        <p className="sr-only">
           {step.traffic?.[0]?.kind === "vote" && !repliesArrived
             ? recordingVotes
               ? "Each follower records its choice before sending a reply."
               : "Votes are traveling to the candidates."
             : step.event}
         </p>
-        {!!receipts?.length && <p>{receipts.join(" · ")}</p>}
+        {!!receipts?.length && (
+          <p className="sr-only">{receipts.join(" · ")}</p>
+        )}
       </div>
       <figcaption>
-        Five servers; three votes to win. Timings are illustrative, and
-        candidates have equally up-to-date logs.{" "}
-        {reduced && "Use Next to advance each event."}
+        Five servers with equal logs; three votes to win. Illustrative timing.
+        {reduced && " Use Next to step through."}
       </figcaption>
     </figure>
   );

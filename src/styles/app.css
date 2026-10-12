@@ -21796,17 +21796,12 @@ stop.big-db-id-tone {
   cursor: default;
 }
 .raft-roles-status {
-  min-block-size: 64px;
   margin-block-end: 12px;
 }
 .raft-roles-status p {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
-}
-.raft-roles-status .raft-roles-state {
-  margin-block-end: 8px;
-  font-weight: 550;
 }
 @media (prefers-reduced-motion: reduce) {
   .raft-roles-wire-active,
@@ -21877,7 +21872,8 @@ stop.big-db-id-tone {
 /* A cluster-wide view of a Raft election. */
 .leader-election-figure,
 .majority-overlap-figure,
-.log-replication-figure {
+.log-replication-figure,
+.leader-recovery-figure {
   --election-canvas: oklch(0.973 0.004 91.446);
   --election-paper: oklch(0.994 0.001 106.423);
   --election-ink: oklch(0.243 0.008 95.372);
@@ -21900,7 +21896,8 @@ stop.big-db-id-tone {
 }
 .leader-election-figure > header,
 .majority-overlap-figure > header,
-.log-replication-figure > header {
+.log-replication-figure > header,
+.leader-recovery-figure > header {
   margin-block-end: 16px;
 }
 .leader-election-scenario {
@@ -21950,17 +21947,32 @@ stop.big-db-id-tone {
 .leader-election-scene text {
   fill: var(--election-ink);
 }
-:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+:is(
+    .leader-election-figure,
+    .majority-overlap-figure,
+    .log-replication-figure,
+    .leader-recovery-figure
+  )
   [data-identity="A"] {
   --identity-color: var(--election-purple);
   --identity-surface: var(--election-purple-surface);
 }
-:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+:is(
+    .leader-election-figure,
+    .majority-overlap-figure,
+    .log-replication-figure,
+    .leader-recovery-figure
+  )
   [data-identity="B"] {
   --identity-color: var(--election-blue);
   --identity-surface: var(--election-blue-surface);
 }
-:is(.leader-election-figure, .majority-overlap-figure, .log-replication-figure)
+:is(
+    .leader-election-figure,
+    .majority-overlap-figure,
+    .log-replication-figure,
+    .leader-recovery-figure
+  )
   [data-identity="C"] {
   --identity-color: var(--election-teal);
   --identity-surface: var(--election-teal-surface);
@@ -22089,7 +22101,8 @@ stop.big-db-id-tone {
 }
 .leader-election-controls,
 .majority-overlap-controls,
-.log-replication-controls {
+.log-replication-controls,
+.leader-recovery-controls {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -22097,7 +22110,8 @@ stop.big-db-id-tone {
 }
 .leader-election-controls button,
 .majority-overlap-controls button,
-.log-replication-controls button {
+.log-replication-controls button,
+.leader-recovery-controls button {
   min-inline-size: 72px;
   min-block-size: 44px;
   padding: 8px 16px;
@@ -22110,27 +22124,29 @@ stop.big-db-id-tone {
 }
 .leader-election-controls button:disabled,
 .majority-overlap-controls button:disabled,
-.log-replication-controls button:disabled {
+.log-replication-controls button:disabled,
+.leader-recovery-controls button:disabled {
   opacity: 0.5;
   cursor: default;
 }
 .leader-election-status,
 .majority-overlap-status,
-.log-replication-status {
-  min-block-size: 64px;
+.log-replication-status,
+.leader-recovery-status {
   margin-block-end: 12px;
 }
 .leader-election-status p,
 .majority-overlap-status p,
-.log-replication-status p {
+.log-replication-status p,
+.leader-recovery-status p {
   margin: 0;
   font-size: 14px;
   line-height: 1.5;
 }
 .leader-election-status p:first-child,
 .majority-overlap-status p:first-child,
-.log-replication-status p:first-child {
-  margin-block-end: 8px;
+.log-replication-status p:first-child,
+.leader-recovery-status p:first-child {
   font-weight: 550;
 }
 @media (max-width: 639px) {
@@ -22143,7 +22159,8 @@ stop.big-db-id-tone {
 }
 
 /* Log entries align across replicas; their commit boundaries advance locally. */
-.log-replication-figure {
+.log-replication-figure,
+.leader-recovery-figure {
   --replication-pending-outline: oklch(0.6 0.17 50);
 }
 .log-replication-stage {
@@ -22193,8 +22210,8 @@ stop.big-db-id-tone {
 }
 .log-replication-scene {
   display: block;
-  inline-size: 100%;
-  max-inline-size: 560px;
+  inline-size: 68%;
+  max-inline-size: 380.8px;
   block-size: auto;
   margin-inline: auto;
   font:
@@ -22391,6 +22408,104 @@ stop.big-db-id-tone {
 }
 @media (max-width: 639px) {
   .majority-overlap-stage {
+    padding: 12px 8px;
+  }
+}
+
+/* Stable log rows make the committed prefix inspectable across failover. */
+.leader-recovery-stage {
+  padding: 16px 20px;
+  border: 1px solid #e4e3de;
+  border-radius: 6px;
+  background: var(--election-canvas);
+}
+.leader-recovery-stage svg {
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+.leader-recovery-stage .leader-recovery-muted {
+  fill: var(--election-muted);
+}
+.leader-recovery-tally {
+  margin: 0 0 12px;
+  font:
+    14px/1.5 "Lilex",
+    ui-monospace,
+    monospace;
+  color: var(--election-muted);
+}
+.leader-recovery-wire {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.leader-recovery-server[data-offline="true"] .leader-recovery-node {
+  stroke-dasharray: 4 4;
+}
+.leader-recovery-index {
+  font-size: 14px;
+}
+.log-conflict-entry[data-checked="true"] .log-conflict-term {
+  font-weight: 700;
+  text-decoration: underline;
+}
+.log-conflict-figure {
+  --conflict-deleted-surface: oklch(0.94 0.025 25);
+}
+.log-conflict-figure .log-conflict-entry[data-deleted="true"] rect {
+  fill: var(--conflict-deleted-surface);
+  stroke: var(--election-red);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+.log-conflict-entry[data-deleted="true"] .log-replication-command {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.log-conflict-figure
+  .log-conflict-entry[data-replacement="true"]:not([data-committed="true"])
+  rect {
+  fill: var(--election-purple-surface);
+  stroke: var(--election-purple);
+  stroke-width: 3;
+}
+.log-conflict-change-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+.log-conflict-replacement-route {
+  fill: none;
+  stroke: var(--election-purple);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+}
+.leader-recovery-check {
+  font-size: 12px;
+}
+.leader-recovery-timer-track {
+  fill: var(--election-track);
+}
+.leader-recovery-timer-fill {
+  fill: var(--identity-color);
+}
+.leader-recovery-packet rect {
+  fill: var(--election-paper);
+  stroke: var(--election-line);
+}
+.leader-recovery-packet text {
+  font-size: 12px;
+}
+.leader-recovery-controls {
+  align-items: center;
+}
+.leader-recovery-controls > span {
+  color: #63635e;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 639px) {
+  .leader-recovery-stage {
     padding: 12px 8px;
   }
 }

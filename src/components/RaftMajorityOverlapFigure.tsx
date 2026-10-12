@@ -58,7 +58,7 @@ export function RaftMajorityOverlapFigure() {
     >
       <header>
         <p className="article-graphic-title" id={id + "-title"}>
-          Majorities overlap
+          Majority overlap
         </p>
       </header>
       <div
@@ -173,16 +173,15 @@ export function RaftMajorityOverlapFigure() {
           Shared {shared.length === 1 ? "server" : "servers"}:{" "}
           {shared.join(", ")}
         </p>
-        <p>
+        <p className="sr-only">
           {complete
             ? "All ten majorities shown. Every comparison has an overlap."
             : "Green rings identify servers in both groups."}
         </p>
       </div>
       <figcaption>
-        Each round compares two possible majorities. With five servers, 3 + 3
-        &gt; 5 guarantees at least one shared server.{" "}
-        {reduced && "Use Next to inspect each round."}
+        Two groups of three in a five-server cluster.
+        {reduced && " Use Next to compare."}
       </figcaption>
     </figure>
   );

@@ -1,4 +1,5 @@
-import { type Message, type Server, servers } from "./model";
+import type { Message, Server } from "./model";
+import { raftServers as servers } from "../raft-transport";
 import { type Point } from "../raft-election-overview/layout";
 
 export function replicationLayout(compact: boolean) {
@@ -31,7 +32,7 @@ export function replicationLayout(compact: boolean) {
 }
 export function messageRoute(
   layout: ReturnType<typeof replicationLayout>,
-  message: Message,
+  message: Pick<Message, "from" | "to">,
 ): Point[] {
   if (message.from === "client")
     return [[0, layout.port("B")[1]], layout.port("B")];

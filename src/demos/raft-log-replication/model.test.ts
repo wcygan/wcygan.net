@@ -5,6 +5,7 @@ import {
   messages,
   messageProgress,
   replicationState,
+  replicationTime as time,
   servers,
   storageDuration,
 } from "./model";
@@ -66,8 +67,8 @@ it("lets B and A commit two commands while C remains empty", () => {
       C: 0,
     });
   }
-  expect(node(22000, "A").committed).toBe(2);
-  expect(node(22000, "C").committed).toBe(0);
+  expect(node(time(22000), "A").committed).toBe(2);
+  expect(node(time(22000), "C").committed).toBe(0);
 });
 
 it("catches C up in one batch and counts its storage only on acknowledgment arrival", () => {
@@ -101,8 +102,8 @@ it("captures commit indices at send time and applies heartbeats only on delivery
       );
     }
   }
-  expect(node(40600, "A").committed).toBe(3);
-  expect(node(40600, "C").committed).toBe(2);
+  expect(node(time(40600), "A").committed).toBe(3);
+  expect(node(time(40600), "C").committed).toBe(2);
 });
 
 it("preserves independent prefixes, safe commit indices, and a three-second final hold", () => {
@@ -164,7 +165,7 @@ it.each([false, true])(
         messageRoute(layout, outgoing).reverse(),
       );
     }
-    for (let time = 32000; time < 33800; time += 20) {
+    for (let time = 0; time < cycleDuration; time += 20) {
       const flights = messages.filter(
         (message) =>
           message.kind === "entry" &&

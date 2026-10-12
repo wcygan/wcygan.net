@@ -203,7 +203,7 @@ export function RaftRoleTransitionsFigure() {
     >
       <header>
         <p className="article-graphic-title" id={`${id}-heading`}>
-          Changing roles
+          Role changes
         </p>
       </header>
       <label className="raft-roles-scenario" htmlFor={`${id}-scenario`}>
@@ -618,15 +618,14 @@ export function RaftRoleTransitionsFigure() {
         aria-live={active ? "off" : "polite"}
         aria-atomic="true"
       >
-        <p className="raft-roles-state">
+        <p className="sr-only">
           Role: {current.role} · Term: {current.term}
         </p>
         <p>{current.event}</p>
       </div>
       <figcaption>
-        One server in a five-server cluster. Three votes elect a leader,
-        including its own. Timing is slowed for the walkthrough.{" "}
-        {reduced && "Use Next to advance each event."}
+        Five-server cluster; three votes to win. Illustrative timing.
+        {reduced && " Use Next to step through."}
       </figcaption>
     </figure>
   );

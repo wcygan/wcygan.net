@@ -1,11 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
 import {
-  beats,
-  cycleDuration,
+  getReplicationLesson,
   entries,
   entryRange,
   messageProgress,
-  messages,
   replicationState,
 } from "~/demos/raft-log-replication/model";
 import {
@@ -26,8 +24,9 @@ export function RaftLogReplicationFigure() {
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [compact, setCompact] = useState(false);
+  const { beats, messages, cycleDuration } = getReplicationLesson(compact);
   const active = playing && visible && documentVisible && !reduced;
-  const state = replicationState(elapsed);
+  const state = replicationState(elapsed, compact);
   const beat = beats[state.beat];
   const complete = !playing && elapsed >= beats.at(-1)!.settledAt;
   const layout = replicationLayout(compact);
@@ -64,6 +63,8 @@ export function RaftLogReplicationFigure() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => setElapsed(0), [compact]);
+
   useEffect(() => {
     if (!active) return;
     let frame = 0;
@@ -76,7 +77,7 @@ export function RaftLogReplicationFigure() {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active]);
+  }, [active, cycleDuration]);
 
   return (
     <figure
@@ -87,7 +88,7 @@ export function RaftLogReplicationFigure() {
     >
       <header>
         <p className="article-graphic-title" id={id + "-title"}>
-          Replicating a log
+          Log replication
         </p>
       </header>
       <div
@@ -443,14 +444,12 @@ export function RaftLogReplicationFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p>{beat.event}</p>
+        <p className="sr-only">{beat.event}</p>
       </div>
       <figcaption>
-        Orange outlines mark stored entries whose commitment is not yet known
-        locally. Dark green outlines and checkmarks persist once this server
-        knows an entry is committed. Red hearts carry the leader’s commit index,
-        including on messages that copy entries. Timings are illustrative.
-        {reduced && " Use Next to follow each step."}
+        Green entries are known committed; orange entries are pending.
+        Illustrative timing.
+        {reduced && " Use Next to step through."}
       </figcaption>
     </figure>
   );

@@ -1,4 +1,6 @@
-export const servers = ["B", "A", "C"] as const;
+import { raftServers as servers, paceFlights } from "../raft-transport";
+import { replicationLayout, messageRoute } from "./layout";
+export { servers };
 export type Server = (typeof servers)[number];
 type Follower = Exclude<Server, "B">;
 export const entries = [
@@ -25,7 +27,7 @@ export type Message = Flight &
 
 // A deterministic teaching schedule, not network or election timeout values.
 // Each RPC carries the leader's commit position captured when it is sent.
-export const messages: readonly Message[] = [
+const authoredMessages: readonly Message[] = [
   {
     kind: "command",
     from: "client",
@@ -167,9 +169,8 @@ export const messages: readonly Message[] = [
   },
 ];
 export const storageDuration = 500;
-export const cycleDuration = 45400;
 
-export const beats = [
+const authoredBeats = [
   {
     start: 0,
     settledAt: 0,
@@ -316,6 +317,28 @@ export const beats = [
   },
 ];
 
+export function replicationLesson(compact = false) {
+  const layout = replicationLayout(compact);
+  const paced = paceFlights(authoredMessages, (message) =>
+    messageRoute(layout, message),
+  );
+  const beats = authoredBeats.map((beat) => ({
+    ...beat,
+    start: paced.time(beat.start),
+    settledAt: paced.time(beat.settledAt),
+  }));
+  return { ...paced, beats, cycleDuration: beats.at(-1)!.settledAt + 3000 };
+}
+const lessons = [replicationLesson(false), replicationLesson(true)];
+export const {
+  messages,
+  beats,
+  cycleDuration,
+  time: replicationTime,
+} = lessons[0];
+export const getReplicationLesson = (compact: boolean) =>
+  lessons[Number(compact)];
+
 type TimelineEvent =
   | { at: number; kind: "delivery"; message: Message }
   | {
@@ -323,20 +346,24 @@ type TimelineEvent =
       kind: "persist";
       message: Extract<Message, { kind: "command" | "entry" }>;
     };
-export const timeline: readonly TimelineEvent[] = messages
-  .flatMap((message): TimelineEvent[] => [
-    { at: message.end, kind: "delivery", message },
-    ...(message.kind === "entry" || message.kind === "command"
-      ? [
-          {
-            at: message.end + storageDuration,
-            kind: "persist" as const,
-            message,
-          },
-        ]
-      : []),
-  ])
-  .sort((a, b) => a.at - b.at);
+function makeTimeline(messages: readonly Message[]): readonly TimelineEvent[] {
+  return messages
+    .flatMap((message): TimelineEvent[] => [
+      { at: message.end, kind: "delivery", message },
+      ...(message.kind === "entry" || message.kind === "command"
+        ? [
+            {
+              at: message.end + storageDuration,
+              kind: "persist" as const,
+              message,
+            },
+          ]
+        : []),
+    ])
+    .sort((a, b) => a.at - b.at);
+}
+export const timeline = makeTimeline(messages);
+const timelines = lessons.map((lesson) => makeTimeline(lesson.messages));
 
 type NodeState = {
   server: Server;
@@ -347,7 +374,9 @@ type NodeState = {
   writing: { firstIndex: number; lastIndex: number } | null;
 };
 
-export function replicationState(elapsed: number) {
+export function replicationState(elapsed: number, compact = false) {
+  const { beats } = getReplicationLesson(compact);
+  const timeline = timelines[Number(compact)];
   const nodes: NodeState[] = servers.map((server) => ({
     server,
     role: server === "B" ? "Leader" : "Follower",

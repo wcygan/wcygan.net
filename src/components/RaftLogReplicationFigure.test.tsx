@@ -8,12 +8,17 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { RaftLogReplicationFigure } from "./RaftLogReplicationFigure";
-import { beats, cycleDuration } from "~/demos/raft-log-replication/model";
+import {
+  beats,
+  cycleDuration,
+  replicationTime as time,
+} from "~/demos/raft-log-replication/model";
 
 let reduced = false;
 let intersection: IntersectionObserverCallback;
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(644);
   vi.stubGlobal("matchMedia", () => ({
     matches: reduced,
     addEventListener: vi.fn(),
@@ -73,18 +78,18 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
   expect(node("C").querySelector(".log-replication-writing")?.textContent).toBe(
     "Replication delayed",
   );
-  to(9200);
+  to(time(9200));
   expect(node("B").getAttribute("data-committed")).toBe("1");
   expect(node("A").getAttribute("data-stored")).toBe("1");
   expect(node("A").getAttribute("data-committed")).toBe("0");
   expect(node("C").getAttribute("data-stored")).toBe("0");
-  to(22100);
+  to(time(22100));
   expect(node("A").getAttribute("data-committed")).toBe("2");
   expect(node("C").getAttribute("data-stored")).toBe("0");
   expect(
     document.querySelector(".log-replication-confirmations")?.textContent,
   ).toContain("A confirmed: 2 · C confirmed: 0");
-  to(25500);
+  to(time(25500));
   expect(node("C").getAttribute("data-stored")).toBe("2");
   expect(node("C").getAttribute("data-committed")).toBe("2");
   expect(
@@ -93,11 +98,11 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
   expect(
     document.querySelectorAll('[data-committed="true"].log-replication-entry'),
   ).toHaveLength(6);
-  to(27900);
+  to(time(27900));
   expect(
     document.querySelector(".log-replication-confirmations")?.textContent,
   ).toContain("C confirmed: 2");
-  to(36400);
+  to(time(36400));
   expect(node("B").getAttribute("data-committed")).toBe("3");
   expect(node("A").getAttribute("data-committed")).toBe("2");
   expect(node("C").getAttribute("data-committed")).toBe("2");
@@ -108,7 +113,7 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
       ),
     ).toHaveLength(server === "B" ? 3 : 2);
   }
-  to(40700);
+  to(time(40700));
   expect(node("A").getAttribute("data-committed")).toBe("3");
   expect(node("C").getAttribute("data-committed")).toBe("2");
   to(cycleDuration - 100);
@@ -134,7 +139,7 @@ it("moves explicit payloads on an unchanged bus and removes them on arrival or p
   const wire = document
     .querySelector(".log-replication-wire")
     ?.getAttribute("d");
-  advance(5100);
+  advance(time(5100));
   expect(document.querySelectorAll('[data-kind="entry"]')).toHaveLength(1);
   const before = document
     .querySelector('[data-kind="entry"]')
@@ -146,19 +151,16 @@ it("moves explicit payloads on an unchanged bus and removes them on arrival or p
   expect(
     document.querySelector('[data-kind="entry"]')?.getAttribute("transform"),
   ).not.toBe(before);
-  advance(1200);
+  advance(time(6400) - time(5200));
   expect(document.querySelectorAll('[data-kind="entry"]')).toHaveLength(0);
   expect(
     document.querySelector(".log-replication-wire")?.getAttribute("d"),
   ).toBe(wire);
-  advance(1700);
-  expect(document.querySelector('[data-kind="ack"]')?.textContent).toContain(
-    "Stored",
-  );
+  advance(time(8100) - time(6400));
   expect(document.querySelector('[data-kind="ack"]')?.textContent).toContain(
     "#1",
   );
-  advance(2600);
+  advance(time(10700) - time(8100));
   expect(
     document.querySelector('[data-kind="commit"] .log-replication-heart'),
   ).toBeTruthy();
@@ -173,7 +175,7 @@ it("moves explicit payloads on an unchanged bus and removes them on arrival or p
 it("settles the current in-flight step before advancing to another checkpoint", () => {
   render(<RaftLogReplicationFigure />);
   visible();
-  advance(5500);
+  advance(time(5500));
   next();
   expect(node("A").getAttribute("data-stored")).toBe("1");
   expect(node("B").getAttribute("data-committed")).toBe("0");
@@ -186,7 +188,7 @@ it("suspends offscreen and in hidden documents without catching up", () => {
   render(<RaftLogReplicationFigure />);
   advance(cycleDuration);
   visible();
-  advance(4000);
+  advance(time(4000));
   expect(node("B").getAttribute("data-stored")).toBe("1");
   visible(false);
   advance(cycleDuration);
@@ -198,7 +200,7 @@ it("suspends offscreen and in hidden documents without catching up", () => {
   expect(node("A").getAttribute("data-stored")).toBe("0");
   hidden.mockReturnValue(false);
   act(() => document.dispatchEvent(new Event("visibilitychange")));
-  advance(3000);
+  advance(time(7000) - time(4000));
   expect(node("A").getAttribute("data-stored")).toBe("1");
 });
 
