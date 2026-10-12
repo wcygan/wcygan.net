@@ -22309,6 +22309,10 @@ stop.big-db-id-tone {
   fill: var(--election-red);
 }
 @media (max-width: 639px) {
+  .log-replication-scene {
+    inline-size: 100%;
+    max-inline-size: none;
+  }
   .log-replication-stage {
     padding: 12px 8px;
   }

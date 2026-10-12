@@ -72,24 +72,25 @@ Any two majorities share at least one server. Since that server cannot vote for 
   they have been saved.
 </p>
 
+This example uses three servers, so two stored copies form a majority.
+
 <RaftLogReplicationFigure />
 
 An entry passes through several steps:
 
-- The leader and followers store it in their logs.
 - Once a majority has stored an entry from the leader’s current term, the leader can commit it.
 - The leader tells followers how far the log is committed, through replication messages and heartbeats.
 - Each server applies the commands it knows are committed, in log order.
 
 The commit index is the highest entry a server knows is committed. Last applied is the highest entry it has executed. A server can know an entry is committed before it has applied it.
 
-The leader can commit without waiting for every follower. A lagging follower can receive several missing entries together and catch up.
+A lagging follower can receive several missing entries together and catch up.
 
 Servers that start with the same state and apply the same commands in the same order reach the same result, provided each command produces the same result from the same input.
 
 ### Leader Failure and Recovery
 
-When the leader stops sending heartbeats, followers eventually start an election. A missed heartbeat does not prove that the leader crashed: a slow network can look the same. New writes wait until a suitable candidate wins a majority.
+A missed heartbeat does not prove that the leader crashed: a slow network can look the same. New writes wait until a suitable candidate wins a majority.
 
 A candidate must pass two checks to receive a server’s vote:
 
@@ -97,6 +98,8 @@ A candidate must pass two checks to receive a server’s vote:
 - The candidate’s log is at least as up to date as the server’s own log.
 
 [Raft compares the last entry’s term first](https://raft.github.io/raft.pdf#page=8). If the terms match, it compares the entry’s index. Starting a newer election does not make an outdated log eligible.
+
+The next example starts at a later point in the same log. B leads in term 5. B and A know entry #4 is committed, while C still ends at #3.
 
 <RaftLeaderRecoveryFigure />
 
@@ -106,7 +109,7 @@ A restarted server returns as a follower and catches up from the new leader. Wit
 
 ### Repairing Conflicting Logs
 
-A leader can accept an entry and fail before a majority stores it. A later leader may accept a different command at the same position. The returning server then has an uncommitted entry that disagrees with the new leader.
+A leader can accept an entry and fail before a majority stores it. A later leader may accept a different command at the same position.
 
 Each replication request includes the index and term of the entry immediately before the new entries. The follower checks that entry against its own log. If they disagree, it rejects the request without changing its log.
 
@@ -118,9 +121,13 @@ Once that entry matches, the follower:
 
 1. Compares the incoming entries with its own.
 2. At the first conflicting term, deletes that entry and every entry after it.
-3. Stores the leader’s replacement entries before acknowledging the request.
-4. Updates its commit index using the leader’s information.
+3. Stores the leader’s replacement entries durably.
+4. Updates its commit index using the leader’s information, then acknowledges the request.
 
 A matching preceding entry alone does not cause deletion. An incoming entry must conflict with an existing one.
 
-Only uncommitted entries can be replaced. Raft’s election rules preserve committed entries across leader changes. The [Raft paper](https://raft.github.io/raft.pdf#page=4) describes these checks.
+Only uncommitted entries can be replaced. The [Raft paper](https://raft.github.io/raft.pdf#page=4) describes these checks.
+
+## Conclusion
+
+Raft gives servers a shared order for commands and preserves committed entries when leaders change. A majority lets the cluster make progress while slower servers catch up. If too few servers can communicate, new entries wait until a majority is reachable again.
