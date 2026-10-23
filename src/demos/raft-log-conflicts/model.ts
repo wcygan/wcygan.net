@@ -1,7 +1,4 @@
-import {
-  replicationLayout,
-  messageRoute,
-} from "../raft-log-replication/layout";
+import { logRowLayout, logRowRoute } from "../raft-log-row/layout";
 import {
   raftServers,
   routeLength,
@@ -66,25 +63,13 @@ export type Message = {
   end: number;
   short: string;
   label: string;
+  payload: readonly string[];
 };
 
 function buildLesson(compact: boolean) {
-  const layout = replicationLayout(compact);
-  const padding = compact ? 12 : 16;
-  const labelWidth = compact ? 64 : 72;
-  const cellWidth = (layout.nodes.A.width - padding * 2 - labelWidth - 16) / 3;
-  const replacementBounds = {
-    x: layout.nodes.A.x + padding + labelWidth + cellWidth + 8,
-    toY: layout.nodes.B.y + (compact ? 92 : 68),
-    width: cellWidth,
-  };
-  const copyCenter = replacementBounds.x + cellWidth / 2;
-  const replacementRoute: [number, number][] = [
-    [copyCenter, layout.nodes.A.y + (compact ? 92 : 68) + 48],
-    [copyCenter, replacementBounds.toY + 48],
-  ];
+  const layout = logRowLayout(compact);
   const route = (message: Pick<Message, "from" | "to">) =>
-    messageRoute(layout, message);
+    logRowRoute(layout, message.from, message.to);
   const flight = (
     kind: Message["kind"],
     from: Server,
@@ -101,6 +86,12 @@ function buildLesson(compact: boolean) {
       start + (routeLength(route({ from, to })) / payloadUnitsPerSecond) * 1000,
     short,
     label,
+    payload: {
+      check: ["Check prefix", "Term: 7", "Prev: #4/T7"],
+      reject: ["Rejected", "Term: 7", "At #4: T5"],
+      repair: ["Entry #4", "Term: 7", "Prev: #3/T5", "Commit: 4"],
+      ack: ["Ack", "Stored #4", "Term: 7"],
+    }[kind],
   });
   const check = flight(
     "check",
@@ -128,11 +119,8 @@ function buildLesson(compact: boolean) {
   );
   const deletingAt = repair.end + 600;
   const deletedAt = deletingAt + 1600;
-  const replacementAt = deletedAt + 1200;
-  const replacementArrivedAt =
-    replacementAt +
-    (routeLength(replacementRoute) / payloadUnitsPerSecond) * 1000;
-  const persistedAt = replacementArrivedAt + 800;
+  const storingAt = deletedAt + 1200;
+  const persistedAt = storingAt + 800;
   const ack = flight(
     "ack",
     "B",
@@ -179,11 +167,11 @@ function buildLesson(compact: boolean) {
         "The preceding #3 matches. B removes its conflicting #4 and the following #5. Crossed-out ghosts show what was deleted; the green, committed #1–3 prefix stays intact. The replacement is not yet durable.",
     },
     {
-      start: replacementAt,
+      start: storingAt,
       settledAt: persistedAt,
       title: "Store A’s #4 in the same position",
       detail:
-        "A’s purple #4 moves into B’s vacated slot. B persists term 7, x *= 2 before acknowledging. It turns green with a checkmark once storage and commitment are known. Old #5 stays deleted; committed #1–3 remain unchanged.",
+        "B stores the #4 entry delivered by A’s retry: term 7, x *= 2. It turns green with a checkmark once storage and commitment are known. Old #5 stays deleted; committed #1–3 remain unchanged.",
     },
     {
       start: ack.start,
@@ -202,8 +190,6 @@ function buildLesson(compact: boolean) {
   ];
   return {
     layout,
-    replacementBounds,
-    replacementRoute,
     route,
     messages: [check, reject, repair, ack],
     check,
@@ -212,8 +198,7 @@ function buildLesson(compact: boolean) {
     ack,
     deletingAt,
     deletedAt,
-    replacementAt,
-    replacementArrivedAt,
+    storingAt,
     persistedAt,
     duration,
     beats,
@@ -259,15 +244,6 @@ export function conflictState(elapsed: number, compact = false) {
         (elapsed - lesson.deletingAt) / (lesson.deletedAt - lesson.deletingAt),
       ),
     ),
-    replacementProgress: Math.max(
-      0,
-      Math.min(
-        1,
-        (elapsed - lesson.replacementAt) /
-          (lesson.replacementArrivedAt - lesson.replacementAt),
-      ),
-    ),
-    replacing: elapsed >= lesson.replacementAt && !repaired,
     checked:
       elapsed >= lesson.repair.start
         ? 3

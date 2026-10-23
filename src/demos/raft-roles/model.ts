@@ -96,7 +96,7 @@ const elected = (term = 5) =>
   phase(
     "Leader",
     term,
-    "Three votes, including self. This server becomes leader.",
+    "The elected leader sends heartbeats. Three votes, including self, elected it.",
     4000,
     three,
     [0, 0],

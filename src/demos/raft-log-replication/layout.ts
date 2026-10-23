@@ -1,33 +1,40 @@
-import type { Message, Server } from "./model";
-import { raftServers as servers } from "../raft-transport";
+import { logRowLayout, logRowRoute } from "../raft-log-row/layout";
+import type { Message } from "./model";
 import { type Point } from "../raft-election-overview/layout";
 
 export function replicationLayout(compact: boolean) {
-  const width = compact ? 360 : 600;
-  const nodeWidth = compact ? 276 : 440;
-  // Center the cards and their shared bus together within the scene.
-  const x = compact ? 72 : 144;
-  const nodeHeight = compact ? 236 : 212;
+  const base = logRowLayout(compact);
+  const payloadWidth = base.payloadWidth;
+  const trunk = payloadWidth / 2 + 4;
+  const x = payloadWidth + 8;
+  const entryX = base.entryX;
   const nodes = Object.fromEntries(
-    servers.map((server, index) => [
-      server,
+    Object.entries(base.nodes).map(([id, row]) => [
+      id,
       {
+        ...row,
         x,
-        y: 12 + index * (nodeHeight + 20),
-        width: nodeWidth,
-        height: nodeHeight,
+        y: row.y + 72,
+        width: base.width - x - 8,
       },
     ]),
-  ) as Record<Server, { x: number; y: number; width: number; height: number }>;
-  const trunk = compact ? 32 : 72;
-  const port = (server: Server): Point => [x, nodes[server].y + nodeHeight / 2];
+  ) as typeof base.nodes;
+  const port = (id: keyof typeof nodes): [number, number] => [
+    x,
+    nodes[id].y + 62,
+  ];
+  const clientOrigin: Point = [trunk, 28];
   return {
-    width,
-    height: nodes.C.y + nodeHeight + 12,
+    ...base,
     nodes,
     trunk,
     port,
-    wire: `M${port("B").join(" ")}H${trunk}V${port("C")[1]}H${x}M${trunk} ${port("A")[1]}H${x}`,
+    entryX,
+    cellWidth: (nodes.B.width - entryX - 24) / 3,
+    height: base.height + 72,
+    payloadWidth,
+    clientOrigin,
+    wire: `M${clientOrigin.join(" ")}V${port("B")[1]}H${x}M${port("B").join(" ")}H${trunk}V${port("C")[1]}H${x}M${trunk} ${port("A")[1]}H${x}`,
   };
 }
 export function messageRoute(
@@ -35,8 +42,12 @@ export function messageRoute(
   message: Pick<Message, "from" | "to">,
 ): Point[] {
   if (message.from === "client")
-    return [[0, layout.port("B")[1]], layout.port("B")];
-  const from = layout.port(message.from),
-    to = layout.port(message.to);
-  return [from, [layout.trunk, from[1]], [layout.trunk, to[1]], to];
+    return [
+      layout.clientOrigin,
+      [layout.trunk, layout.port("B")[1]],
+      layout.port("B"),
+    ];
+  return logRowRoute(layout, message.from, message.to);
 }
+export const payloadHeight = (kind: Message["kind"]) =>
+  kind === "command" ? 48 : 64;

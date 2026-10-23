@@ -1,9 +1,8 @@
 ---
 title: Consensus
-date: "6000-09-21T08:00:00-05:00"
+date: "2026-10-23T08:00:00-05:00"
 description: How Raft preserves decisions across failures
 tags: [Distributed Systems]
-draft: true
 ---
 
 import { TotalOrderBroadcastFigure } from "~/components/TotalOrderBroadcastFigure";
@@ -14,6 +13,7 @@ import { RaftRoleTransitionsFigure } from "~/components/RaftRoleTransitionsFigur
 import { RaftLogReplicationFigure } from "~/components/RaftLogReplicationFigure";
 import { RaftLeaderRecoveryFigure } from "~/components/RaftLeaderRecoveryFigure";
 import { RaftLogConflictFigure } from "~/components/RaftLogConflictFigure";
+import { RaftCurrentTermFigure } from "~/components/RaftCurrentTermFigure";
 
 Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
 
@@ -31,13 +31,19 @@ Applying the same operations in a different order can produce a different result
 
 ## Total Order Broadcast
 
-[Total order broadcast](https://en.wikipedia.org/wiki/Atomic_broadcast) ensures every participating correct process delivers the same messages in the same order, so each replica applies the operations consistently. This reliable form, also called atomic broadcast, is [equivalent to consensus under matching assumptions about the system and failures](https://cs.nyu.edu/~apanda/classes/sp26/papers/chandra-toueg.pdf): processes can broadcast proposals and decide on the first value delivered, while repeated consensus decisions can select the next batch of messages for ordered delivery. Ordering alone, without reliable delivery, is not enough.
+[Total order broadcast](https://en.wikipedia.org/wiki/Atomic_broadcast), also called atomic broadcast, ensures every participating correct process delivers the same messages in the same order. Replicas can deliver messages at different times, but their delivered sequences agree wherever they overlap. Reliable delivery matters as well as ordering.
 
 <TotalOrderBroadcastFigure />
+
+Atomic broadcast and consensus are [equivalent under matching assumptions about the system and failures](https://cs.nyu.edu/~apanda/classes/sp26/papers/chandra-toueg.pdf). To reach consensus, processes can broadcast proposals and decide on the first delivered value. In the other direction, repeated consensus decisions can choose successive batches of messages for ordered delivery.
 
 ## Raft: Understandable Consensus
 
 [Raft](https://raft.github.io/) is a consensus algorithm designed to be easy to understand. Its elected leader orders new log entries and coordinates copying them across servers, so the servers apply committed operations in the same order. The [Raft paper, _In Search of an Understandable Consensus Algorithm_](https://raft.github.io/raft.pdf), explains how this works.
+
+Each server runs a **state machine**: it applies commands from the log to its local state. Servers that start with the same state reach the same result when they apply the same deterministic commands in the same order. A deterministic command always produces the same result from the same input.
+
+Raft assumes servers follow the protocol, even though they can crash and restart. Logs, term numbers, and votes must survive a restart. Delays can stop progress, but must never undo a committed decision. Making progress requires a communicating majority and enough time to elect and keep a leader.
 
 ### Roles and Terms
 
@@ -47,34 +53,27 @@ Each server has one of three roles:
 - **Candidate:** asks for votes to become leader.
 - **Leader:** orders new log entries and sends them to followers.
 
-A **term** is a numbered election round. Each term starts with an election and has at most one leader. An election can finish without choosing a leader.
+A **term** is a numbered period that starts with an election and continues through the elected leader’s tenure. It has at most one leader; an election can also finish without choosing one. Servers learn about newer terms through messages, so they can temporarily disagree about the current term.
 
 <RaftRoleTransitionsFigure />
 
 ### Leader Election
 
-Followers expect regular heartbeats from the leader. When a follower waits too long without receiving one, it becomes a candidate and asks the other servers for votes. In a five-server cluster, it needs three votes to become leader.
+Followers expect regular heartbeats from the leader. When a follower waits too long without receiving one, it becomes a candidate and asks the other servers for votes. In this three-server example, it needs two votes to become leader.
 
 Each server can vote for only one candidate per term. Followers wait for different, randomly chosen amounts of time before starting an election, reducing the chance that several candidates start together. If the vote splits, they try again in a new term.
 
 <RaftLeaderElectionFigure />
 
-Any two majorities share at least one server. Since that server cannot vote for two candidates in the same term, two candidates cannot both win.
+The next figure uses five servers. Any two majorities share at least one server. Since that server cannot vote for two candidates in the same term, two candidates cannot both win.
 
 <RaftMajorityOverlapFigure />
 
 ### Log Replication
 
-<p id="committing-and-applying-entries">
-  The leader gives each new command a position in its log, then sends copies to
-  the followers. Each entry records the command and the term in which the leader
-  accepted it. Followers store the entries in the same order and confirm when
-  they have been saved.
-</p>
+<span id="committing-and-applying-entries" />
 
-This example uses three servers, so two stored copies form a majority.
-
-<RaftLogReplicationFigure />
+The leader gives each new command a position in its log, then sends copies to the followers. Each entry records the command and the term in which the leader accepted it. Followers store the entries in the same order and confirm when they have been saved durably.
 
 An entry passes through several steps:
 
@@ -84,15 +83,17 @@ An entry passes through several steps:
 
 The commit index is the highest entry a server knows is committed. Last applied is the highest entry it has executed. A server can know an entry is committed before it has applied it.
 
-A lagging follower can receive several missing entries together and catch up.
+This example uses three servers, so two stored copies form a majority. Each server’s **Stored** and **Commit** labels show its own progress. A message’s **Commit** field carries the leader’s known commit index.
 
-Servers that start with the same state and apply the same commands in the same order reach the same result, provided each command produces the same result from the same input.
+<RaftLogReplicationFigure />
+
+A lagging follower can receive several missing entries together and catch up.
 
 ### Leader Failure and Recovery
 
-A missed heartbeat does not prove that the leader crashed: a slow network can look the same. New writes wait until a suitable candidate wins a majority.
+A missed heartbeat does not prove that the leader crashed: a slow network can look the same. If the leader is lost, new writes wait until a suitable candidate wins a majority. An isolated follower timing out does not by itself stop a healthy majority from accepting writes.
 
-A candidate must pass two checks to receive a server’s vote:
+A server rejects vote requests from older terms. For a request in its current or a newer term, it also checks:
 
 - The server has not voted for another candidate in that term.
 - The candidate’s log is at least as up to date as the server’s own log.
@@ -106,6 +107,16 @@ The next example starts at a later point in the same log. B leads in term 5. B a
 The servers electing a new leader overlap with the servers that stored a committed entry. Together with the voting checks, this ensures that later leaders preserve committed entries.
 
 A restarted server returns as a follower and catches up from the new leader. Without a reachable majority, new entries cannot commit. A returning server may also have uncommitted entries that disagree with the new leader.
+
+### Why the Current Term Matters
+
+The commitment rule specifically counts copies of an entry from the leader’s **current term**. An inherited entry keeps its original term, even when a newer leader copies it to more servers.
+
+The next demo follows stages (a)–(e) of [Figure 8 in the Raft paper](https://raft.github.io/raft.pdf#page=8), adapted to three servers. Its boxes show entry terms, and its columns show log indexes. In (c), the term-2 entry reaches two servers, while the leader’s term-4 entry remains local. The older entry still cannot be declared committed by counting copies.
+
+Stages (d) and (e) are alternative endings from (c): crashing first allows both uncommitted entries to be overwritten; replicating the term-4 entry to a majority commits it and the preceding log. With three servers, stage (a) starts with just one copy, because a second copy in term 2 would already commit that entry.
+
+<RaftCurrentTermFigure />
 
 ### Repairing Conflicting Logs
 

@@ -67,7 +67,7 @@ export function OperationOrderFigure() {
         <ReplicaLane
           name="Replica B"
           order={[operations[0], operations[2], operations[1]]}
-          result="4"
+          result="6"
           variant="reordered"
         />
       </div>

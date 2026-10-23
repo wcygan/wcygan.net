@@ -21550,10 +21550,10 @@ stop.big-db-id-tone {
   --operation-order-ink: #21201c;
   --operation-order-muted: #63635e;
   --operation-order-track: #e4e3de;
-  --operation-order-orange: #f35815;
+  --operation-order-orange: #b83d0b;
   --operation-order-blue: #0e73cc;
-  --operation-order-green: #13862e;
-  --operation-order-yellow: #f2b600;
+  --operation-order-green: #0e7126;
+  --operation-order-yellow: #805c00;
 }
 .operation-order-figure > header {
   margin-block: 0 16px;
@@ -21725,17 +21725,17 @@ stop.big-db-id-tone {
 }
 .raft-roles-node {
   fill: var(--raft-role-color);
-  stroke: #8f8c83;
+  stroke: oklch(0.54 0.014 91.583);
   stroke-width: 1;
 }
 .raft-roles-node[data-role="Follower"] {
-  --raft-role-color: oklch(0.82 0.07 250);
+  --raft-role-color: oklch(0.94 0.018 250);
 }
 .raft-roles-node[data-role="Candidate"] {
-  --raft-role-color: oklch(0.82 0.1 75);
+  --raft-role-color: oklch(0.94 0.07 95);
 }
 .raft-roles-node[data-role="Leader"] {
-  --raft-role-color: oklch(0.82 0.09 145);
+  --raft-role-color: oklch(0.94 0.025 150);
 }
 .raft-roles-wire {
   fill: none;
@@ -21792,7 +21792,7 @@ stop.big-db-id-tone {
 }
 .raft-roles-node-active {
   fill: none;
-  stroke: var(--diagram-yellow, #f2b600);
+  stroke: oklch(0.243 0.008 95.372);
   stroke-width: 4;
   opacity: 0;
   transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1);
@@ -21909,7 +21909,7 @@ stop.big-db-id-tone {
 }
 
 .raft-roles-transition-marker {
-  fill: var(--diagram-yellow, #f2b600);
+  fill: var(--diagram-yellow, oklch(0.243 0.008 95.372));
   stroke: #21201c;
   stroke-width: 1.5;
 }
@@ -21931,11 +21931,473 @@ stop.big-db-id-tone {
   font-size: 14px;
 }
 
-/* A cluster-wide view of a Raft election. */
+/* Raft current-term commitment: aligned logs remain readable on narrow screens. */
+.raft-current-term-figure > header {
+  margin-block-end: 16px;
+}
+.raft-current-term-figure p:not(.article-graphic-title) {
+  margin: 0;
+}
+.raft-current-term-stage {
+  padding: 16px 20px;
+  background: var(--election-canvas);
+  border-color: var(--election-track);
+  color: var(--election-ink);
+  font-family: Lilex, ui-monospace, monospace;
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+  font-variant-numeric: tabular-nums;
+}
+.raft-current-term-phase {
+  padding-block-end: 4px;
+  color: var(--election-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.raft-current-term-context,
+.raft-current-term-tally {
+  color: var(--election-ink);
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.5;
+}
+.raft-current-term-context {
+  min-block-size: 24px;
+}
+/* A continuous clock makes the reading pause visible between causal beats. */
+.raft-current-term-network {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+  overflow: visible;
+}
+.raft-current-term-wire {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-dasharray: 4 4;
+}
+.raft-current-term-network-node {
+  fill: var(--identity-surface);
+  stroke: var(--identity-color);
+  stroke-width: 1.5;
+}
+.raft-current-term-network [data-role="offline"] circle {
+  stroke-dasharray: 3 3;
+}
+.raft-current-term-network text {
+  fill: var(--identity-color, var(--election-ink));
+  font:
+    14px Lilex,
+    ui-monospace,
+    monospace;
+}
+.raft-current-term-network [data-role="leader"] circle {
+  stroke-width: 4;
+}
+.raft-current-term-packet rect {
+  fill: var(--election-paper);
+  stroke: var(--election-blue);
+  stroke-width: 1.5;
+}
+.raft-current-term-packet[data-kind="ack"] rect,
+.raft-current-term-packet[data-kind="vote"] rect {
+  stroke: var(--election-green);
+}
+.raft-current-term-packet[data-denied="true"] rect {
+  stroke: var(--election-red);
+}
+.raft-current-term-network .raft-current-term-packet-short {
+  font-size: 12px;
+}
+.post-content .raft-current-term-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  padding: 0;
+  margin-block: 12px;
+  list-style: none;
+}
+.post-content .raft-current-term-progress > li {
+  display: block;
+  margin: 0;
+  padding-inline: 0;
+  padding-block: 4px;
+  border-block-start: 3px solid var(--election-track);
+  color: var(--election-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.raft-current-term-progress > li > span {
+  display: block;
+}
+.raft-current-term-progress > li[data-current="true"] {
+  border-color: var(--election-blue);
+  color: var(--election-ink);
+  font-weight: 600;
+}
+.raft-current-term-action {
+  min-block-size: 42px;
+  color: var(--election-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.raft-current-term-clock {
+  block-size: 3px;
+  margin-block: 8px;
+  overflow: hidden;
+  background: var(--election-track);
+}
+.raft-current-term-clock > span {
+  display: block;
+  block-size: 100%;
+  background: var(--election-blue);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.raft-current-term-clock > span[data-complete="true"] {
+  transform: scaleX(1);
+}
+.raft-current-term-entry[data-changed="true"] {
+  animation: raft-current-term-change 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.raft-current-term-motion-note {
+  padding-block-start: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #63635e;
+}
+@keyframes raft-current-term-change {
+  from {
+    opacity: 0.35;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .raft-current-term-entry[data-changed="true"],
+  .raft-current-term-clock > span[data-active="true"] {
+    animation: none;
+  }
+}
+.post-content .raft-current-term-logs {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin: 8px 0;
+  overflow: visible;
+  color: var(--election-ink);
+}
+.post-content .raft-current-term-logs th,
+.post-content .raft-current-term-logs td {
+  padding: 0 0 0 8px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  vertical-align: middle;
+}
+.post-content .raft-current-term-logs th:first-child {
+  width: 92px;
+  padding-inline: 0;
+  text-align: start;
+}
+.raft-current-term-logs thead th {
+  color: var(--election-muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.raft-current-term-logs tbody th {
+  block-size: 88px;
+}
+.raft-current-term-logs tbody th strong {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  margin-block: 8px;
+  border: 1.5px solid var(--identity-color);
+  border-radius: 50%;
+  background: var(--identity-surface);
+  color: var(--identity-color);
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 1.2;
+}
+.raft-current-term-logs tbody th span {
+  display: block;
+  color: var(--election-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.raft-current-term-logs [data-role="leader"] th strong {
+  box-shadow: 0 0 0 4px var(--election-agreement-highlight);
+}
+.raft-current-term-logs [data-role="leader"] th > span:first-of-type {
+  color: var(--election-green);
+}
+.raft-current-term-logs [data-role="candidate"] th strong {
+  box-shadow: 0 0 0 4px var(--election-candidate-highlight);
+}
+.raft-current-term-logs [data-role="offline"] th strong {
+  border-style: dashed;
+}
+.raft-current-term-logs tbody th .raft-current-term-vote {
+  color: var(--identity-color);
+}
+.raft-current-term-logs tbody th .raft-current-term-vote[data-vote="refused"] {
+  color: var(--election-red);
+}
+.raft-current-term-entry {
+  display: flex;
+  min-block-size: 64px;
+  flex-direction: column;
+  justify-content: center;
+  border: 2px dashed var(--election-orange);
+  border-radius: 3px;
+  background: var(--election-orange-surface);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: nowrap;
+}
+.raft-current-term-entry[data-term="3"] {
+  background: var(--election-blue-surface);
+  border-color: var(--election-blue);
+}
+.raft-current-term-entry[data-term="4"] {
+  background: var(--election-rose-surface);
+  border-color: var(--election-rose);
+}
+.raft-current-term-entry[data-committed="true"] {
+  border: 2px solid var(--election-green);
+  background: var(--election-green-surface);
+}
+.raft-current-term-entry[data-present="false"] {
+  border: 1px dashed var(--election-line);
+  background: transparent;
+  color: var(--election-muted);
+}
+.raft-current-term-entry[data-compared="true"] {
+  outline: 2px solid var(--election-ink);
+  outline-offset: 3px;
+}
+.raft-current-term-entry[data-compared="true"] > .raft-current-term-number {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.raft-current-term-entry > .raft-current-term-number {
+  font-size: 26px;
+  line-height: 1.2;
+}
+.raft-current-term-entry-state {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.raft-current-term-decision {
+  padding-block-start: 12px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+}
+.raft-current-term-voting-rule {
+  padding-block-start: 12px;
+  font-family: var(--font-body);
+}
+.raft-current-term-voting-rule > p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.raft-current-term-voting-rule > p:first-child {
+  font-weight: 550;
+}
+.raft-current-term-voting-rule > p:last-child {
+  padding-block-start: 8px;
+  font-size: 14px;
+  color: var(--election-muted);
+}
+.raft-current-term-voting-rule dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-block: 12px;
+}
+.raft-current-term-voting-rule dt {
+  color: var(--election-muted);
+  font-size: 14px;
+}
+.raft-current-term-voting-rule dd {
+  margin: 4px 0 0;
+  font:
+    24px/1.2 Lilex,
+    ui-monospace,
+    monospace;
+  color: var(--election-ink);
+}
+.raft-current-term-key {
+  padding-block-start: 8px;
+  color: var(--election-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.raft-current-term-controls button {
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid #bcbbb5;
+  border-radius: 4px;
+  background: #fdfdfc;
+  color: #21201c;
+  font: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.raft-current-term-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 16px;
+}
+.raft-current-term-controls button {
+  min-inline-size: 64px;
+}
+.raft-current-term-controls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.raft-current-term-controls > span {
+  margin-inline-start: auto;
+  color: #63635e;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.raft-current-term-status {
+  margin-block-end: 12px;
+  color: #21201c;
+}
+.raft-current-term-status p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.raft-current-term-status > p:first-child {
+  margin-block-end: 4px;
+  font-size: 14px;
+  font-weight: 550;
+}
+.raft-current-term-status .raft-current-term-outcomes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0 0;
+  padding-block-start: 16px;
+  border-block-start: 1px solid #e4e3de;
+  font-size: 14px;
+}
+.raft-current-term-comparison {
+  margin-block-start: 16px;
+}
+.raft-current-term-comparison > p:first-child {
+  font-weight: 550;
+}
+.raft-current-term-comparison > p + p {
+  margin-block-start: 8px;
+  font-size: 14px;
+}
+.raft-current-term-panels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-block-start: 16px;
+  font-family: Lilex, ui-monospace, monospace;
+}
+.raft-current-term-panels > div > p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.post-content .raft-current-term-panels table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  margin: 8px 0 0;
+  border-collapse: separate;
+  border-spacing: 2px 4px;
+  font-size: 12px;
+}
+.post-content .raft-current-term-panels th,
+.post-content .raft-current-term-panels td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+}
+.raft-current-term-panels thead th:first-child {
+  font-size: 0;
+}
+.raft-current-term-panels td > span {
+  display: block;
+  border: 1px dashed var(--election-line);
+  background: var(--election-orange-surface);
+}
+.raft-current-term-panels td > span[data-term="3"] {
+  background: var(--election-blue-surface);
+}
+.raft-current-term-panels td > span[data-term="4"] {
+  background: var(--election-rose-surface);
+}
+.raft-current-term-panels td > span[data-committed="true"] {
+  border-style: solid;
+  border-color: var(--election-green);
+  background: var(--election-green-surface);
+}
+.raft-current-term-panels td > span:not([data-term]) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--election-muted);
+}
+@media (max-width: 639px) {
+  .raft-current-term-panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+.raft-current-term-outcomes dt {
+  font-weight: 550;
+}
+.raft-current-term-outcomes dd {
+  margin: 4px 0 0;
+  color: #63635e;
+}
+@media (max-width: 639px) {
+  .raft-current-term-stage {
+    padding: 12px 8px;
+  }
+  .post-content .raft-current-term-logs th:first-child {
+    width: 68px;
+  }
+  .post-content .raft-current-term-logs th,
+  .post-content .raft-current-term-logs td {
+    padding-inline-start: 4px;
+  }
+  .raft-current-term-status .raft-current-term-outcomes {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Shared Raft metadata and state palette. */
+.raft-roles-figure,
 .leader-election-figure,
 .majority-overlap-figure,
 .log-replication-figure,
-.leader-recovery-figure {
+.leader-recovery-figure,
+.raft-current-term-figure {
   --election-canvas: oklch(0.973 0.004 91.446);
   --election-paper: oklch(0.994 0.001 106.423);
   --election-ink: oklch(0.243 0.008 95.372);
@@ -21946,6 +22408,9 @@ stop.big-db-id-tone {
   --election-orange: oklch(0.46 0.091 55);
   --election-green: oklch(0.445 0.095 150);
   --election-green-surface: oklch(0.94 0.025 150);
+  --election-agreement-highlight: oklch(0.82 0.07 150);
+  --election-candidate-highlight: oklch(0.88 0.12 95);
+  --election-timeout: oklch(0.6 0.12 95);
   --election-red: oklch(0.46 0.145 25);
   --election-purple: oklch(0.46 0.196 300);
   --election-purple-surface: oklch(0.94 0.02 300);
@@ -22000,7 +22465,7 @@ stop.big-db-id-tone {
 .leader-election-scene {
   display: block;
   inline-size: 100%;
-  max-inline-size: 600px;
+  max-inline-size: 560px;
   block-size: auto;
   margin-inline: auto;
   font-family: Lilex, ui-monospace, monospace;
@@ -22013,7 +22478,8 @@ stop.big-db-id-tone {
     .leader-election-figure,
     .majority-overlap-figure,
     .log-replication-figure,
-    .leader-recovery-figure
+    .leader-recovery-figure,
+    .raft-current-term-figure
   )
   [data-identity="A"] {
   --identity-color: var(--election-purple);
@@ -22023,7 +22489,8 @@ stop.big-db-id-tone {
     .leader-election-figure,
     .majority-overlap-figure,
     .log-replication-figure,
-    .leader-recovery-figure
+    .leader-recovery-figure,
+    .raft-current-term-figure
   )
   [data-identity="B"] {
   --identity-color: var(--election-blue);
@@ -22033,7 +22500,8 @@ stop.big-db-id-tone {
     .leader-election-figure,
     .majority-overlap-figure,
     .log-replication-figure,
-    .leader-recovery-figure
+    .leader-recovery-figure,
+    .raft-current-term-figure
   )
   [data-identity="C"] {
   --identity-color: var(--election-teal);
@@ -22052,27 +22520,39 @@ stop.big-db-id-tone {
   stroke: var(--identity-color);
   stroke-width: 1;
 }
-.leader-election-server[data-role="Candidate"] .leader-election-node,
-.leader-election-server[data-role="Leader"] .leader-election-node {
-  stroke-width: 2;
+.leader-election-role-ring,
+.raft-log-role-highlight {
+  fill: var(--election-candidate-highlight);
+  stroke: none;
+}
+.leader-election-server[data-role="Leader"] .leader-election-role-ring,
+.raft-log-row[data-role="Leader"] .raft-log-role-highlight,
+.majority-overlap-shared-ring {
+  fill: var(--election-agreement-highlight);
+  stroke: none;
 }
 .leader-election-scene .leader-election-server-name {
   fill: var(--identity-color);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
 }
 .leader-election-scene .leader-election-role {
   fill: var(--election-muted);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 14px;
 }
 .leader-election-ballot {
-  font-size: 12px;
+  font-size: 13px;
 }
 .leader-election-scene .leader-election-node-state {
   fill: var(--election-muted);
-  font-size: 10px;
+  font-size: 13px;
+}
+.raft-term-value {
+  fill: var(--election-blue);
+  color: var(--election-blue);
+}
+.raft-vote-value[data-identity] {
+  fill: var(--identity-color);
 }
 .leader-election-scene .leader-election-known-leader[data-identity] {
   fill: var(--identity-color);
@@ -22100,13 +22580,13 @@ stop.big-db-id-tone {
 }
 .leader-election-scene .leader-election-tally-label {
   fill: var(--election-muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 .leader-election-timer {
   fill: var(--election-track);
 }
 .leader-election-timer-fill {
-  fill: var(--identity-color);
+  fill: var(--election-timeout);
 }
 .leader-election-message {
   --message-color: var(--identity-color);
@@ -22126,6 +22606,20 @@ stop.big-db-id-tone {
 .leader-election-reply[data-granted="true"] {
   --reply-color: var(--election-green);
 }
+.leader-election-payload-tether path {
+  fill: none;
+  stroke: var(--election-line);
+  stroke-dasharray: 2 3;
+}
+.leader-election-request rect,
+.leader-election-heartbeat rect {
+  fill: var(--election-paper);
+  stroke: var(--election-line);
+}
+.leader-election-scene .leader-election-request text,
+.leader-election-scene .leader-election-heartbeat text {
+  fill: var(--election-ink);
+}
 .leader-election-reply rect {
   fill: var(--election-paper);
   stroke: var(--reply-color);
@@ -22133,8 +22627,26 @@ stop.big-db-id-tone {
 }
 .leader-election-scene .leader-election-reply text {
   fill: var(--reply-color);
-  font-size: 11px;
   font-weight: 600;
+}
+.leader-election-scene .leader-election-message text {
+  font-size: 16px;
+}
+.leader-election-scene[data-compact="true"]
+  :is(
+    .leader-election-message text,
+    .leader-election-role,
+    .leader-election-tally text
+  ) {
+  font-size: 17px;
+}
+.leader-election-scene[data-compact="true"]
+  :is(
+    .leader-election-node-state,
+    .leader-election-ballot,
+    .leader-election-tally-label
+  ) {
+  font-size: 16px;
 }
 .leader-election-message circle {
   fill: var(--message-color);
@@ -22143,7 +22655,7 @@ stop.big-db-id-tone {
   fill: var(--election-red);
 }
 .leader-election-tally text {
-  font-size: 20px;
+  font-size: 16px;
 }
 .leader-election-tally [data-identity] {
   fill: var(--identity-color);
@@ -22155,7 +22667,7 @@ stop.big-db-id-tone {
 }
 .leader-election-scene .leader-election-majority text {
   fill: var(--election-green);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 .leader-election-scene .leader-election-tally-label[data-majority="true"] {
@@ -22211,8 +22723,26 @@ stop.big-db-id-tone {
 .leader-recovery-status p:first-child {
   font-weight: 550;
 }
+.leader-election-status p + p,
+.majority-overlap-status p + p,
+.log-replication-status p + p,
+.leader-recovery-status p + p {
+  margin-block-start: 8px;
+}
+:is(
+    .leader-election-status,
+    .majority-overlap-status,
+    .log-replication-status,
+    .leader-recovery-status
+  )
+  .raft-step-explanation {
+  font-size: 16px;
+  line-height: 1.65;
+}
 @media (max-width: 639px) {
   .leader-election-stage {
+    margin-inline: -24px;
+    inline-size: calc(100% + 48px);
     padding: 12px 8px;
   }
   .leader-election-stage-heading {
@@ -22223,7 +22753,7 @@ stop.big-db-id-tone {
 /* Log entries align across replicas; their commit boundaries advance locally. */
 .log-replication-figure,
 .leader-recovery-figure {
-  --replication-pending-outline: oklch(0.6 0.17 50);
+  --replication-pending-outline: oklch(0.46 0.091 55);
 }
 .log-replication-stage {
   padding: 16px 20px;
@@ -22231,49 +22761,10 @@ stop.big-db-id-tone {
   border-color: var(--election-track);
   color: var(--election-ink);
 }
-.log-replication-heading,
-.log-replication-confirmations,
-.log-replication-summary {
-  font:
-    12px/20px Lilex,
-    ui-monospace,
-    monospace;
-  font-variant-numeric: tabular-nums;
-}
-.log-replication-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--election-muted);
-}
-.log-replication-confirmations {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  margin-block: 4px 8px;
-  color: var(--election-muted);
-}
-.log-replication-confirmations strong {
-  color: var(--election-ink);
-  font-weight: 550;
-}
-.log-replication-summary {
-  min-block-size: 28px;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-.log-replication-summary[data-majority="true"] {
-  background: var(--election-green-surface);
-}
-.log-replication-summary[data-majority="true"],
-.log-replication-heading [data-majority="true"] {
-  color: var(--election-green);
-}
 .log-replication-scene {
   display: block;
-  inline-size: 68%;
-  max-inline-size: 380.8px;
+  inline-size: 100%;
+  max-inline-size: 560px;
   block-size: auto;
   margin-inline: auto;
   font:
@@ -22291,13 +22782,38 @@ stop.big-db-id-tone {
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
+.raft-log-confirmations {
+  margin: 0 0 8px;
+  color: var(--election-muted);
+  font:
+    13px/1.5 Lilex,
+    ui-monospace,
+    monospace;
+}
+.raft-log-identity {
+  fill: var(--identity-surface);
+  stroke: var(--identity-color);
+  stroke-width: 1.5;
+}
+.log-replication-scene .raft-log-id {
+  fill: var(--identity-color);
+  font-size: 16px;
+  font-weight: 600;
+}
+.log-replication-scene .raft-log-meta {
+  fill: var(--election-muted);
+  font-size: 13px;
+}
+.raft-log-row .log-replication-entry-meta {
+  font-size: 13px;
+}
+.raft-log-row .log-replication-command {
+  font-size: 14px;
+}
 .log-replication-node {
   fill: var(--election-paper);
-  stroke: var(--identity-color);
+  stroke: var(--election-line);
   stroke-width: 1;
-}
-.log-replication-node-header {
-  fill: var(--identity-surface);
 }
 .log-replication-scene .log-replication-id {
   fill: var(--identity-color);
@@ -22327,10 +22843,11 @@ stop.big-db-id-tone {
 }
 .log-replication-entry[data-present="false"] rect {
   fill: none;
-  stroke: var(--identity-color);
+  stroke: var(--election-line);
   stroke-dasharray: 3 3;
 }
 .log-replication-entry[data-present="true"][data-committed="false"] rect {
+  fill: var(--election-orange-surface);
   stroke: var(--replication-pending-outline);
   stroke-width: 2;
 }
@@ -22362,7 +22879,7 @@ stop.big-db-id-tone {
   stroke: var(--election-line);
 }
 .log-replication-payload text {
-  font-size: 12px;
+  font-size: 16px;
 }
 .log-replication-scene[data-compact="true"] .log-replication-payload text {
   font-size: 14px;
@@ -22377,15 +22894,6 @@ stop.big-db-id-tone {
   }
   .log-replication-stage {
     padding: 12px 8px;
-  }
-  .log-replication-heading,
-  .log-replication-summary {
-    font-size: 11px;
-  }
-  .log-replication-heading,
-  .log-replication-confirmations {
-    flex-direction: column;
-    gap: 4px;
   }
 }
 
@@ -22449,15 +22957,10 @@ stop.big-db-id-tone {
   stroke-width: 1.8;
 }
 .majority-overlap-previous-ring {
-  fill: none;
+  fill: var(--election-track);
   stroke: var(--election-line);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
-}
-.majority-overlap-shared-ring {
-  fill: var(--election-green-surface);
-  stroke: var(--election-green);
-  stroke-width: 3;
 }
 .majority-overlap-node {
   fill: var(--identity-surface);
@@ -22529,22 +23032,12 @@ stop.big-db-id-tone {
   text-decoration: line-through;
   text-decoration-thickness: 2px;
 }
-.log-conflict-figure
-  .log-conflict-entry[data-replacement="true"]:not([data-committed="true"])
-  rect {
-  fill: var(--election-purple-surface);
-  stroke: var(--election-purple);
-  stroke-width: 3;
-}
 .log-conflict-change-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
-.log-conflict-replacement-route {
-  fill: none;
-  stroke: var(--election-purple);
-  stroke-width: 2;
-  stroke-dasharray: 4 4;
+.log-replication-scene[data-compact="true"] .log-conflict-change-label {
+  font-size: 12.5px;
 }
 .leader-recovery-check {
   font-size: 12px;
@@ -22553,14 +23046,10 @@ stop.big-db-id-tone {
   fill: var(--election-track);
 }
 .leader-recovery-timer-fill {
-  fill: var(--identity-color);
+  fill: var(--election-orange);
 }
-.leader-recovery-packet rect {
-  fill: var(--election-paper);
-  stroke: var(--election-line);
-}
-.leader-recovery-packet text {
-  font-size: 12px;
+.leader-recovery-timer[data-kind="election"] .leader-recovery-timer-fill {
+  fill: var(--election-timeout);
 }
 .leader-recovery-controls {
   align-items: center;

@@ -7,7 +7,6 @@ import {
   returningLog,
 } from "./model";
 import { payloadUnitsPerSecond, routeLength } from "../raft-transport";
-import { pointOnRoute } from "../raft-election-overview/layout";
 
 it("refuses a missing or mismatched preceding entry without changing the log or commitment", () => {
   for (const previous of [
@@ -60,56 +59,21 @@ it("rejects an impossible attempt to overwrite a committed entry", () => {
 });
 
 it.each([false, true])(
-  "separates deletion, reading hold, movement, and durability (compact=%s)",
+  "separates delivery, deletion, reading hold, and durability (compact=%s)",
   (compact) => {
     const lesson = conflictLesson(compact);
     expect(lesson.deletedAt - lesson.deletingAt).toBeCloseTo(1600);
-    expect(lesson.replacementAt - lesson.deletedAt).toBeCloseTo(1200);
-    expect(lesson.persistedAt - lesson.replacementArrivedAt).toBeCloseTo(800);
+    expect(lesson.storingAt - lesson.deletedAt).toBeCloseTo(1200);
+    expect(lesson.persistedAt - lesson.storingAt).toBeCloseTo(800);
     const halfwayDeletion = conflictState(
       (lesson.deletingAt + lesson.deletedAt) / 2,
       compact,
     );
     expect(halfwayDeletion.deletionProgress).toBeCloseTo(0.5);
     expect(halfwayDeletion.nodes[0].log).toEqual(returningLog.slice(0, 3));
-    const halfwayCopy = conflictState(
-      (lesson.replacementAt + lesson.replacementArrivedAt) / 2,
-      compact,
-    );
-    expect(halfwayCopy.replacementProgress).toBeCloseTo(0.5);
-    expect(halfwayCopy.repaired).toBe(false);
-    expect(
-      routeLength(lesson.replacementRoute) /
-        ((lesson.replacementArrivedAt - lesson.replacementAt) / 1000),
-    ).toBeCloseTo(payloadUnitsPerSecond);
-    expect(conflictState(lesson.replacementArrivedAt, compact).repaired).toBe(
-      false,
-    );
+    expect(conflictState(lesson.persistedAt - 1, compact).repaired).toBe(false);
     expect(conflictState(lesson.persistedAt, compact).repaired).toBe(true);
-    const width = lesson.replacementBounds.width;
-    const [start, end] = lesson.replacementRoute;
-    expect(lesson.replacementRoute).toHaveLength(2);
-    expect(start[0]).toBe(end[0]);
-    expect(start[1]).toBeGreaterThan(end[1]);
-    expect(
-      lesson.layout.nodes.A.y -
-        lesson.layout.nodes.B.y -
-        lesson.layout.nodes.B.height,
-    ).toBe(20);
-    const entryX = compact ? 12 + 64 : 16 + 72;
-    for (let progress = 0; progress <= 1; progress += 0.01) {
-      const [x, y] = pointOnRoute(lesson.replacementRoute, progress);
-      for (const node of Object.values(lesson.layout.nodes)) {
-        const prefixX = node.x + entryX;
-        const prefixY = node.y + (compact ? 92 : 68);
-        const overlapsPrefix =
-          x - width / 2 < prefixX + width &&
-          x + width / 2 > prefixX &&
-          y - 48 < prefixY + 96 &&
-          y + 48 > prefixY;
-        expect(overlapsPrefix).toBe(false);
-      }
-    }
+    expect(lesson.repair.end).toBeLessThan(lesson.deletingAt);
   },
 );
 it.each([false, true])(

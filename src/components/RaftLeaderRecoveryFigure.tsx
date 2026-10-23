@@ -1,3 +1,6 @@
+import { RaftLogPayload } from "./RaftLogPayload";
+import { RaftLogRow } from "./RaftLogRow";
+import { RaftPlaybackControls } from "./RaftPlaybackControls";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   getRecoveryLesson,
@@ -29,7 +32,7 @@ export function RaftLeaderRecoveryFigure() {
       : elapsed >= time(20000) && elapsed < time(21600)
         ? "A stores #5 in term 7 and sends #4–5 with commit index 4. C must persist the entries before acknowledging."
         : elapsed >= time(24000) && elapsed < time(25000)
-          ? "C has persisted #5 and sends its acknowledgement. A is still waiting for the reply; #5 is not yet committed."
+          ? "C has persisted #5 and sends its acknowledgement. A is still waiting for the reply and has not yet confirmed commitment of #5."
           : elapsed >= time(28000) && elapsed < time(29000)
             ? "A sends commit index 5. C still knows commitment only through #4 until the message arrives."
             : elapsed >= time(32000) && elapsed < time(33600)
@@ -63,7 +66,13 @@ export function RaftLeaderRecoveryFigure() {
     };
   }, []);
 
-  useEffect(() => setElapsed(0), [compact]);
+  const previousCompact = useRef(compact);
+  useEffect(() => {
+    if (previousCompact.current === compact) return;
+    const before = previousCompact.current;
+    setElapsed((at) => beats[recoveryState(at, before).step].settledAt);
+    previousCompact.current = compact;
+  }, [compact, beats]);
 
   useEffect(() => {
     if (!active) return;
@@ -125,189 +134,40 @@ export function RaftLeaderRecoveryFigure() {
               .join(" ")}
           </desc>
           <path className="leader-recovery-wire" d={layout.wire} />
-          {state.nodes.map((node) => {
-            const row = layout.rows[node.id];
-            const padding = compact ? 12 : 16;
-            const entryX = padding + (compact ? 64 : 72);
-            const cellWidth =
-              (row.width - padding * 2 - (compact ? 64 : 72) - 16) / 3;
-            const cellY = compact ? 92 : 68;
-            const last = lastEntry(node);
-            const timer = nodeTimer(node, elapsed, compact);
-            const timerY = compact ? 264 : 240;
-            return (
-              <g
-                key={node.id}
-                className="leader-recovery-server"
-                data-server={node.id}
-                data-identity={node.id}
-                data-role={node.role}
-                data-term={node.term}
-                data-stored={node.stored}
-                data-commit={node.commit}
-                data-offline={node.offline}
-                data-vote={node.vote ?? ""}
-                transform={`translate(${row.x} ${row.y})`}
-              >
-                <rect
-                  className="log-replication-node leader-recovery-node"
-                  width={row.width}
-                  height={row.height}
-                  rx="3"
-                />
-                <rect
-                  className="log-replication-node-header"
-                  x="1"
-                  y="1"
-                  width={row.width - 2}
-                  height={compact ? 79 : 55}
-                  rx="2"
-                />
-                <text className="log-replication-id" x={padding} y="24">
-                  Node {node.id}
-                </text>
-                <text
-                  className="log-replication-role"
-                  x={row.width - padding}
-                  y="24"
-                  textAnchor="end"
-                >
-                  Role:{" "}
-                  <tspan className="log-replication-value">
-                    {node.offline ? "Offline" : node.role}
-                  </tspan>
-                </text>
-                <text className="log-replication-term" x={padding} y="46">
-                  Current term:{" "}
-                  <tspan className="log-replication-value">{node.term}</tspan>
-                </text>
-                <text
-                  className="log-replication-term"
-                  x={compact ? padding : row.width - padding}
-                  y={compact ? 68 : 46}
-                  textAnchor={compact ? "start" : "end"}
-                >
-                  Last log index:{" "}
-                  <tspan className="log-replication-value">{node.stored}</tspan>
-                </text>
-                <g
-                  className="log-replication-field-labels"
-                  textAnchor="end"
-                  dominantBaseline="central"
-                >
-                  {["Index", "Term", "Command"].map((label, index) => (
-                    <text
-                      key={label}
-                      x={entryX - 8}
-                      y={cellY + 20 + index * 28}
-                    >
-                      {label}
-                    </text>
-                  ))}
-                </g>
-                {entries.map((entry, index) => {
-                  const present = node.stored >= entry.index;
-                  const committed = node.commit >= entry.index;
-                  return (
-                    <g
-                      key={entry.index}
-                      className="log-replication-entry leader-recovery-entry"
-                      data-present={present}
-                      data-committed={committed}
-                      transform={`translate(${entryX + index * (cellWidth + 8)} ${cellY})`}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                    >
-                      <rect width={cellWidth} height="96" rx="2" />
-                      <text
-                        className="leader-recovery-index"
-                        x={cellWidth / 2}
-                        y="20"
-                      >
-                        {entry.label.replace("#", "")}
-                      </text>
-                      <text
-                        className="log-replication-entry-meta"
-                        x={cellWidth / 2}
-                        y="48"
-                      >
-                        {present ? entry.term : "—"}
-                      </text>
-                      <text
-                        className="log-replication-command"
-                        x={cellWidth / 2}
-                        y="76"
-                      >
-                        {present ? entry.command : "—"}
-                      </text>
-                      {committed && (
-                        <text
-                          className="log-replication-check leader-recovery-check"
-                          x={cellWidth - 6}
-                          y="20"
-                          textAnchor="end"
-                        >
-                          ✓
-                        </text>
-                      )}
-                    </g>
-                  );
-                })}
-                <text
-                  className="leader-recovery-muted"
-                  x={padding}
-                  y={cellY + 144}
-                >
-                  Last entry term: {last.term} · Vote: {node.vote ?? "—"}
-                </text>
-                <text
-                  className="leader-recovery-commit"
-                  x={padding}
-                  y={cellY + 124}
-                >
-                  {node.writing
-                    ? "Persisting entries…"
-                    : `Known commit: ${node.commit === 0 ? "unknown" : node.commit}`}
-                </text>
-                <g
-                  className="leader-recovery-timer"
-                  data-kind={timer.kind}
-                  data-progress={timer.progress}
-                >
-                  <text
-                    className="leader-recovery-muted"
-                    x={padding}
-                    y={timerY}
-                  >
-                    {timer.label}
-                  </text>
-                  {timer.interval > 0 && (
-                    <text x={row.width - padding} y={timerY} textAnchor="end">
-                      {Math.round(timer.elapsed / 1000)} /{" "}
-                      {Math.round(timer.interval / 1000)}s
-                    </text>
-                  )}
-                  <rect
-                    className="leader-recovery-timer-track"
-                    x={padding}
-                    y={timerY + 10}
-                    width={row.width - padding * 2}
-                    height="6"
-                    rx="3"
-                  />
-                  <rect
-                    className="leader-recovery-timer-fill"
-                    x={padding}
-                    y={timerY + 10}
-                    width={(row.width - padding * 2) * timer.progress}
-                    height="6"
-                    rx="3"
-                  />
-                </g>
-              </g>
-            );
-          })}
-          {active &&
+          {state.nodes.map((node) => (
+            <RaftLogRow
+              key={node.id}
+              id={node.id}
+              role={node.role}
+              term={node.term}
+              commit={node.commit}
+              commitKnown={node.commit > 0}
+              stored={node.stored}
+              bounds={layout.rows[node.id]}
+              entryX={layout.entryX}
+              cellWidth={layout.cellWidth}
+              className="leader-recovery-server"
+              offline={node.offline}
+              writing={node.writing}
+              vote={node.vote}
+              lastTerm={lastEntry(node).term}
+              timer={nodeTimer(node, elapsed, compact)}
+              cells={entries.map((entry) => ({
+                index: entry.index,
+                label: entry.label.replace("#", ""),
+                term: node.stored >= entry.index ? entry.term : undefined,
+                command:
+                  node.stored >= entry.index
+                    ? compact
+                      ? entry.command.replace(/\s/g, "")
+                      : entry.command
+                    : undefined,
+                present: node.stored >= entry.index,
+                committed: node.commit >= entry.index,
+              }))}
+            />
+          ))}
+          {!reduced &&
             messages.map((message, index) => {
               if (elapsed <= message.start || elapsed >= message.end)
                 return null;
@@ -316,61 +176,34 @@ export function RaftLeaderRecoveryFigure() {
                 (elapsed - message.start) / (message.end - message.start),
               );
               return (
-                <g
+                <RaftLogPayload
                   key={index}
-                  className="leader-recovery-packet"
-                  transform={`translate(${point[0]} ${point[1]})`}
-                  aria-hidden="true"
-                >
-                  <title>{message.label}</title>
-                  <rect x="-19" y="-12" width="38" height="24" rx="3" />
-                  <text textAnchor="middle" y="4">
-                    {message.short}
-                  </text>
-                </g>
+                  position={point}
+                  compact={compact}
+                  lines={message.payload}
+                  label={message.label}
+                />
               );
             })}
         </svg>
       </div>
-      <div
-        className="leader-recovery-controls"
-        role="group"
-        aria-label="Leader recovery playback"
-      >
-        <button
-          type="button"
-          disabled={reduced || complete}
-          onClick={() => setPlaying((old) => !old)}
-        >
-          {playing && !complete ? "Pause" : "Play"}
-        </button>
-        <button
-          type="button"
-          disabled={state.step === 0}
-          onClick={() => goTo(state.step - 1)}
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          disabled={complete}
-          onClick={() => goTo(state.step + 1)}
-        >
-          Next
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setElapsed(0);
-            setPlaying(!reduced);
-          }}
-        >
-          Replay
-        </button>
-        <span>
-          {state.step + 1} / {beats.length}
-        </span>
-      </div>
+      <RaftPlaybackControls
+        label="Leader recovery playback"
+        reduced={reduced}
+        complete={complete}
+        playing={playing}
+        step={state.step}
+        count={beats.length}
+        onPlay={() => setPlaying((old) => !old)}
+        onBack={() => goTo(state.step - 1)}
+        onNext={() =>
+          goTo(elapsed < beat.settledAt ? state.step : state.step + 1)
+        }
+        onReplay={() => {
+          setElapsed(0);
+          setPlaying(!reduced);
+        }}
+      />
       <div
         className="leader-recovery-status"
         role="status"
@@ -378,10 +211,13 @@ export function RaftLeaderRecoveryFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p className="sr-only">{detail}</p>
+        <p className="raft-step-explanation">{detail}</p>
       </div>
       <figcaption>
-        Three servers; two votes to win. Timers use illustrative seconds.
+        Three servers; two votes to win. Timers use illustrative seconds. Each
+        server’s Commit label shows its local commitment knowledge; a packet’s
+        Commit is the leader’s advertised index. Orange entries are stored but
+        not yet known committed by that server.
         {reduced && " Use Next to step through."}
       </figcaption>
     </figure>

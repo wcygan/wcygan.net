@@ -9,7 +9,7 @@ import {
   servers,
   storageDuration,
 } from "./model";
-import { messageRoute, replicationLayout } from "./layout";
+import { messageRoute, replicationLayout, payloadHeight } from "./layout";
 import { pointOnRoute } from "../raft-election-overview/layout";
 
 const node = (time: number, server: string) =>
@@ -145,7 +145,7 @@ it.each([false, true])(
       new Set(servers.map((server) => layout.nodes[server].height)).size,
     ).toBe(1);
     // The widest payload fits the bus gutter without clipping the SVG edge.
-    const halfPayload = compact ? 28 : 64;
+    const halfPayload = layout.payloadWidth / 2;
     expect(layout.trunk - halfPayload).toBeGreaterThanOrEqual(0);
     expect(layout.trunk + halfPayload).toBeLessThan(layout.nodes.B.x);
     for (const message of messages) {
@@ -180,9 +180,27 @@ it.each([false, true])(
         ),
       );
       const overlapping =
-        Math.abs(a[0] - b[0]) < (compact ? 56 : 80) &&
-        Math.abs(a[1] - b[1]) < 44;
+        Math.abs(a[0] - b[0]) < layout.payloadWidth &&
+        Math.abs(a[1] - b[1]) < payloadHeight("entry");
       expect(overlapping).toBe(false);
+    }
+  },
+);
+it.each([false, true])(
+  "keeps the whole packet inside the SVG throughout every route (compact=%s)",
+  (compact) => {
+    const layout = replicationLayout(compact);
+    for (const message of messages) {
+      const route = messageRoute(layout, message);
+      const halfWidth = layout.payloadWidth / 2;
+      const halfHeight = payloadHeight(message.kind) / 2;
+      for (let step = 0; step <= 100; step++) {
+        const [x, y] = pointOnRoute(route, step / 100);
+        expect(x - halfWidth).toBeGreaterThanOrEqual(4);
+        expect(x + halfWidth).toBeLessThanOrEqual(layout.width - 4);
+        expect(y - halfHeight).toBeGreaterThanOrEqual(4);
+        expect(y + halfHeight).toBeLessThanOrEqual(layout.height - 4);
+      }
     }
   },
 );

@@ -1,14 +1,19 @@
+import {
+  electionTimers,
+  getElectionTiming,
+} from "~/demos/raft-election-overview/timing";
+import { RaftPlaybackControls } from "./RaftPlaybackControls";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   countVotes,
-  electionConnections,
   receivedBallots,
   nodeStates,
-  messageTravelTime,
   voteReplyProgress,
   voteRecordingTime,
   lessons,
-  servers,
+  electionServers as servers,
+  electionMajority,
+  messageDeparture,
   type Lesson,
 } from "~/demos/raft-election-overview/model";
 
@@ -18,9 +23,8 @@ import {
   connectionWires,
   messageRoute,
   pointOnRoute,
+  payloadLabelPosition,
 } from "~/demos/raft-election-overview/layout";
-const duration = 3200;
-const timerEnds = [0.58, 1, 0.72, 0.84, 0.65];
 
 export function RaftLeaderElectionFigure() {
   const id = useId();
@@ -32,40 +36,62 @@ export function RaftLeaderElectionFigure() {
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [compact, setCompact] = useState(false);
-  const layout = electionLayout(compact);
+  const layout = electionLayout(compact, lesson === "split");
   const steps = lessons[lesson].steps;
   const step = steps[position.index];
+  const timing = getElectionTiming(lesson, compact);
+  const duration = timing.durations[position.index];
+  const elapsed =
+    reduced && position.index > 0
+      ? timing.checkpoints[position.index]
+      : position.elapsed;
+  const timers = electionTimers(lesson, position.index, elapsed, compact);
   const complete =
-    !playing &&
-    position.index === steps.length - 1 &&
-    position.elapsed >= duration;
-  const active = playing && visible && documentVisible && !reduced;
-  const progress = reduced
-    ? 1
-    : Math.min(1, position.elapsed / messageTravelTime);
-  const nodes = nodeStates(steps, position.index, position.elapsed, reduced);
+    position.index === steps.length - 1 && position.elapsed >= duration;
+  const active = playing && visible && documentVisible && !reduced && !complete;
+  const nodes = nodeStates(
+    steps,
+    position.index,
+    elapsed,
+    reduced,
+    timing.flights,
+  );
   const recordingVotes =
     step.traffic?.[0]?.kind === "vote" &&
     !reduced &&
-    position.elapsed < voteRecordingTime;
+    elapsed < voteRecordingTime;
   const ballots = receivedBallots(
     step,
     steps[position.index - 1],
-    position.elapsed,
+    elapsed,
     reduced,
+    timing.flights[position.index],
   );
   const repliesArrived =
     step.traffic?.every(
       (message, index) =>
         message.kind !== "vote" ||
         reduced ||
-        voteReplyProgress(position.elapsed, index) === 1,
+        voteReplyProgress(
+          elapsed,
+          index,
+          timing.flights[position.index][index],
+          messageDeparture(step, index, timing.flights[position.index]),
+        ) === 1,
     ) ?? true;
-  const connections = electionConnections(step);
+  const connections = step.traffic ?? [];
   const receipts = step.traffic?.flatMap((message, index) =>
     message.kind === "vote" &&
-    (reduced || voteReplyProgress(position.elapsed, index) === 1)
-      ? [`${message.from} → ${message.to}: ${message.granted ? "Yes" : "No"}`]
+    (reduced ||
+      voteReplyProgress(
+        elapsed,
+        index,
+        timing.flights[position.index][index],
+        messageDeparture(step, index, timing.flights[position.index]),
+      ) === 1)
+      ? [
+          `${message.from} → ${message.to}: ${message.granted ? "Granted" : "Refused"} (term ${step.term})`,
+        ]
       : [],
   );
 
@@ -111,34 +137,53 @@ export function RaftLeaderElectionFigure() {
       previous = now;
       setPosition((old) => {
         const elapsed = old.elapsed + delta;
-        return elapsed >= duration
-          ? { index: (old.index + 1) % steps.length, elapsed: 0 }
+        const end = timing.durations[old.index];
+        return elapsed >= end
+          ? old.index === steps.length - 1
+            ? { index: old.index, elapsed: end }
+            : { index: old.index + 1, elapsed: 0 }
           : { index: old.index, elapsed };
       });
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, steps]);
+  }, [active, steps, timing]);
 
   const reset = (nextLesson = lesson) => {
     setLesson(nextLesson);
     setPosition({ index: 0, elapsed: 0 });
     setPlaying(!reduced);
   };
-  const next = () => {
+  function goTo(index: number) {
     setPlaying(false);
-    setPosition((old) => ({
-      index: Math.min(old.index + 1, steps.length - 1),
-      elapsed: duration,
-    }));
-  };
+    setPosition({
+      index,
+      elapsed: index === 0 ? 0 : timing.checkpoints[index],
+    });
+  }
+  const next = () =>
+    goTo(
+      position.index > 0 &&
+        position.elapsed < timing.checkpoints[position.index]
+        ? position.index
+        : Math.min(position.index + 1, steps.length - 1),
+    );
+  const previousCompact = useRef(compact);
+  useEffect(() => {
+    if (previousCompact.current !== compact) {
+      setPosition((old) => ({
+        index: old.index,
+        elapsed: old.index === 0 ? 0 : timing.checkpoints[old.index],
+      }));
+      previousCompact.current = compact;
+    }
+  }, [compact, timing]);
   const leadingCandidate = step.leader ?? step.candidates[0];
   const receivedVotes = leadingCandidate
     ? countVotes(ballots, leadingCandidate)
     : 0;
-  const majorityAchieved = receivedVotes >= 3;
-  const majorityWidth = compact ? 148 : 164;
+  const majorityAchieved = receivedVotes >= electionMajority;
 
   return (
     <figure
@@ -179,7 +224,7 @@ export function RaftLeaderElectionFigure() {
               ? "Heartbeats"
               : step.traffic?.[0]?.kind === "vote"
                 ? recordingVotes
-                  ? "Recording votes"
+                  ? "Votes recorded"
                   : "Votes returning"
                 : step.candidates.length
                   ? "Requesting votes"
@@ -188,11 +233,14 @@ export function RaftLeaderElectionFigure() {
         </div>
         <svg
           className="leader-election-scene"
-          viewBox={"0 0 " + layout.width + " " + layout.height}
+          data-compact={compact}
+          viewBox={`${-layout.sidePadding} ${layout.top} ${layout.width + layout.sidePadding * 2} ${layout.height - layout.top}`}
           role="img"
           aria-labelledby={id + "-scene-title " + id + "-scene-description"}
         >
-          <title id={id + "-scene-title"}>Five servers choosing a leader</title>
+          <title id={id + "-scene-title"}>
+            Three servers choosing a leader
+          </title>
           <desc id={id + "-scene-description"}>
             {step.event} Election term: {step.term}.{" "}
             {servers
@@ -209,6 +257,11 @@ export function RaftLeaderElectionFigure() {
                   (nodes[server].leader
                     ? ". Its known leader is " + nodes[server].leader
                     : ". It has no known leader") +
+                  (nodes[server].role !== "Leader"
+                    ? ". Election timer: " +
+                      Math.round(timers[server].progress * 100) +
+                      "%"
+                    : "") +
                   ". ",
               )
               .join("")}
@@ -222,7 +275,11 @@ export function RaftLeaderElectionFigure() {
               )
               .join("")}
           </desc>
-          {connectionWires(layout, connections).map((points, index) => (
+          {connectionWires(layout, [
+            { kind: "request", from: "A", to: "B" },
+            { kind: "request", from: "A", to: "C" },
+            { kind: "request", from: "B", to: "C" },
+          ]).map((points, index) => (
             <g key={index} className="leader-election-connection">
               <path
                 className="leader-election-wire"
@@ -233,17 +290,171 @@ export function RaftLeaderElectionFigure() {
             </g>
           ))}
           {(step.candidates.length > 0 || step.leader) &&
-            connectionArrows(
-              layout,
-              connections,
-              step.traffic?.[0]?.kind === "vote",
-            ).map((points, index) => (
-              <polygon
-                key={index}
-                className="leader-election-arrow"
-                points={points.map((point) => point.join(",")).join(" ")}
-              />
-            ))}
+            connectionArrows(layout, connections, false).map(
+              (points, index) => (
+                <polygon
+                  key={index}
+                  className="leader-election-arrow"
+                  points={points.map((point) => point.join(",")).join(" ")}
+                />
+              ),
+            )}
+          {servers.map((server) => {
+            const [x, y] = layout.centers[server];
+            const detailX = layout.detailCenters[server];
+            const detailOffsets =
+              server === "A" ? layout.aDetailOffsets : layout.detailOffsets;
+            const local = nodes[server];
+            const timer = timers[server];
+            return (
+              <g
+                key={server}
+                className="leader-election-server"
+                data-server={server}
+                data-identity={server}
+                data-role={local.role}
+                data-term={local.term}
+                data-leader={local.leader ?? ""}
+                data-vote={local.votedFor}
+              >
+                {local.role !== "Follower" && (
+                  <circle
+                    className="leader-election-role-ring"
+                    cx={x}
+                    cy={y}
+                    r="25"
+                  />
+                )}
+                <circle className="leader-election-node" cx={x} cy={y} r="20" />
+                <text
+                  className="leader-election-server-name"
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                >
+                  {server}
+                </text>
+                <text
+                  className="leader-election-role"
+                  x={detailX}
+                  y={y + detailOffsets[0]}
+                  textAnchor="middle"
+                >
+                  {local.role}
+                </text>
+                <text
+                  className="leader-election-node-state"
+                  x={detailX}
+                  y={y + detailOffsets[1]}
+                  textAnchor="middle"
+                >
+                  Term <tspan className="raft-term-value">{local.term}</tspan>
+                </text>
+                <g
+                  className={
+                    local.votedFor
+                      ? "leader-election-vote leader-election-recorded-vote"
+                      : "leader-election-vote"
+                  }
+                  data-identity={local.votedFor}
+                >
+                  <text
+                    className="leader-election-ballot"
+                    x={detailX}
+                    y={y + detailOffsets[2]}
+                    textAnchor="middle"
+                  >
+                    Vote → {local.votedFor ?? "—"}
+                  </text>
+                </g>
+                {local.role !== "Leader" ? (
+                  <g
+                    data-timer={server}
+                    data-progress={timer.progress}
+                    data-reset-at={timer.resetAt}
+                    data-deadline={timer.deadline}
+                  >
+                    <rect
+                      className="leader-election-timer"
+                      x={detailX - 35}
+                      y={y + detailOffsets[3]}
+                      width="70"
+                      height="3"
+                    />
+                    <rect
+                      className="leader-election-timer-fill"
+                      x={detailX - 35}
+                      y={y + detailOffsets[3]}
+                      width={70 * timer.progress}
+                      height="3"
+                    />
+                    <text
+                      className="leader-election-node-state"
+                      x={detailX}
+                      y={y + detailOffsets[4]}
+                      textAnchor="middle"
+                    >
+                      Timeout
+                    </text>
+                  </g>
+                ) : (
+                  local.leader && (
+                    <text
+                      className="leader-election-node-state"
+                      x={detailX}
+                      y={y + detailOffsets[4]}
+                      textAnchor="middle"
+                    >
+                      Leader {local.leader}
+                    </text>
+                  )
+                )}
+              </g>
+            );
+          })}
+          <g
+            className="leader-election-tally"
+            transform={`translate(${layout.width / 2} ${layout.tallyY})`}
+            textAnchor="middle"
+          >
+            <text className="leader-election-tally-label">Votes received</text>
+            {step.candidates.length > 1 ? (
+              step.candidates.map((candidate, index) => (
+                <text
+                  key={candidate}
+                  data-owner={candidate}
+                  data-identity={candidate}
+                  y={24 + index * 23}
+                >
+                  {candidate}: {countVotes(ballots, candidate)} / 3
+                </text>
+              ))
+            ) : (
+              <g
+                className={
+                  majorityAchieved ? "leader-election-majority" : undefined
+                }
+              >
+                <text
+                  data-owner={leadingCandidate}
+                  data-identity={leadingCandidate}
+                  y="25"
+                >
+                  {leadingCandidate
+                    ? `${leadingCandidate}: ${receivedVotes} / 3`
+                    : "0 / 3"}
+                </text>
+              </g>
+            )}
+            <text
+              className="leader-election-tally-label"
+              data-majority={majorityAchieved}
+              y={step.candidates.length > 1 ? 95 : 49}
+            >
+              {majorityAchieved ? "Majority achieved" : "2 needed to win"}
+            </text>
+          </g>
           {step.traffic?.map((message, index) => {
             const route = messageRoute(layout, message);
             const owner = message.kind === "vote" ? message.to : message.from;
@@ -251,10 +462,31 @@ export function RaftLeaderElectionFigure() {
               message.kind === "vote"
                 ? reduced
                   ? 1
-                  : voteReplyProgress(position.elapsed, index)
-                : progress;
-            if (!active || fraction <= 0 || fraction >= 1) return null;
+                  : voteReplyProgress(
+                      position.elapsed,
+                      index,
+                      timing.flights[position.index][index],
+                      messageDeparture(
+                        step,
+                        index,
+                        timing.flights[position.index],
+                      ),
+                    )
+                : reduced
+                  ? 1
+                  : Math.min(
+                      1,
+                      (position.elapsed -
+                        messageDeparture(
+                          step,
+                          index,
+                          timing.flights[position.index],
+                        )) /
+                        timing.flights[position.index][index],
+                    );
+            if (reduced || fraction <= 0 || fraction >= 1) return null;
             const packet = pointOnRoute(route, fraction);
+            const labelPosition = payloadLabelPosition(message, packet, layout);
             return (
               <g
                 key={index}
@@ -262,219 +494,114 @@ export function RaftLeaderElectionFigure() {
                 data-owner={owner}
                 data-identity={owner}
                 data-kind={message.kind}
+                data-term={step.term}
+                data-packet-position={packet.join(" ")}
               >
-                {message.kind === "vote" ? (
-                  <g
-                    className="leader-election-reply"
-                    data-granted={message.granted}
-                    transform={"translate(" + packet[0] + " " + packet[1] + ")"}
-                  >
-                    <rect x="-18" y="-10" width="36" height="20" rx="3" />
-                    <text textAnchor="middle" dominantBaseline="central">
-                      {message.granted ? "Yes" : "No"}
-                    </text>
-                  </g>
-                ) : message.kind === "heartbeat" ? (
-                  <path
-                    className="leader-election-heart"
-                    d="M0 5 C-2 3 -6 0 -6 -2 C-6 -6 -1 -6 0 -3 C1 -6 6 -6 6 -2 C6 0 2 3 0 5Z"
-                    transform={"translate(" + packet[0] + " " + packet[1] + ")"}
-                  />
-                ) : (
-                  <circle cx={packet[0]} cy={packet[1]} r="4" />
-                )}
-              </g>
-            );
-          })}
-          {servers.map((server, index) => {
-            const node = layout.nodes[server];
-            const local = nodes[server];
-            const role = local.role;
-            const timer =
-              position.index === 0
-                ? timerEnds[index] * Math.min(1, position.elapsed / duration)
-                : 0;
-            return (
-              <g
-                key={server}
-                className="leader-election-server"
-                data-server={server}
-                data-identity={server}
-                data-role={role}
-                data-term={local.term}
-                data-leader={local.leader ?? ""}
-                data-vote={local.votedFor}
-              >
-                <rect
-                  className="leader-election-node"
-                  x={node.x}
-                  y={node.y}
-                  width={node.width}
-                  height={node.height}
-                  rx="3"
-                />
-                <text
-                  className="leader-election-server-name"
-                  x={node.x + 12}
-                  y={node.y + 20}
+                <g
+                  className="leader-election-payload-tether"
+                  aria-hidden="true"
                 >
-                  {server}
-                </text>
-                <text
-                  className="leader-election-role"
-                  x={node.x + node.width - 12}
-                  y={node.y + 19}
-                  textAnchor="end"
-                >
-                  {role}
-                </text>
-                <text
-                  className="leader-election-node-state"
-                  x={node.x + 12}
-                  y={node.y + 32}
-                >
-                  Term {local.term}
-                </text>
-                <text
-                  className="leader-election-node-state leader-election-known-leader"
-                  data-identity={local.leader}
-                  x={node.x + node.width - 12}
-                  y={node.y + 32}
-                  textAnchor="end"
-                >
-                  Leader {local.leader ?? "—"}
-                </text>
+                  <path d={`M${packet.join(" ")}L${labelPosition.join(" ")}`} />
+                  <circle cx={packet[0]} cy={packet[1]} r={compact ? 4 : 3} />
+                </g>
                 <g
                   className={
-                    "leader-election-vote" +
-                    (local.votedFor ? " leader-election-recorded-vote" : "")
+                    message.kind === "vote"
+                      ? "leader-election-reply"
+                      : message.kind === "heartbeat"
+                        ? "leader-election-heartbeat"
+                        : "leader-election-request"
                   }
-                  data-identity={local.votedFor}
+                  data-granted={
+                    message.kind === "vote" ? message.granted : undefined
+                  }
+                  transform={`translate(${labelPosition.join(" ")})`}
                 >
+                  <title>
+                    {message.from} → {message.to}:{" "}
+                    {message.kind === "vote"
+                      ? message.granted
+                        ? "vote granted"
+                        : "vote refused"
+                      : message.kind === "heartbeat"
+                        ? "heartbeat"
+                        : "request vote"}
+                    , term {step.term}
+                  </title>
                   <rect
-                    x={node.x + 8}
-                    y={node.y + 38}
-                    width={node.width - 16}
-                    height="22"
-                    rx="2"
+                    x={-layout.payloadWidth / 2}
+                    y={-layout.payloadHeight / 2}
+                    width={layout.payloadWidth}
+                    height={layout.payloadHeight}
+                    rx="3"
                   />
                   <text
-                    className="leader-election-ballot"
-                    x={node.x + 12}
-                    y={node.y + 53}
+                    y={-layout.textPitch}
+                    textAnchor="middle"
+                    dominantBaseline="central"
                   >
-                    Vote → {local.votedFor ?? "—"}
+                    {message.kind === "vote"
+                      ? message.granted
+                        ? "Vote granted"
+                        : "Vote refused"
+                      : message.kind === "heartbeat"
+                        ? "Heartbeat"
+                        : "Request vote"}
+                  </text>
+                  <text y="0" textAnchor="middle" dominantBaseline="central">
+                    Term: {step.term}
+                  </text>
+                  <text
+                    y={layout.textPitch}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                  >
+                    {message.from} → {message.to}
                   </text>
                 </g>
-                {position.index === 0 && (
-                  <g>
-                    <rect
-                      className="leader-election-timer"
-                      x={node.x + 12}
-                      y={node.y + node.height - 6}
-                      width={node.width - 24}
-                      height="3"
-                    />
-                    <rect
-                      className="leader-election-timer-fill"
-                      x={node.x + 12}
-                      y={node.y + node.height - 6}
-                      width={(node.width - 24) * timer}
-                      height="3"
-                    />
-                  </g>
-                )}
               </g>
             );
           })}
-          <g
-            className="leader-election-tally"
-            transform={"translate(" + layout.nodes.B.x + " 260)"}
-          >
-            <text className="leader-election-tally-label" y="0">
-              Votes received
-            </text>
-            {step.candidates.length > 1 ? (
-              step.candidates.map((candidate, index) => (
-                <text
-                  data-owner={candidate}
-                  data-identity={candidate}
-                  key={candidate}
-                  y={24 + index * 24}
-                >
-                  {candidate}: {countVotes(ballots, candidate)} / 5
-                </text>
-              ))
-            ) : majorityAchieved ? (
-              <g className="leader-election-majority">
-                <rect x="0" y="8" width={majorityWidth} height="32" rx="16" />
-                <text
-                  x={majorityWidth / 2}
-                  y="24"
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                >
-                  {leadingCandidate} has {receivedVotes} of 5 votes
-                </text>
-              </g>
-            ) : (
-              <text
-                data-owner={leadingCandidate}
-                data-identity={leadingCandidate}
-                data-elected={!!step.leader}
-                y="28"
-              >
-                {leadingCandidate
-                  ? leadingCandidate +
-                    ": " +
-                    countVotes(ballots, leadingCandidate) +
-                    " / 5"
-                  : "0 / 5"}
-              </text>
-            )}
-            <text
-              className="leader-election-tally-label"
-              data-majority={majorityAchieved}
-              y={step.candidates.length > 1 ? 72 : 54}
-            >
-              {majorityAchieved ? "Majority achieved" : "3 needed to win"}
-            </text>
-          </g>
         </svg>
       </div>
-      <div className="leader-election-controls">
-        <button
-          type="button"
-          disabled={reduced}
-          onClick={() => setPlaying((old) => !old)}
-        >
-          {playing ? "Pause" : "Play"}
-        </button>
-        <button type="button" disabled={complete} onClick={next}>
-          Next
-        </button>
-        <button type="button" onClick={() => reset()}>
-          Replay
-        </button>
-      </div>
+      <RaftPlaybackControls
+        label="Leader election playback"
+        reduced={reduced}
+        complete={complete}
+        playing={playing}
+        step={position.index}
+        count={steps.length}
+        onPlay={() => setPlaying((old) => !old)}
+        onBack={() => goTo(position.index - 1)}
+        onNext={next}
+        onReplay={() => reset()}
+      />
       <div
         className="leader-election-status"
         role="status"
-        aria-live="polite"
+        aria-live={active ? "off" : "polite"}
         aria-atomic="true"
       >
         <p>
           {step.traffic?.[0]?.kind === "vote" && !repliesArrived
-            ? recordingVotes
-              ? "Followers record their votes"
-              : "Votes return to the candidates"
+            ? majorityAchieved
+              ? "B is leader; C’s reply is still on its way"
+              : recordingVotes
+                ? step.candidates.length > 1
+                  ? "Candidates keep their own votes"
+                  : "Followers have recorded their votes"
+                : "Votes return to the candidates"
             : step.name}
         </p>
-        <p className="sr-only">
+        <p className="raft-step-explanation">
           {step.traffic?.[0]?.kind === "vote" && !repliesArrived
-            ? recordingVotes
-              ? "Each follower records its choice before sending a reply."
-              : "Votes are traveling to the candidates."
+            ? majorityAchieved
+              ? "B’s own vote and A’s reply form a majority. C has also voted for B, but its reply is not needed to elect the leader."
+              : recordingVotes
+                ? step.candidates.length > 1
+                  ? "Each candidate already voted for itself in this term, so it refuses the other requests."
+                  : "The followers recorded their choices on request arrival. The replies have not reached the candidates yet."
+                : "Votes are traveling to the candidates."
             : step.event}
         </p>
         {!!receipts?.length && (
@@ -482,7 +609,7 @@ export function RaftLeaderElectionFigure() {
         )}
       </div>
       <figcaption>
-        Five servers with equal logs; three votes to win. Illustrative timing.
+        Three servers with equal logs; two votes to win. Illustrative timing.
         {reduced && " Use Next to step through."}
       </figcaption>
     </figure>

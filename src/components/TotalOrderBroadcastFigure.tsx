@@ -106,7 +106,8 @@ export function TotalOrderBroadcastFigure() {
         />
       </div>
       <figcaption id={`${id}-caption`}>
-        Total order keeps the same entries in the same order.
+        Both replicas have delivered all six messages here. A replica may lag,
+        but the messages it has delivered follow the same order.
       </figcaption>
     </figure>
   );

@@ -202,3 +202,21 @@ it("preserves the whole lesson without motion, including a changed motion prefer
     expect(node.getAttribute("data-commit")).toBe("5");
   expect(screen.getByRole("status").textContent).toContain("x = 18");
 });
+
+it("distinguishes a durable majority from the leader’s confirmation", () => {
+  render(<RaftLeaderRecoveryFigure />);
+  visible();
+  advance(time(24500));
+  expect(screen.getByRole("status").textContent).toContain(
+    "has not yet confirmed commitment of #5",
+  );
+  expect(
+    document.querySelector('[data-server="A"]')?.getAttribute("data-stored"),
+  ).toBe("5");
+  expect(
+    document.querySelector('[data-server="C"]')?.getAttribute("data-stored"),
+  ).toBe("5");
+  expect(
+    document.querySelector('[data-server="A"]')?.getAttribute("data-commit"),
+  ).toBe("4");
+});

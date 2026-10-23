@@ -51,7 +51,13 @@ export function paceFlights<T extends { start: number; end: number }>(
     const [before, after] = checkpoints.findLast(
       ([at]) => at <= authoredTime,
     ) ?? [0, 0];
-    return after + (authoredTime - before);
+    const next = checkpoints.find(([at]) => at > authoredTime);
+    if (!next) return after + (authoredTime - before);
+    const [nextBefore, nextAfter] = next;
+    return (
+      after +
+      ((nextAfter - after) * (authoredTime - before)) / (nextBefore - before)
+    );
   };
   return { messages, time };
 }

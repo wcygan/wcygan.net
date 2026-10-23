@@ -1,3 +1,5 @@
+import { RaftLogRow } from "./RaftLogRow";
+import { RaftPlaybackControls } from "./RaftPlaybackControls";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   getReplicationLesson,
@@ -9,6 +11,7 @@ import {
 import {
   messageRoute,
   replicationLayout,
+  payloadHeight,
 } from "~/demos/raft-log-replication/layout";
 import { pointOnRoute } from "~/demos/raft-election-overview/layout";
 
@@ -24,11 +27,11 @@ export function RaftLogReplicationFigure() {
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [compact, setCompact] = useState(false);
-  const { beats, messages, cycleDuration } = getReplicationLesson(compact);
-  const active = playing && visible && documentVisible && !reduced;
+  const { beats, messages } = getReplicationLesson(compact);
   const state = replicationState(elapsed, compact);
   const beat = beats[state.beat];
-  const complete = !playing && elapsed >= beats.at(-1)!.settledAt;
+  const complete = elapsed >= beats.at(-1)!.settledAt;
+  const active = playing && visible && documentVisible && !reduced && !complete;
   const layout = replicationLayout(compact);
 
   useEffect(() => {
@@ -63,7 +66,21 @@ export function RaftLogReplicationFigure() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => setElapsed(0), [compact]);
+  const previousCompact = useRef(compact);
+  useEffect(() => {
+    if (previousCompact.current === compact) return;
+    const old = getReplicationLesson(previousCompact.current).beats;
+    setElapsed(
+      (at) =>
+        beats[
+          Math.max(
+            0,
+            old.findLastIndex((b) => at >= b.start),
+          )
+        ].settledAt,
+    );
+    previousCompact.current = compact;
+  }, [compact, beats]);
 
   useEffect(() => {
     if (!active) return;
@@ -72,12 +89,12 @@ export function RaftLogReplicationFigure() {
     const tick = (now: number) => {
       const delta = previous === undefined ? 0 : Math.min(100, now - previous);
       previous = now;
-      setElapsed((old) => (old + delta) % cycleDuration);
+      setElapsed((old) => Math.min(old + delta, beats.at(-1)!.settledAt));
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, cycleDuration]);
+  }, [active, beats]);
 
   return (
     <figure
@@ -99,28 +116,10 @@ export function RaftLogReplicationFigure() {
         data-entry={state.entry.index}
         data-playback={complete ? "complete" : active ? "playing" : "paused"}
       >
-        <div className="log-replication-heading">
-          <span>
-            Entry #{state.entry.index} · Term {state.entry.term}
-          </span>
-          <span data-majority={state.majority}>
-            {state.copies
-              ? `${state.copies} / 3 confirmed copies`
-              : state.entry.index === 1
-                ? "Empty logs"
-                : "Logs synchronized"}
-          </span>
-        </div>
-        <div
-          className="log-replication-confirmations"
-          aria-label="B’s follower confirmations"
-        >
-          <span>B’s confirmed follower indices</span>
-          <span>
-            A confirmed: <strong>{state.confirmed.A}</strong> · C confirmed:{" "}
-            <strong>{state.confirmed.C}</strong>
-          </span>
-        </div>
+        <p className="raft-log-confirmations">
+          Entry #{state.entry.index} · A confirmed {state.confirmed.A} · C
+          confirmed {state.confirmed.C}
+        </p>
         <svg
           className="log-replication-scene"
           data-compact={compact}
@@ -144,299 +143,160 @@ export function RaftLogReplicationFigure() {
             {state.majority &&
               ` A majority has confirmed storage of entry ${state.entry.index}.`}
           </desc>
+          <text
+            className="raft-log-meta"
+            x={layout.nodes.B.x + 12}
+            y={layout.clientOrigin[1] + 4}
+          >
+            Client
+          </text>
           <path className="log-replication-wire" d={layout.wire} />
-          {active &&
-            messages.map((message, index) => {
-              const fraction = messageProgress(message, elapsed);
-              if (fraction <= 0 || fraction >= 1) return null;
-              const [x, y] = pointOnRoute(
-                messageRoute(layout, message),
-                fraction,
-              );
-              const width = compact ? 56 : message.kind === "ack" ? 128 : 80;
-              const twoRows =
-                message.kind === "entry" || message.kind === "ack";
-              const height = twoRows ? 44 : 28;
-              return (
-                <g
-                  key={index}
-                  className="log-replication-payload"
-                  data-kind={message.kind}
-                  data-commit={
-                    "leaderCommit" in message ? message.leaderCommit : undefined
-                  }
-                  data-entry={
-                    message.kind === "entry"
-                      ? message.lastIndex
-                      : message.kind === "command"
-                        ? message.index
+          {state.nodes.map((node) => (
+            <RaftLogRow
+              key={node.server}
+              id={node.server}
+              role={node.role}
+              term={node.term}
+              commit={node.committed}
+              stored={node.stored}
+              bounds={layout.nodes[node.server]}
+              entryX={layout.entryX}
+              cellWidth={layout.cellWidth}
+              className="log-replication-server"
+              writing={!!node.writing}
+              cells={entries.map((entry) => ({
+                index: entry.index,
+                term: node.stored >= entry.index ? entry.term : undefined,
+                command:
+                  node.stored >= entry.index
+                    ? compact
+                      ? entry.command.replace(/\s/g, "")
+                      : entry.command
+                    : undefined,
+                present: node.stored >= entry.index,
+                committed: node.committed >= entry.index,
+              }))}
+            />
+          ))}
+          <g className="log-replication-payload-layer" aria-hidden="true">
+            {!reduced &&
+              messages.map((message, index) => {
+                const fraction = messageProgress(message, elapsed);
+                if (fraction <= 0 || fraction >= 1) return null;
+                const [x, y] = pointOnRoute(
+                  messageRoute(layout, message),
+                  fraction,
+                );
+                const width = layout.payloadWidth;
+                const height = payloadHeight(message.kind);
+                const term =
+                  message.kind === "command"
+                    ? undefined
+                    : state.nodes.find((node) => node.server === message.from)!
+                        .term;
+                const lines =
+                  message.kind === "command"
+                    ? [
+                        "Client",
+                        entries[message.index - 1].command.replace(/\s/g, ""),
+                      ]
+                    : message.kind === "ack"
+                      ? [
+                          "Ack",
+                          `Stored #${message.storedThrough}`,
+                          `Term: ${term}`,
+                        ]
+                      : [
+                          message.kind === "entry"
+                            ? `${message.firstIndex === message.lastIndex ? "Entry" : "Entries"} ${entryRange(message.firstIndex, message.lastIndex)}`
+                            : "Heartbeat",
+                          `Term: ${term}`,
+                          `Commit: ${message.leaderCommit}`,
+                        ];
+                return (
+                  <g
+                    key={index}
+                    className="log-replication-payload"
+                    data-kind={message.kind}
+                    data-term={term}
+                    data-commit={
+                      "leaderCommit" in message
+                        ? message.leaderCommit
                         : undefined
-                  }
-                  transform={`translate(${x} ${y})`}
-                  aria-hidden="true"
-                >
-                  <rect
-                    x={-width / 2}
-                    y={-height / 2}
-                    width={width}
-                    height={height}
-                    rx="3"
-                  />
-                  {message.kind === "command" ? (
-                    <text textAnchor="middle" dominantBaseline="central">
-                      {entries[message.index - 1].command.replace(/\s/g, "")}
-                    </text>
-                  ) : message.kind === "ack" ? (
-                    <text textAnchor="middle" dominantBaseline="central">
-                      <tspan x="0" y="-9">
-                        {compact ? "Stored" : "Stored through"}
-                      </tspan>
-                      <tspan x="0" y="9">
-                        #{message.storedThrough}
-                      </tspan>
-                    </text>
-                  ) : (
-                    <>
-                      {message.kind === "entry" && (
-                        <text
-                          x="0"
-                          y="-9"
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                        >
-                          {entryRange(message.firstIndex, message.lastIndex)}
-                        </text>
-                      )}
-                      <g transform={`translate(0 ${twoRows ? 9 : 0})`}>
-                        <path
-                          className="log-replication-heart"
-                          d={heart}
-                          transform="translate(-10 0)"
-                        />
-                        <text x="7" y="0" dominantBaseline="central">
-                          {message.leaderCommit}
-                        </text>
-                      </g>
-                    </>
-                  )}
-                </g>
-              );
-            })}
-          {state.nodes.map((node) => {
-            const bounds = layout.nodes[node.server];
-            const padding = compact ? 12 : 16;
-            const labelWidth = compact ? 64 : 72;
-            const entryX = padding + labelWidth;
-            const gap = 8;
-            const cellWidth =
-              (bounds.width - padding * 2 - labelWidth - gap * 2) / 3;
-            const cellY = compact ? 92 : 68;
-            const cellHeight = 96;
-            const rowY = [20, 48, 76];
-            const boundary =
-              entryX + node.committed * (cellWidth + gap) - gap / 2;
-            return (
-              <g
-                key={node.server}
-                className="log-replication-server"
-                data-server={node.server}
-                data-identity={node.server}
-                data-stored={node.stored}
-                data-committed={node.committed}
-                data-term={node.term}
-                transform={`translate(${bounds.x} ${bounds.y})`}
-              >
-                <rect
-                  className="log-replication-node"
-                  width={bounds.width}
-                  height={bounds.height}
-                  rx="3"
-                />
-                <rect
-                  className="log-replication-node-header"
-                  x="1"
-                  y="1"
-                  width={bounds.width - 2}
-                  height={compact ? 79 : 55}
-                  rx="2"
-                />
-                <text className="log-replication-id" x={padding} y="24">
-                  Node {node.server}
-                </text>
-                <text
-                  className="log-replication-role"
-                  x={bounds.width - padding}
-                  y="24"
-                  textAnchor="end"
-                >
-                  Role:{" "}
-                  <tspan className="log-replication-value">{node.role}</tspan>
-                </text>
-                <text className="log-replication-term" x={padding} y="46">
-                  Current term:{" "}
-                  <tspan className="log-replication-value">{node.term}</tspan>
-                </text>
-                <text
-                  className="log-replication-term"
-                  x={compact ? padding : bounds.width - padding}
-                  y={compact ? 68 : 46}
-                  textAnchor={compact ? "start" : "end"}
-                >
-                  Last log index:{" "}
-                  <tspan className="log-replication-value">{node.stored}</tspan>
-                </text>
-                <g
-                  className="log-replication-field-labels"
-                  textAnchor="end"
-                  dominantBaseline="central"
-                >
-                  <text x={entryX - 8} y={cellY + rowY[0]}>
-                    Index
-                  </text>
-                  <text x={entryX - 8} y={cellY + rowY[1]}>
-                    Term
-                  </text>
-                  <text x={entryX - 8} y={cellY + rowY[2]}>
-                    Command
-                  </text>
-                </g>
-                {entries.map((entry, index) => {
-                  const stored = entry.index <= node.stored;
-                  const committed = entry.index <= node.committed;
-                  return (
-                    <g
-                      key={entry.index}
-                      className="log-replication-entry"
-                      data-index={entry.index}
-                      data-present={stored}
-                      data-committed={committed}
-                      transform={`translate(${entryX + index * (cellWidth + gap)} ${cellY})`}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                    >
-                      <rect width={cellWidth} height={cellHeight} rx="2" />
-                      <text
-                        className="log-replication-entry-meta"
-                        x={cellWidth / 2}
-                        y={rowY[0]}
-                      >
-                        {entry.index}
-                      </text>
-                      <text
-                        className="log-replication-entry-meta"
-                        x={cellWidth / 2}
-                        y={rowY[1]}
-                      >
-                        {stored ? entry.term : "—"}
-                      </text>
-                      <text
-                        className="log-replication-command"
-                        x={cellWidth / 2}
-                        y={rowY[2]}
-                      >
-                        {stored ? entry.command : "—"}
-                      </text>
-                      {committed && (
-                        <text
-                          className="log-replication-check"
-                          x={cellWidth - 8}
-                          y={rowY[0]}
-                          textAnchor="end"
-                        >
-                          ✓
-                        </text>
-                      )}
-                    </g>
-                  );
-                })}
-                {node.committed > 0 && (
-                  <path
-                    className="log-replication-boundary"
-                    d={`M${boundary} ${cellY - 4}v${cellHeight + 8}`}
-                  />
-                )}
-                <text
-                  className="log-replication-committed"
-                  x={padding}
-                  y={bounds.height - 20}
-                >
-                  Commit index:{" "}
-                  <tspan className="log-replication-value">
-                    {node.committed}
-                  </tspan>
-                </text>
-                {node.server === "C" && node.stored === 0 && !node.writing && (
-                  <text
-                    className="log-replication-writing"
-                    x={bounds.width - padding}
-                    y={bounds.height - (compact ? 27 : 20)}
-                    textAnchor="end"
+                    }
+                    data-entry={
+                      message.kind === "entry"
+                        ? message.lastIndex
+                        : message.kind === "command"
+                          ? message.index
+                          : undefined
+                    }
+                    transform={`translate(${x} ${y})`}
+                    aria-hidden="true"
                   >
-                    {compact ? (
-                      <>
-                        <tspan x={bounds.width - padding}>Replication</tspan>
-                        <tspan x={bounds.width - padding} dy="14">
-                          {" delayed"}
-                        </tspan>
-                      </>
-                    ) : (
-                      "Replication delayed"
-                    )}
-                  </text>
-                )}
-                {node.writing && (
-                  <text
-                    className="log-replication-writing"
-                    x={bounds.width - padding}
-                    y={bounds.height - 20}
-                    textAnchor="end"
-                  >
-                    Storing{" "}
-                    {entryRange(
-                      node.writing.firstIndex,
-                      node.writing.lastIndex,
-                    )}
-                    …
-                  </text>
-                )}
-              </g>
-            );
-          })}
+                    <rect
+                      x={-width / 2}
+                      y={-height / 2}
+                      width={width}
+                      height={height}
+                      rx="3"
+                    />
+                    {lines.map((line, row) => {
+                      const y = (row - (lines.length - 1) / 2) * 18;
+                      const heartbeat = message.kind === "commit" && row === 0;
+                      return (
+                        <g key={row}>
+                          {heartbeat && (
+                            <path
+                              className="log-replication-heart"
+                              d={heart}
+                              transform={`translate(${compact ? -43 : -50} ${y})`}
+                            />
+                          )}
+                          <text
+                            x={heartbeat ? 8 : 0}
+                            y={y}
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                          >
+                            {line}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </g>
+                );
+              })}
+          </g>
         </svg>
-        <div className="log-replication-summary" data-majority={state.majority}>
-          {state.majority
-            ? `✓ Majority achieved · Entry #${state.entry.index} committed at B`
-            : state.copies
-              ? `2 copies needed to commit entry #${state.entry.index}`
-              : "Each entry records its index, term, and command"}
-        </div>
       </div>
-      <div className="log-replication-controls">
-        <button
-          type="button"
-          disabled={reduced}
-          onClick={() => setPlaying((old) => !old)}
-        >
-          {playing ? "Pause" : "Play"}
-        </button>
-        <button
-          type="button"
-          disabled={complete}
-          onClick={() => {
-            setPlaying(false);
-            const nextBeat =
+      <RaftPlaybackControls
+        label="Log replication playback"
+        reduced={reduced}
+        complete={complete}
+        playing={playing}
+        step={state.beat}
+        count={beats.length}
+        onPlay={() => setPlaying((old) => !old)}
+        onBack={() => {
+          setPlaying(false);
+          setElapsed(beats[Math.max(0, state.beat - 1)].settledAt);
+        }}
+        onNext={() => {
+          setPlaying(false);
+          setElapsed(
+            beats[
               elapsed < beat.settledAt
                 ? state.beat
-                : Math.min(state.beat + 1, beats.length - 1);
-            setElapsed(beats[nextBeat].settledAt);
-          }}
-        >
-          Next
-        </button>
-        <button type="button" onClick={() => setElapsed(0)}>
-          Replay
-        </button>
-      </div>
+                : Math.min(state.beat + 1, beats.length - 1)
+            ].settledAt,
+          );
+        }}
+        onReplay={() => {
+          setElapsed(0);
+          setPlaying(!reduced);
+        }}
+      />
       <div
         className="log-replication-status"
         role="status"
@@ -444,11 +304,13 @@ export function RaftLogReplicationFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p className="sr-only">{beat.event}</p>
+        <p className="raft-step-explanation">{beat.event}</p>
       </div>
       <figcaption>
-        Green entries are known committed; orange entries are pending.
-        Illustrative timing.
+        Each server’s Commit label shows its local commitment knowledge; a
+        packet’s Commit is the leader’s advertised index. Green entries are
+        known committed by that server; orange entries are stored but not yet
+        known committed there. Illustrative timing.
         {reduced && " Use Next to step through."}
       </figcaption>
     </figure>

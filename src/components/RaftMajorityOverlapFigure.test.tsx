@@ -47,12 +47,12 @@ const visible = (isIntersecting = true) =>
 const round = () =>
   document.querySelector("[data-round]")?.getAttribute("data-round");
 
-it("advances once per second, supports pausing and stepping, and loops after ten rounds", () => {
+it("advances every four seconds, pauses, steps, and stops after ten rounds", () => {
   render(<RaftMajorityOverlapFigure />);
   act(() => vi.advanceTimersByTime(5000));
   expect(round()).toBe("1");
   visible();
-  act(() => vi.advanceTimersByTime(999));
+  act(() => vi.advanceTimersByTime(3999));
   expect(round()).toBe("1");
   act(() => vi.advanceTimersByTime(1));
   expect(round()).toBe("2");
@@ -62,20 +62,13 @@ it("advances once per second, supports pausing and stepping, and loops after ten
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
   expect(round()).toBe("3");
   fireEvent.click(screen.getByRole("button", { name: "Play" }));
-  act(() => vi.advanceTimersByTime(7000));
+  act(() => vi.advanceTimersByTime(28000));
   expect(round()).toBe("10");
   expect(
     document.querySelector("[data-playback]")?.getAttribute("data-playback"),
-  ).toBe("playing");
-  act(() => vi.advanceTimersByTime(1000));
-  expect(round()).toBe("1");
-  expect(
-    [...document.querySelectorAll('[data-previous="true"]')].map((node) =>
-      node.getAttribute("data-server"),
-    ),
-  ).toEqual(["A", "C", "D"]);
-  act(() => vi.advanceTimersByTime(1000));
-  expect(round()).toBe("2");
+  ).toBe("complete");
+  act(() => vi.advanceTimersByTime(8000));
+  expect(round()).toBe("10");
   fireEvent.click(screen.getByRole("button", { name: "Replay" }));
   expect(round()).toBe("1");
   fireEvent.click(screen.getByRole("button", { name: "Pause" }));
@@ -123,7 +116,7 @@ it("keeps both groups and the exact shared servers inspectable under reduced mot
 it("suspends offscreen and in hidden documents without catching up", () => {
   render(<RaftMajorityOverlapFigure />);
   visible();
-  act(() => vi.advanceTimersByTime(1000));
+  act(() => vi.advanceTimersByTime(4000));
   visible(false);
   act(() => vi.advanceTimersByTime(5000));
   expect(round()).toBe("2");
@@ -134,6 +127,6 @@ it("suspends offscreen and in hidden documents without catching up", () => {
   expect(round()).toBe("2");
   hidden.mockReturnValue(false);
   act(() => document.dispatchEvent(new Event("visibilitychange")));
-  act(() => vi.advanceTimersByTime(1000));
+  act(() => vi.advanceTimersByTime(4000));
   expect(round()).toBe("3");
 });

@@ -29,12 +29,8 @@ export function RaftRoleTransitionsFigure() {
   const previous = phases[position.index - 1];
   const travelDuration = destination.edge && previous ? 900 : 0;
   const traveling = !reduced && position.elapsed < travelDuration;
-  const current = traveling && previous ? previous : destination;
-  const elapsed = traveling
-    ? current.duration
-    : Math.max(0, position.elapsed - travelDuration);
+  const elapsed = Math.max(0, position.elapsed - travelDuration);
   const complete =
-    !playing &&
     position.index === phases.length - 1 &&
     position.elapsed >= destination.duration + travelDuration;
   const transitionPath =
@@ -49,21 +45,15 @@ export function RaftRoleTransitionsFigure() {
           (transitionPath.getTotalLength() * position.elapsed) / travelDuration,
         )
       : undefined;
-  const active = playing && visible && documentVisible && !reduced;
+  const active = playing && visible && documentVisible && !reduced && !complete;
   const messageProgress = reduced ? 1 : Math.min(1, elapsed / 1400);
-  const messageArrived = !!current.message && messageProgress === 1;
-  const timer =
-    messageArrived && current.message?.kind === "heartbeat"
-      ? 0
-      : current.timer[0] +
-        (current.timer[1] - current.timer[0]) *
-          Math.min(1, elapsed / current.duration);
+  const messageArrived = !!destination.message && messageProgress === 1;
   const replies =
     !traveling &&
-    current.role === "Candidate" &&
+    destination.role === "Candidate" &&
     previous?.role === "Candidate" &&
-    previous.term === current.term
-      ? current.votes.flatMap((vote, index) =>
+    previous.term === destination.term
+      ? destination.votes.flatMap((vote, index) =>
           index > 0 && vote !== "pending" && vote !== previous.votes[index]
             ? [{ index, vote }]
             : [],
@@ -71,11 +61,29 @@ export function RaftRoleTransitionsFigure() {
       : [];
   const replyProgress = (order: number) =>
     reduced ? 1 : Math.min(1, Math.max(0, (elapsed - order * 200) / 1400));
-  const receivedVotes = current.votes.map((vote, index) => {
+  const receivedVotes = destination.votes.map((vote, index) => {
     const order = replies.findIndex((reply) => reply.index === index);
     return order >= 0 && replyProgress(order) < 1 ? "pending" : vote;
   });
   const votes = receivedVotes.filter((vote) => vote === "granted").length;
+  // Protocol state changes on receipt, before the explanatory transition marker.
+  const leaderReceived =
+    messageArrived && destination.message!.term >= destination.term;
+  const current = {
+    ...destination,
+    role: leaderReceived
+      ? ("Follower" as const)
+      : destination.role === "Candidate" && votes >= 3
+        ? ("Leader" as const)
+        : destination.role,
+    term: leaderReceived ? destination.message!.term : destination.term,
+  };
+  const timer =
+    leaderReceived || current.role === "Leader"
+      ? 0
+      : destination.timer[0] +
+        (destination.timer[1] - destination.timer[0]) *
+          Math.min(1, elapsed / destination.duration);
   const receivedGrant = replies.some(
     (reply, order) => reply.vote === "granted" && replyProgress(order) === 1,
   );
@@ -152,7 +160,14 @@ export function RaftRoleTransitionsFigure() {
           phases[old.index].duration +
             (phases[old.index].edge && old.index > 0 ? 900 : 0)
         ) {
-          return { index: (old.index + 1) % phases.length, elapsed: 0 };
+          return old.index === phases.length - 1
+            ? {
+                index: old.index,
+                elapsed:
+                  phases[old.index].duration +
+                  (phases[old.index].edge && old.index > 0 ? 900 : 0),
+              }
+            : { index: old.index + 1, elapsed: 0 };
         }
         return { index: old.index, elapsed };
       });
@@ -167,14 +182,29 @@ export function RaftRoleTransitionsFigure() {
     setPosition({ index: 0, elapsed: 0 });
     setPlaying(play && !reduced);
   };
+  const checkpointAt = (index: number) => {
+    const phase = phases[index];
+    // Settle the vote beat before its timeout. The next step starts the retry;
+    // a paused checkpoint must not leave an expired candidate in the old term.
+    const beforeTimeout = phase.timer[1] === 1 && index < phases.length - 1;
+    return (
+      phase.duration +
+      (phase.edge && index > 0 ? 900 : 0) -
+      (beforeTimeout ? 400 : 0)
+    );
+  };
   const next = () => {
     setPlaying(false);
-    setPosition((old) => ({
-      index: Math.min(old.index + 1, phases.length - 1),
-      elapsed:
-        phases[Math.min(old.index + 1, phases.length - 1)].duration +
-        (phases[Math.min(old.index + 1, phases.length - 1)].edge ? 900 : 0),
-    }));
+    setPosition((old) => {
+      const index =
+        old.index > 0 && old.elapsed < checkpointAt(old.index)
+          ? old.index
+          : Math.min(old.index + 1, phases.length - 1);
+      return {
+        index,
+        elapsed: checkpointAt(index),
+      };
+    });
   };
   const wire = (path: string, highlighted: boolean, key: string) => (
     <g key={key}>
@@ -326,12 +356,14 @@ export function RaftRoleTransitionsFigure() {
                 textAnchor="end"
               >
                 Term{" "}
-                {current.role === role.label
-                  ? current.term
-                  : (phases
-                      .slice(0, position.index + (traveling ? 0 : 1))
-                      .findLast((phase) => phase.role === role.label)?.term ??
-                    "—")}
+                <tspan className="raft-term-value">
+                  {current.role === role.label
+                    ? current.term
+                    : (phases
+                        .slice(0, position.index + (traveling ? 0 : 1))
+                        .findLast((phase) => phase.role === role.label)?.term ??
+                      "—")}
+                </tspan>
               </text>
               {role.label === "Follower" && (
                 <g>
@@ -521,7 +553,10 @@ export function RaftRoleTransitionsFigure() {
                 <g>
                   <path className="raft-roles-heart" d={heartPath} />
                   <text className="raft-roles-voter" textAnchor="middle" y="30">
-                    Term {current.message.term}
+                    Term{" "}
+                    <tspan className="raft-term-value">
+                      {current.message.term}
+                    </tspan>
                   </text>
                 </g>
               ) : (
@@ -542,7 +577,10 @@ export function RaftRoleTransitionsFigure() {
                     textAnchor="middle"
                     y="13"
                   >
-                    Term {current.message.term}
+                    Term{" "}
+                    <tspan className="raft-term-value">
+                      {current.message.term}
+                    </tspan>
                   </text>
                 </g>
               )}
@@ -599,11 +637,11 @@ export function RaftRoleTransitionsFigure() {
       <div className="raft-roles-controls">
         <button
           type="button"
-          disabled={reduced}
+          disabled={reduced || complete}
           title={reduced ? "Use Next with reduced motion" : undefined}
           onClick={() => setPlaying((old) => !old)}
         >
-          {playing ? "Pause" : "Play"}
+          {playing && !complete ? "Pause" : "Play"}
         </button>
         <button type="button" disabled={complete} onClick={next}>
           Next
@@ -619,7 +657,8 @@ export function RaftRoleTransitionsFigure() {
         aria-atomic="true"
       >
         <p className="sr-only">
-          Role: {current.role} · Term: {current.term}
+          Role: {current.role} · Term:{" "}
+          <span className="raft-term-value">{current.term}</span>
         </p>
         <p>{current.event}</p>
       </div>

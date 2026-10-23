@@ -66,7 +66,7 @@ const node = (server: string) =>
 const next = () =>
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
-it("commits with B and A while C lags, batch-catches up, and loops from the final hold", () => {
+it("commits with B and A while C lags, batch-catches up, and stops at the settled result", () => {
   render(<RaftLogReplicationFigure />);
   visible();
   let clock = 0;
@@ -75,9 +75,6 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
     clock = time;
   };
   expect(document.querySelectorAll('[data-present="true"]')).toHaveLength(0);
-  expect(node("C").querySelector(".log-replication-writing")?.textContent).toBe(
-    "Replication delayed",
-  );
   to(time(9200));
   expect(node("B").getAttribute("data-committed")).toBe("1");
   expect(node("A").getAttribute("data-stored")).toBe("1");
@@ -87,21 +84,21 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
   expect(node("A").getAttribute("data-committed")).toBe("2");
   expect(node("C").getAttribute("data-stored")).toBe("0");
   expect(
-    document.querySelector(".log-replication-confirmations")?.textContent,
-  ).toContain("A confirmed: 2 · C confirmed: 0");
+    document.querySelector(".raft-log-confirmations")?.textContent,
+  ).toContain("A confirmed 2 · C confirmed 0");
   to(time(25500));
   expect(node("C").getAttribute("data-stored")).toBe("2");
   expect(node("C").getAttribute("data-committed")).toBe("2");
   expect(
-    document.querySelector(".log-replication-confirmations")?.textContent,
-  ).toContain("C confirmed: 0");
+    document.querySelector(".raft-log-confirmations")?.textContent,
+  ).toContain("C confirmed 0");
   expect(
     document.querySelectorAll('[data-committed="true"].log-replication-entry'),
   ).toHaveLength(6);
   to(time(27900));
   expect(
-    document.querySelector(".log-replication-confirmations")?.textContent,
-  ).toContain("C confirmed: 2");
+    document.querySelector(".raft-log-confirmations")?.textContent,
+  ).toContain("C confirmed 2");
   to(time(36400));
   expect(node("B").getAttribute("data-committed")).toBe("3");
   expect(node("A").getAttribute("data-committed")).toBe("2");
@@ -120,20 +117,20 @@ it("commits with B and A while C lags, batch-catches up, and loops from the fina
   expect(
     document.querySelectorAll('.log-replication-entry[data-committed="true"]'),
   ).toHaveLength(9);
-  expect(
-    document.querySelector(".log-replication-summary")?.textContent,
-  ).toContain("Entry #3 committed at B");
   to(cycleDuration + 100);
-  for (const server of ["A", "B", "C"]) {
-    expect(node(server).getAttribute("data-stored")).toBe("0");
-    expect(node(server).getAttribute("data-committed")).toBe("0");
-  }
+  for (const server of ["A", "B", "C"])
+    expect(node(server).getAttribute("data-committed")).toBe("3");
+  expect(
+    document.querySelector("[data-playback]")?.getAttribute("data-playback"),
+  ).toBe("complete");
+  fireEvent.click(screen.getByRole("button", { name: "Replay" }));
+  expect(node("B").getAttribute("data-stored")).toBe("0");
   expect(
     document.querySelector("[data-playback]")?.getAttribute("data-playback"),
   ).toBe("playing");
 });
 
-it("moves explicit payloads on an unchanged bus and removes them on arrival or pause", () => {
+it("moves explicit payloads on an unchanged bus and freezes them on pause until arrival", () => {
   render(<RaftLogReplicationFigure />);
   visible();
   const wire = document
@@ -164,12 +161,37 @@ it("moves explicit payloads on an unchanged bus and removes them on arrival or p
   expect(
     document.querySelector('[data-kind="commit"] .log-replication-heart'),
   ).toBeTruthy();
-  expect(document.querySelector('[data-kind="commit"]')?.textContent).toBe("1");
+  expect(document.querySelector('[data-kind="commit"]')?.textContent).toBe(
+    "HeartbeatTerm: 5Commit: 1",
+  );
   fireEvent.click(screen.getByRole("button", { name: "Pause" }));
-  expect(document.querySelectorAll(".log-replication-payload")).toHaveLength(0);
+  const paused = document
+    .querySelector(".log-replication-payload")
+    ?.getAttribute("transform");
+  expect(paused).toBeTruthy();
   const committed = node("A").getAttribute("data-committed");
   advance(10000);
   expect(node("A").getAttribute("data-committed")).toBe(committed);
+  expect(
+    document
+      .querySelector(".log-replication-payload")
+      ?.getAttribute("transform"),
+  ).toBe(paused);
+});
+it("labels entry and heartbeat metadata and keeps the packet layer above the cards", () => {
+  render(<RaftLogReplicationFigure />);
+  visible();
+  advance(time(5500));
+  const packet = document.querySelector('[data-kind="entry"]')!;
+  expect(packet.textContent).toBe("Entry #1Term: 5Commit: 0");
+  expect(packet.getAttribute("data-term")).toBe("5");
+  const scene = document.querySelector(".log-replication-scene")!;
+  expect(
+    scene.lastElementChild!.classList.contains("log-replication-payload-layer"),
+  ).toBe(true);
+  expect(document.querySelector("figcaption")?.textContent).toContain(
+    "Each server’s Commit label shows its local commitment knowledge",
+  );
 });
 
 it("settles the current in-flight step before advancing to another checkpoint", () => {

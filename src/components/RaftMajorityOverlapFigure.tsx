@@ -14,8 +14,8 @@ export function RaftMajorityOverlapFigure() {
   const [reduced, setReduced] = useState(false);
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
-  const complete = !playing && index === majorities.length - 1;
-  const active = playing && visible && documentVisible && !reduced;
+  const complete = index === majorities.length - 1;
+  const active = playing && visible && documentVisible && !reduced && !complete;
   const { current, previous, shared } = overlapRound(index);
 
   useEffect(() => {
@@ -43,8 +43,8 @@ export function RaftMajorityOverlapFigure() {
   useEffect(() => {
     if (!active) return;
     const timer = setInterval(
-      () => setIndex((old) => (old + 1) % majorities.length),
-      1000,
+      () => setIndex((old) => Math.min(old + 1, majorities.length - 1)),
+      4000,
     );
     return () => clearInterval(timer);
   }, [active]);
@@ -121,7 +121,7 @@ export function RaftMajorityOverlapFigure() {
                 transform={`translate(${x} ${y})`}
               >
                 {isShared ? (
-                  <circle className="majority-overlap-shared-ring" r="26" />
+                  <circle className="majority-overlap-shared-ring" r="25" />
                 ) : (
                   wasPrevious && (
                     <circle className="majority-overlap-previous-ring" r="24" />
@@ -139,10 +139,10 @@ export function RaftMajorityOverlapFigure() {
       <div className="majority-overlap-controls">
         <button
           type="button"
-          disabled={reduced}
+          disabled={reduced || complete}
           onClick={() => setPlaying((old) => !old)}
         >
-          {playing ? "Pause" : "Play"}
+          {playing && !complete ? "Pause" : "Play"}
         </button>
         <button
           type="button"
@@ -158,6 +158,7 @@ export function RaftMajorityOverlapFigure() {
           type="button"
           onClick={() => {
             setIndex(0);
+            setPlaying(!reduced);
           }}
         >
           Replay
@@ -173,7 +174,7 @@ export function RaftMajorityOverlapFigure() {
           Shared {shared.length === 1 ? "server" : "servers"}:{" "}
           {shared.join(", ")}
         </p>
-        <p className="sr-only">
+        <p className="raft-step-explanation">
           {complete
             ? "All ten majorities shown. Every comparison has an overlap."
             : "Green rings identify servers in both groups."}

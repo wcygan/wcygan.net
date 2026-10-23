@@ -7,11 +7,18 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { getElectionTiming } from "~/demos/raft-election-overview/timing";
+import {
+  lessons,
+  voteRecordingTime,
+  messageDeparture,
+} from "~/demos/raft-election-overview/model";
 import { RaftLeaderElectionFigure } from "./RaftLeaderElectionFigure";
 let reduced = false;
 let intersection: IntersectionObserverCallback;
 beforeEach(() => {
   vi.useFakeTimers();
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(644);
   vi.stubGlobal("matchMedia", () => ({
     matches: reduced,
     addEventListener: vi.fn(),
@@ -43,298 +50,292 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   reduced = false;
 });
-const next = () =>
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
-for (const scenario of ["success", "split"] as const) {
-  it(
-    scenario +
-      " shows local terms and learns B’s identity only on heartbeat arrival",
-    () => {
-      render(<RaftLeaderElectionFigure />);
-      fireEvent.change(screen.getByRole("combobox", { name: "Scenario" }), {
-        target: { value: scenario },
-      });
-      act(() =>
-        intersection(
-          [{ isIntersecting: true } as IntersectionObserverEntry],
-          {} as IntersectionObserver,
-        ),
-      );
-      act(() => vi.advanceTimersByTime(3400));
-      expect(
-        document.querySelector('[data-server="B"]')?.getAttribute("data-term"),
-      ).toBe("5");
-      expect(
-        document.querySelector('[data-server="A"]')?.getAttribute("data-term"),
-      ).toBe("4");
-      act(() => vi.advanceTimersByTime(1700));
-      for (const node of document.querySelectorAll(".leader-election-server")) {
-        expect(node.getAttribute("data-term")).toBe("5");
-        expect(
-          node.querySelector(".leader-election-known-leader")?.textContent,
-        ).toBe("Leader —");
-      }
-      act(() =>
-        vi.advanceTimersByTime((scenario === "split" ? 19500 : 13100) - 5100),
-      );
-      for (const node of document.querySelectorAll(
-        '.leader-election-server:not([data-server="B"])',
-      )) {
-        expect(node.getAttribute("data-leader")).toBe("");
-        expect(
-          node.querySelector(".leader-election-known-leader")?.textContent,
-        ).toBe("Leader —");
-      }
-      act(() => vi.advanceTimersByTime(1800));
-      for (const node of document.querySelectorAll(".leader-election-server")) {
-        expect(node.getAttribute("data-term")).toBe(
-          scenario === "split" ? "6" : "5",
-        );
-        expect(node.getAttribute("data-leader")).toBe("B");
-        expect(
-          node.querySelector(".leader-election-known-leader")?.textContent,
-        ).toBe("Leader B");
-      }
-      expect(
-        document.querySelector('[data-server="E"]')?.getAttribute("data-vote"),
-      ).toBeNull();
-    },
-  );
-}
-
-it("highlights the majority only after the third vote arrives and sends hearts as heartbeats", () => {
-  render(<RaftLeaderElectionFigure />);
+const click = (name: string) =>
+  fireEvent.click(screen.getByRole("button", { name }));
+const advance = (time: number) => act(() => vi.advanceTimersByTime(time));
+const visible = (isIntersecting = true) =>
   act(() =>
     intersection(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
+      [{ isIntersecting } as IntersectionObserverEntry],
       {} as IntersectionObserver,
     ),
   );
-  act(() => vi.advanceTimersByTime(10400));
-  expect(
-    document.querySelector('[data-server="C"]')?.getAttribute("data-vote"),
-  ).toBe("B");
-  expect(document.querySelector(".leader-election-majority")).toBeNull();
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 2 / 5");
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("3 needed to win");
-  act(() => vi.advanceTimersByTime(1600));
-  expect(document.querySelector(".leader-election-majority")?.textContent).toBe(
-    "B has 3 of 5 votes",
+const node = (id: string) =>
+  document.querySelector(`.leader-election-server[data-server="${id}"]`)!;
+const stage = () => document.querySelector("[data-playback]")!;
+const starts = (scenario: "success" | "split") => {
+  const { durations } = getElectionTiming(scenario, false);
+  return durations.map((_, i) =>
+    durations.slice(0, i).reduce((a, b) => a + b, 0),
   );
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("Majority achieved");
-  expect(
-    document.querySelector('[data-server="B"]')?.getAttribute("data-role"),
-  ).toBe("Candidate");
-  act(() => vi.advanceTimersByTime(1000));
-  expect(
-    document.querySelectorAll('[data-kind="heartbeat"] .leader-election-heart'),
-  ).toHaveLength(4);
-  expect(
-    document.querySelectorAll('[data-kind="heartbeat"] circle'),
-  ).toHaveLength(0);
-  act(() => vi.advanceTimersByTime(2000));
-  expect(document.querySelectorAll(".leader-election-heart")).toHaveLength(0);
-  expect(document.querySelector(".leader-election-majority")?.textContent).toBe(
-    "B has 3 of 5 votes",
-  );
-});
-it("provides a complete split-vote walkthrough under reduced motion", () => {
-  reduced = true;
-  render(<RaftLeaderElectionFigure />);
-  expect(
-    (screen.getByRole("button", { name: "Play" }) as HTMLButtonElement)
-      .disabled,
-  ).toBe(true);
-  fireEvent.change(screen.getByRole("combobox", { name: "Scenario" }), {
-    target: { value: "split" },
-  });
-  next();
-  next();
-  expect(screen.getByRole("status").textContent).toContain(
-    "Neither has a majority",
-  );
-  expect(document.querySelector('[data-server="A"]')?.textContent).toContain(
-    "Vote → B",
-  );
-  expect(document.querySelector('[data-server="C"]')?.textContent).toContain(
-    "Vote → D",
-  );
-  next();
-  expect(screen.getByRole("status").textContent).toContain("term 6");
-  next();
-  next();
-  next();
-  expect(
-    document.querySelector('[data-server="B"]')?.getAttribute("data-role"),
-  ).toBe("Leader");
-  expect(document.querySelector(".leader-election-majority")?.textContent).toBe(
-    "B has 3 of 5 votes",
-  );
-  expect(
-    document.querySelector('.leader-election-tally-label[data-majority="true"]')
-      ?.textContent,
-  ).toBe("Majority achieved");
-  for (const node of document.querySelectorAll(".leader-election-server")) {
-    expect(node.getAttribute("data-term")).toBe("6");
-    expect(node.getAttribute("data-leader")).toBe("B");
-  }
-  expect(
-    (screen.getByRole("button", { name: "Next" }) as HTMLButtonElement)
-      .disabled,
-  ).toBe(true);
-  fireEvent.click(screen.getByRole("button", { name: "Replay" }));
-  expect(screen.getByRole("status").textContent).toContain(
-    "Waiting for a heartbeat",
-  );
-  for (const node of document.querySelectorAll(".leader-election-server")) {
-    expect(node.getAttribute("data-term")).toBe("4");
-    expect(node.getAttribute("data-leader")).toBe("");
-    expect(node.getAttribute("data-vote")).toBeNull();
-  }
-});
-it.each(["success", "split"])(
-  "loops the %s election and resets local state",
+};
+it.each(["success", "split"] as const)(
+  "%s preserves local terms until requests and heartbeats arrive",
   (scenario) => {
     render(<RaftLeaderElectionFigure />);
-    fireEvent.change(screen.getByRole("combobox", { name: "Scenario" }), {
+    fireEvent.change(screen.getByRole("combobox"), {
       target: { value: scenario },
     });
-    act(() => vi.advanceTimersByTime(4000));
-    expect(screen.getByRole("status").textContent).toContain(
-      "Waiting for a heartbeat",
+    visible();
+    const timing = getElectionTiming(scenario, false);
+    const start = starts(scenario);
+    advance(start[1] + 100);
+    expect(node("B").getAttribute("data-term")).toBe("5");
+    expect(node("A").getAttribute("data-term")).toBe(
+      scenario === "split" ? "5" : "4",
     );
-    act(() =>
-      intersection(
-        [{ isIntersecting: true } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      ),
-    );
-    act(() => vi.advanceTimersByTime(scenario === "split" ? 22000 : 15000));
-    expect(
-      document.querySelector("[data-playback]")?.getAttribute("data-playback"),
-    ).toBe("playing");
-    expect(screen.getByRole("status").textContent).toContain(
-      "Three votes elected one leader",
-    );
-    act(() => vi.advanceTimersByTime(1200));
-    expect(screen.getByRole("status").textContent).toContain(
-      "Waiting for a heartbeat",
-    );
-    for (const node of document.querySelectorAll(".leader-election-server")) {
-      expect(node.getAttribute("data-term")).toBe("4");
-      expect(node.getAttribute("data-leader")).toBe("");
-      expect(node.getAttribute("data-vote")).toBeNull();
-    }
-    fireEvent.click(screen.getByRole("button", { name: "Pause" }));
-    act(() => vi.advanceTimersByTime(30000));
-    expect(
-      document.querySelector("[data-playback]")?.getAttribute("data-playback"),
-    ).toBe("paused");
-    expect(screen.getByRole("status").textContent).toContain(
-      "Waiting for a heartbeat",
-    );
+    advance(timing.durations[1] + 100);
+    for (const id of ["A", "B", "C"])
+      expect(node(id).getAttribute("data-term")).toBe("5");
+    click("Replay");
+    const last = start.at(-1)!;
+    advance(last + 100);
+    expect(node("B").getAttribute("data-role")).toBe("Leader");
+    expect(node("A").getAttribute("data-leader")).toBe("");
+    advance(timing.durations.at(-1)! + 100);
+    for (const id of ["A", "B", "C"])
+      expect(node(id).getAttribute("data-leader")).toBe("B");
+    expect(node("C").getAttribute("data-vote")).toBe("B");
   },
 );
-
-it("keeps all election connections and exposes affirmative and refused replies without motion", () => {
+it("records choices before replying, and counts only arrived votes", () => {
+  render(<RaftLeaderElectionFigure />);
+  visible();
+  const timing = getElectionTiming("success", false);
+  advance(starts("success")[2] + 100);
+  expect(node("A").getAttribute("data-vote")).toBe("B");
+  expect(node("C").getAttribute("data-vote")).toBe("B");
+  expect(
+    document.querySelector(".leader-election-tally")?.textContent,
+  ).toContain("B: 1 / 3");
+  expect(document.querySelector(".leader-election-reply")).toBeNull();
+  advance(voteRecordingTime + 200);
+  expect(document.querySelector(".leader-election-reply")).not.toBeNull();
+  expect(
+    document.querySelector(".leader-election-tally")?.textContent,
+  ).toContain("B: 1 / 3");
+  advance(timing.flights[2][0]);
+  expect(
+    document.querySelector(".leader-election-tally")?.textContent,
+  ).toContain("B: 2 / 3");
+  expect(document.querySelector(".leader-election-majority")).not.toBeNull();
+});
+it("elects B as soon as the second vote arrives", () => {
+  render(<RaftLeaderElectionFigure />);
+  visible();
+  const timing = getElectionTiming("success", false);
+  advance(starts("success")[2] + 100);
+  expect(node("B").getAttribute("data-role")).toBe("Candidate");
+  advance(voteRecordingTime + timing.flights[2][0] + 150);
+  expect(document.querySelector(".leader-election-majority")?.textContent).toBe(
+    "B: 2 / 3",
+  );
+  expect(node("B").getAttribute("data-role")).toBe("Leader");
+});
+it("keeps timers visible, resets grants and heartbeats, and pauses their clock", () => {
+  render(<RaftLeaderElectionFigure />);
+  visible();
+  const timing = getElectionTiming("success", false);
+  advance(timing.starts[1] + 100);
+  expect(document.querySelectorAll("[data-timer]")).toHaveLength(3);
+  expect(
+    Number(
+      node("B").querySelector("[data-timer]")!.getAttribute("data-progress"),
+    ),
+  ).toBeLessThan(0.02);
+  const d = () =>
+    node("C").querySelector("[data-timer]")!.getAttribute("data-progress");
+  click("Pause");
+  const held = d();
+  advance(20000);
+  expect(d()).toBe(held);
+  click("Next");
+  click("Next");
+  expect(
+    Number(
+      node("A").querySelector("[data-timer]")!.getAttribute("data-reset-at"),
+    ),
+  ).toBe(timing.starts[1] + timing.flights[1][0]);
+  for (let i = 0; i < 2; i++) click("Next");
+  expect(
+    Number(
+      node("C").querySelector("[data-timer]")!.getAttribute("data-reset-at"),
+    ),
+  ).toBe(timing.starts[3] + timing.flights[3][1]);
+  expect(document.querySelector('[data-timer="B"]')).toBeNull();
+});
+it.each(["success", "split"] as const)(
+  "%s stops at completion and Replay starts again",
+  (scenario) => {
+    render(<RaftLeaderElectionFigure />);
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: scenario },
+    });
+    const duration = getElectionTiming(scenario, false).durations.reduce(
+      (a, b) => a + b,
+      0,
+    );
+    advance(duration);
+    expect(stage().getAttribute("data-playback")).toBe("paused");
+    visible();
+    advance(duration + 500);
+    expect(stage().getAttribute("data-playback")).toBe("complete");
+    expect(node("B").getAttribute("data-role")).toBe("Leader");
+    advance(duration);
+    expect(stage().getAttribute("data-playback")).toBe("complete");
+    click("Replay");
+    expect(stage().getAttribute("data-playback")).toBe("playing");
+    expect(node("B").getAttribute("data-term")).toBe("4");
+  },
+);
+it("freezes replies on pause and offscreen, then resumes them", () => {
+  render(<RaftLeaderElectionFigure />);
+  visible();
+  advance(starts("success")[2] + voteRecordingTime + 300);
+  const packet = () =>
+    document.querySelector(".leader-election-reply")?.getAttribute("transform");
+  const first = packet();
+  expect(first).toBeTruthy();
+  advance(200);
+  expect(packet()).not.toBe(first);
+  click("Pause");
+  const held = packet();
+  advance(10000);
+  expect(packet()).toBe(held);
+  click("Play");
+  visible(false);
+  advance(10000);
+  expect(packet()).toBe(held);
+  visible();
+  advance(200);
+  expect(packet()).not.toBe(held);
+});
+it("labels moving requests and replies with their election term", () => {
+  render(<RaftLeaderElectionFigure />);
+  visible();
+  advance(starts("success")[1] + 300);
+  expect(
+    document.querySelector(".leader-election-request")?.textContent,
+  ).toContain("Request voteTerm: 5");
+  advance(starts("success")[2] - starts("success")[1] + voteRecordingTime);
+  expect(
+    document.querySelector(".leader-election-reply")?.textContent,
+  ).toContain("Vote grantedTerm: 5");
+});
+it("exposes the split vote and settled result without motion", () => {
   reduced = true;
   render(<RaftLeaderElectionFigure />);
-  fireEvent.change(screen.getByRole("combobox", { name: "Scenario" }), {
+  fireEvent.change(screen.getByRole("combobox"), {
     target: { value: "split" },
   });
-  next();
-  const requests = [
-    ...document.querySelectorAll(".leader-election-connection path"),
-  ].map((path) => path.getAttribute("d"));
-  expect(requests.length).toBeGreaterThan(0);
-  next();
-  expect(
-    [...document.querySelectorAll(".leader-election-connection path")].map(
-      (path) => path.getAttribute("d"),
-    ),
-  ).toEqual(requests);
-  expect(document.querySelectorAll(".leader-election-reply")).toHaveLength(0);
+  click("Next");
+  click("Next");
+  expect(node("A").textContent).toContain("Vote → A");
+  expect(node("C").textContent).toContain("Vote → C");
   expect(screen.getByRole("status").textContent).toContain(
-    "A → B: Yes · C → D: Yes · C → B: No · A → D: No",
+    "A → B: Refused (term 5) · B → C: Refused (term 5) · C → A: Refused (term 5)",
   );
+  const { steps } = lessons.split;
+  for (let i = 2; i < steps.length - 1; i++) click("Next");
+  expect(stage().getAttribute("data-playback")).toBe("complete");
+  expect(node("B").getAttribute("data-term")).toBe("6");
+  expect(document.querySelectorAll(".leader-election-message")).toHaveLength(0);
+  click("Replay");
+  expect(stage().getAttribute("data-playback")).toBe("paused");
 });
 
-it("records a follower's choice before sending its reply and counts it only on arrival", () => {
+it.each(["success", "split"] as const)(
+  "%s keeps all links visible and labels every in-flight payload",
+  (scenario) => {
+    render(<RaftLeaderElectionFigure />);
+    fireEvent.change(screen.getByRole("combobox"), {
+      target: { value: scenario },
+    });
+    visible();
+    const timing = getElectionTiming(scenario, false);
+    const samples = lessons[scenario].steps
+      .flatMap((step, index) =>
+        (step.traffic ?? []).map((message, order) => ({
+          message,
+          term: step.term,
+          at:
+            timing.starts[index] +
+            messageDeparture(step, order, timing.flights[index]) +
+            timing.flights[index][order] / 2,
+        })),
+      )
+      .sort((a, b) => a.at - b.at);
+    let elapsed = 0;
+    for (const sample of samples) {
+      advance(sample.at - elapsed);
+      elapsed = sample.at;
+      expect(document.querySelectorAll(".leader-election-wire")).toHaveLength(
+        3,
+      );
+      const payloads = [
+        ...document.querySelectorAll(".leader-election-message"),
+      ];
+      expect(payloads.length).toBeGreaterThan(0);
+      for (const payload of payloads) {
+        expect(payload.querySelector("rect")).not.toBeNull();
+        expect(payload.textContent).toContain(`Term: ${sample.term}`);
+      }
+      expect(
+        payloads.some((payload) =>
+          payload.textContent?.includes(
+            `${sample.message.from} → ${sample.message.to}`,
+          ),
+        ),
+      ).toBe(true);
+    }
+    advance(timing.durations.at(-1)!);
+    expect(stage().getAttribute("data-playback")).toBe("complete");
+    expect(document.querySelectorAll(".leader-election-wire")).toHaveLength(3);
+  },
+);
+it("keeps all connections visible when stepping without motion", () => {
+  reduced = true;
   render(<RaftLeaderElectionFigure />);
-  act(() =>
-    intersection(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver,
-    ),
-  );
-  act(() => vi.advanceTimersByTime(6700));
-  const follower = document.querySelector('[data-server="A"]')!;
-  expect(follower.getAttribute("data-vote")).toBe("B");
-  expect(
-    follower
-      .querySelector(".leader-election-recorded-vote")
-      ?.getAttribute("data-identity"),
-  ).toBe("B");
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 1 / 5");
-  expect(document.querySelectorAll(".leader-election-reply")).toHaveLength(0);
-  act(() => vi.advanceTimersByTime(500));
-  expect(document.querySelectorAll(".leader-election-reply")).toHaveLength(1);
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 1 / 5");
-  act(() => vi.advanceTimersByTime(1600));
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 2 / 5");
-  expect(document.querySelector(".leader-election-majority")).toBeNull();
-  expect(document.querySelectorAll(".leader-election-reply")).toHaveLength(0);
-  expect(screen.getByRole("status").textContent).toContain("A → B: Yes");
+  for (let step = 0; step < lessons.success.steps.length; step++) {
+    expect(document.querySelectorAll(".leader-election-wire")).toHaveLength(3);
+    click("Next");
+  }
 });
 
-it("moves replies continuously, hides payloads on pause, and resumes until arrival", () => {
+it("moves both B requests together with distinct, persistent metadata", () => {
   render(<RaftLeaderElectionFigure />);
-  act(() =>
-    intersection(
-      [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver,
+  visible();
+  advance(starts("success")[1] + 300);
+  const requests = () => [
+    ...document.querySelectorAll(
+      '.leader-election-message[data-kind="request"]',
     ),
+  ];
+  expect(requests()).toHaveLength(2);
+  expect(requests().map((packet) => packet.textContent)).toEqual([
+    expect.stringContaining("Request voteTerm: 5B → A"),
+    expect.stringContaining("Request voteTerm: 5B → C"),
+  ]);
+  const before = requests().map((packet) =>
+    packet.querySelector(".leader-election-request")!.getAttribute("transform"),
   );
-  act(() => vi.advanceTimersByTime(7500));
-  const before = document
-    .querySelector(".leader-election-reply")
-    ?.getAttribute("transform");
-  expect(before).toBeTruthy();
-  act(() => vi.advanceTimersByTime(200));
+  advance(200);
+  requests().forEach((packet, index) =>
+    expect(
+      packet
+        .querySelector(".leader-election-request")!
+        .getAttribute("transform"),
+    ).not.toBe(before[index]),
+  );
+  click("Pause");
+  const held = requests().map((packet) =>
+    packet.getAttribute("data-packet-position"),
+  );
+  advance(5000);
   expect(
-    document.querySelector(".leader-election-reply")?.getAttribute("transform"),
-  ).not.toBe(before);
-  fireEvent.click(screen.getByRole("button", { name: "Pause" }));
-  expect(
-    document.querySelectorAll(
-      ".leader-election-message circle, .leader-election-reply",
-    ),
-  ).toHaveLength(0);
-  act(() => vi.advanceTimersByTime(3000));
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 1 / 5");
-  fireEvent.click(screen.getByRole("button", { name: "Play" }));
-  act(() => vi.advanceTimersByTime(200));
-  expect(document.querySelector(".leader-election-reply")).not.toBeNull();
-  act(() => vi.advanceTimersByTime(1000));
-  expect(document.querySelectorAll(".leader-election-reply")).toHaveLength(0);
-  expect(
-    document.querySelector(".leader-election-tally")?.textContent,
-  ).toContain("B: 2 / 5");
+    requests().map((packet) => packet.getAttribute("data-packet-position")),
+  ).toEqual(held);
 });

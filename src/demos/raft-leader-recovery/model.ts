@@ -120,6 +120,7 @@ export type Message = {
   end: number;
   label: string;
   short: string;
+  payload: readonly string[];
 };
 const authoredMessages: readonly Message[] = [
   // Regular heartbeats share the same arrival schedule as the node timers.
@@ -131,6 +132,7 @@ const authoredMessages: readonly Message[] = [
       end,
       label: "Heartbeat · term 5 · commit 4",
       short: "T5",
+      payload: ["Heartbeat", "Term: 5", "Commit: 4"],
     })),
   ),
   {
@@ -140,6 +142,7 @@ const authoredMessages: readonly Message[] = [
     end: 9200,
     label: "Request vote · term 6 · last entry 5 / 3",
     short: "Vote?",
+    payload: ["Request vote", "Term: 6", "Last: #3/T5"],
   },
   {
     from: "A",
@@ -148,6 +151,7 @@ const authoredMessages: readonly Message[] = [
     end: 11000,
     label: "Vote refused · stale log",
     short: "No",
+    payload: ["Vote refused", "Term: 6", "Stale log"],
   },
   {
     from: "A",
@@ -156,6 +160,7 @@ const authoredMessages: readonly Message[] = [
     end: 17000,
     label: "Request vote · term 7 · last entry 5 / 4",
     short: "Vote?",
+    payload: ["Request vote", "Term: 7", "Last: #4/T5"],
   },
   {
     from: "C",
@@ -164,6 +169,7 @@ const authoredMessages: readonly Message[] = [
     end: 18000,
     label: "Vote granted",
     short: "Yes",
+    payload: ["Vote granted", "Term: 7"],
   },
   {
     from: "A",
@@ -172,6 +178,7 @@ const authoredMessages: readonly Message[] = [
     end: 19000,
     label: "Heartbeat · term 7",
     short: "T7",
+    payload: ["Heartbeat", "Term: 7", "Commit: 4"],
   },
   {
     from: "A",
@@ -180,6 +187,7 @@ const authoredMessages: readonly Message[] = [
     end: 21000,
     label: "Entries #4–5 · commit 4",
     short: "4–5",
+    payload: ["Entries #4–5", "Term: 7", "Commit: 4"],
   },
   {
     from: "C",
@@ -188,6 +196,7 @@ const authoredMessages: readonly Message[] = [
     end: 25000,
     label: "Stored through #5",
     short: "Ack",
+    payload: ["Ack", "Stored #5", "Term: 7"],
   },
   {
     from: "A",
@@ -196,6 +205,7 @@ const authoredMessages: readonly Message[] = [
     end: 29000,
     label: "Heartbeat · commit 5",
     short: "CI5",
+    payload: ["Heartbeat", "Term: 7", "Commit: 5"],
   },
   ...[23000, 31000, 35000].map((end) => ({
     from: "A" as const,
@@ -204,6 +214,7 @@ const authoredMessages: readonly Message[] = [
     end,
     label: `Heartbeat · term 7 · commit ${end < 25000 ? 4 : 5}`,
     short: "T7",
+    payload: ["Heartbeat", "Term: 7", `Commit: ${end < 25000 ? 4 : 5}`],
   })),
   {
     from: "A",
@@ -212,6 +223,7 @@ const authoredMessages: readonly Message[] = [
     end: 35000,
     label: "Heartbeat · term 7 · commit 5",
     short: "T7",
+    payload: ["Heartbeat", "Term: 7", "Commit: 5"],
   },
   {
     from: "A",
@@ -220,6 +232,7 @@ const authoredMessages: readonly Message[] = [
     end: 33000,
     label: "Term 7 · entry #5 · commit 5",
     short: "#5",
+    payload: ["Entry #5", "Term: 7", "Commit: 5"],
   },
 ];
 
@@ -228,11 +241,24 @@ export function recoveryLesson(compact = false) {
   const paced = paceFlights(authoredMessages, (message) =>
     layout.route(message),
   );
+  // The visible heartbeat routes take just over four seconds between arrivals.
+  // Give C six seconds after its last heartbeat, extending only the quiet wait
+  // after B stops. Later flights keep their original travel durations.
+  const time = (at: number) =>
+    paced.time(at) + Math.min(1, Math.max(0, (at - 4000) / 4000)) * 2000;
+  const messages = paced.messages.map((message) => {
+    const delay = message.start > paced.time(4000) ? 2000 : 0;
+    return {
+      ...message,
+      start: message.start + delay,
+      end: message.end + delay,
+    };
+  });
   const beats = authoredBeats.map((beat) => ({
     ...beat,
-    settledAt: paced.time(beat.settledAt),
+    settledAt: time(beat.settledAt),
   }));
-  return { ...paced, beats, duration: paced.time(36000) };
+  return { messages, time, beats, duration: time(36000) };
 }
 const lessons = [recoveryLesson(false), recoveryLesson(true)];
 export const { messages, beats, duration, time: recoveryTime } = lessons[0];
@@ -311,7 +337,9 @@ export function recoveryState(elapsed: number, compact = false) {
     term: 5,
     stored: id === "C" ? 3 : 4,
     commit: id === "C" ? 3 : 4,
-    vote: null,
+    // B was elected with its own vote and A's vote in term 5. Both votes
+    // survive for the rest of that term, including B's crash and restart.
+    vote: id === "C" ? null : "B",
     offline: false,
     writing: false,
   }));

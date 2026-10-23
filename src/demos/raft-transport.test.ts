@@ -80,3 +80,21 @@ it.each([false, true])(
     );
   },
 );
+
+it("keeps authored times monotonic when a new route is shorter than its original flight", async () => {
+  const { paceFlights } = await import("./raft-transport");
+  const paced = paceFlights(
+    [
+      { start: 1000, end: 4000 },
+      { start: 5000, end: 8000 },
+    ],
+    () => [
+      [0, 0],
+      [140, 0],
+    ],
+  );
+  expect(paced.time(3999)).toBeLessThan(paced.time(4000));
+  expect(paced.time(4000)).toBeLessThan(paced.time(5000));
+  for (let at = 1; at <= 9000; at++)
+    expect(paced.time(at)).toBeGreaterThan(paced.time(at - 1));
+});

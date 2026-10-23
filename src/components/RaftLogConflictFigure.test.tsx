@@ -83,7 +83,7 @@ it("keeps refused logs intact, then exposes the removed suffix in a complete man
   expect(old5().getAttribute("data-present")).toBe("true");
   expect(old4().getAttribute("data-term")).toBe("5");
   click("Next");
-  expect(b().textContent).toContain("Persisting replacement");
+  expect(b().textContent).toContain("Saving…");
   click("Next");
   expect(old4().getAttribute("data-deleted")).toBe("true");
   expect(old5().getAttribute("data-deleted")).toBe("true");
@@ -94,8 +94,6 @@ it("keeps refused logs intact, then exposes the removed suffix in a complete man
   ).toBe("true");
   click("Next");
   expect(old4().getAttribute("data-term")).toBe("7");
-  expect(old4().getAttribute("data-replacement")).toBe("true");
-  expect(old4().textContent).toContain("From A");
   expect(b().querySelector('[data-index="3"]')?.textContent).toContain("Kept");
   expect(old4().getAttribute("data-committed")).toBe("true");
   expect(old5().getAttribute("data-present")).toBe("false");
@@ -128,7 +126,16 @@ it("pauses moving payloads and visibility work, then stops at the settled result
   click("Pause");
   advance(10000);
   expect(stage().getAttribute("data-step")).toBe("1");
-  expect(document.querySelector(".leader-recovery-packet")).toBeNull();
+  const pausedPacket = document
+    .querySelector(".leader-recovery-packet")
+    ?.getAttribute("transform");
+  expect(pausedPacket).toBeTruthy();
+  advance(1000);
+  expect(
+    document
+      .querySelector(".leader-recovery-packet")
+      ?.getAttribute("transform"),
+  ).toBe(pausedPacket);
   click("Play");
   visible(false);
   advance(10000);
@@ -142,7 +149,7 @@ it("pauses moving payloads and visibility work, then stops at the settled result
   expect(stage().getAttribute("data-playback")).toBe("playing");
 });
 
-it("moves only the suffix and replacement, and freezes both when paused", () => {
+it("freezes suffix deletion when paused and stores the received entry without another flight", () => {
   render(<RaftLogConflictFigure />);
   visible();
   const lesson = conflictLesson();
@@ -170,29 +177,20 @@ it("moves only the suffix and replacement, and freezes both when paused", () => 
   expect(removed().getAttribute("transform")).toBe(paused);
   click("Next");
   click("Play");
-  advance(lesson.replacementAt - lesson.deletedAt + 600);
-  const moving = () =>
-    document.querySelector('[data-moving-replacement="true"]')!;
-  expect(moving()).not.toBeNull();
-  const ahead = () =>
-    document.querySelector(".log-conflict-replacement-route")!;
-  const pathBefore = ahead().getAttribute("d");
-  const from = moving().getAttribute("transform");
-  advance(300);
-  expect(moving().getAttribute("transform")).not.toBe(from);
-  expect(ahead().getAttribute("d")).not.toBe(pathBefore);
-  const [x, y] = moving()
-    .getAttribute("transform")!
-    .match(/[\d.]+/g)!
-    .map(Number);
-  expect(ahead().getAttribute("d")).toBe(
-    `M${x + lesson.replacementBounds.width / 2} ${y}V${lesson.replacementBounds.toY}`,
-  );
+  advance(lesson.storingAt - lesson.deletedAt + 400);
+  expect(document.querySelector(".leader-recovery-packet")).toBeNull();
   expect(prefix.getAttribute("transform")).toBe(prefixTransform);
   click("Pause");
-  const copyPaused = moving().getAttribute("transform");
   advance(10000);
-  expect(moving().getAttribute("transform")).toBe(copyPaused);
+  expect(
+    document
+      .querySelector('.log-conflict-server[data-server="B"] [data-index="4"]')
+      ?.getAttribute("data-present"),
+  ).toBe("false");
   click("Next");
-  expect(document.querySelector(".log-conflict-replacement-route")).toBeNull();
+  expect(
+    document
+      .querySelector('.log-conflict-server[data-server="B"] [data-index="4"]')
+      ?.getAttribute("data-committed"),
+  ).toBe("true");
 });

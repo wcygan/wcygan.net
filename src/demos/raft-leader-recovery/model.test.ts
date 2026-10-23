@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   beats,
   duration,
+  getRecoveryLesson,
   logIsCurrent,
   messages,
   nodeTimer,
@@ -18,6 +19,28 @@ const timerAt = (server: "B" | "A" | "C", at: number) =>
   );
 
 describe("node clocks", () => {
+  it.each([false, true])(
+    "does not expire C before either heartbeat arrives (compact: %s)",
+    (compact) => {
+      const lesson = getRecoveryLesson(compact);
+      const arrivals = lesson.messages.filter(
+        (m) => m.from === "B" && m.to === "C",
+      );
+      for (const message of arrivals) {
+        const at = message.end - 1;
+        const c = recoveryState(at, compact).nodes[2];
+        expect(c.role).toBe("Follower");
+        expect(nodeTimer(c, at, compact).interval).toBeCloseTo(6000);
+        expect(nodeTimer(c, at, compact).progress).toBeLessThan(1);
+      }
+      const deadline = arrivals.at(-1)!.end + 6000;
+      expect(lesson.time(8000)).toBeCloseTo(deadline);
+      expect(recoveryState(deadline - 1, compact).nodes[2].role).toBe(
+        "Follower",
+      );
+      expect(recoveryState(deadline, compact).nodes[2].role).toBe("Candidate");
+    },
+  );
   it("keeps paced heartbeat sends and arrivals aligned with timers", () => {
     for (const message of messages.filter((message) => message.from === "B")) {
       expect(
@@ -65,6 +88,18 @@ describe("node clocks", () => {
 });
 
 describe("voting restrictions", () => {
+  it("retains B's self-vote across a crash and rejects a second candidate in term 5", () => {
+    const [b, a] = recoveryState(time(0)).nodes;
+    expect(b.vote).toBe("B");
+    expect(a.vote).toBe("B");
+    expect(requestVote(b, a)).toBe(false);
+    expect(requestVote(b, b)).toBe(true);
+    expect(recoveryState(time(31999)).nodes[0].vote).toBe("B");
+    const restarted = recoveryState(time(32000)).nodes[0];
+    expect(restarted.vote).toBe("B");
+    expect(requestVote(restarted, a)).toBe(false);
+    expect(recoveryState(time(33000)).nodes[0].vote).toBeNull();
+  });
   it("compares last entry term before length", () => {
     expect(logIsCurrent({ term: 7, index: 2 }, { term: 5, index: 4 })).toBe(
       true,
@@ -177,6 +212,7 @@ it.each([true, false])(
       end: 1,
       label: "",
       short: "",
+      payload: [],
     });
     expect(layout.pointOnRoute(route, 0)).toEqual(layout.port("A"));
     expect(layout.pointOnRoute(route, 1)).toEqual(layout.port("B"));

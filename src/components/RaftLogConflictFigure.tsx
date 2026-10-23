@@ -1,9 +1,11 @@
+import { RaftLogPayload } from "./RaftLogPayload";
+import { RaftLogRow } from "./RaftLogRow";
+import { RaftPlaybackControls } from "./RaftPlaybackControls";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   conflictLesson,
   conflictState,
   returningLog,
-  leaderLog,
 } from "~/demos/raft-log-conflicts/model";
 import { pointOnRoute } from "~/demos/raft-election-overview/layout";
 
@@ -49,7 +51,13 @@ export function RaftLogConflictFigure() {
     };
   }, []);
 
-  useEffect(() => setElapsed(0), [compact]);
+  const previousCompact = useRef(compact);
+  useEffect(() => {
+    if (previousCompact.current === compact) return;
+    const before = previousCompact.current;
+    setElapsed((at) => beats[conflictState(at, before).step].settledAt);
+    previousCompact.current = compact;
+  }, [compact, beats]);
 
   useEffect(() => {
     if (!active) return;
@@ -113,241 +121,50 @@ export function RaftLogConflictFigure() {
               .join(" ")}
           </desc>
           <path className="log-replication-wire" d={layout.wire} />
-          {state.nodes.map((node) => {
-            const bounds = layout.nodes[node.id];
-            const padding = compact ? 12 : 16;
-            const entryX = padding + (compact ? 64 : 72);
-            const cellWidth =
-              (bounds.width - padding * 2 - (compact ? 64 : 72) - 16) / 3;
-            const cellY = compact ? 92 : 68;
-            return (
-              <g
-                key={node.id}
-                className="log-conflict-server"
-                data-server={node.id}
-                data-identity={node.id}
-                data-commit={node.commit}
-                data-stored={node.log.at(-1)!.index}
-                transform={`translate(${bounds.x} ${bounds.y})`}
-              >
-                <rect
-                  className="log-replication-node"
-                  width={bounds.width}
-                  height={bounds.height}
-                  rx="3"
-                />
-                <rect
-                  className="log-replication-node-header"
-                  x="1"
-                  y="1"
-                  width={bounds.width - 2}
-                  height={compact ? 79 : 55}
-                  rx="2"
-                />
-                <text className="log-replication-id" x={padding} y="24">
-                  Node {node.id}
-                </text>
-                <text
-                  className="log-replication-role"
-                  x={bounds.width - padding}
-                  y="24"
-                  textAnchor="end"
-                >
-                  Role:{" "}
-                  <tspan className="log-replication-value">{node.role}</tspan>
-                </text>
-                <text className="log-replication-term" x={padding} y="46">
-                  Current term:{" "}
-                  <tspan className="log-replication-value">{node.term}</tspan>
-                </text>
-                <text
-                  className="log-replication-term"
-                  x={compact ? padding : bounds.width - padding}
-                  y={compact ? 68 : 46}
-                  textAnchor={compact ? "start" : "end"}
-                >
-                  Last log index:{" "}
-                  <tspan className="log-replication-value">
-                    {node.log.at(-1)!.index}
-                  </tspan>
-                </text>
-                <g
-                  className="log-replication-field-labels"
-                  textAnchor="end"
-                  dominantBaseline="central"
-                >
-                  {["Index", "Term", "Command"].map((label, index) => (
-                    <text
-                      key={label}
-                      x={entryX - 8}
-                      y={cellY + 20 + index * 28}
-                    >
-                      {label}
-                    </text>
-                  ))}
-                </g>
-                {[3, 4, 5].map((index, column) => {
-                  const entry = node.log.find((entry) => entry.index === index);
-                  const ghost =
-                    node.id === "B" && state.deleted && !entry
-                      ? returningLog.find((entry) => entry.index === index)
-                      : undefined;
-                  const shown = entry ?? ghost;
-                  const replacement =
-                    node.id === "B" && state.repaired && index === 4;
-                  const committed = index <= node.commit;
-                  return (
-                    <g
-                      key={index}
-                      className="log-replication-entry log-conflict-entry"
-                      data-index={index}
-                      data-term={entry?.term}
-                      data-present={!!entry}
-                      data-committed={committed}
-                      data-checked={node.id === "B" && state.checked === index}
-                      data-deleted={!!ghost}
-                      data-replacement={replacement}
-                      transform={`translate(${entryX + column * (cellWidth + 8)} ${cellY})`}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                    >
-                      {ghost && (
-                        <rect
-                          className="log-conflict-empty-slot"
-                          width={cellWidth}
-                          height="96"
-                          rx="2"
-                        />
-                      )}
-                      <g
-                        className="log-conflict-cell-content"
-                        data-deleting={!!ghost}
-                        transform={
-                          ghost
-                            ? `translate(${8 * (reduced ? 1 : state.deletionProgress)} ${-12 * (reduced ? 1 : state.deletionProgress)})`
-                            : undefined
-                        }
-                        opacity={
-                          ghost ? 1 - (reduced ? 1 : state.deletionProgress) : 1
-                        }
-                      >
-                        <rect width={cellWidth} height="96" rx="2" />
-                        <text
-                          className="leader-recovery-index"
-                          x={cellWidth / 2}
-                          y="20"
-                        >
-                          {index === 3 ? "1–3" : index}
-                        </text>
-                        <text
-                          className="log-replication-entry-meta log-conflict-term"
-                          x={cellWidth / 2}
-                          y="48"
-                        >
-                          {shown?.term ?? "—"}
-                        </text>
-                        <text
-                          className="log-replication-command"
-                          x={cellWidth / 2}
-                          y="76"
-                        >
-                          {shown?.command ?? "—"}
-                        </text>
-                        {committed && (
-                          <text
-                            className="log-replication-check leader-recovery-check"
-                            x={cellWidth - 6}
-                            y="20"
-                            textAnchor="end"
-                          >
-                            ✓
-                          </text>
-                        )}
-                      </g>
-                      {(ghost ||
-                        replacement ||
-                        (node.id === "B" && state.deleted && index === 3)) && (
-                        <text
-                          className="log-conflict-change-label"
-                          x={cellWidth / 2}
-                          y="110"
-                        >
-                          {index === 3 ? "Kept" : ghost ? "Deleted" : "From A"}
-                        </text>
-                      )}
-                    </g>
-                  );
-                })}
-                <text
-                  className="leader-recovery-muted"
-                  x={padding}
-                  y={cellY + 132}
-                >
-                  {node.id === "B" && state.deleted && !state.repaired
-                    ? "Prefix #1–3 kept"
-                    : node.id === "B" && state.writing
-                      ? "Persisting replacement…"
-                      : `Known commit: ${node.commit}`}
-                </text>
-              </g>
-            );
-          })}
-          {state.replacing &&
-            (() => {
-              const bounds = lesson.replacementBounds;
-              const progress = reduced ? 1 : state.replacementProgress;
-              const entry = leaderLog.at(-1)!;
-              const [centerX, centerY] = pointOnRoute(
-                lesson.replacementRoute,
-                progress,
-              );
-              return (
-                <>
-                  {progress < 1 && (
-                    <path
-                      className="log-conflict-replacement-route"
-                      d={`M${centerX} ${centerY - 48}V${bounds.toY}`}
-                      aria-hidden="true"
-                    />
-                  )}
-                  <g
-                    className="log-replication-entry log-conflict-entry"
-                    data-moving-replacement="true"
-                    data-replacement="true"
-                    data-present="true"
-                    data-progress={progress}
-                    transform={`translate(${centerX - bounds.width / 2} ${centerY - 48})`}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    aria-hidden="true"
-                  >
-                    <rect width={bounds.width} height="96" rx="2" />
-                    <text
-                      className="leader-recovery-index"
-                      x={bounds.width / 2}
-                      y="20"
-                    >
-                      A · {entry.index}
-                    </text>
-                    <text
-                      className="log-replication-entry-meta"
-                      x={bounds.width / 2}
-                      y="48"
-                    >
-                      {entry.term}
-                    </text>
-                    <text
-                      className="log-replication-command"
-                      x={bounds.width / 2}
-                      y="76"
-                    >
-                      {entry.command}
-                    </text>
-                  </g>
-                </>
-              );
-            })()}
-          {active &&
+          {state.nodes.map((node) => (
+            <RaftLogRow
+              key={node.id}
+              id={node.id}
+              role={node.role}
+              term={node.term}
+              commit={node.commit}
+              stored={node.log.at(-1)!.index}
+              bounds={layout.nodes[node.id]}
+              entryX={layout.entryX}
+              cellWidth={layout.cellWidth}
+              className="log-conflict-server"
+              writing={node.id === "B" && state.writing}
+              cells={[3, 4, 5].map((index) => {
+                const entry = node.log.find((item) => item.index === index);
+                const ghost =
+                  node.id === "B" && state.deleted && !entry
+                    ? returningLog.find((item) => item.index === index)
+                    : undefined;
+                return {
+                  index,
+                  label: index === 3 ? "1–3" : undefined,
+                  term: (entry ?? ghost)?.term,
+                  command: compact
+                    ? (entry ?? ghost)?.command.replace(/\s/g, "")
+                    : (entry ?? ghost)?.command,
+                  present: !!entry,
+                  committed: index <= node.commit,
+                  deleted: !!ghost,
+                  deletionProgress: reduced ? 1 : state.deletionProgress,
+                  checked: node.id === "B" && state.checked === index,
+                  tag:
+                    node.id === "B" && state.deleted && index === 3
+                      ? "Kept"
+                      : ghost
+                        ? compact && index === 4
+                          ? undefined
+                          : "Deleted"
+                        : undefined,
+                };
+              })}
+            />
+          ))}
+          {!reduced &&
             messages.map((message) => {
               if (elapsed <= message.start || elapsed >= message.end)
                 return null;
@@ -356,64 +173,35 @@ export function RaftLogConflictFigure() {
                 (elapsed - message.start) / (message.end - message.start),
               );
               return (
-                <g
+                <RaftLogPayload
                   key={message.kind}
-                  className="leader-recovery-packet"
-                  data-kind={message.kind}
-                  transform={`translate(${x} ${y})`}
-                  aria-hidden="true"
-                >
-                  <title>{message.label}</title>
-                  <rect x="-24" y="-12" width="48" height="24" rx="3" />
-                  <text textAnchor="middle" y="4">
-                    {message.short}
-                  </text>
-                </g>
+                  kind={message.kind}
+                  position={[x, y]}
+                  compact={compact}
+                  lines={message.payload}
+                  label={message.label}
+                />
               );
             })}
         </svg>
       </div>
-      <div
-        className="leader-recovery-controls"
-        role="group"
-        aria-label="Log conflict playback"
-      >
-        <button
-          type="button"
-          disabled={reduced || complete}
-          onClick={() => setPlaying((old) => !old)}
-        >
-          {playing && !complete ? "Pause" : "Play"}
-        </button>
-        <button
-          type="button"
-          disabled={state.step === 0}
-          onClick={() => goTo(state.step - 1)}
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          disabled={complete}
-          onClick={() =>
-            goTo(elapsed < beat.settledAt ? state.step : state.step + 1)
-          }
-        >
-          Next
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setElapsed(0);
-            setPlaying(!reduced);
-          }}
-        >
-          Replay
-        </button>
-        <span>
-          {state.step + 1} / {beats.length}
-        </span>
-      </div>
+      <RaftPlaybackControls
+        label="Log conflict playback"
+        reduced={reduced}
+        complete={complete}
+        playing={playing}
+        step={state.step}
+        count={beats.length}
+        onPlay={() => setPlaying((old) => !old)}
+        onBack={() => goTo(state.step - 1)}
+        onNext={() =>
+          goTo(elapsed < beat.settledAt ? state.step : state.step + 1)
+        }
+        onReplay={() => {
+          setElapsed(0);
+          setPlaying(!reduced);
+        }}
+      />
       <div
         className="leader-recovery-status"
         role="status"
@@ -421,10 +209,12 @@ export function RaftLogConflictFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p className="sr-only">{beat.detail}</p>
+        <p className="raft-step-explanation">{beat.detail}</p>
       </div>
       <figcaption>
-        A separate scenario. Only B’s uncommitted entries change.
+        A separate scenario. Only B’s uncommitted entries change. Each server’s
+        Commit label shows its local commitment knowledge; a packet’s Commit is
+        the leader’s advertised index.
         {reduced && " Use Next to step through."}
       </figcaption>
     </figure>
