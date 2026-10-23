@@ -95,6 +95,8 @@ function Bar({
 }
 
 export function BigDatabaseHardwareFigure() {
+  const ramGiB = (256 * 10 ** 9) / 2 ** 30;
+  const freeTiB = (6.7 * 10 ** 12) / 2 ** 40;
   return (
     <Figure
       title="The hardware each MySQL instance runs on"
@@ -142,18 +144,17 @@ export function BigDatabaseHardwareFigure() {
       <section className="big-db-resource big-db-hardware-resource">
         <div className="big-db-row">
           <span className="big-db-label">RAM</span>
-          <strong>256 GB · 39.1% buffer pool</strong>
+          <strong>About {Math.round(ramGiB)} GiB RAM</strong>
         </div>
         <TechnicalIcon kind="ram" />
         <Bar
-          percent={(100 / 256) * 100}
-          label="100 of 256 gigabytes allocated to the buffer pool, about 39.1 percent"
+          percent={(100 / ramGiB) * 100}
+          label={`100 GiB buffer pool within about ${Math.round(ramGiB)} GiB of RAM, about 42 percent`}
         />
         <div className="big-db-row big-db-note">
-          <span>100 GB buffer pool</span>
-          <span>156 GB outside the pool</span>
+          <span>100 GiB buffer pool</span>
+          <span>Other memory uses</span>
         </div>
-        <p className="big-db-note">8 × 32 GB RAM modules</p>
       </section>
       <section
         className="big-db-resource big-db-hardware-resource"
@@ -161,18 +162,56 @@ export function BigDatabaseHardwareFigure() {
       >
         <div className="big-db-row">
           <span className="big-db-label">Disk</span>
-          <strong>24 TB · 62.5% stored data</strong>
+          <strong>About 75% used</strong>
         </div>
         <TechnicalIcon kind="ssd" />
         <Bar
-          percent={(15 / 24) * 100}
+          percent={75}
           tone="storage"
-          label="15 terabytes of reported stored data relative to 24 terabytes of disk capacity, 62.5 percent"
+          label="Disk is about 75 percent used, including the dataset and other disk usage"
         />
         <div className="big-db-row big-db-note">
-          <span>15 TB stored data</span>
-          <span>9 TB outside this dataset</span>
+          <span>14.8 TiB dataset</span>
+          <span>About {freeTiB.toFixed(1)} TiB free</span>
         </div>
+      </section>
+    </Figure>
+  );
+}
+
+export function BigDatabaseWorkingSetBudgetFigure() {
+  return (
+    <Figure
+      title="The active data fits in memory"
+      caption="Estimated working set: two weeks of recent row and index pages plus the upper levels of every index. The bar shows the upper estimate."
+    >
+      <section className="big-db-resource">
+        <div className="big-db-row">
+          <span className="big-db-label">Working set</span>
+          <strong>33–56 GiB estimated</strong>
+        </div>
+        <Bar
+          percent={56}
+          label="The estimated working set occupies 33 to 56 GiB of the 100 GiB buffer pool. At the upper estimate, 44 GiB remains for other pages."
+        />
+        <div className="big-db-row big-db-note">
+          <span>56 GiB upper estimate</span>
+          <span>100 GiB pool</span>
+        </div>
+      </section>
+      <section className="big-db-resource">
+        <div className="big-db-row">
+          <span className="big-db-label">Stored data</span>
+          <strong>14.8 TiB</strong>
+        </div>
+        <Bar
+          percent={(100 / (14.8 * 1024)) * 100}
+          label="The entire 100 GiB buffer pool is only about 0.66 percent of the 14.8 TiB stored dataset."
+        />
+        <p className="big-db-note">
+          The 100 GiB pool is 0.66% of stored data and serves 98.7% of page
+          reads.
+        </p>
       </section>
     </Figure>
   );
@@ -190,14 +229,6 @@ const trafficChart = defineChart({
       y: "reads",
       z: () => "Reads",
       stroke: "var(--big-db-read)",
-      strokeWidth: 2.5,
-    }),
-    lineY(trafficSamples, {
-      id: "Writes",
-      x: "hour",
-      y: "writes",
-      z: () => "Writes",
-      stroke: "var(--big-db-write)",
       strokeWidth: 2.5,
     }),
   ],
@@ -252,27 +283,27 @@ const trafficChart = defineChart({
 export function BigDatabaseTrafficFigure() {
   return (
     <Figure
-      title="Reads and writes over 24 hours"
-      caption="Illustrative daily pattern; rates are means across all three regions."
+      title="Read traffic over 24 hours"
+      caption="Illustrative daily pattern for the total SELECT rate across the three primaries; not a measured trace."
     >
       <div className="big-db-traffic-summary">
-        {(["reads", "writes"] as const).map((series) => (
-          <div key={series}>
-            <IconLabel kind={series === "reads" ? "read" : "write"}>
-              {series}
-            </IconLabel>
-            <strong>
-              {trafficSummary[series].average.toLocaleString("en-US")} / s mean
-            </strong>
-          </div>
-        ))}
+        <div>
+          <IconLabel kind="read">Reads</IconLabel>
+          <strong>
+            {trafficSummary.reads.average.toLocaleString("en-US")} / s total
+          </strong>
+        </div>
+        <div>
+          <IconLabel kind="write">Writes</IconLabel>
+          <strong>1 per 100 reads</strong>
+        </div>
       </div>
       <Chart
         className="big-db-traffic-chart"
         definition={trafficChart}
         height={260}
-        ariaLabel="Reads and writes over 24 hours on a linear scale"
-        ariaDescription="Illustrative rates averaged across three regions. Reads average 10,000 per second and peak at 12,000. Writes average 100 per second and peak at 200. Both lines share a zero-based linear axis."
+        ariaLabel="Total SELECT rate across three primaries over 24 hours"
+        ariaDescription="An illustrative daily curve centered on the reported total of 10,000 SELECTs per second across all three primaries. The shape and 12,000 peak are illustrative, not measured."
       />
     </Figure>
   );

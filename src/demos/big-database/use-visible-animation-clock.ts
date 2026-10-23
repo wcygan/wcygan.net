@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-export function useVisibleAnimationClock() {
+export function useVisibleAnimationClock(duration = Infinity) {
   const figure = useRef<HTMLElement>(null);
   const clock = useRef(0);
   const [elapsed, setElapsed] = useState(0);
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
+  const [run, setRun] = useState(0);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -29,18 +30,26 @@ export function useVisibleAnimationClock() {
   }, []);
 
   useEffect(() => {
-    if (!visible || !documentVisible || reduced) return;
+    if (!visible || !documentVisible || reduced || clock.current >= duration)
+      return;
     let frame = 0;
     let previous: number | undefined;
     const tick = (now: number) => {
-      if (previous !== undefined) clock.current += now - previous;
+      if (previous !== undefined)
+        clock.current = Math.min(duration, clock.current + now - previous);
       previous = now;
       setElapsed(clock.current);
-      frame = requestAnimationFrame(tick);
+      if (clock.current < duration) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [visible, documentVisible, reduced]);
+  }, [visible, documentVisible, reduced, duration, run]);
 
-  return { figure, elapsed, reduced };
+  const replay = useCallback(() => {
+    clock.current = 0;
+    setElapsed(0);
+    setRun((value) => value + 1);
+  }, []);
+
+  return { figure, elapsed, reduced, replay };
 }

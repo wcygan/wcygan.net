@@ -76,8 +76,8 @@ it("preserves the explanation without moving packets under reduced motion", () =
     "Illustrative page reads: 99% memory · 1% disk.",
   );
   expect(view.container.querySelector(".big-db-reuse-packet")).toBeNull();
-  expect(view.getByText("100 GB · 99% hits")).toBeTruthy();
-  expect(view.getByText("15 TB · 1% misses")).toBeTruthy();
+  expect(view.getByText("100 GiB · 99% hits")).toBeTruthy();
+  expect(view.getByText("14.8 TiB · 1% misses")).toBeTruthy();
 });
 it("suspends while the document is hidden and resumes without catching up", () => {
   const { view, visible, advance } = setup();

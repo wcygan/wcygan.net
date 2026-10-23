@@ -9,32 +9,71 @@ import {
   BigDatabaseHardwareFigure,
   BigDatabaseTrafficFigure,
   BigDatabaseIncreasingIdsFigure,
+  BigDatabaseWorkingSetBudgetFigure,
 } from "~/components/BigDatabaseFigures";
 import { BigDatabaseRegionsFigure } from "~/components/BigDatabaseRegionsFigure";
 import { BigDatabaseWorkingSetFigure } from "~/components/BigDatabaseWorkingSetFigure";
+import { BigDatabaseTreeDepthFigure } from "~/components/BigDatabaseTreeDepthFigure";
 
-At LinkedIn, my team runs a [multi-primary](https://en.wikipedia.org/wiki/Multi-master_replication) MySQL system with roughly 20 billion rows across six tables and 15 TB of stored data. The tables aren't partitioned, and the system isn't sharded. Yet, our queries are still _surprisingly fast_. Most requests are small indexed lookups, and they repeatedly touch pages already in memory.
+At work, we run a [multi-primary](https://en.wikipedia.org/wiki/Multi-master_replication) MySQL system with roughly 20 billion rows across six tables and 14.8 TiB of stored data. The system spans three regions, each with one primary and two local replicas, with replication pipelines connecting the system.
 
-The system spans three regions, each with one primary and two local replicas.
+The tables aren't partitioned, and the system isn't sharded. Yet, our queries are still _surprisingly fast_. The reason is that the data we repeatedly access is much smaller than the data we keep, and nearly all of the active data fits in memory.
 
 <BigDatabaseRegionsFigure />
 
-Each instance has 32 cores, 256 GB of RAM, and 24 TB of disk. InnoDB's [buffer pool](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html) caches data and index pages in memory, so frequently accessed pages can be read without fetching them from disk.
+Each instance has 32 cores and about 238 GiB of RAM. InnoDB's [buffer pool](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html) is a RAM cache for data and index pages. Ours is 100 GiB: less than 1% of the stored dataset. The disk is about 75% full, with roughly 6.1 TiB free.
 
 <BigDatabaseHardwareFigure />
 
-We see about 10,000 SELECTs per second, reported as the mean across all three regions. The average query time is 0.48 milliseconds. We mainly serve point lookups or lookups on [indexed columns](https://dev.mysql.com/doc/refman/9.7/en/mysql-indexes.html). Each query touches only a small number of rows and pages, so the database doesn't need to read through billions of rows to answer a request.
+## The active data fits in memory
 
-<BigDatabaseTrafficFigure />
+Most rows stop changing after about two weeks. Of the rows changed in the last week, 99.96% were created in the last 12 days. Older rows remain available, but this workload rarely reads or updates them.
 
-This workload mostly reads recent rows. Because our primary-key IDs increase over time, those rows tend to occupy nearby pages in InnoDB's [clustered index](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html), which stores rows in primary-key order. Secondary indexes follow their own key order. Repeated reads make those pages hot and useful to keep in the buffer pool; older history is rarely retrieved in this workload.
+Two weeks of recent rows, together with the upper levels of every index, are estimated to occupy about 33–56 GiB. These are the routing pages that point lookups repeatedly visit, plus the recent row and index pages those lookups reach. This dataset fits comfortably in memory _without_ pushing the limits of the 100GiB buffer pool. The remaining 14+ TiB of data sits dormant on disk.
+
+<BigDatabaseWorkingSetBudgetFigure />
+
+Our primary-key IDs increase over time, so recent rows tend to occupy nearby pages in InnoDB's [clustered index](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html), which stores rows in primary-key order. Repeated reads keep the useful pages hot while most older history stays on disk.
 
 <BigDatabaseIncreasingIdsFigure />
 
-Our buffer-pool size is 100 GB, with a [hit rate](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html#innodb-buffer-pool-monitoring) of 98.7%. That rate measures page accesses served from memory rather than from disk. Frequently accessed pages tend to stay in memory; less frequently used pages can be evicted as space is needed. This depends on page access and cache pressure.
+The observed buffer-pool [hit rate](https://dev.mysql.com/doc/refman/9.7/en/innodb-buffer-pool.html#innodb-buffer-pool-monitoring) is 98.7%. In other words, a cache smaller than 1% of the stored data serves 98.7% of page reads from memory.
 
 <BigDatabaseWorkingSetFigure />
 
+Across the three primaries combined, we see about 10,000 SELECTs per second, with roughly one write per 100 reads. Most requests are point lookups or lookups on [indexed columns](https://dev.mysql.com/doc/refman/9.7/en/mysql-indexes.html), returning only a small number of rows.
+
+<BigDatabaseTrafficFigure />
+
+InnoDB uses B+ trees, whose internal pages route a lookup toward one leaf page. Even a table containing 20 billion rows can have an index only about four levels deep. For example, with 100 rows per leaf page and 1,000 child pointers per internal page, a root, two intermediate levels, and a leaf level can address 100 billion rows.
+
+<BigDatabaseTreeDepthFigure />
+
+The upper levels are small enough to stay cached. A primary-key lookup can then follow those routing pages in memory and fetch only the leaf containing the row. A [secondary-index lookup](https://dev.mysql.com/doc/refman/9.7/en/innodb-index-types.html) may also traverse the clustered index to retrieve the full row, unless the secondary index covers the query.
+
+A query that needs a disk page can take roughly 10× as long as one served entirely from memory. Keeping almost all page reads in memory makes the slower path uncommon. This is essential to understanding why our system remains fast despite being large.
+
+## Why we haven't needed sharding or partitioning
+
+A large row count alone doesn't make these indexed lookups expensive. Partitioning would help if our queries could prune away partitions, or if we needed to manage retention by dropping whole partitions. Here, indexes already narrow requests to a few pages, and the active pages fit in memory. Partitioning isn't necessary to achieve that access pattern. Sharding would spread storage and work across machines, but it would also introduce routing and cross-shard coordination that this workload hasn't needed.
+
+We are planning a [migration to TiDB](https://www.pingcap.com/blog/migrating-mysql-tidb/) in the future, but the rationale won't be because our current system can't scale. Instead, it can improve system resilience by avoiding a single-point-of-failure:
+
+- [How LinkedIn Evaluated a Distributed SQL Database](https://www.youtube.com/watch?v=DzZ-I8WL2jM)
+- [Experimenting with TiDB at Scale at LinkedIn
+  ](https://www.youtube.com/watch?v=YFNS3PCvuQQ)
+
+## What would break this
+
+This depends on how the data is used. It would weaken if:
+
+- Reads spread across old history, or large scans displace frequently used pages from the buffer pool.
+- Rows stay active for longer, or wider rows and more indexes push the working set beyond the pool.
+- Queries lose useful indexes or start returning many rows, increasing the pages touched per request.
+- Writes rise enough to make locking, page flushing, or replication the bottleneck.
+
+A restart or failover can also expose a cold cache while useful pages warm up again. But again, this is unlikely due to the active set being recent.
+
 ## Conclusion
 
-This workload combines small indexed lookups with repeated reads of recent rows. Those reads reuse pages in the buffer pool, which helps explain the high cache hit rate and fast average query time.
+The database keeps 14.8 TiB of history, but ordinary requests repeatedly use a much smaller set of pages. About 33–56 GiB of recent data and index routing pages fits in a 100 GiB cache. Combined with small indexed lookups, that explains how billions of rows coexist with a high cache hit rate and fast queries.

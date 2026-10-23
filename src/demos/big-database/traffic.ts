@@ -1,4 +1,4 @@
-// Illustrative regional means sampled every 15 minutes, including both day edges.
+// Illustrative aggregate primary traffic sampled every 15 minutes, including both day edges.
 // Periodic curves preserve the reported arithmetic daily averages.
 export const trafficSamples = Array.from({ length: 97 }, (_, index) => {
   const hour = index / 4;

@@ -54,11 +54,12 @@ export function BigDatabaseWorkingSetFigure() {
           </title>
           <desc id={`${id}-desc`}>
             The application sends concurrent page-read requests along eight
-            parallel lanes to the database. Its 100 GB buffer pool serves 99
-            percent from memory. One percent miss and wait on the 15 TB disk,
-            then load the page into the buffer pool before returning. Blue
-            requests return quickly; orange requests take longer. This
-            illustrative sample rounds the reported 98.7 percent hit rate.
+            parallel lanes to the database. Its 100 GiB buffer pool serves 99
+            percent from memory. One percent miss and fetch pages from the 14.8
+            TiB stored dataset, then load the page into the buffer pool before
+            returning. Blue requests return quickly; orange requests take
+            longer. This illustrative sample rounds the reported 98.7 percent
+            hit rate. Animation timing is illustrative, not measured latency.
           </desc>
           <defs>
             <marker
@@ -122,7 +123,7 @@ export function BigDatabaseWorkingSetFigure() {
             Buffer pool
           </text>
           <text x="48" y="220" className="big-db-reuse-hit-label">
-            100 GB · 99% hits
+            100 GiB · 99% hits
           </text>
           <text
             x="312"
@@ -130,10 +131,7 @@ export function BigDatabaseWorkingSetFigure() {
             textAnchor="end"
             className="big-db-reuse-latency big-db-reuse-hit-label"
           >
-            ~100 ns
-          </text>
-          <text x="312" y="220" textAnchor="end" className="big-db-reuse-muted">
-            RAM access
+            Fast path
           </text>
           <rect
             x="28"
@@ -147,7 +145,7 @@ export function BigDatabaseWorkingSetFigure() {
             Disk (SSD)
           </text>
           <text x="48" y="380" className="big-db-reuse-miss-label">
-            15 TB · 1% misses
+            14.8 TiB · 1% misses
           </text>
           <text
             x="312"
@@ -155,10 +153,7 @@ export function BigDatabaseWorkingSetFigure() {
             textAnchor="end"
             className="big-db-reuse-latency big-db-reuse-miss-label"
           >
-            ~50 µs
-          </text>
-          <text x="312" y="380" textAnchor="end" className="big-db-reuse-muted">
-            SSD access
+            Disk wait
           </text>
           <g
             className="big-db-reuse-hardware"

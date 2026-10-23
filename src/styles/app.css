@@ -20845,6 +20845,68 @@ stop.big-db-id-tone {
   fill: var(--big-db-muted);
   font-size: 16px;
 }
+/* Four-level index lookup; selected pages remain visible after playback. */
+.big-db-depth-svg {
+  --tree-read: var(--big-db-read);
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 480px;
+  block-size: auto;
+  margin-inline: auto;
+  font-family: "JetBrains Mono", Lilex, ui-monospace, monospace;
+}
+.big-db-depth-branch,
+.big-db-depth-route,
+.big-db-depth-page path {
+  fill: none;
+  stroke: var(--big-db-line);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.big-db-depth-branch {
+  stroke-dasharray: 3 4;
+}
+.big-db-depth-route[data-visited="true"] {
+  stroke: var(--big-db-read);
+  stroke-dasharray: none;
+}
+.big-db-depth-page {
+  --depth-page-color: var(--big-db-line);
+  --depth-page-fill: var(--big-db-paper);
+}
+.big-db-depth-page[data-cached="true"] {
+  --depth-page-color: var(--big-db-read);
+  --depth-page-fill: var(--big-db-read-surface);
+}
+.big-db-depth-page[data-hot="true"] {
+  --depth-page-color: var(--big-db-write);
+  --depth-page-fill: var(--big-db-write-surface);
+}
+.big-db-depth-page rect {
+  fill: var(--depth-page-fill);
+  stroke: var(--depth-page-color);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.big-db-depth-page path {
+  stroke: var(--depth-page-color);
+}
+.big-db-depth-page[data-visited="true"] rect {
+  stroke: oklch(0.85 0.12 145);
+  stroke-width: 2.5;
+}
+.big-db-depth-level {
+  fill: var(--big-db-ink);
+  font-size: 14px;
+}
+.big-db-depth-note {
+  fill: var(--big-db-muted);
+  font-size: 14px;
+}
+.big-db-depth > figcaption > .big-db-depth-status {
+  min-block-size: 3.3em;
+  color: #21201c;
+}
 .big-db-icon-label {
   display: inline-flex;
   align-items: center;
