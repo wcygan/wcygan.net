@@ -18,7 +18,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Software Engineer on the Checkout team at LinkedIn building mission-critical systems for our E-Commerce platform.",
+          "Will Cygan is a software engineer writing about databases, distributed systems, and software development.",
       },
     ],
     links: [

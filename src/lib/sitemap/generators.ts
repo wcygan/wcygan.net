@@ -3,7 +3,7 @@ import { isPublicPost } from "../services/post-publication";
 export const SITE_URL = "https://wcygan.net";
 export const SITE_TITLE = "Will Cygan";
 export const SITE_DESCRIPTION =
-  "Software Engineer on the Checkout team at LinkedIn building mission-critical systems for our E-Commerce platform.";
+  "Will Cygan is a software engineer writing about databases, distributed systems, and software development.";
 
 export interface PostEntry {
   slug: string;

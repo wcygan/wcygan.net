@@ -21429,8 +21429,8 @@ stop.big-db-id-tone {
 .total-order-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 20px;
-  padding: 20px;
+  gap: 16px;
+  padding: 16px;
   background: #f7f6f3;
   border-color: var(--total-order-track);
   color: var(--total-order-ink);
@@ -21455,7 +21455,7 @@ stop.big-db-id-tone {
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 48px;
+  gap: 24px;
 }
 .total-order-connections {
   position: absolute;
@@ -21500,7 +21500,7 @@ stop.big-db-id-tone {
 .total-order-log li {
   display: grid;
   place-items: center;
-  aspect-ratio: 1;
+  block-size: 32px;
   color: #000;
   font:
     500 16px/1 Lilex,
