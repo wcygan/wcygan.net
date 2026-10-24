@@ -1,13 +1,13 @@
 import {
   createRootRoute,
   HeadContent,
-  Link,
   Outlet,
   Scripts,
   useLocation,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { IdentityCard } from "~/components/IdentityCard";
+import { installCodeCopy } from "~/lib/code-copy";
 import "~/styles/app.css";
 
 export const Route = createRootRoute({
@@ -53,23 +53,7 @@ function RootDocument() {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const button = target.closest(".shiki button");
-      if (!(button instanceof HTMLElement)) return;
-      const code = button.parentElement?.querySelector("code");
-      if (!code) return;
-      navigator.clipboard
-        .writeText((code as HTMLElement).innerText)
-        .then(() => {
-          button.classList.add("copied");
-          setTimeout(() => button.classList.remove("copied"), 2000);
-        });
-    };
-    document.addEventListener("click", handler);
-    return () => document.removeEventListener("click", handler);
-  }, []);
+  useEffect(() => installCodeCopy(), []);
 
   return (
     <html lang="en">
@@ -77,11 +61,16 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         <div className="site-shell min-h-screen">
           <div className="container site-container">
             {isHomePage ? <IdentityCard variant="full" /> : null}
 
             <main
+              id="main-content"
+              tabIndex={-1}
               className={
                 isHomePage ? "main-section home-main-section" : "main-section"
               }

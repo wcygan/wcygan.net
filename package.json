@@ -42,7 +42,6 @@
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
     "shiki": "^4.0.2",
-    "shiki-transformer-copy-button": "^0.0.6",
     "tailwindcss": "^3",
     "three": "^0.186.0"
   },

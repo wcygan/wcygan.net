@@ -8,7 +8,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import rehypeShiki from "@shikijs/rehype";
-import { addCopyButton } from "shiki-transformer-copy-button";
+import type { ShikiTransformer } from "shiki";
 import {
   blogPostIndexPlugin,
   readBlogPosts,
@@ -80,30 +80,29 @@ export default defineConfig(({ command }) => ({
             transformers: [
               {
                 name: "add-line-numbers",
-                line(node: any, line: number) {
-                  node.properties = node.properties || {};
+                line(node, line) {
                   node.properties["data-line"] = line;
                 },
-              },
-              addCopyButton({ toggle: 2000 }),
+              } satisfies ShikiTransformer,
               {
-                name: "strip-copy-button-inline-handler",
-                pre(node: any) {
-                  node.properties = node.properties || {};
+                name: "add-code-copy-button",
+                pre(node) {
                   node.properties.tabIndex = 0;
-                  for (const child of node.children ?? []) {
-                    if (
-                      child.type === "element" &&
-                      child.tagName === "button" &&
-                      child.properties
-                    ) {
-                      delete child.properties.onclick;
-                      delete child.properties.onClick;
-                      child.properties["aria-label"] = "Copy code";
-                    }
-                  }
+                  node.children.push({
+                    type: "element",
+                    tagName: "button",
+                    properties: {
+                      type: "button",
+                      "data-code-copy": "",
+                      "data-copy-state": "idle",
+                      "aria-label": "Copy code",
+                      "aria-live": "polite",
+                      "aria-atomic": "true",
+                    },
+                    children: [{ type: "text", value: "Copy" }],
+                  });
                 },
-              },
+              } satisfies ShikiTransformer,
             ],
           },
         ],

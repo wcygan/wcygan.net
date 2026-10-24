@@ -181,6 +181,44 @@ export const Route = createFileRoute("/$slug")({
   component: BlogPostPage,
 });
 
+function WritingLink() {
+  const navigate = Route.useNavigate();
+
+  return (
+    <Link
+      className="post-back-link"
+      to="/"
+      hash="writing"
+      hashScrollIntoView={false}
+      onClick={(event) => {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.shiftKey
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        void navigate({
+          to: "/",
+          hash: "writing",
+          hashScrollIntoView: false,
+        }).then(() => {
+          const writing = document.getElementById("writing");
+          writing?.scrollIntoView({ behavior: "instant" });
+          writing?.focus({ preventScroll: true });
+        });
+      }}
+    >
+      ← Writing
+    </Link>
+  );
+}
+
 function BlogPostPage() {
   const { meta, moduleKey, slug } = Route.useLoaderData();
   const [postModule, setPostModule] = useState<MdxModule | null>(null);
@@ -237,9 +275,7 @@ function BlogPostPage() {
   return (
     <div className={showToc ? "post-shell post-shell-with-toc" : "post-shell"}>
       <article className="blog-post h-entry">
-        <Link className="post-back-link" to="/">
-          ← Back
-        </Link>
+        <WritingLink />
         <h1
           id={postTitleTocId}
           className={
@@ -276,7 +312,9 @@ function BlogPostPage() {
           </Suspense>
         </div>
 
-        <footer />
+        <nav className="post-navigation" aria-label="Article navigation">
+          <WritingLink />
+        </nav>
       </article>
 
       {showToc ? (

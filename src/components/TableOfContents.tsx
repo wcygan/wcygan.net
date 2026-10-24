@@ -6,7 +6,6 @@ import {
 interface TableOfContentsProps {
   activeId?: string;
   items: readonly TableOfContentsItem[] | undefined;
-  showTitle?: boolean;
 }
 
 interface TableOfContentsSection extends TableOfContentsItem {
@@ -51,11 +50,7 @@ function TableOfContentsLink({
   );
 }
 
-export function TableOfContents({
-  activeId,
-  items,
-  showTitle = true,
-}: TableOfContentsProps) {
+export function TableOfContents({ activeId, items }: TableOfContentsProps) {
   if (!shouldShowTableOfContents(items)) {
     return null;
   }
@@ -65,7 +60,6 @@ export function TableOfContents({
 
   return (
     <nav className="table-of-contents" aria-label="Table of contents">
-      {showTitle ? <h2 className="table-of-contents-title">Contents</h2> : null}
       <ol className="table-of-contents-list">
         {sections.map((section) => (
           <li

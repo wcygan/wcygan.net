@@ -95,9 +95,6 @@ export function DatabaseInternalsReference({
         </nav>
 
         <div className="database-internals-reference-chapters">
-          <p className="database-internals-reference-chapters-label">
-            Relevant chapters
-          </p>
           <ul>
             {chapters.map(({ number, concept }) => {
               const chapter = DATABASE_INTERNALS_CHAPTERS[number];

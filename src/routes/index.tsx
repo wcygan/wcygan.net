@@ -16,7 +16,7 @@ function HomePage() {
   return (
     <div className="home-page">
       <section className="home-section" aria-labelledby="writing">
-        <h2 className="home-section-title" id="writing">
+        <h2 className="home-section-title" id="writing" tabIndex={-1}>
           Writing
         </h2>
         <HomeWritingList posts={posts} />

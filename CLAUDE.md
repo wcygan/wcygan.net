@@ -13,6 +13,7 @@ just dev              # Portless dev server at https://wcygan.localhost
 bun run pre-commit  # Format, typecheck, and tests
 bun run test        # Vitest unit tests
 bun run build       # Production build and prerendering
+bun scripts/verify-reading-path.ts # Browser checks with the dev server running
 ```
 
 `just dev` runs Vite through Portless. It uses `portless.json` and
@@ -236,8 +237,10 @@ pages remain quiet and editorial.
 
 The compact variant is the only shared article header: a small Inter name/role
 line followed by the five text links. It does not render the Canvas wordmark or
-model media. Article pages place the visible 44px `← Back` link before the post
-title; keep the page `h1` exclusively for that title.
+model media. Article pages place a visible 44px `← Writing` link before the post
+title and after its content. It returns to and focuses the homepage Writing
+section while browser Back and Forward preserve reading positions. Keep the
+page `h1` exclusively for the article title.
 
 ## Homepage composition
 
