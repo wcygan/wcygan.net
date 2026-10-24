@@ -158,9 +158,9 @@ public final class KVStore {
 <div className="top-k-complexity">
   <section>
     <h5>Time</h5>
-    <p>
-      <code>topK(k)</code> takes <code>O(n + e + q log q)</code>.
-    </p>
+
+    `topK(k)` takes `O(n + e + q log q)`.
+
     <ul>
       <li>
         Scan <code>n</code> stored keys.
@@ -178,13 +178,13 @@ public final class KVStore {
         <code>e</code> is the expired timestamps removed by that read.
       </li>
     </ul>
+
   </section>
   <section>
     <h5>Space</h5>
-    <p>
-      Stored state takes <code>O(n + r)</code>; <code>topK</code> uses{" "}
-      <code>O(q)</code> extra space.
-    </p>
+
+    Stored state takes `O(n + r)`; `topK` uses `O(q)` extra space.
+
     <ul>
       <li>
         Keep <code>n</code> keys and <code>r</code> stored read timestamps.
@@ -194,6 +194,7 @@ public final class KVStore {
         included in a <code>topK</code> query, or deleted.
       </li>
     </ul>
+
   </section>
 </div>
 
@@ -315,10 +316,9 @@ public final class KVStore {
 <div className="top-k-complexity">
   <section>
     <h5>Time</h5>
-    <p>
-      A clean <code>topK(k)</code> usually takes <code>O(k log h)</code>, where{" "}
-      <code>h</code> is the heap size.
-    </p>
+
+    A clean `topK(k)` usually takes `O(k log h)`, where `h` is the heap size.
+
     <ul>
       <li>
         Take up to <code>k</code> current leaders from the heap.
@@ -338,14 +338,14 @@ public final class KVStore {
         <code>put</code> and <code>delete</code> average <code>O(1)</code>.
       </li>
     </ul>
+
   </section>
   <section>
     <h5>Space</h5>
-    <p>
-      After a successful read or nonzero <code>topK</code>, stored state takes{" "}
-      <code>O(n + a + c + 1)</code>; the query uses <code>O(k)</code> extra
-      space.
-    </p>
+
+    After a successful read or nonzero `topK`, stored state takes
+    `O(n + a + c + 1)`; the query uses `O(k)` extra space.
+
     <ul>
       <li>
         Keep <code>n</code> stored keys and <code>a</code> access records in the
@@ -357,6 +357,7 @@ public final class KVStore {
       </li>
       <li>Records for deleted keys stay in the deque until they expire.</li>
     </ul>
+
   </section>
 </div>
 
