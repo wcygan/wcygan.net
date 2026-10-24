@@ -209,14 +209,7 @@ export function RaftLogConflictFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p className="raft-step-explanation">{beat.detail}</p>
       </div>
-      <figcaption>
-        A separate scenario. Only B’s uncommitted entries change. Each server’s
-        Commit label shows its local commitment knowledge; a packet’s Commit is
-        the leader’s advertised index.
-        {reduced && " Use Next to step through."}
-      </figcaption>
     </figure>
   );
 }

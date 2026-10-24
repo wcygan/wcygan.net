@@ -89,7 +89,6 @@ export type TimeoutMeter = {
 export type ActSnapshot = {
   kind: ActKind;
   title: string;
-  tag: string;
   phase: ActPhase;
   rows: EventRow[];
   worker: WorkerMarker | null;
@@ -100,8 +99,6 @@ export type ActSnapshot = {
   // Horizontal footer motion for work that is happening without a new row
   // landing every frame: Workflow replay, Activity execution, retry, or publish.
   footerProgress: FooterProgress | null;
-  footnote: string;
-  showFootnote: boolean;
   // The act's final row count, fixed across the animation so the panel can be
   // sized to its own history length instead of a shared worst-case slot grid.
   maxRows: number;
@@ -116,7 +113,6 @@ export type CrashSnapshot = {
   progress: number;
   playing: boolean;
   activeAct: ActKind;
-  caption: string;
   workflowTask: ActSnapshot;
   activity: ActSnapshot;
 };
@@ -239,7 +235,6 @@ export function deriveCrashSnapshot(state: CrashDemoState): CrashSnapshot {
     progress,
     playing: state.playing,
     activeAct,
-    caption: caption(activeAct === "workflow-task" ? workflowTask : activity),
     workflowTask,
     activity,
   };
@@ -260,8 +255,6 @@ function deriveWorkflowAct(local: number): ActSnapshot {
   const meta = {
     kind: "workflow-task" as const,
     title: "Crash during a Workflow Task",
-    tag: "Workflow Task",
-    footnote: "Recovery is written to history: timeout, reschedule, replay.",
     maxRows: WORKFLOW_TASK_PLAN.length,
   };
 
@@ -289,7 +282,6 @@ function deriveWorkflowAct(local: number): ActSnapshot {
     timeout: workflowTimeout(local, phase),
     attempt: null,
     footerProgress: workflowFooterProgress(local, phase),
-    showFootnote: phase === "complete",
   };
 }
 
@@ -301,8 +293,6 @@ function deriveActivityAct(local: number): ActSnapshot {
   const meta = {
     kind: "activity" as const,
     title: "Crash during an Activity Task",
-    tag: "Activity Task",
-    footnote: "The retry leaves no trace, so the Activity must be idempotent.",
     maxRows: ACTIVITY_PLAN.length,
   };
 
@@ -344,12 +334,11 @@ function deriveActivityAct(local: number): ActSnapshot {
     timeout: activityTimeout(local, phase),
     attempt,
     footerProgress: activityFooterProgress(local, phase),
-    showFootnote: phase === "complete",
   };
 }
 
 function idleAct(
-  meta: Pick<ActSnapshot, "kind" | "title" | "tag" | "footnote" | "maxRows">,
+  meta: Pick<ActSnapshot, "kind" | "title" | "maxRows">,
   timeoutLabel: string,
 ): ActSnapshot {
   return {
@@ -360,7 +349,6 @@ function idleAct(
     timeout: { active: false, remaining: 1, label: timeoutLabel, rowSeq: -1 },
     attempt: null,
     footerProgress: null,
-    showFootnote: false,
   };
 }
 
@@ -515,40 +503,4 @@ function activityFooterProgress(
     value,
     tone: "green",
   };
-}
-
-function caption(act: ActSnapshot): string {
-  const lines: Record<ActPhase, string> =
-    act.kind === "workflow-task"
-      ? {
-          idle: "",
-          scheduling: "A Workflow Task is scheduled and Worker A picks it up.",
-          running: "Worker A is executing the Workflow Task.",
-          waiting:
-            "Worker A died. The task times out — and that timeout is written to history as WorkflowTaskTimedOut.",
-          recovering:
-            "The task is rescheduled and another Worker replays the durable history — every recovery step is a row.",
-          retrying: "",
-          publishing: "",
-          complete:
-            "The Workflow Task finished on a second Worker, with the whole recovery visible in Event History.",
-        }
-      : {
-          idle: "",
-          scheduling:
-            "A completed Workflow Task schedules the chargeCard Activity Task.",
-          running:
-            "A Worker started attempt 1 of the Activity Task — a real side effect runs — but no ActivityTaskStarted is recorded yet.",
-          waiting:
-            "The Worker started attempt 1, then crashed mid-charge. The start-to-close timeout fires — and none of this reaches Event History.",
-          retrying:
-            "Temporal dispatches a fresh Activity Task for attempt 2. ActivityTaskScheduled stays the only recorded Activity event — the retry leaves no trace.",
-          publishing:
-            "The terminal publish begins: ActivityTaskStarted appears for the successful attempt, with ActivityTaskCompleted following as the terminal event.",
-          recovering: "",
-          complete:
-            "Only now do ActivityTaskStarted and ActivityTaskCompleted land, recording the final attempt. History never showed the first charge, so the Activity must be idempotent.",
-        };
-
-  return lines[act.phase];
 }

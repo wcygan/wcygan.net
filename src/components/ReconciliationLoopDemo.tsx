@@ -14,22 +14,18 @@ const STEPS = [
   {
     num: 1,
     title: "1. Query lake",
-    desc: "Airflow triggers Trino to scan Iceberg & find drift",
   },
   {
     num: 2,
     title: "2. Publish event",
-    desc: "Trino emits repair message to Kafka log",
   },
   {
     num: 3,
     title: "3. Apply idempotently",
-    desc: "Flink consumes event & upserts MySQL row",
   },
   {
     num: 4,
     title: "4. Close loop",
-    desc: "Debezium streams change back into Iceberg",
   },
 ] as const;
 
@@ -44,19 +40,11 @@ export function ReconciliationLoopDemo() {
       data-graphic-kind="dom"
       data-phase={snapshot.phase}
       aria-labelledby="reconciliation-title"
-      aria-describedby="reconciliation-description reconciliation-caption"
     >
       <header className="reconciliation-header">
-        <div>
-          <p className="article-graphic-title" id="reconciliation-title">
-            Scheduled reconciliation repairs data drift
-          </p>
-          <p id="reconciliation-description">
-            A scheduled query identifies stale records in the database,
-            publishes idempotent repair events, and streams the fixed state back
-            to the lake.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="reconciliation-title">
+          Scheduled reconciliation repairs data drift
+        </p>
         <DemoReplayButton
           ariaLabel="Replay reconciliation lifecycle"
           isComplete={snapshot.isComplete}
@@ -88,7 +76,6 @@ export function ReconciliationLoopDemo() {
                 </div>
                 <div className="reconciliation-step-text">
                   <strong>{s.title}</strong>
-                  <span>{s.desc}</span>
                 </div>
               </li>
             );
@@ -224,11 +211,6 @@ export function ReconciliationLoopDemo() {
           ? "Reconciliation complete. Airflow identified drift via Trino, emitted repair event to Kafka, Flink idempotently updated MySQL user 42 to pro, and Debezium change data capture indexed the clean record into Iceberg."
           : ""}
       </p>
-
-      <figcaption id="reconciliation-caption">
-        Because repair events are applied idempotently by Flink, running the
-        scheduled reconciliation repeatedly is safe and guarantees convergence.
-      </figcaption>
     </figure>
   );
 }

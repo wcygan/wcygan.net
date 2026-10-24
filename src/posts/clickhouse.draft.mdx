@@ -31,15 +31,7 @@ under Apache 2.0; [ClickHouse Cloud](https://clickhouse.com/docs/cloud) is a man
 offering around the database. This post uses the open-source server locally.
 
 I'll use web events throughout: a time, country, event type, and revenue in
-integer cents. The ten visuals are small teaching models. Their counts describe
-their own datasets; they are not measurements of ClickHouse performance.
-Start with the question and the path the data takes. Then inspect how storage
-and query execution turn many events into a small answer.
-
-Each demo plays once when it comes into view and stops at its final result.
-Use Pause to inspect a moment, Next to advance by hand, and Replay to start
-again. Changing a control or moving a 3D camera pauses its tour. With reduced
-motion enabled, the same explanations remain available through manual controls.
+integer cents.
 
 ## What kind of question does it answer?
 
@@ -204,10 +196,6 @@ can have several active parts, each with its own sorted data and index.
 Background merges create larger parts from smaller ones and replace the active
 inputs. [The parts guide explains their lifecycle](https://clickhouse.com/docs/concepts/core-concepts/parts).
 
-In the 3D view, separate trays are separate active parts. Insert the next batch,
-then merge them. Rotating the camera helps inspect the groups, but the controls
-and status also explain the result without a 3D renderer.
-
 <ClickHousePartsDemo />
 
 The rows are queryable before the background merge. Ordinary MergeTree preserves
@@ -252,8 +240,8 @@ dataset. [The Distributed engine documents query routing and aggregation](https:
 <ClickHouseClusterDemo />
 
 In this 3D teaching topology, moving across the scene changes the data subset;
-moving in depth changes the copy of that subset. Switch replicas and check that
-the answer stays the same. The model assumes those replicas are caught up.
+moving in depth changes the copy of that subset. The model assumes those replicas
+are caught up.
 
 This is a classic self-managed topology. ReplicatedMergeTree uses coordination
 through ClickHouse Keeper or ZooKeeper; replication is asynchronous and needs

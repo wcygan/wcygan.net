@@ -64,7 +64,6 @@ export function WorkflowActivitiesDemo() {
         <p className="article-graphic-title" id="workflow-activities-title">
           Booking Workflow
         </p>
-        <p>An example workflow that retries when the payment activity fails</p>
       </div>
 
       <canvas

@@ -85,11 +85,11 @@ export function namedStateSummary(state: NamedState): string {
     (id) => `${state.cells[id].name} = ${state.cells[id].committedCount}`,
   ).join(", ");
   if (state.action === "restart") {
-    return `Handler memory is now zero in all three cells. Their committed SQLite counters remain ${saved}.`;
+    return `JavaScript: 0 · SQLite: ${saved}`;
   }
   if (state.selected) {
     const cell = state.cells[state.selected];
-    return `The illustrated already-acknowledged request to ${cell.name} has committed SQLite counter ${cell.committedCount} and temporary JavaScript counter ${cell.volatileCount}. The other named cells are unchanged.`;
+    return `${cell.name}: SQLite ${cell.committedCount} · JavaScript ${cell.volatileCount}`;
   }
-  return `Each named cell has its own handler memory and private SQLite counter: ${saved}.`;
+  return `${saved}`;
 }

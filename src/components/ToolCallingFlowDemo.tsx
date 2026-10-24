@@ -54,15 +54,12 @@ export function ToolCallingFlowDemo() {
       data-graphic-kind="svg"
       data-phase={snapshot.phase}
       aria-labelledby="tool-calling-network-title"
-      aria-describedby="tool-calling-network-description tool-calling-network-caption"
+      aria-describedby="tool-calling-network-description"
     >
       <header className="tool-calling-network-header">
-        <div>
-          <p className="article-graphic-title" id="tool-calling-network-title">
-            Agent Harness: Tool Call Flow
-          </p>
-          <p>LLMs request real-world information from the harness</p>
-        </div>
+        <p className="article-graphic-title" id="tool-calling-network-title">
+          Agent Harness: Tool Call Flow
+        </p>
         <button
           className="tool-calling-network-replay"
           type="button"
@@ -137,11 +134,6 @@ export function ToolCallingFlowDemo() {
           ? "Complete. The external LLM API requested a tool, but the local application harness validated and executed it before returning the final answer."
           : ""}
       </p>
-
-      <figcaption id="tool-calling-network-caption">
-        Tools are programs that run in the agent harness; they aren't executed
-        by the LLM directly
-      </figcaption>
     </figure>
   );
 }

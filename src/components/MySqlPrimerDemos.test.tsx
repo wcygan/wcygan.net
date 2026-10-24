@@ -45,7 +45,7 @@ describe("MySQL primer workbenches", () => {
     fireEvent.click(next);
     fireEvent.click(next);
     expect(next.hasAttribute("disabled")).toBe(true);
-    expect(view.getByRole("status").textContent).toContain("two orders");
+    expect(view.getByRole("status").textContent).toBe("Orders 101 and 102");
     expect(view.getAllByText("Orders 101 and 102")[0]).toBeTruthy();
     fireEvent.click(view.getByRole("button", { name: "Reset" }));
     expect(next.hasAttribute("disabled")).toBe(false);
@@ -82,18 +82,14 @@ describe("MySQL primer workbenches", () => {
     fireEvent.click(view.getByRole("button", { name: "Reserve one book" }));
     fireEvent.click(view.getByRole("button", { name: "Insert order 104" }));
     fireEvent.click(view.getByRole("button", { name: "Commit both" }));
-    expect(view.getByRole("status").textContent).toContain("stock is 1");
-    expect(view.getByRole("status").textContent).toContain(
-      "order 104 is present",
-    );
+    expect(view.getByRole("status").textContent).toContain("stock 1");
+    expect(view.getByRole("status").textContent).toContain("order 104 present");
     fireEvent.click(view.getByRole("button", { name: "Reset" }));
     fireEvent.click(view.getByRole("button", { name: "Start transaction" }));
     fireEvent.click(view.getByRole("button", { name: "Reserve one book" }));
     fireEvent.click(view.getByRole("button", { name: "Roll back" }));
-    expect(view.getByRole("status").textContent).toContain("stock is 2");
-    expect(view.getByRole("status").textContent).toContain(
-      "order 104 is absent",
-    );
+    expect(view.getByRole("status").textContent).toContain("stock 2");
+    expect(view.getByRole("status").textContent).toContain("order 104 absent");
   });
 
   it("shows which enforced rule rejects each invalid write", () => {
@@ -105,7 +101,7 @@ describe("MySQL primer workbenches", () => {
     ]) {
       fireEvent.click(view.getByRole("button", { name: button }));
       expect(view.getByRole("status").textContent).toContain(rule);
-      expect(view.getByRole("status").textContent).toContain("unchanged");
+      expect(view.getByRole("status").textContent).toContain("Rejected");
     }
     fireEvent.click(view.getByRole("button", { name: "Valid order" }));
     expect(view.getByRole("status").textContent).toContain("Accepted");

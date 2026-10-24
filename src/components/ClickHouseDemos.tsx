@@ -246,23 +246,20 @@ function Database({
 function Figure({
   name,
   title,
-  subtitle,
   playback,
   query,
   options,
   children,
   status,
-  caption,
 }: {
   name: string;
   title: string;
-  subtitle: string;
+
   playback: Playback;
   query?: string;
   options?: ReactNode;
   children: ReactNode;
   status: ReactNode;
-  caption: string;
 }) {
   const id = useId();
   return (
@@ -275,13 +272,11 @@ function Figure({
       data-playing={playback.playing}
       data-running={playback.running}
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header className="ch-header">
         <p className="ch-title article-graphic-title" id={`${id}-title`}>
           {title}
         </p>
-        <p className="ch-subtitle">{subtitle}</p>
       </header>
       {options && <div className="ch-options">{options}</div>}
       <div className="ch-controls">
@@ -306,9 +301,6 @@ function Figure({
         <button type="button" onClick={playback.reset}>
           Reset
         </button>
-        {playback.reducedMotion && (
-          <span className="ch-motion-note">Reduced motion · use Next step</span>
-        )}
       </div>
       <div
         className="ch-stage"
@@ -329,9 +321,6 @@ function Figure({
         </p>
         {status}
       </div>
-      <figcaption className="ch-caption" id={`${id}-caption`}>
-        {caption}
-      </figcaption>
     </figure>
   );
 }
@@ -384,7 +373,6 @@ export function ClickHouseWorkloadDemo() {
     <Figure
       name="workload"
       title="One record or many-row analytics"
-      subtitle="The question changes the shape of the answer."
       playback={playback}
       query={
         analytical
@@ -418,19 +406,16 @@ export function ClickHouseWorkloadDemo() {
         </div>
       }
       status={
-        <p>
-          {step === 0
-            ? "A query asks either for event 6 or for totals across the 12-event dataset."
-            : step === 1
-              ? analytical
-                ? "Filter the input to buy events, then group the matching amounts by day."
-                : "Select event 6: day 2, buy, 70 cents. The other records are outside this answer."
-              : analytical
-                ? "Four results: day 1 = 65¢, day 2 = 70¢, day 3 = 95¢, day 4 = 75¢. Total: 305¢."
-                : "One result: event 6, day 2, buy, 70¢. A detailed record answers a different question from daily totals."}
-        </p>
+        step === 2 && (
+          <p>
+            {analytical
+              ? Object.entries(totals)
+                  .map(([day, amount]) => `Day ${day}: ${amount}¢`)
+                  .join(" · ")
+              : "#6 · Day 2 · buy · 70¢"}
+          </p>
+        )
       }
-      caption="Illustrative 12-event workload model. Orange is the question, blue is source data, and green is the answer. Highlights indicate logical inputs; neither physical reads nor performance are measured."
     >
       <Diagram
         width={compact ? 320 : 620}
@@ -557,11 +542,7 @@ export function ClickHouseWorkloadDemo() {
                 </Text>
               </>
             )
-          ) : (
-            <Text x={result.x + 16} y={result.y + 65} muted>
-              Run the query to see its answer.
-            </Text>
-          )}
+          ) : null}
         </Panel>
         {compact && (
           <Text x={178} y={151} tone="orange">
@@ -603,29 +584,20 @@ export function ClickHousePipelineDemo() {
         [port(nodes[1], "bottom"), port(nodes[2], "top")],
         [port(nodes[2], "left"), port(nodes[3], "right")],
       ];
-  const descriptions = [
-    "Baseline: source and ClickHouse contain 12 events; the dashboard shows 305¢. Commit the next three-row event block.",
-    "The source has 15 events and 380¢, but three new events are pending delivery. The stored total and the dashboard remain 305¢.",
-    "The configured feed delivers an INSERT block. ClickHouse now contains 15 events and 380¢; the existing dashboard snapshot still shows 305¢.",
-    "A new query refreshes the dashboard to 380¢. Delivery makes data queryable; querying obtains a new answer.",
-  ];
   const tones: Tone[] = ["orange", "yellow", "blue", "green"];
   return (
     <Figure
       name="pipeline"
       title="From a source event to a fresh answer"
-      subtitle="Commit, deliver, then query: three separate moments."
       playback={playback}
       status={
         <>
-          <p>{descriptions[step]}</p>
           <p className="ch-readable-metrics">
             Source: {model.sourceRows} rows · Ingested: {model.ingestedRows} ·
             Pending: {model.pendingRows} · Dashboard: {model.dashboardRevenue}¢
           </p>
         </>
       }
-      caption="Generic append-only event/feed model, with one logical delivery and a dashboard snapshot. Ingestion must be configured; source commits do not automatically reach the open-source server. Cloud ClickPipes is not bundled with it. Event counts and teaching beats are illustrative, not latency measurements."
     >
       <Diagram
         width={compact ? 320 : 620}
@@ -680,9 +652,6 @@ export function ClickHousePipelineDemo() {
                     tone="yellow"
                   >
                     {model.pendingRows} pending
-                  </Text>
-                  <Text x={bounds.x + 16} y={bounds.y + 88} muted>
-                    capture / buffer / deliver
                   </Text>
                 </>
               )}
@@ -754,13 +723,6 @@ export function ClickHousePipelineDemo() {
   );
 }
 
-const AGGREGATION_STEPS = [
-  "Twelve input events enter four three-row blocks. A block is a batch of rows, not a separate server.",
-  "WHERE event = 'buy' keeps seven buy events. Five view events are crossed out and contribute no rows to the aggregate.",
-  "Each block produces a partial sum: 65¢, 70¢, 95¢, and 75¢. These four values replace the larger input for the final combine.",
-  "Combine 65 + 70 + 95 + 75 = 305¢. The result equals summing all seven matching raw events.",
-] as const;
-
 export function ClickHouseAggregationDemo() {
   const compact = useCompactDiagram();
   const playback = useClickHousePlayback(4);
@@ -787,11 +749,19 @@ export function ClickHouseAggregationDemo() {
     <Figure
       name="aggregation"
       title="Filter, aggregate, combine"
-      subtitle="Rows become partial sums before becoming one answer."
       playback={playback}
       query="SELECT sum(revenue_cents) FROM events WHERE event = 'buy'"
-      status={<p>{AGGREGATION_STEPS[step]}</p>}
-      caption="Exact sums for an illustrative four-block execution model. Blue routes carry input, yellow identifies filtering, purple carries partial sums, and green is the final answer. Block sizes, execution order, and parallelism are simplified; no timings are measured."
+      status={
+        <p>
+          {step === 0
+            ? `${EVENTS.length} rows · ${blocks.length} blocks`
+            : step === 1
+              ? `${blocks.reduce((count, block) => count + block.matchingRows.length, 0)} matching rows`
+              : step === 2
+                ? blocks.map((block) => `${block.subtotal}¢`).join(" + ")
+                : `${combineBlockTotals(blocks)}¢`}
+        </p>
+      }
     >
       <Diagram
         width={compact ? 320 : 620}
@@ -966,7 +936,6 @@ export function ClickHousePruningDemo() {
     <Figure
       name="pruning"
       title="Sparse marks narrow the scan"
-      subtitle="Candidates first. Matching rows second."
       playback={playback}
       query={`WHERE day BETWEEN ${range.from} AND ${range.to} · toy ORDER BY day`}
       options={
@@ -990,13 +959,12 @@ export function ClickHousePruningDemo() {
       status={
         <p>
           {step === 0
-            ? `Each mark stores its granule’s starting day. Conservative range checks retain ${model.candidateGranules} of ${model.totalGranules} granules as candidates.`
+            ? `${model.candidateGranules} / ${model.totalGranules} candidate granules`
             : step === 1
-              ? `${model.candidateRows} rows remain in candidate granules. Their individual days still need the WHERE test; a sparse mark does not identify an exact row.`
-              : `${model.matchingRows} of the ${model.candidateRows} candidate rows match. No matching row was excluded by pruning; selected granules may include false positives.`}
+              ? `${model.candidateRows} candidate rows`
+              : `${model.matchingRows} / ${model.candidateRows} matching rows`}
         </p>
       }
-      caption="One toy sorted part with tiny two-row granules. Yellow marks select blue candidate granules; green matches pass WHERE and red false positives are discarded. Counts illustrate conservative pruning, not real granule sizes or measured I/O."
     >
       <Diagram
         width={compact ? 320 : 620}
@@ -1199,24 +1167,21 @@ export function ClickHouseMaterializedViewDemo() {
   const outgoing: readonly Point[] = compact
     ? [port(transform, "bottom"), port(target, "top")]
     : [port(transform, "right"), [410, 130], [410, 190], port(target, "left")];
-  const descriptions = [
-    "The target already contains daily totals from 12 earlier inserts: 305¢. The next block contains three new events.",
-    "Insert batch 1: three new rows enter the source. Only this inserted block feeds the incremental view; the 12 earlier rows are not rescanned.",
-    "Filter and group batch 1: day 3 contributes +25¢ and day 5 contributes +50¢. These are deltas, not a rescan of the source.",
-    "Add the first deltas. The target total is now 380¢: 305 + 25 + 50. Existing daily values remain part of the total.",
-    "Insert batch 2: another three new rows feed the view. The 15 earlier source rows are not rescanned.",
-    "Filter and group batch 2: day 4 contributes +20¢ and day 6 contributes +30¢. The view ignores the new view event.",
-    "Add the second deltas. The target total is 430¢: 380 + 20 + 30. Both batches have been applied once in this append-only model.",
-  ];
   return (
     <Figure
       name="materialized-view"
       title="An inserted block updates daily totals"
-      subtitle="An incremental view transforms the new block, then adds its result."
       playback={playback}
       query="INSERT block → WHERE event = 'buy' → GROUP BY day → aggregate target"
-      status={<p>{descriptions[step]}</p>}
-      caption="Append-only incremental materialized-view model with a target populated by prior inserts. Blue is the inserted block, purple is its grouped delta, and green is the stored aggregate. Backfill, duplicate handling, updates, deletes, and merges require separate design. Counters and motion are illustrative, not measured performance."
+      status={
+        <p>
+          {phase === 2
+            ? Object.entries(deltas)
+                .map(([day, amount]) => `Day ${day}: +${amount}¢`)
+                .join(" · ")
+            : `Target: ${total}¢`}
+        </p>
+      }
     >
       <Diagram
         width={compact ? 320 : 620}
@@ -1298,9 +1263,6 @@ export function ClickHouseMaterializedViewDemo() {
               />
               <Text x={source.x + 12} y={source.y + 165} muted>
                 {oldRows} earlier rows
-              </Text>
-              <Text x={source.x + 12} y={source.y + 186} muted>
-                stay in source · no rescan
               </Text>
             </>
           )}

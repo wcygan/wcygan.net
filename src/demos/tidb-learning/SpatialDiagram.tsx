@@ -70,7 +70,6 @@ export function SpatialDiagram({
         b.points.reduce((n, p) => n + p.depth, 0) / b.points.length,
   );
   const labels = layoutLabels(world.labels, project, width, height);
-  const guideId = `tidb-${id}-camera-guide`;
   const zoom = (change: number) =>
     setCamera((c) => ({
       ...c,
@@ -112,7 +111,6 @@ export function SpatialDiagram({
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label={`${id}: orbitable 3D view`}
-          aria-describedby={guideId}
           tabIndex={0}
           onPointerDown={(event) => {
             if (event.button !== 0) return;
@@ -177,9 +175,8 @@ export function SpatialDiagram({
         >
           <title>{id}: three-dimensional storage and placement</title>
           <desc>
-            Drag to orbit. Labels remain upright. Use the camera buttons or
-            keyboard arrows; Home resets the camera. The HTML explanation gives
-            the current state.
+            Drag to orbit. Use the camera buttons or keyboard arrows; Home
+            resets the camera.
           </desc>
           {world.connections.flatMap((connection) =>
             connection.path.slice(1).flatMap((end, i) => {
@@ -308,9 +305,6 @@ export function SpatialDiagram({
           Reset view
         </button>
       </div>
-      <p className="tidb-learn-guide" id={guideId}>
-        Drag to orbit · arrows rotate / zoom · Home resets
-      </p>
     </>
   );
 }

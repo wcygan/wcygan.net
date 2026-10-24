@@ -180,12 +180,6 @@
   outline: 2px solid var(--ip-orange);
   outline-offset: 2px;
 }
-.post-content .ip-status {
-  margin: 0;
-  font:
-    14px/1.5 Inter,
-    sans-serif;
-}
 .ip-page-label {
   display: flex;
   flex-direction: column;

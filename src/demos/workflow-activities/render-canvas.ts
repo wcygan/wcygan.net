@@ -198,11 +198,6 @@ function drawWorkflowCard(
     font: `800 ${compact ? 18 : 20}px ${MONO_FONT}`,
     maxWidth: card.width - 32,
   });
-  drawText(ctx, workflow.note, card.x + 16, card.y + (compact ? 68 : 72), {
-    color: COLORS.muted,
-    font: `600 ${compact ? 11 : 12}px ${UI_FONT}`,
-    maxWidth: card.width - 32,
-  });
 
   drawWorkflowProgress(
     ctx,
@@ -313,7 +308,6 @@ function drawActivityCard(
       maxWidth: ring.left - textLeft - 14,
       eyebrowY: card.y + 26,
       labelY: card.y + 48,
-      jobY: card.y + 68,
       labelSize: 16,
     });
     const pill = statusPillRectLeft(
@@ -331,7 +325,6 @@ function drawActivityCard(
       maxWidth: pill.x - textLeft - 12,
       eyebrowY: midY - 18,
       labelY: midY + 5,
-      jobY: midY + 24,
       labelSize: 17,
     });
     drawStatusPill(ctx, pill, activity, palette);
@@ -340,7 +333,7 @@ function drawActivityCard(
   drawWorkRing(ctx, ring, activity, palette);
 }
 
-// Eyebrow, label, and job lines for an activity card. Callers supply the
+// Identity lines for an activity card. Callers supply the
 // baselines so the same identity block serves both the centered wide layout and
 // the top-stacked compact layout.
 function drawActivityIdentity(
@@ -353,7 +346,6 @@ function drawActivityIdentity(
     maxWidth: number;
     eyebrowY: number;
     labelY: number;
-    jobY: number;
     labelSize: number;
   },
 ) {
@@ -368,11 +360,6 @@ function drawActivityIdentity(
   drawText(ctx, activity.label, layout.left, layout.labelY, {
     color: COLORS.ink,
     font: `800 ${layout.labelSize}px ${MONO_FONT}`,
-    maxWidth: layout.maxWidth,
-  });
-  drawText(ctx, activity.job, layout.left, layout.jobY, {
-    color: COLORS.muted,
-    font: `600 12px ${UI_FONT}`,
     maxWidth: layout.maxWidth,
   });
 

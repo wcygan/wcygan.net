@@ -24,18 +24,16 @@ import "~/demos/flink-2d/styles.css";
 function FlinkFigure({
   name,
   title,
-  description,
   children,
   controls,
-  caption,
   kind = "svg",
 }: {
   name: string;
   title: string;
-  description: string;
+
   children: ReactNode;
   controls: ReactNode;
-  caption: string;
+
   kind?: "svg" | "dom";
 }) {
   const id = useId();
@@ -46,21 +44,16 @@ function FlinkFigure({
       data-graphic-kind={kind}
       data-graphic-frame="workbench"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-description ${id}-caption`}
     >
       <header className="flink-visual-heading">
         <p className="article-graphic-title" id={`${id}-title`}>
           {title}
-        </p>
-        <p className="flink-visual-description" id={`${id}-description`}>
-          {description}
         </p>
       </header>
       <div className="flink-2d-stage" data-graphic-stage="padded">
         {children}
       </div>
       <div className="flink-2d-controls">{controls}</div>
-      <figcaption id={`${id}-caption`}>{caption}</figcaption>
     </figure>
   );
 }
@@ -254,7 +247,6 @@ export function FlinkDataflowDemo() {
     <FlinkFigure
       name="flink-dataflow"
       title="A stateful dataflow"
-      description="Three purchases; a running total per customer."
       controls={
         <StepControls
           step={step}
@@ -263,7 +255,6 @@ export function FlinkDataflowDemo() {
           onReset={() => setStep(0)}
         />
       }
-      caption="The operator remembers totals between records. Steps separate reading, updating state, and emitting output; they are teaching beats, not measured durations."
     >
       <div
         className="flink-2d-input"
@@ -338,7 +329,6 @@ export function FlinkBoundedDemo() {
       name="flink-bounded"
       kind="dom"
       title="A file ends; a stream stays open"
-      description="Same processing; different stopping conditions."
       controls={
         <StepControls
           step={step}
@@ -348,7 +338,6 @@ export function FlinkBoundedDemo() {
           onReset={() => setStep(0)}
         />
       }
-      caption="The four-record file finishes. The stream has no declared final record; this illustration stops after six arrivals while its input remains open."
     >
       <div className="flink-2d-comparison">
         <section aria-label="Bounded file" data-tone="green">
@@ -468,7 +457,6 @@ export function FlinkEventTimeDemo() {
     <FlinkFigure
       name="flink-event-time"
       title="When should a window close?"
-      description="Arrival order differs from event time."
       controls={
         <StepControls
           step={step}
@@ -478,7 +466,6 @@ export function FlinkEventTimeDemo() {
           onReset={() => setStep(0)}
         />
       }
-      caption="Illustrative policy: one input, five-minute windows, zero allowed lateness. Each arrival advances the watermark to max timestamp minus two minutes. Periodic emission and multi-input coordination omitted."
     >
       <div
         className="flink-2d-input"
@@ -544,7 +531,6 @@ export function FlinkBackpressureDemo() {
     <FlinkFigure
       name="flink-backpressure"
       title="A slow sink slows the source"
-      description="Twelve records; four buffer slots."
       controls={
         <>
           <StepControls
@@ -578,7 +564,6 @@ export function FlinkBackpressureDemo() {
           </div>
         </>
       }
-      caption="Drain the sink, then fill available slots. Unread records stay at this finite replayable source. Real sources need sufficient retention; storage remains bounded."
     >
       <FlowDiagram
         label="Finite source, bounded buffer, and sink"
@@ -666,7 +651,6 @@ export function FlinkSinkDemo() {
       name="flink-sink-replay"
       kind="dom"
       title="Replay and external effects"
-      description="Same writes; two sink policies."
       controls={
         <StepControls
           step={step}
@@ -676,7 +660,6 @@ export function FlinkSinkDemo() {
           onReset={() => setStep(0)}
         />
       }
-      caption="Replay IDs 4 and 5. An enforced unique event ID suppresses duplicates. Any separate business effect and its deduplication record must commit atomically."
     >
       <div className="flink-2d-attempt">
         <span>Write attempts: {step} / 7</span>
@@ -691,7 +674,6 @@ export function FlinkSinkDemo() {
           <p className="flink-2d-label">Blind append</p>
           <SinkRows ids={state.appended} duplicates />
           <p className="flink-2d-value">{state.appended.length} stored rows</p>
-          <p className="flink-2d-detail">Every attempt adds a row</p>
         </section>
         <section
           aria-label="Idempotent sink with unique event ID"
@@ -711,7 +693,7 @@ export function FlinkSinkDemo() {
           : state.replaying
             ? `Replay ID ${state.currentId}: append duplicates; unique ID ignores.`
             : step === 5
-              ? "Five committed writes survive failure. Next: replay IDs 4 and 5."
+              ? "Five committed writes survive failure."
               : "Both sinks accept a new event ID."}
       </Status>
     </FlinkFigure>
@@ -727,7 +709,6 @@ export function FlinkEnrichmentDemo() {
       name="flink-enrichment"
       kind="dom"
       title="Add remembered context"
-      description="Each order uses its customer's latest-known region."
       controls={
         <StepControls
           step={step}
@@ -737,7 +718,6 @@ export function FlinkEnrichmentDemo() {
           onReset={() => setStep(0)}
         />
       }
-      caption="One ordered teaching input. Missing context emits ‘unknown’; updates affect future orders only. Latest-known enrichment differs from an event-time temporal join."
     >
       <div
         className="flink-2d-input"

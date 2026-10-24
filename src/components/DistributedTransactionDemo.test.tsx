@@ -364,9 +364,6 @@ describe("distributed transaction autoplay", () => {
     for (let index = 0; index < gate; index++) finishAutoEvent();
     expect(step()).toBe(gate);
     expect(button("Recover coordinator").disabled).toBe(false);
-    expect(screen.getByRole("status").textContent).toContain(
-      "Next: Recover coordinator.",
-    );
     expect(scene.props!.frame.accounts[1]).toMatchObject({
       balance: 100,
       pending: 10,
@@ -493,9 +490,6 @@ describe("distributed transaction manual controls and fallback", () => {
     expect(scene.props!.moving).toBe(false);
     expect(button("Play").disabled).toBe(true);
     expect(button("Step").disabled).toBe(false);
-    expect(
-      screen.getByText(/Reduced motion: Step advances without animation/),
-    ).toBeTruthy();
     expect(requests.size).toBe(0);
     elapse(60000);
     expect(step()).toBe(0);
@@ -567,7 +561,7 @@ describe("distributed transaction manual controls and fallback", () => {
     expect(figure().dataset.playback).toBe("paused");
   });
 
-  it("explains replicated progress in each step without a status block", async () => {
+  it("names each replicated step while keeping its scene available without the ledger", async () => {
     reduced = true;
     render(<DistributedTransactionDemo kind="spanner" showLedger={false} />);
     await view(true);
@@ -576,7 +570,7 @@ describe("distributed transaction manual controls and fallback", () => {
       fireEvent.click(button(scenario.label));
       for (let index = 0; index < scenario.frames.length; index++) {
         const frame = scenario.frames[index];
-        expect(screen.getByText(frame.status)).toBeTruthy();
+        expect(screen.getByText(frame.title)).toBeTruthy();
         if (index < scenario.frames.length - 1) {
           fireEvent.click(button(frame.recoveryAction ?? "Step"));
         }

@@ -28,9 +28,6 @@ import "~/demos/flink-shared/article.css";
 remembers earlier events, and recovers that state after failures. Think live
 revenue, fraud signals, or device alerts.
 
-The twelve demos play once as you scroll. **Pause** to inspect or **Step**
-through manually. Drag the 3D views to look around.
-
 ## Follow a purchase
 
 A **source** reads purchases, an **operator** updates each customer's total,
@@ -69,7 +66,6 @@ so the same customer's records reach the same owner.
 ### One hot key limits parallelism
 
 If most purchases belong to one customer, its owner gets most of the work.
-Switch between **Hot key** and **Balanced keys** to compare.
 
 <FlinkSkewDemo />
 
@@ -124,7 +120,6 @@ operation preserves its effect.
 ## A slow sink slows the source
 
 A full buffer slows upstream work. This is **backpressure**.
-Try a faster sink and watch the same twelve records drain.
 [Backpressure](https://nightlies.apache.org/flink/flink-docs-release-2.3/docs/ops/monitoring/back_pressure/).
 
 <FlinkBackpressureDemo />

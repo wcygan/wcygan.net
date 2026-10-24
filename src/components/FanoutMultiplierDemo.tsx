@@ -29,7 +29,6 @@ export function FanoutMultiplierDemo() {
   const markerSuffix = useId().replaceAll(":", "");
   const titleId = `fanout-multiplier-title-${markerSuffix}`;
   const descriptionId = `fanout-multiplier-description-${markerSuffix}`;
-  const captionId = `fanout-multiplier-caption-${markerSuffix}`;
   const { motionEnabled, snapshot } = useMultiplierPlayback();
   const compact = useCompactMultiplierGraph();
   const scaleX = compact ? COMPACT_VIEWBOX_WIDTH / VIEWBOX_WIDTH : 1;
@@ -42,13 +41,12 @@ export function FanoutMultiplierDemo() {
       data-graphic-kind="svg"
       data-phase={motionEnabled ? "streaming" : "steady"}
       aria-labelledby={titleId}
-      aria-describedby={`${descriptionId} ${captionId}`}
+      aria-describedby={descriptionId}
     >
       <header className="fanout-multiplier-graph-header">
         <p className="article-graphic-title" id={titleId}>
           One request, six database reads
         </p>
-        <p>Fanout multiplies work at every boundary</p>
       </header>
 
       <div

@@ -83,17 +83,9 @@ export function CentrifugalReconciliationRingDemo() {
       aria-labelledby="centrifugal-ring-title"
     >
       <header className="centrifugal-ring-header">
-        <div>
-          <span className="centrifugal-ring-badge">Concept 4</span>
-          <p className="article-graphic-title" id="centrifugal-ring-title">
-            Centrifugal Partition Rebalance Ring
-          </p>
-          <p className="centrifugal-ring-desc">
-            Centrifugal turbine sorting keys into partition quadrants. When
-            records land in the wrong live shard, magnetic deflector vanes
-            redirect them back to their canonical hash slot.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="centrifugal-ring-title">
+          Centrifugal Partition Rebalance Ring
+        </p>
         <div className="centrifugal-ring-actions">
           <button
             type="button"
@@ -262,13 +254,6 @@ export function CentrifugalReconciliationRingDemo() {
           </div>
         </div>
       </div>
-
-      <figcaption className="centrifugal-ring-caption">
-        <strong>Partition Integrity:</strong> When records land on the incorrect
-        storage shard due to race conditions or partial network failovers,
-        reconciliation reads the partition hash mapping and dispatches deflector
-        migration events.
-      </figcaption>
     </figure>
   );
 }

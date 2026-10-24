@@ -12,7 +12,6 @@ export type RouteId =
 
 export interface ReplicatedShardFrame {
   title: string;
-  status: string;
   coordinator: string;
   coordinatorRecord: "COMMIT" | null;
   votesReceived: number;
@@ -39,8 +38,6 @@ const committedRecords = (): [ShardRecord[], ShardRecord[]] => [
 export const replicatedShardFrames: ReplicatedShardFrame[] = [
   {
     title: "One transaction, two replicated shards",
-    status:
-      "Each shard has its own consensus group. The transaction coordinator needs one vote from each shard leader.",
     coordinator: "Ready",
     coordinatorRecord: null,
     votesReceived: 0,
@@ -51,8 +48,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Prepare reaches both shard leaders",
-    status:
-      "PREPARE is sent to each leader. The coordinator waits for votes; it does not count delivery as a vote.",
     coordinator: "Waiting for votes",
     coordinatorRecord: null,
     votesReceived: 0,
@@ -66,8 +61,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Each shard replicates PREPARE",
-    status:
-      "Each leader stores PREPARE locally and replicates it to a peer. Two of three copies form a quorum.",
     coordinator: "Waiting for votes",
     coordinatorRecord: null,
     votesReceived: 0,
@@ -78,8 +71,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Shard A votes YES",
-    status:
-      "Shard A's prepared record is on a quorum. Its leader sends YES; the coordinator's tally remains 0/2 until arrival.",
     coordinator: "Waiting for votes",
     coordinatorRecord: null,
     votesReceived: 0,
@@ -90,8 +81,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Shard A vote arrives",
-    status:
-      "The coordinator now has one of two participant votes. Shard B has a quorum and has not sent its vote yet.",
     coordinator: "A: YES",
     coordinatorRecord: null,
     votesReceived: 1,
@@ -102,8 +91,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Shard B votes YES",
-    status:
-      "Shard B's prepared record is on a quorum. Its leader sends YES; the tally stays 1/2 until arrival.",
     coordinator: "A: YES",
     coordinatorRecord: null,
     votesReceived: 1,
@@ -114,8 +101,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Both votes arrive",
-    status:
-      "Both shard leaders voted YES. The coordinator durably records COMMIT before sending it.",
     coordinator: "A: YES · B: YES",
     coordinatorRecord: "COMMIT",
     votesReceived: 2,
@@ -126,8 +111,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "COMMIT reaches both shard leaders",
-    status:
-      "The coordinator sends its durable decision to both participants. Each leader will replicate the outcome within its shard.",
     coordinator: "COMMIT · saved",
     coordinatorRecord: "COMMIT",
     votesReceived: 2,
@@ -141,8 +124,6 @@ export const replicatedShardFrames: ReplicatedShardFrame[] = [
   },
   {
     title: "Each shard commits on a quorum",
-    status:
-      "Both shard groups replicate COMMIT to a quorum, apply their local changes, and release their locks.",
     coordinator: "COMMIT · complete",
     coordinatorRecord: "COMMIT",
     votesReceived: 2,

@@ -1,5 +1,4 @@
 import {
-  NodeLetter,
   VectorNotation,
   VectorText,
 } from "~/demos/grow-only-counter/VectorNotation";
@@ -108,12 +107,6 @@ export function GrowOnlyCounterDemo() {
       data-graphic-key="grow-only-counter"
       aria-label="Grow-only counter free-form demo"
     >
-      <header className="gc-header">
-        <p className="gc-help">
-          Increments by node: [<NodeLetter index={0} />,{" "}
-          <NodeLetter index={1} />]
-        </p>
-      </header>
       <p className="gc-transfer" aria-hidden="true">
         {event?.kind === "deliver" ? (
           <>
@@ -256,8 +249,7 @@ export function GrowOnlyCounterDemo() {
       {!state.inProgress && state.converged && (
         <figcaption>
           Both replicas hold <VectorNotation value={state.replicas.A} />. Each
-          reads {state.replicas.A.join(" + ")} = {value(state.replicas.A)}:
-          every increment is counted once.
+          reads {state.replicas.A.join(" + ")} = {value(state.replicas.A)}.
         </figcaption>
       )}
     </figure>

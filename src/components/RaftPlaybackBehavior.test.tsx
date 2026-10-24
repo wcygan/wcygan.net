@@ -119,18 +119,26 @@ it.each(components)(
 );
 
 it.each(components)(
-  "%s presents its step explanation and announces only manual or paused changes",
-  (_, Component) => {
+  "%s presents the current state and announces only manual or paused changes",
+  (name, Component) => {
+    const states = {
+      election: ["Waiting for a heartbeat", "B starts first"],
+      replication: ["Empty logs", "B stores command #1"],
+      recovery: ["Working majority", "Leader stops"],
+      repair: [
+        "A returning server has a conflicting suffix",
+        "Check the preceding entry",
+      ],
+    } as const;
     render(<Component />);
     const status = screen.getByRole("status");
-    const explanation = () => status.querySelector(".raft-step-explanation")!;
-    expect(explanation().textContent!.length).toBeGreaterThan(40);
-    expect(explanation().classList.contains("sr-only")).toBe(false);
+    const state = () => status.querySelector("p:not(.sr-only)")!;
+    expect(state().textContent).toBe(states[name][0]);
     expect(status.getAttribute("aria-live")).toBe("polite");
     visible();
     expect(status.getAttribute("aria-live")).toBe("off");
     click("Next");
     expect(status.getAttribute("aria-live")).toBe("polite");
-    expect(explanation().textContent!.length).toBeGreaterThan(40);
+    expect(state().textContent).toBe(states[name][1]);
   },
 );

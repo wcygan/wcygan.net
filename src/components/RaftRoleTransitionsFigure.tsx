@@ -662,10 +662,6 @@ export function RaftRoleTransitionsFigure() {
         </p>
         <p>{current.event}</p>
       </div>
-      <figcaption>
-        Five-server cluster; three votes to win. Illustrative timing.
-        {reduced && " Use Next to step through."}
-      </figcaption>
     </figure>
   );
 }

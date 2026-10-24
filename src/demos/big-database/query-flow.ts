@@ -57,18 +57,18 @@ export const FLOW_PATHS = {
 } as const satisfies Record<string, readonly Point[]>;
 
 const lookup = {
-  label: "Follow the index to the needed leaf page.",
+  label: "Index lookup",
   path: "lookup",
   node: "index",
   reads: 0,
 } as const;
 const check = {
-  label: "Check whether that page is in the buffer pool.",
+  label: "Buffer pool check",
   node: "pool",
   reads: 0,
 } as const;
 const result = {
-  label: "Read the cached page and return the order.",
+  label: "Cached page read",
   path: "result",
   node: "pool",
   reads: 0,
@@ -78,7 +78,7 @@ const hitSteps = [
   check,
   result,
   {
-    label: "Order returned. No SSD read needed for this page.",
+    label: "Order 9001 returned · 0 SSD reads",
     node: "row",
     reads: 0,
   },
@@ -87,70 +87,67 @@ const missSteps = [
   lookup,
   check,
   {
-    label: "Cache miss: read the needed page from SSD.",
+    label: "Cache miss · SSD read",
     path: "disk",
     node: "ssd",
     reads: 0,
   },
   {
-    label: "Load the page into the buffer pool.",
+    label: "Buffer pool fill",
     path: "fill",
     node: "pool",
     reads: 1,
   },
   { ...result, reads: 1 },
   {
-    label: "Order returned. One page was loaded from SSD.",
+    label: "Order 9001 returned · 1 SSD read",
     node: "row",
     reads: 1,
   },
 ] as const;
 const secondarySteps = [
   {
-    label:
-      "At the email root, ada@example.com sorts before m@example.com. Follow the left branch.",
+    label: "Email root · left branch",
     path: "secondaryRoot",
     node: "index",
     reads: 0,
   },
   {
-    label:
-      "At the branch, ada@example.com sorts before c@example.com. Follow the left leaf.",
+    label: "Email branch · left leaf",
     path: "secondaryLeaf",
     node: "pool",
     reads: 0,
   },
   {
-    label: "Find ada@example.com in the leaf. Its stored primary key is 9001.",
+    label: "Email leaf · primary key 9001",
     node: "pool",
     reads: 0,
   },
   {
-    label: "Carry primary key 9001 to the clustered index root.",
+    label: "Clustered index root · key 9001",
     path: "primaryKey",
     node: "ssd",
     reads: 0,
   },
   {
-    label:
-      "At the primary-key root, 9001 is less than 9004. Follow the left branch.",
+    label: "Primary-key root · left branch",
     path: "clusteredRoot",
     node: "ssd",
     reads: 0,
   },
   {
-    label: "At the branch, 9001 is less than 9002. Follow the left leaf.",
+    label: "Primary-key branch · left leaf",
     path: "clusteredLeaf",
     node: "ssd",
     reads: 0,
   },
   {
-    label: "Read row 9001 from the clustered leaf: status = paid.",
+    label: "Row 9001 · status = paid",
     node: "row",
     reads: 0,
   },
   {
-    label: "Order returned after two index traversals.",
+    label: "Order 9001 returned · 2 index traversals",
     node: "row",
     reads: 0,
   },

@@ -188,15 +188,9 @@ export function TwoPhaseProtocolDemo({ phase }: { phase: Phase }) {
       data-graphic-key={id}
       data-graphic-kind="svg"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <p className="article-graphic-title" id={`${id}-title`}>
         {title}
-      </p>
-      <p className="two-phase-description">
-        {phase === "prepare"
-          ? "Coordinator sends PREPARE to participants, asking them to vote"
-          : "Coordinator receives votes and decides to COMMIT or ABORT"}
       </p>
       <div ref={stage} className="two-phase-stage" data-graphic-stage="flush">
         <svg viewBox="0 0 400 415" aria-hidden="true">
@@ -514,16 +508,6 @@ export function TwoPhaseProtocolDemo({ phase }: { phase: Phase }) {
           .
         </p>
       </div>
-      {reduced && (
-        <p className="two-phase-motion-note">
-          Reduced motion: use Step to advance without animation.
-        </p>
-      )}
-      <figcaption id={`${id}-caption`}>
-        {phase === "prepare"
-          ? "Both participants voted YES. Their prepared state is saved and the same rows stay locked. Continue below with the decision."
-          : "Starts where Prepare ends. Two YES votes commit; zero or one YES vote aborts. A no voter has already rolled back and unlocked its row."}
-      </figcaption>
     </figure>
   );
 }

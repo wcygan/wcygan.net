@@ -81,11 +81,6 @@ export function TidbLayersDiagram() {
           </aside>
         </div>
       </div>
-      <figcaption>
-        Solid arrows follow application requests. Dashed side links show PD
-        coordination: timestamps and placement metadata. PD does not proxy the
-        application’s data requests.
-      </figcaption>
     </figure>
   );
 }
@@ -99,18 +94,14 @@ export function TidbRegionsDemo() {
       className="tidb-overview"
       data-graphic-key="tidb-regions"
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">
-          A Region is a key range. A replica is a copy of that range.
-        </p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <DemoWorkbench.Options
         options={REGION_LAYOUTS}
         value={layoutId}
         onChange={setLayoutId}
       />
       <div className="tidb-overview-stage" data-graphic-stage="padded">
-        <p className="tidb-overview-label">Ordered key space · illustrative</p>
+        <p className="tidb-overview-label">Ordered key space</p>
         <div
           className="tidb-overview-ranges"
           role="group"
@@ -123,9 +114,6 @@ export function TidbRegionsDemo() {
             </div>
           ))}
         </div>
-        <p className="tidb-overview-placement-note">
-          Same ranges, placed as three replicas each ↓
-        </p>
         <dl
           className="tidb-overview-stores"
           aria-label="Physical replica placement"
@@ -155,13 +143,7 @@ export function TidbRegionsDemo() {
       </div>
       <DemoWorkbench.Step live="polite">
         <p className="tidb-overview-status-title">{layout.title}</p>
-        <p>{layout.explanation}</p>
       </DemoWorkbench.Step>
-      <figcaption>
-        Intervals include the first key and exclude the last. Real Regions use
-        encoded keys; these small numbers and settled placements illustrate the
-        structure, not a split threshold or a rebalance sequence.
-      </figcaption>
     </DemoWorkbench.Root>
   );
 }
@@ -177,11 +159,7 @@ export function TidbQueryEnginesDemo() {
       className="tidb-overview"
       data-graphic-key="tidb-query-engines"
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">
-          Two storage layouts, one SQL interface.
-        </p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <DemoWorkbench.Options
         options={Object.entries(QUERY_EXAMPLES).map(([id, item]) => ({
           id,
@@ -194,18 +172,12 @@ export function TidbQueryEnginesDemo() {
         <p className="tidb-overview-query">{example.sql}</p>
         <DownArrow />
         <div className="tidb-overview-optimizer">TiDB optimizer</div>
-        <p className="tidb-overview-candidates">Candidate engines ↓</p>
         <div className="tidb-overview-engines">
           <div
             className="tidb-overview-engine"
             data-selected={example.engine === "tikv"}
           >
             <p className="tidb-overview-engine-title">TiKV · rows</p>
-            <p className="tidb-overview-plan">
-              {example.engine === "tikv"
-                ? "Illustrative plan"
-                : "Also available"}
-            </p>
             <div
               className="tidb-overview-row-store"
               role="group"
@@ -237,11 +209,6 @@ export function TidbQueryEnginesDemo() {
             data-selected={example.engine === "tiflash"}
           >
             <p className="tidb-overview-engine-title">TiFlash · columns</p>
-            <p className="tidb-overview-plan">
-              {example.engine === "tiflash"
-                ? "Illustrative plan"
-                : "Column replica"}
-            </p>
             <div
               className="tidb-overview-column-store"
               role="group"
@@ -260,24 +227,17 @@ export function TidbQueryEnginesDemo() {
                 </div>
               ))}
             </div>
-            <p className="tidb-overview-read-detail">
-              {kind === "aggregate"
-                ? `Scan amount → total ${total}`
-                : "Same data, another layout"}
-            </p>
+            {kind === "aggregate" && (
+              <p className="tidb-overview-read-detail">
+                Scan amount → total {total}
+              </p>
+            )}
           </div>
         </div>
       </div>
       <DemoWorkbench.Step live="polite">
         <p className="tidb-overview-status-title">{example.title}</p>
-        <p>{example.explanation}</p>
       </DemoWorkbench.Step>
-      <figcaption>
-        These are example plans, not optimizer guarantees. TiFlash receives
-        asynchronous learner replicas from TiKV and validates progress before
-        serving a consistent transaction snapshot. A lagging replica does not
-        mean a query silently returns stale data.
-      </figcaption>
     </DemoWorkbench.Root>
   );
 }

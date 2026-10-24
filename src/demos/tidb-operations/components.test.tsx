@@ -7,6 +7,11 @@ import {
   TidbScalingDemo,
 } from "~/components/TidbOperationsDemos";
 
+import {
+  TidbRegionsDemo,
+  TidbQueryEnginesDemo,
+} from "~/components/TidbOverviewDemos";
+
 afterEach(cleanup);
 
 describe("TiDB operation figures", () => {
@@ -44,19 +49,26 @@ describe("TiDB operation figures", () => {
     expect(screen.getByText("No Regions yet")).toBeTruthy();
   });
 
-  it("authors exactly one stage for each figure", () => {
-    const { container } = render(
+  it("keeps every figure named with exactly one stage", () => {
+    render(
       <>
         <TidbQuorumDemo />
         <TidbAgreementDiagram />
         <TidbScalingDemo />
+        <TidbRegionsDemo />
+        <TidbQueryEnginesDemo />
       </>,
     );
-    const figures = container.querySelectorAll("figure");
-    expect(figures).toHaveLength(3);
-    for (const figure of figures) {
+    expect(screen.getAllByRole("figure")).toHaveLength(5);
+    for (const name of [
+      "A Region needs a majority",
+      "Two layers of agreement",
+      "Scale the resource you need",
+      "Regions and Replicas",
+      "Rows and Columns",
+    ]) {
+      const figure = screen.getByRole("figure", { name });
       expect(figure.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
-      expect(figure.getAttribute("aria-labelledby")).toBeTruthy();
     }
   });
 });

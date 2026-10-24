@@ -73,9 +73,7 @@ export function DistributedTransactionDemo({
       data-moving={moving}
       data-playback={reduced ? "reduced" : done ? "complete" : intent}
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">{scenario.description}</p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       {definition.scenarios.length > 1 && (
         <DemoWorkbench.Options
           options={definition.scenarios}
@@ -130,14 +128,6 @@ export function DistributedTransactionDemo({
         replay={{ onClick: () => reset() }}
         resetView={{ disabled: pending || unavailable, onClick: resetView }}
       />
-      <DemoWorkbench.Guide>
-        {unavailable
-          ? showLedger
-            ? "3D is unavailable; the controls and account state remain usable"
-            : "3D is unavailable; the controls and transaction progress remain usable"
-          : "Drag to orbit · Scroll to zoom · Focus the view for arrow keys, +/− and Home"}
-        {reduced && ". Reduced motion: Step advances without animation."}
-      </DemoWorkbench.Guide>
       <DemoWorkbench.Step
         live={intent === "auto" && !done && !reduced ? "off" : "polite"}
       >
@@ -148,10 +138,6 @@ export function DistributedTransactionDemo({
         >
           {frame.title}
         </DemoWorkbench.StepTitle>
-        <p>{frame.status}</p>
-        {frame.recoveryAction && (
-          <p className="dt-messages">Next: {frame.recoveryAction}.</p>
-        )}
         {frame.messages.length > 0 && (
           <p className="dt-messages">
             Delivered:{" "}

@@ -197,11 +197,6 @@ function drawServiceCard(
     font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
-  drawText(ctx, "stores history, schedules tasks", card.x + 14, card.y + 46, {
-    color: COLORS.muted,
-    font: `600 11px ${UI_FONT}`,
-    maxWidth: card.width - 28,
-  });
 
   drawBadge(ctx, card.x + 14, card.y + card.height - 30, service.statusLabel, {
     fill: palette.fill,
@@ -231,11 +226,6 @@ function drawQueueCard(
   drawText(ctx, "Task Queue", card.x + 14, card.y + 26, {
     color: COLORS.ink,
     font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
-    maxWidth: card.width - 28,
-  });
-  drawText(ctx, "holds pending activity tasks", card.x + 14, card.y + 46, {
-    color: COLORS.muted,
-    font: `600 11px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
 
@@ -336,11 +326,6 @@ function drawWorkerCard(
   drawText(ctx, "Worker", card.x + 14, card.y + 26, {
     color: COLORS.ink,
     font: `800 ${compact ? 15 : 16}px ${UI_FONT}`,
-    maxWidth: card.width - 28,
-  });
-  drawText(ctx, "polls queue, runs activities", card.x + 14, card.y + 46, {
-    color: COLORS.muted,
-    font: `600 11px ${UI_FONT}`,
     maxWidth: card.width - 28,
   });
 
@@ -445,11 +430,6 @@ function drawHistoryPanel(
   drawText(ctx, "Event History", panel.x + 16, panel.y + 26, {
     color: COLORS.ink,
     font: `800 ${compact ? 16 : 18}px ${UI_FONT}`,
-    maxWidth: panel.width - 32,
-  });
-  drawText(ctx, "durable append-only log", panel.x + 16, panel.y + 46, {
-    color: COLORS.muted,
-    font: `700 12px ${UI_FONT}`,
     maxWidth: panel.width - 32,
   });
 

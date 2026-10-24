@@ -148,11 +148,6 @@ function Capacity({ width, phase }: { width: number; phase: number }) {
           note="SQL + storage"
           tone={phase === 1 ? "yellow" : "blue"}
         />
-        <Label x={width / 2} y={320}>
-          {phase === 1
-            ? "A host can become the limit"
-            : "One machine, one resource budget"}
-        </Label>
       </>
     );
   const gap = 14,

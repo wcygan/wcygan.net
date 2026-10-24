@@ -593,25 +593,10 @@ export function RaftLeaderElectionFigure() {
                 : "Votes return to the candidates"
             : step.name}
         </p>
-        <p className="raft-step-explanation">
-          {step.traffic?.[0]?.kind === "vote" && !repliesArrived
-            ? majorityAchieved
-              ? "B’s own vote and A’s reply form a majority. C has also voted for B, but its reply is not needed to elect the leader."
-              : recordingVotes
-                ? step.candidates.length > 1
-                  ? "Each candidate already voted for itself in this term, so it refuses the other requests."
-                  : "The followers recorded their choices on request arrival. The replies have not reached the candidates yet."
-                : "Votes are traveling to the candidates."
-            : step.event}
-        </p>
         {!!receipts?.length && (
           <p className="sr-only">{receipts.join(" · ")}</p>
         )}
       </div>
-      <figcaption>
-        Three servers with equal logs; two votes to win. Illustrative timing.
-        {reduced && " Use Next to step through."}
-      </figcaption>
     </figure>
   );
 }

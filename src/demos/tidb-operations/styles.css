@@ -99,14 +99,6 @@
   font-size: 14px;
   line-height: 1.55;
 }
-.tidb-ops-demo .tidb-ops-header {
-  display: grid;
-  gap: 8px;
-  margin-block-end: 16px;
-}
-.tidb-ops-demo .tidb-ops-header p {
-  margin: 0;
-}
 .tidb-ops-demo .tidb-ops-commit-steps {
   display: grid;
   gap: 8px;
@@ -184,10 +176,6 @@
   display: flex;
   flex-wrap: wrap;
   margin-block: 12px;
-}
-.tidb-ops-demo figcaption {
-  font-size: 14px;
-  line-height: 1.5;
 }
 @media (max-width: 420px) {
   .tidb-ops-demo .tidb-ops-stage {

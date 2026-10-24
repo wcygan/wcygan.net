@@ -74,5 +74,5 @@ export function concurrentStatus(state: ReturnType<typeof concurrentSnapshot>) {
     return `Replica received entry ${flight.record.id} and is applying the write locally.`;
   return state.applied.length
     ? `${state.applied.length} ${state.applied.length === 1 ? "write" : "writes"} replicated in order. The replica is caught up.`
-    : "All reads and writes go to the primary. Write an entry to replicate it.";
+    : "All reads and writes go to the primary.";
 }

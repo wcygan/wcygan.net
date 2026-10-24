@@ -4,7 +4,6 @@ import {
   Suspense,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
   type ReactNode,
@@ -69,7 +68,6 @@ function StorageStage({
   onReadyChange: (ready: boolean) => void;
 }) {
   const pose = useRef<CameraPose | null>(null);
-  const id = useId();
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(true);
   const [ready, setReady] = useState(false);
@@ -124,7 +122,7 @@ function StorageStage({
         tabIndex={0}
         role="group"
         aria-label="3D storage view"
-        aria-describedby={id}
+        aria-keyshortcuts="ArrowLeft ArrowRight + - Home"
         aria-busy={mounted && !ready}
         onKeyDown={(event) => {
           if (event.altKey || event.metaKey || event.ctrlKey) return;
@@ -150,43 +148,11 @@ function StorageStage({
               </Suspense>
             </SceneBoundary>
           </div>
-        ) : (
+        ) : unavailable ? (
           <div className="mysql-storage-fallback">
-            <p>
-              {unavailable
-                ? "3D is unavailable. The controls and results still work."
-                : "An inspectable 3D model loads when this figure is in view."}
-            </p>
-            {props.kind === "index" ? (
-              <ol>
-                <li>Secondary index: customer 1 → primary keys 101, 102</li>
-                <li>
-                  Clustered rows: total_cents and other fields live with each
-                  primary key
-                </li>
-                <li>
-                  A covered query can return id and customer_id from the
-                  secondary entries
-                </li>
-              </ol>
-            ) : props.kind === "buffer" ? (
-              <ol>
-                <li>
-                  Memory:{" "}
-                  {props.buffer.resident.length
-                    ? props.buffer.resident
-                        .map((page) => `page ${page}`)
-                        .join(", ")
-                    : "empty"}
-                </li>
-                <li>Disk: pages 1 and 2</li>
-                <li>{bufferMessage(props.buffer)}</li>
-              </ol>
-            ) : (
-              <p>{SPATIAL_LESSONS[props.kind].steps[props.step].message}</p>
-            )}
+            <p>3D is unavailable.</p>
           </div>
-        )}
+        ) : null}
       </div>
       <div
         className="mysql-storage-camera"
@@ -233,10 +199,6 @@ function StorageStage({
           Reset view
         </button>
       </div>
-      <p id={id} className="mysql-storage-camera-help">
-        Drag to orbit · scroll to zoom. Keyboard: ← → rotate, + − zoom, Home
-        resets.
-      </p>
     </>
   );
 }
@@ -263,9 +225,7 @@ export function MySqlIndexDemo() {
       data-graphic-key="mysql-index"
       data-graphic-kind="canvas"
     >
-      <DemoWorkbench.Header>
-        <p>The secondary entries and full rows occupy separate structures.</p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <DemoWorkbench.Options
         options={[
           { id: "row", label: "Fetch order totals" },
@@ -339,10 +299,6 @@ export function MySqlIndexDemo() {
           </table>
         </div>
       )}
-      <DemoWorkbench.Guide>
-        Conceptual InnoDB structure, not physical bytes. Spacing, depth, and
-        page geometry are illustrative; the optimizer may choose another plan.
-      </DemoWorkbench.Guide>
     </DemoWorkbench.Root>
   );
 }
@@ -365,9 +321,7 @@ export function MySqlBufferPoolDemo() {
       data-graphic-key="mysql-buffer-pool"
       data-graphic-kind="canvas"
     >
-      <DemoWorkbench.Header>
-        <p>A disk page can stay in memory for the next read.</p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <StorageStage
         kind="buffer"
         buffer={buffer}
@@ -421,10 +375,6 @@ export function MySqlBufferPoolDemo() {
           <dd>{buffer.misses}</dd>
         </div>
       </dl>
-      <DemoWorkbench.Guide>
-        Two pages fit in memory. Counters show logical requests, not timings or
-        measured I/O. Eviction, read-ahead, and changed pages are omitted.
-      </DemoWorkbench.Guide>
     </DemoWorkbench.Root>
   );
 }
@@ -450,9 +400,7 @@ function SpatialLesson({ kind }: { kind: SpatialKind }) {
       data-graphic-key={`mysql-${kind}`}
       data-graphic-kind="canvas"
     >
-      <DemoWorkbench.Header>
-        <p>{lesson.description}</p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <StorageStage
         kind={kind}
         step={step}
@@ -484,10 +432,12 @@ function SpatialLesson({ kind }: { kind: SpatialKind }) {
           Step {step + 1} of {lesson.steps.length}
         </span>
       </div>
-      <DemoWorkbench.Step live={playback.running ? "off" : "polite"}>
-        <p>{current.message}</p>
-      </DemoWorkbench.Step>
-      <dl className="mysql-storage-counters">
+      <dl
+        className="mysql-storage-counters"
+        role="status"
+        aria-live={playback.running ? "off" : "polite"}
+        aria-atomic="true"
+      >
         {current.facts.map(([label, value]) => (
           <div key={label}>
             <dt>{label}</dt>
@@ -495,7 +445,6 @@ function SpatialLesson({ kind }: { kind: SpatialKind }) {
           </div>
         ))}
       </dl>
-      <DemoWorkbench.Guide>{lesson.caption}</DemoWorkbench.Guide>
     </DemoWorkbench.Root>
   );
 }

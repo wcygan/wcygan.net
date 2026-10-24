@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import {
   advanceRecovery,
+  bucketAcknowledgementAllowed,
   claimOwnership,
   deriveDurabilityComparison,
   HOT_KEY_SCHEDULE,
@@ -42,11 +43,11 @@ function useSteps(total: number) {
 interface FrameProps {
   name: string;
   title: string;
-  description: string;
+
   step: number;
   total: number;
   status: string;
-  caption: string;
+
   children: (compact: boolean) => ReactNode;
   onStep: () => void;
   onReset: () => void;
@@ -60,11 +61,9 @@ interface FrameProps {
 function CelldFrame({
   name,
   title,
-  description,
   step,
   total,
   status,
-  caption,
   children,
   onStep,
   onReset,
@@ -74,7 +73,7 @@ function CelldFrame({
   legend,
 }: FrameProps) {
   const titleId = useId();
-  const descriptionId = useId();
+
   const stageRef = useRef<HTMLDivElement>(null);
   const [compact, setCompact] = useState(true);
   const playback = useCelldAutoplay({
@@ -103,13 +102,11 @@ function CelldFrame({
       data-playback-state={playback.state}
       data-playback-step={step}
       aria-labelledby={titleId}
-      aria-describedby={descriptionId}
     >
       <header className="celld-demo-header">
         <p className="article-graphic-title" id={titleId}>
           {title}
         </p>
-        <p id={descriptionId}>{description}</p>
       </header>
       {options && <div onClickCapture={playback.pause}>{options}</div>}
       <div
@@ -163,16 +160,10 @@ function CelldFrame({
         <span className="celld-step-count">
           {step} / {total}
         </span>
-        {playback.state === "reduced-motion" && (
-          <span className="celld-playback-hint">
-            Reduced motion: use the step controls
-          </span>
-        )}
       </div>
       <p className="celld-demo-status" role="status" aria-live="polite">
         {status}
       </p>
-      <figcaption>{caption}</figcaption>
     </figure>
   );
 }
@@ -425,15 +416,20 @@ const ROUTING_STATUSES = [
 ];
 export function CelldRequestRoutingDemo() {
   const { step, next, reset } = useSteps(4);
+  const route = [
+    "Request ready",
+    "Owner resolved",
+    "Request A → B",
+    "SQLite B",
+    "Response B → A → client",
+  ][step];
   return (
     <CelldFrame
       name="celld-request-routing"
       title="Find the Cell"
-      description="Name the state you need. Any entry node can route you to its current owner."
       step={step}
       total={4}
-      status={ROUTING_STATUSES[step]}
-      caption="A warm read-only request: the Worker and SQLite run on a node. The bucket stores ownership metadata and durable data; a cold activation or a write proof can need it."
+      status={`room:lobby · Entry A · Owner B · ${route}`}
       onStep={next}
       onReset={reset}
       legend={[
@@ -578,9 +574,6 @@ export function CelldRequestRoutingDemo() {
                   title="Metadata + durable data"
                   tone="neutral"
                 />
-                <Label x={compact ? 160 : 300} y={compact ? 506 : 266}>
-                  Code executes on the nodes above
-                </Label>
               </>
             )}
           </Diagram>
@@ -600,15 +593,28 @@ export function CelldOwnershipDemo() {
   const { step, next, reset } = useSteps(3);
   const winner = claimOwnership(INITIAL_OWNER, INITIAL_OWNER.etag, "B");
   const owner = step ? winner.record : INITIAL_OWNER;
+  const competingClaim = claimOwnership(winner.record, INITIAL_OWNER.etag, "C");
+  const staleAcknowledgement = bucketAcknowledgementAllowed({
+    owner,
+    writer: INITIAL_OWNER.node,
+    epoch: INITIAL_OWNER.epoch,
+    covered: true,
+  });
+  const outcome =
+    step === 0
+      ? "B/C claims pending"
+      : step === 1
+        ? `B claim ${winner.accepted ? "accepted" : "rejected"} · C claim ${competingClaim.accepted ? "accepted" : "rejected"}`
+        : step === 2
+          ? `Writer ${INITIAL_OWNER.node} · epoch ${INITIAL_OWNER.epoch}`
+          : `A ACK ${staleAcknowledgement ? "allowed" : "rejected"}`;
   return (
     <CelldFrame
       name="celld-ownership"
       title="One Owner per Cell"
-      description="Two nodes may race to claim a cell. A conditional bucket write admits one winner."
       step={step}
       total={3}
-      status={OWNERSHIP_STATUSES[step]}
-      caption="This race assumes the prior log is recovered or has no outstanding fleet acknowledgements. Epochs are separate object prefixes. A failed acknowledgement does not prove the write is absent."
+      status={`Owner ${owner.node} · epoch ${owner.epoch} · ${outcome}`}
       onStep={next}
       onReset={reset}
       legend={[
@@ -789,11 +795,9 @@ export function CelldDurabilityDemo() {
     <CelldFrame
       name="celld-durability"
       title="Before the Acknowledgement"
-      description="A successful write response waits for evidence that the committed write is durable."
       step={step}
       total={3}
-      status={DURABILITY_STATUSES[step]}
-      caption="Default fleet mode, comparing no follower with a one-follower ensemble. Every current ensemble member must fsync. Followers hold recovery data, not another active writer. Bucket mode always waits for bucket proof. Steps do not measure latency."
+      status={`One node: bucket ${s.single.bucketCovered ? "covered" : "pending"} · ACK ${s.single.acknowledge ? "allowed" : "pending"} | One follower: fsync ${s.fleet.followerStored ? 1 : 0}/1 · bucket ${s.fleet.bucketCovered ? "covered" : "pending"} · ACK ${s.fleet.acknowledge ? "allowed" : "pending"}`}
       onStep={next}
       onReset={reset}
       legend={[
@@ -983,18 +987,17 @@ export function CelldRecoveryDemo() {
   const [state, setState] = useState(INITIAL_RECOVERY);
   const [witness, setWitness] = useState<TailWitness>("complete");
   const s = recoverySnapshot(state);
-  const status = state.blocked
+  const description = state.blocked
     ? "The follower is unreachable, so its retained tail is inconclusive. Recovery retries; B has not claimed or restored the cell."
     : `${RECOVERY_LABELS[s.step][0]}. ${RECOVERY_LABELS[s.step][1]}`;
+  const status = `Lease ${s.leaseExpired ? "expired" : "active"} · Log ${s.logSealed ? "sealed" : s.logFenced ? "fenced" : "open"} · Tail ${state.blocked ? "unreachable" : s.bucketComplete ? "recovered" : "pending"} · Owner ${s.ownershipAcquired ? "B e8" : "A e7"} · SQLite ${s.restored ? "restored" : "pending"} · Serving ${s.serving ? "B" : "stopped"}`;
   return (
     <CelldFrame
       name="celld-recovery"
       title="Recover Before Serving"
-      description="The bucket may be behind the last acknowledged write. Recover that missing tail first."
       step={s.step}
       total={6}
       status={status}
-      caption="This successful path needs the bucket and a complete retained follower tail. An unreachable witness is inconclusive and cannot authorize an older-bucket restore. It is different from a conclusive loss of every durable copy."
       onStep={() => setState((current) => advanceRecovery(current, witness))}
       onReset={() => setState(INITIAL_RECOVERY)}
       nextLabel={state.blocked ? "Retry tail" : "Next step"}
@@ -1055,7 +1058,7 @@ export function CelldRecoveryDemo() {
             width={width}
             height={compact ? 648 : 576}
             title="Recovery has a gate before new ownership and serving"
-            description={`${status} The replacement fences the prior log, gathers a complete tail, uploads it and seals the log before claiming the cell, restoring SQLite, and serving.`}
+            description={`${description} The replacement fences the prior log, gathers a complete tail, uploads it and seals the log before claiming the cell, restoring SQLite, and serving.`}
           >
             {(id) => (
               <>
@@ -1245,9 +1248,6 @@ export function CelldRecoveryDemo() {
                     >
                       e8
                     </Label>
-                    <Label x={mid} y={488}>
-                      Restore follows recovery + claim
-                    </Label>
                   </>
                 )}
                 {["LEASE", "FENCE", "TAIL", "CLAIM", "RESTORE", "SERVE"].map(
@@ -1316,7 +1316,7 @@ function WorkSlot({
 }
 export function CelldKeyChoiceDemo() {
   const { step, next, reset } = useSteps(6);
-  const status =
+  const description =
     step === 0
       ? "Six equal synchronous work turns are queued in each design. The key determines which cell owns each turn."
       : step < 2
@@ -1324,15 +1324,24 @@ export function CelldKeyChoiceDemo() {
         : step < 6
           ? `After ${step} rounds: the independent cells have finished; the hot cell still has ${6 - step} ${step === 5 ? "turn" : "turns"} queued.`
           : "All six turns finish: the hot cell took six rounds, and the three independent cells took two.";
+  const progress = (schedule: readonly ScheduledOperation[]) => {
+    const completed = schedule.filter(
+      (operation) => operation.round <= step,
+    ).length;
+    const rounds = Math.min(
+      step,
+      Math.max(...schedule.map((operation) => operation.round)),
+    );
+    return `${completed}/${schedule.length} complete · ${schedule.length - completed} queued · ${rounds} ${rounds === 1 ? "round" : "rounds"}`;
+  };
+  const status = `Hot cell: ${progress(HOT_KEY_SCHEDULE)} | Independent cells: ${progress(INDEPENDENT_KEY_SCHEDULE)}`;
   return (
     <CelldFrame
       name="celld-key-choice"
       title="Choose the State Boundary"
-      description="Six work turns. One cell processes them serially; independent cells can work on separate nodes."
       step={step}
       total={6}
       status={status}
-      caption="Equal illustrative CPU/SQL turns with enough nodes for three-way parallelism. This is not a throughput benchmark. One fleet runs one application; separate cells do not create a cross-cell transaction."
       onStep={next}
       onReset={reset}
       nextLabel="Run one round"
@@ -1355,7 +1364,7 @@ export function CelldKeyChoiceDemo() {
             width={width}
             height={compact ? 598 : 456}
             title="One hot cell versus three independent cell queues"
-            description={`${status} Each key has one cell. Numbered blocks are equal synchronous operations, not replicas. Each cell processes at most one turn per round.`}
+            description={`${description} Each key has one cell. Numbered blocks are equal synchronous operations, not replicas. Each cell processes at most one turn per round.`}
           >
             {(id) => (
               <>

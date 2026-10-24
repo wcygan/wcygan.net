@@ -88,7 +88,7 @@ export function RaftElectionDemo() {
       <p>
         {unavailable
           ? "3D is unavailable. The election still works below."
-          : "Five nodes, one election. Loading the 3D scene…"}
+          : "Loading 3D scene…"}
       </p>
       <ul>
         {NODES.map((id) => (

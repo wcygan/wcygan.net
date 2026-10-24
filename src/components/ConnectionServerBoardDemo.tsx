@@ -119,38 +119,28 @@ const TOUR_BEATS: TourBeat[] = [
   {
     value: 1,
     holdMs: 6000,
-    caption: "One connection — 3 idle cores, tiny memory footprint",
   },
   {
     value: 24,
     holdMs: 6000,
-    caption: "24 connections — all cores running, the server is keeping up",
   },
   {
     value: 64,
     holdMs: 6000,
-    caption:
-      "64 connections — thread chips flip to CTX SWITCH, the kernel schedules instead of serving",
   },
   {
     value: 150,
     holdMs: 6000,
-    caption: "150 connections — lock waits appear, a context-switch storm",
   },
   {
     value: 300,
     holdMs: 6400,
-    caption:
-      "300 connections — memory climbing, throughput below peak, and the pool still says healthy",
   },
 ];
 
 export function ConnectionServerBoardDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { value, caption, phase, playing, start, onManualChange } = useDemoTour(
-    TOUR_BEATS,
-    1,
-  );
+  const { value, phase, start, onManualChange } = useDemoTour(TOUR_BEATS, 1);
   usePlayOnceOnVisible(rootRef, start);
   const connections = Math.round(value);
 
@@ -177,13 +167,7 @@ export function ConnectionServerBoardDemo() {
   return (
     <div className="ps-diagram-workbench ps-server-board" ref={rootRef}>
       <div className="ps-diagram-header">
-        <div>
-          <p className="ps-diagram-title">What the server feels</p>
-          <p className="ps-diagram-subtitle">
-            The pool always looks healthy — drag past the sweet spot and watch
-            the MySQL board drown
-          </p>
-        </div>
+        <p className="ps-diagram-title">What the server feels</p>
         <button
           type="button"
           className="ps-diagram-replay-btn"
@@ -550,9 +534,6 @@ export function ConnectionServerBoardDemo() {
         </svg>
       </div>
 
-      <p className="ps-tour-caption" aria-live="polite">
-        {caption ?? (playing ? "" : "Drag the slider — or replay the tour")}
-      </p>
       <label className="ps-scaling-control">
         <span>
           Pool size <strong>{connections}</strong>

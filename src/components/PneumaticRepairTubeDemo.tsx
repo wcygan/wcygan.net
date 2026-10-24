@@ -79,17 +79,9 @@ export function PneumaticRepairTubeDemo() {
       aria-labelledby="pneumatic-tube-title"
     >
       <header className="pneumatic-tube-header">
-        <div>
-          <span className="pneumatic-tube-badge">Concept 6</span>
-          <p className="article-graphic-title" id="pneumatic-tube-title">
-            Pneumatic Tube Event Dispatcher
-          </p>
-          <p className="pneumatic-tube-desc">
-            Physical vacuum tube firing self-contained repair event capsules
-            from Kafka outbox directly into Flink stream processors for
-            idempotent delivery.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="pneumatic-tube-title">
+          Pneumatic Tube Event Dispatcher
+        </p>
         <div className="pneumatic-tube-actions">
           <button
             type="button"
@@ -191,12 +183,6 @@ export function PneumaticRepairTubeDemo() {
           </div>
         </div>
       </div>
-
-      <figcaption className="pneumatic-tube-caption">
-        <strong>Asynchronous Decoupling:</strong> The reconciliation job
-        delegates repairs to durable message canisters. Even if downstream MySQL
-        nodes temporarily fail, Kafka buffers the canisters for reliable replay.
-      </figcaption>
     </figure>
   );
 }

@@ -102,11 +102,6 @@ export function GossipDemo() {
       <p className="article-graphic-title">
         Spreading membership news: “E has joined the cluster”
       </p>
-      <p className="gossip-message-key">
-        <span aria-hidden="true" data-state="unaware" /> Blue nodes have not
-        learned about E. <span aria-hidden="true" data-state="informed" /> Green
-        nodes have. Gossip spreads cluster membership knowledge peer to peer.
-      </p>
       <p className="gossip-exchange">
         {state.done
           ? "Converged · A–E all know the membership"
@@ -201,10 +196,6 @@ export function GossipDemo() {
           </select>
         </label>
       </div>
-      <figcaption>
-        Dashed lines show established peer relationships. Drag to orbit; scroll
-        to zoom.
-      </figcaption>
     </figure>
   );
 }

@@ -45,7 +45,6 @@ export interface ConsensusLink {
 
 export interface ConsensusFrame {
   title: string;
-  detail: string;
   nodes: ConsensusNode[];
   links?: ConsensusLink[];
   focusIndex?: number;
@@ -57,7 +56,6 @@ export interface ConsensusLesson {
   id: ConsensusTopic;
   title: string;
   layout: "logs" | "network" | "membership" | "machines";
-  guide: string;
   frames: ConsensusFrame[];
 }
 

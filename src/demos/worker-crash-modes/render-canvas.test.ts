@@ -29,7 +29,7 @@ describe("measureCrashDemoHeight", () => {
   });
 
   it("fits within the first-paint CSS fallbacks so the canvas does not jump", () => {
-    expect(measureCrashDemoHeight(800, WORKFLOW_ROWS, ACTIVITY_ROWS)).toBe(432);
-    expect(measureCrashDemoHeight(390, WORKFLOW_ROWS, ACTIVITY_ROWS)).toBe(648);
+    expect(measureCrashDemoHeight(800, WORKFLOW_ROWS, ACTIVITY_ROWS)).toBe(374);
+    expect(measureCrashDemoHeight(390, WORKFLOW_ROWS, ACTIVITY_ROWS)).toBe(576);
   });
 });

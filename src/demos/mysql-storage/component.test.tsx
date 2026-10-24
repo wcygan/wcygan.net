@@ -45,6 +45,17 @@ let browser: ReturnType<typeof installPlaybackBrowser>;
 async function visible(value: boolean) {
   await act(async () => browser.visible(value));
 }
+function facts() {
+  return Object.fromEntries(
+    Array.from(
+      screen.getByRole("status").querySelectorAll("dl > div"),
+      (fact) => [
+        fact.querySelector("dt")?.textContent,
+        fact.querySelector("dd")?.textContent,
+      ],
+    ),
+  );
+}
 beforeEach(() => {
   scene.fail = false;
   scene.defer = false;
@@ -73,24 +84,25 @@ describe("MySQL storage figures", () => {
     expect(screen.getByText(/3D is unavailable/)).toBeTruthy();
     expect(document.querySelector('[data-scene-loading="true"]')).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "A locks inventory" }));
-    expect(screen.getByRole("status").textContent).toContain(
-      "Session A holds the row lock",
-    );
+    expect(facts()).toEqual({
+      "Available stock": "1",
+      "Lock owner": "A",
+      B: "Not started",
+    });
   });
 
   it("uses one stage and lazily releases offscreen WebGL while retaining experiment state", async () => {
     render(<MySqlBufferPoolDemo />);
     expect(screen.queryByTestId("storage-scene")).toBeNull();
-    expect(document.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
+    const figure = screen.getByRole("figure", { name: "Memory before disk" });
+    expect(figure.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
     await visible(true);
     expect(screen.getByTestId("storage-scene")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Read page 1" }));
     fireEvent.click(screen.getByRole("button", { name: "Read page 1" }));
     await visible(false);
     expect(screen.queryByTestId("storage-scene")).toBeNull();
-    expect(screen.getByRole("status").textContent).toContain(
-      "served from memory",
-    );
+    expect(screen.getByRole("status").textContent).toContain("memory hit");
     await visible(true);
     expect(
       document.querySelectorAll(".mysql-storage-counters dd")[0]?.textContent,
@@ -116,7 +128,7 @@ describe("MySQL storage figures", () => {
     for (let i = 0; i < 3; i++)
       fireEvent.click(screen.getByRole("button", { name: "Next step" }));
     expect(screen.getByRole("status").textContent).toContain(
-      "skip the clustered-row lookup",
+      "0 clustered fetches",
     );
     expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(
       ["101", "1", "102", "1"],
@@ -129,11 +141,9 @@ describe("MySQL storage figures", () => {
     expect(screen.getByText(/3D is unavailable/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Read page 2" }));
     fireEvent.click(screen.getByRole("button", { name: "Read page 2" }));
-    expect(screen.getByRole("status").textContent).toContain(
-      "served from memory",
-    );
+    expect(screen.getByRole("status").textContent).toContain("memory hit");
     fireEvent.click(screen.getByRole("button", { name: "Clear demo" }));
-    expect(screen.getByRole("status").textContent).toContain("memory is empty");
+    expect(screen.getByRole("status").textContent).toContain("Memory empty");
   });
   it("prevents the waiting shopper from selling the same last book", () => {
     render(<MySqlLockingDemo />);
@@ -141,51 +151,75 @@ describe("MySQL storage figures", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "B requests same row" }),
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "has not read a stock value yet",
-    );
+    expect(facts()).toEqual({
+      "Available stock": "1",
+      "Lock owner": "A",
+      B: "Waiting",
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "A sells and commits" }),
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "reads the current stock: 0",
-    );
+    expect(facts()).toEqual({
+      "Available stock": "0",
+      "Lock owner": "B",
+      B: "Reads 0",
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "B checks and rolls back" }),
     );
-    expect(screen.getByRole("status").textContent).toContain("Only A sold");
+    expect(facts()).toEqual({
+      "Available stock": "0",
+      "Lock owner": "None",
+      Sales: "1",
+    });
   });
   it("retains durable redo across a crash and reconstructs the committed change", () => {
     render(<MySqlRecoveryDemo />);
     fireEvent.click(
       screen.getByRole("button", { name: "Commit stock change" }),
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "disk page still holds 2",
-    );
+    expect(facts()).toEqual({
+      "Memory stock": "1",
+      "Disk stock": "2",
+      Redo: "Durable change",
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "Crash before page flush" }),
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "Volatile memory is lost",
-    );
+    expect(facts()).toEqual({
+      "Memory stock": "Lost",
+      "Disk stock": "2",
+      Redo: "Survives",
+    });
     fireEvent.click(
       screen.getByRole("button", { name: "Restart and recover" }),
     );
-    expect(screen.getByRole("status").textContent).toContain(
-      "reconstruct stock 1",
-    );
+    expect(facts()).toEqual({
+      "Recovered stock": "1",
+      "Old page stock": "2 before redo",
+      Commit: "Preserved",
+    });
   });
   it("keeps a received replica change invisible until it is applied", () => {
     render(<MySqlReplicationDemo />);
     fireEvent.click(screen.getByRole("button", { name: "Write order 104" }));
     fireEvent.click(screen.getByRole("button", { name: "Receive change" }));
-    expect(screen.getByRole("status").textContent).toContain(
-      "has not applied it",
-    );
+    expect(facts()).toEqual({
+      "Source orders": "4",
+      "Replica orders": "3",
+      "Relay log": "Change 1",
+    });
     fireEvent.click(screen.getByRole("button", { name: "Apply on replica" }));
-    expect(screen.getByRole("status").textContent).toContain("four orders");
+    expect(facts()).toEqual({
+      "Source orders": "4",
+      "Replica orders": "4",
+      "Pending changes": "0",
+    });
     fireEvent.click(screen.getByRole("button", { name: "Start again" }));
-    expect(screen.getByRole("status").textContent).toContain("101–103");
+    expect(facts()).toEqual({
+      "Source orders": "3",
+      "Replica orders": "3",
+      "Pending changes": "0",
+    });
   });
 });

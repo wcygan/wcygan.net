@@ -203,7 +203,9 @@ describe("heartbeat scene controls", () => {
     expect(dialog.textContent).toContain(
       "In Raft, it would start an election at this point.",
     );
-    expect(dialog.textContent).toContain("Reset to begin again");
+    expect(
+      within(dialog).getByRole("button", { name: "Inspect scene" }),
+    ).toBeTruthy();
     for (const name of [
       "Crash leader",
       "Cut random link",
@@ -212,10 +214,12 @@ describe("heartbeat scene controls", () => {
       expect(
         (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
       ).toBe(true);
-    fireEvent.click(within(dialog).getByRole("button", { name: "Dismiss" }));
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Inspect scene" }),
+    );
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(document.querySelector(".fd-paused")!.textContent).toContain(
-      "Reset to begin again",
+    expect(document.querySelector(".fd-paused")!.textContent).toBe(
+      "Paused at 2.4s: A timed out.",
     );
     await view(false);
     await view(true);

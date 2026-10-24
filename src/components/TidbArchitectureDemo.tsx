@@ -72,14 +72,10 @@ function ArchitectureSummary({
     <div className="tidb-fallback">
       <p>
         {unavailable
-          ? "3D is unavailable. Play a scenario to follow the routing and replication below."
+          ? "3D is unavailable."
           : "Application → TiDB SQL servers → TiKV storage"}
       </p>
-      <p>
-        3 SQL servers · 3 PD members · 9 storage nodes
-        <br />
-        PD supplies timestamps and placement metadata beside the data path.
-      </p>
+      <p>3 SQL servers · 3 PD members · 9 storage nodes</p>
       <dl>
         {NODES.filter((n) => n.group === "tikv").map((node) => (
           <div key={node.id}>
@@ -334,19 +330,19 @@ export function TidbArchitectureDemo() {
                   ? "Complete"
                   : `Step ${state.step} of ${steps.length - 2}`}
             </span>{" "}
-            {state.step === 0 ? "Explore the architecture" : current.title}
+            {state.step > 0 && current.title}
           </p>
-          <p className="tidb-explanation">
-            {details ? (
-              <>
-                <strong>{details.title}.</strong> {details.description}
-              </>
-            ) : state.step === 0 ? (
-              "One users table, seven Regions, five replicas per Region across nine storage nodes. Compare a leader read with a caught-up or lagging follower read, or follow a write. Each scenario samples a user. Hover or select a component for details."
-            ) : (
-              current.narration
-            )}
-          </p>
+          {(details || state.step > 0) && (
+            <p className="tidb-explanation">
+              {details ? (
+                <>
+                  <strong>{details.title}.</strong> {details.description}
+                </>
+              ) : (
+                current.narration
+              )}
+            </p>
+          )}
         </div>
       </div>
     </figure>

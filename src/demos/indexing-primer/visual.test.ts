@@ -12,13 +12,12 @@ const primaryKeys = (group: TreeGroup) =>
 describe("indexing tree visuals", () => {
   it("keeps every state connected, visible, and within its stage", () => {
     for (const lesson of lessons)
-      for (let step = 0; step < lesson.steps.length; step++) {
+      for (let step = 0; step < lesson.stepCount; step++) {
         const result = visual(lesson.id, step);
         const pages = result.groups.flatMap((group) => group.pages);
         const ids = pages.map((page) => page.id);
         expect(new Set(ids).size).toBe(ids.length);
         expect(result.query).not.toBe("");
-        expect(result.takeaway).not.toBe("");
         for (const page of pages) {
           expect(page.x - page.width / 2).toBeGreaterThanOrEqual(0);
           expect(page.x + page.width / 2).toBeLessThanOrEqual(WIDTH);

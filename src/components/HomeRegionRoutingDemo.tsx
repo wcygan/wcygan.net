@@ -54,10 +54,6 @@ export function HomeRegionRoutingDemo() {
         <p className="article-graphic-title" id="home-region-routing-title">
           Entity Routing
         </p>
-        <p>
-          A request can enter through the nearest healthy edge while account
-          writes still route to the region that owns that account.
-        </p>
       </div>
 
       <canvas

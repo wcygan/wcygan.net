@@ -105,5 +105,7 @@ it("keeps the complete cached path visible under reduced motion", () => {
   ).toBeTruthy();
   expect(view.container.querySelector("[data-depth-request]")).toBeNull();
   expect(frames).not.toHaveBeenCalled();
-  expect(view.getByRole("status").textContent).toContain("no disk read");
+  expect(view.getByRole("status").textContent).toBe(
+    "4 levels visited: 3 routing pages + 1 leaf.",
+  );
 });

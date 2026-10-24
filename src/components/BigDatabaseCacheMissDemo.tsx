@@ -2,7 +2,6 @@ import { useId } from "react";
 import { BigDatabasePageDiagram } from "~/components/BigDatabasePageDiagram";
 import {
   BigDatabasePlaybackControls,
-  BigDatabasePlaybackSteps,
   BigDatabasePlaybackStatus,
 } from "~/components/BigDatabasePlayback";
 import { useQueryPlayback } from "~/demos/big-database/use-query-playback";
@@ -21,9 +20,6 @@ export function BigDatabaseCacheMissDemo() {
       <header>
         <p className="article-graphic-title" id={id}>
           A cache miss reads from SSD
-        </p>
-        <p className="big-db-flow-intro">
-          Load the missing page into RAM before reading its row.
         </p>
       </header>
       <BigDatabasePlaybackControls playback={playback} />
@@ -61,18 +57,11 @@ export function BigDatabaseCacheMissDemo() {
             },
           ]}
         />
-        <BigDatabasePlaybackSteps
-          playback={playback}
-          label="Uncached leaf page"
-          count={`${playback.snapshot.current.reads} SSD page reads`}
-        />
+        <p className="big-db-flow-count">
+          {playback.snapshot.current.reads} SSD page reads
+        </p>
       </div>
       <BigDatabasePlaybackStatus playback={playback} />
-      <figcaption>
-        Upper index pages are assumed cached; this example isolates one missing
-        leaf page. A miss loads it into the buffer pool before the row is read.
-        Playback takes seconds for teaching, not measured query time.
-      </figcaption>
     </figure>
   );
 }

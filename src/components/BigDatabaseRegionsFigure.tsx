@@ -123,7 +123,6 @@ export function BigDatabaseRegionsFigure() {
       data-graphic-frame="plate"
       data-graphic-kind="svg"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -197,10 +196,6 @@ export function BigDatabaseRegionsFigure() {
           ))}
         </svg>
       </div>
-      <figcaption id={`${id}-caption`}>
-        Each primary replicates across regions and to two replicas in its
-        region.
-      </figcaption>
     </figure>
   );
 }

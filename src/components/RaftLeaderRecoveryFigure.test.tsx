@@ -177,7 +177,7 @@ it("stops in a persistent final state and restarts only with Replay", () => {
   advance(duration + 1000);
   expect(stage().getAttribute("data-playback")).toBe("complete");
   expect(screen.getByRole("status").textContent).toContain(
-    "Committed entries survived",
+    "Committed through #5",
   );
   expect(disabled("Next")).toBe(true);
   expect(disabled("Play")).toBe(true);
@@ -208,7 +208,7 @@ it("distinguishes a durable majority from the leader’s confirmation", () => {
   visible();
   advance(time(24500));
   expect(screen.getByRole("status").textContent).toContain(
-    "has not yet confirmed commitment of #5",
+    "C stored #5 · acknowledgement in flight",
   );
   expect(
     document.querySelector('[data-server="A"]')?.getAttribute("data-stored"),

@@ -29,18 +29,11 @@ export function MySqlRedoReplayDemo() {
       data-graphic-kind="dom"
       data-phase={snapshot.phase}
       aria-labelledby="redo-recovery-title"
-      aria-describedby="redo-recovery-description redo-recovery-caption"
     >
       <header className="redo-recovery-header">
-        <div>
-          <p className="article-graphic-title" id="redo-recovery-title">
-            Commit log rebuilds the served state
-          </p>
-          <p id="redo-recovery-description">
-            After each log record is applied, the JSON shows the current state
-            of the database.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="redo-recovery-title">
+          Commit log rebuilds the served state
+        </p>
         <DemoReplayButton
           ariaLabel="Replay ordered redo recovery"
           isComplete={snapshot.phase === "complete"}
@@ -102,12 +95,6 @@ export function MySqlRedoReplayDemo() {
           ? "Recovery complete. Six durable redo records were applied in increasing log sequence number order. The database now serves JSON containing Account A with balance 725 and Account B with balance 180. Account C is absent after its delete record."
           : ""}
       </p>
-
-      <figcaption id="redo-recovery-caption">
-        This demo uses row-level changes for clarity. Actual InnoDB redo records
-        lower-level page changes, but replaying them in order produces the same
-        database state.
-      </figcaption>
     </figure>
   );
 }

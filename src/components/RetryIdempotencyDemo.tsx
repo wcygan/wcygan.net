@@ -66,12 +66,6 @@ export function RetryIdempotencyDemo() {
         <p className="article-graphic-title" id="retry-idempotency-title">
           Design for Idempotency
         </p>
-        <p>
-          When the Worker crashes after sending an email and Temporal retries, a
-          stable idempotency key lets the provider recognize the retry and skip
-          the resend, while sending no key at all leaves it nothing to match on,
-          so a duplicate goes out.
-        </p>
       </div>
 
       <canvas

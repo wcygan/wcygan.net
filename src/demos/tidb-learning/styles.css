@@ -40,10 +40,8 @@
 .tidb-learn [data-tone="red"] {
   --tl-tone: var(--tl-red);
 }
-.tidb-learn .tidb-learn-intro {
-  padding: 24px 24px 16px;
-}
 .tidb-learn .tidb-learn-title {
+  padding: 24px 24px 16px;
   color: var(--tl-text);
   font:
     500 14px / 1.6 Lilex,
@@ -52,14 +50,6 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0;
-}
-.tidb-learn .tidb-learn-question {
-  color: var(--tl-muted);
-  font:
-    400 16px / 1.5 Inter,
-    system-ui,
-    sans-serif;
-  margin: 8px 0 0;
 }
 .tidb-learn .tidb-learn-stage {
   background: var(--tl-canvas);
@@ -221,16 +211,6 @@
   outline: 2px solid var(--tl-orange);
   outline-offset: 2px;
 }
-.tidb-learn .tidb-learn-guide,
-.tidb-learn .tidb-learn-motion-note {
-  font:
-    400 14px / 1.5 Lilex,
-    ui-monospace,
-    monospace;
-  color: var(--tl-muted);
-  margin: 0;
-  padding: 0 24px 16px;
-}
 .tidb-learn .tidb-learn-status {
   padding: 12px 24px 20px;
 }
@@ -260,19 +240,8 @@
   padding-inline-start: 12px;
   font-family: Lilex, ui-monospace, monospace;
 }
-figure.tidb-learn > figcaption {
-  font:
-    400 14px / 1.6 Inter,
-    system-ui,
-    sans-serif;
-  color: var(--tl-muted);
-  border-block-start: 1px solid var(--tl-panel);
-  padding: 16px 24px 24px;
-  margin: 0;
-  text-align: start;
-}
 @media (max-width: 480px) {
-  .tidb-learn .tidb-learn-intro {
+  .tidb-learn .tidb-learn-title {
     padding: 20px 16px 12px;
   }
   .tidb-learn .tidb-learn-camera,
@@ -280,10 +249,7 @@ figure.tidb-learn > figcaption {
   .tidb-learn .tidb-learn-options {
     padding-inline: 16px;
   }
-  .tidb-learn .tidb-learn-guide,
-  .tidb-learn .tidb-learn-motion-note,
-  .tidb-learn .tidb-learn-status,
-  figure.tidb-learn > figcaption {
+  .tidb-learn .tidb-learn-status {
     padding-inline: 16px;
   }
   .tidb-learn .tidb-learn-title {

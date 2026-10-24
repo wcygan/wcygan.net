@@ -52,11 +52,6 @@
   font: 400 13px/1.6 var(--ch-font-mono);
 }
 
-.clickhouse-demo :is(.ch-caption, figcaption) {
-  color: var(--ch-muted);
-  font: 400 12px/1.6 var(--ch-font-mono);
-}
-
 .clickhouse-demo :is(button, select, summary) {
   min-inline-size: 44px;
   min-block-size: 44px;

@@ -189,9 +189,6 @@ it("labels entry and heartbeat metadata and keeps the packet layer above the car
   expect(
     scene.lastElementChild!.classList.contains("log-replication-payload-layer"),
   ).toBe(true);
-  expect(document.querySelector("figcaption")?.textContent).toContain(
-    "Each server’s Commit label shows its local commitment knowledge",
-  );
 });
 
 it("settles the current in-flight step before advancing to another checkpoint", () => {

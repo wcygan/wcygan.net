@@ -96,16 +96,10 @@ export function KafkaLagDemo() {
           </button>
         </>
       }
-      caption="Yellow records are waiting; green are processed. All remain retained. This shows processing-position lag, not the committed-offset lag usually reported for consumer groups."
     >
       <p>
         Produced: {snapshot.end}. Processed: {snapshot.processed}. Waiting:{" "}
         {snapshot.lag}.
-      </p>
-      <p>
-        {snapshot.lag
-          ? "Storage and retention bound the backlog; this demo caps it at eight records."
-          : "Caught up. All records remain available."}
       </p>
     </SceneFigure>
   );
@@ -144,7 +138,6 @@ export function KafkaHotKeyDemo() {
           </button>
         </>
       }
-      caption="One record per partition per round: a busy key bottlenecks its partition. These schematic rounds are not a Kafka benchmark."
     >
       <p>
         P0: {snapshot.counts[0]} records. P1: {snapshot.counts[1]}. P2:{" "}
@@ -188,7 +181,6 @@ export function KafkaPlacementDemo() {
           </button>
         </>
       }
-      caption="Partition leaders can span brokers. This moves the same three leaders; replicas, transfer traffic, and balancing policy are omitted."
     >
       <p>
         {distributed
@@ -236,7 +228,6 @@ function SceneFigure({
   scene,
   controls,
   children,
-  caption,
   playback,
 }: {
   title: string;
@@ -244,11 +235,9 @@ function SceneFigure({
   scene: IntroSceneState;
   controls: ReactNode;
   children: ReactNode;
-  caption: string;
   playback: ReturnType<typeof useKafkaAutoplay>;
 }) {
   const titleId = useId();
-  const guideId = useId();
   const stage = useRef<HTMLDivElement>(null);
   const [loaded, setLoaded] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -317,7 +306,6 @@ function SceneFigure({
         ref={setStage}
         role="group"
         aria-label={`${title}: 3D view`}
-        aria-describedby={guideId}
         aria-busy={pending}
         tabIndex={unavailable ? -1 : 0}
         onKeyDown={(event) => {
@@ -375,10 +363,6 @@ function SceneFigure({
           </button>
         ))}
       </div>
-      <p className="kafka-intro-scene-guide" id={guideId}>
-        Drag to orbit; scroll to zoom. Keyboard: arrows rotate, + / − zoom, 0
-        resets.
-      </p>
       <div
         className="kafka-intro-status"
         role="status"
@@ -387,7 +371,6 @@ function SceneFigure({
       >
         {children}
       </div>
-      <figcaption>{caption}</figcaption>
     </figure>
   );
 }
@@ -442,7 +425,6 @@ export function KafkaRetainedLogDemo() {
           </button>
         </>
       }
-      caption="Readers advance independently; records remain until Kafka's retention policy removes them."
     >
       <p>Partition 0 still holds offsets {RETAINED_OFFSETS.join(", ")}.</p>
       <p>
@@ -487,12 +469,7 @@ export function KafkaKeyRoutingDemo() {
           </button>
         </>
       }
-      caption="A producer's partitioner maps keys to partitions. This fixed map illustrates key affinity; order and offsets stay local to each partition."
     >
-      <p>
-        Illustrative map: A → P0; B → P1; C → P2. Sequence:{" "}
-        {KEY_SEQUENCE.join(" / ")}.
-      </p>
       <p>
         {snapshot.current
           ? `Sent ${snapshot.records.length} of 6. Last: ${snapshot.current.key} → P${snapshot.current.partition}, offset ${snapshot.current.offset}.`
@@ -512,7 +489,6 @@ export function KafkaKeyRoutingDemo() {
           </li>
         ))}
       </ul>
-      {snapshot.done && <p>Three logs; no single order across all three.</p>}
     </SceneFigure>
   );
 }
@@ -553,7 +529,6 @@ export function KafkaReplicationDemo() {
           </button>
         </>
       }
-      caption="One partition, three copies. Each failure step includes detection and election; all replicas begin caught up."
     >
       <p>{messages[step]}</p>
       <p>

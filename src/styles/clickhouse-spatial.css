@@ -9,12 +9,6 @@
   align-items: baseline;
   padding: 20px 20px 12px;
 }
-.clickhouse-spatial-dimension {
-  color: var(--ch-muted);
-  font: 500 11px/1.5 var(--ch-font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
 .clickhouse-spatial-demo .clickhouse-spatial-stage {
   position: relative;
   height: 360px;
@@ -85,18 +79,11 @@
   font: 500 12px/1.5 var(--ch-font-mono);
   color: var(--ch-muted);
 }
-.clickhouse-spatial-demo .clickhouse-spatial-guide {
-  margin: 0;
-  padding: 4px 20px 16px;
-  color: var(--ch-muted);
-  font: 400 12px/1.6 var(--ch-font-mono);
-}
 .clickhouse-spatial-status {
   display: grid;
   gap: 8px;
   padding: 16px 20px;
   border-block: 1px solid var(--ch-border);
-  min-height: 110px;
 }
 .clickhouse-spatial-status p {
   margin: 0;
@@ -105,9 +92,6 @@
   color: var(--ch-muted);
   font: 500 12px/1.6 var(--ch-font-mono);
   font-variant-numeric: tabular-nums;
-}
-.clickhouse-spatial-demo .clickhouse-spatial-narration {
-  color: var(--ch-text);
 }
 .clickhouse-spatial-demo .clickhouse-spatial-takeaway {
   color: var(--ch-text);
@@ -164,10 +148,6 @@
   text-align: start;
   white-space: nowrap;
   background: var(--ch-bg);
-}
-.clickhouse-spatial-demo .ch-caption {
-  margin: 0;
-  padding: 4px 20px 20px;
 }
 .clickhouse-spatial-labels {
   position: absolute;
@@ -234,12 +214,6 @@
     padding-inline: 12px;
   }
   .clickhouse-spatial-data {
-    padding-inline: 12px;
-  }
-  .clickhouse-spatial-demo .clickhouse-spatial-guide {
-    padding-inline: 12px;
-  }
-  .clickhouse-spatial-demo .ch-caption {
     padding-inline: 12px;
   }
   .clickhouse-spatial-labels span {

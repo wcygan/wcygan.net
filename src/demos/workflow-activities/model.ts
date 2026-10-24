@@ -42,7 +42,6 @@ export type PacketSnapshot = {
 export type ActivitySnapshot = {
   key: ActivityKey;
   label: string;
-  job: string;
   status: ActivityStatus;
   statusLabel: string;
   resultLabel?: string;
@@ -53,7 +52,6 @@ export type ActivitySnapshot = {
 
 export type WorkflowSnapshot = {
   fn: "bookTrip()";
-  note: "orchestrates, holds state";
   status: WorkflowStatus;
   statusLabel: string;
   completedCount: number;
@@ -106,28 +104,21 @@ const CONFIRM_RUN_END = 0.75;
 const SEND_DISPATCH_START = 0.75;
 const SEND_DONE_AT = 0.885;
 
-const ACTIVITY_META: Record<
-  ActivityKey,
-  { label: string; job: string; result: string }
-> = {
+const ACTIVITY_META: Record<ActivityKey, { label: string; result: string }> = {
   reserveSeat: {
     label: "reserveSeat",
-    job: "hold a seat",
     result: "seat 14C",
   },
   chargeCard: {
     label: "chargeCard",
-    job: "capture payment",
     result: "charged $480",
   },
   confirmSeat: {
     label: "confirmSeat",
-    job: "commit the hold",
     result: "seat confirmed",
   },
   sendItinerary: {
     label: "sendItinerary",
-    job: "email the traveler",
     result: "email sent",
   },
 };
@@ -155,7 +146,6 @@ export function deriveActivitiesSnapshot(
     phase,
     workflow: {
       fn: "bookTrip()",
-      note: "orchestrates, holds state",
       status: workflowComplete ? "complete" : "orchestrating",
       statusLabel: workflowComplete
         ? "all activities complete"
@@ -252,7 +242,7 @@ function activitySnapshot(
 
   const meta = ACTIVITY_META[key];
   const window = activityWindow(key);
-  const base = { key, label: meta.label, job: meta.job, pulse: 0, progress: 0 };
+  const base = { key, label: meta.label, pulse: 0, progress: 0 };
 
   if (progress < window.dispatchStart) {
     return { ...base, status: "pending", statusLabel: "waiting in queue" };
@@ -292,7 +282,6 @@ function chargeSnapshot(progress: number): ActivitySnapshot {
   const base = {
     key: "chargeCard" as const,
     label: meta.label,
-    job: meta.job,
     pulse: 0,
     progress: 0,
   };

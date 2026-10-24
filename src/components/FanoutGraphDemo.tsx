@@ -22,7 +22,6 @@ export function FanoutGraphDemo() {
   const markerId = `fanout-arrow-${markerSuffix}`;
   const titleId = `fanout-title-${markerSuffix}`;
   const descriptionId = `fanout-description-${markerSuffix}`;
-  const captionId = `fanout-caption-${markerSuffix}`;
   const snapshot = useFanoutPlayback();
   const compact = useCompactGraph();
   const nodes = compact ? compactNodes() : FANOUT_NODES;
@@ -35,15 +34,12 @@ export function FanoutGraphDemo() {
       data-graphic-kind="svg"
       data-phase={snapshot.isComplete ? "complete" : "playing"}
       aria-labelledby={titleId}
-      aria-describedby={`${descriptionId} ${captionId}`}
+      aria-describedby={descriptionId}
     >
       <header className="fanout-graph-header">
-        <div>
-          <p className="article-graphic-title" id={titleId}>
-            Fanout across a service graph
-          </p>
-          <p>One browser request multiplies across the service layers</p>
-        </div>
+        <p className="article-graphic-title" id={titleId}>
+          Fanout across a service graph
+        </p>
       </header>
 
       <div

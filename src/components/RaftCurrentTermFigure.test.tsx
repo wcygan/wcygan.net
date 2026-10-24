@@ -91,7 +91,6 @@ it("animates requests and replies before settling both endings", () => {
   fireEvent.click(screen.getByRole("button", { name: "Play" }));
   advance(frameDuration(8));
   expect(stage().getAttribute("data-playback")).toBe("complete");
-  expect(screen.getByText("Only the old entry")).toBeTruthy();
   expect(
     within(
       screen.getByRole("table", { name: "Three server logs" }),
@@ -161,15 +160,11 @@ it("shows storage-only after entry 2’s ACK, then commits entries 2 and 3 after
   advance(frameDuration(0));
   advance(frameDuration(1));
   advance(flightsFor(2).at(-1)!.end + 32);
-  expect(screen.getByText(/It stays uncommitted: C’s term-3 log/)).toBeTruthy();
   expect(
     screen.getAllByRole("cell", { name: "Index 2, term 2, uncommitted" }),
   ).toHaveLength(2);
   for (let frame = 2; frame < 7; frame++) advance(frameDuration(frame));
   advance(flightsFor(7).at(-1)!.end + 32);
-  expect(
-    screen.getByText(/A commits entry 3 and the preceding entry 2 together/),
-  ).toBeTruthy();
   expect(
     screen.getAllByRole("cell", { name: "Index 2, term 2, committed" }),
   ).toHaveLength(2);

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   createLagPlayback,
+  lagStatus,
   PLAYBACK_RATE,
   readSummary,
   formatWallTime,
@@ -137,12 +138,18 @@ it("retains lag without motion and lets the reader apply the pending queue", () 
   expect(
     playback.getSnapshot().members.map((member) => member.applied),
   ).toEqual([6, 6, 2]);
+  expect(lagStatus(playback.getSnapshot())).toBe(
+    "6 of 6 writes committed. Replica B has pending writes.",
+  );
   expect(vi.getTimerCount()).toBe(0);
   playback.catchUp();
   expect(
     playback.getSnapshot().members.map((member) => member.applied),
   ).toEqual([6, 6, 6]);
   expect(playback.getSnapshot().pending).toBe(false);
+  expect(lagStatus(playback.getSnapshot())).toBe(
+    "All three databases read version 6.",
+  );
 });
 
 it("notifies only at meaningful events and disposes its timer on deactivation", () => {

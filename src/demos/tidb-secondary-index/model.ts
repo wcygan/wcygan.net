@@ -72,81 +72,22 @@ export const MATCH_ID = SECONDARY_ENTRIES.find(
 )!.id;
 export const RESULT = PRIMARY_ENTRIES.find((row) => row.id === MATCH_ID)!;
 
-export const VISIBLE_VERSION = visibleRowVersion(
-  ROW_VERSIONS,
-  MATCH_ID,
-  READ_TS,
-)!;
-export const NEWER_VERSION = ROW_VERSIONS.find(
-  (row) => row.id === MATCH_ID && row.commitTs > READ_TS,
-)!;
 export const STEPS = [
-  {
-    title: "Ready",
-    narration:
-      "Follow an index range scan and a row lookup at the same snapshot.",
-  },
-  {
-    title: "Receive query",
-    narration: `TiDB chooses IndexLookUp: scan the email index, then fetch rows at read timestamp ${READ_TS}.`,
-  },
-  {
-    title: "Read secondary index",
-    narration: `Send the email range and read timestamp ${READ_TS} to Region A’s leader on TiKV 1.`,
-  },
-  {
-    title: "Seek across RocksDB sources",
-    narration:
-      "RocksDB seeks relevant memory and SST sources. Each SST has its own block index; there is no single directory for the SQL index.",
-  },
-  {
-    title: "Read the index snapshot",
-    narration: `TiKV exposes the index entries visible at ${READ_TS}. The ordered list is a logical view, not one file or a fully materialized scan.`,
-  },
-  {
-    title: "Scan the matching email range",
-    narration:
-      "IndexRangeScan seeks the email prefix. A nonunique index key includes the row handle: (will@example.com, 427).",
-  },
-  {
-    title: "Find the ID",
-    narration:
-      "Extract handle 427 from the matching index key. The name is not in this index, so the query still needs the row.",
-  },
-  {
-    title: "Return the ID",
-    narration: "Carry ID 427 back to TiDB before starting the row lookup.",
-  },
-  {
-    title: "Look up the row handle",
-    narration: `TableRowIDScan requests row 427 from Region B’s leader on TiKV 2, still at timestamp ${READ_TS}.`,
-  },
-  {
-    title: "Seek the row’s versions",
-    narration:
-      "The clustered primary key identifies the row. Its versions can be spread across memory and SST files; the handle is not a disk address.",
-  },
-  {
-    title: "Keep the same snapshot",
-    narration: `The name “${NEWER_VERSION.name}” committed at ${NEWER_VERSION.commitTs}, after snapshot ${READ_TS}. TiKV’s versioned seek excludes it.`,
-  },
-  {
-    title: "Select the visible version",
-    narration: `Commit ${VISIBLE_VERSION.commitTs} is the newest row version at or before ${READ_TS}. Its name is “${VISIBLE_VERSION.name}”, regardless of which file holds it.`,
-  },
-  {
-    title: "Find the row",
-    narration:
-      "TiKV decodes the visible row for handle 427. Row values may be inline in write CF or fetched from default CF; those details are collapsed here.",
-  },
-  {
-    title: "Return the record",
-    narration: "Carry ID 427, will@example.com, and Will back to TiDB.",
-  },
-  {
-    title: "Return the result",
-    narration: `Two logical lookup phases, one snapshot at ${READ_TS}. This does not mean two disk reads.`,
-  },
+  "Ready",
+  "Receive query",
+  "Read secondary index",
+  "Seek across RocksDB sources",
+  "Read the index snapshot",
+  "Scan the matching email range",
+  "Find the ID",
+  "Return the ID",
+  "Look up the row handle",
+  "Seek the row’s versions",
+  "Keep the same snapshot",
+  "Select the visible version",
+  "Find the row",
+  "Return the record",
+  "Return the result",
 ] as const;
 export function traversal(step: number, primary: boolean) {
   const found = step >= (primary ? 12 : 6);

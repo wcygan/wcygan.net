@@ -142,7 +142,6 @@ function DocumentTile({ x, y }: { x: number; y: number }) {
 export function OneRecordMovesDemo() {
   const id = useId();
   const playback = useGraphicPlayback();
-  const phase = Math.floor(playback.position);
   return (
     <figure
       className="indexing-demo"
@@ -152,10 +151,6 @@ export function OneRecordMovesDemo() {
       <header>
         <p id={id} className="article-graphic-title">
           One Record Moves
-        </p>
-        <p>
-          Same document. Same indexed values. Watch what must change when its
-          address changes.
         </p>
       </header>
       <div
@@ -172,19 +167,6 @@ export function OneRecordMovesDemo() {
         ))}
       </div>
       <Controls playback={playback} />
-      <figcaption aria-live={playback.playing ? "off" : "polite"}>
-        {phase === 0
-          ? "The green document moves from A to B. Its category, customer, and year stay the same."
-          : phase === 1
-            ? "Red paths still lead to the old address. The blue ID references remain valid, but their location mapping needs updating."
-            : phase === 2
-              ? "Orange marks the repairs: three direct index entries, or one shared location mapping."
-              : "Move complete: 3 index entries changed with direct addresses; 0 changed with a stable ID, plus 1 mapping update."}
-        <span className="indexing-note">
-          Simplified dependency model. These are reference changes, not measured
-          database writes; real engines can use forwarding and version chains.
-        </span>
-      </figcaption>
     </figure>
   );
 }
@@ -321,7 +303,6 @@ function MoveDiagram({
 export function FollowTheLookupDemo() {
   const id = useId();
   const playback = useGraphicPlayback();
-  const phase = Math.floor(playback.position);
   return (
     <figure
       className="indexing-demo"
@@ -331,10 +312,6 @@ export function FollowTheLookupDemo() {
       <header>
         <p id={id} className="article-graphic-title">
           Follow the Lookup
-        </p>
-        <p>
-          Follow the blue lookup marker. A stable ID adds a location-resolution
-          step.
         </p>
       </header>
       <div
@@ -351,19 +328,6 @@ export function FollowTheLookupDemo() {
         ))}
       </div>
       <Controls playback={playback} />
-      <figcaption aria-live={playback.playing ? "off" : "polite"}>
-        {phase === 0
-          ? "Both lookups search the category index for invoice."
-          : phase === 1
-            ? "The selected entry returns an address on the left and ID 42 on the right."
-            : phase === 2
-              ? "Direct access has reached the document. The stable-ID path resolves 42 to its location."
-              : "Both found document 42. Direct access followed an address; stable identity needed an extra resolution."}
-        <span className="indexing-note">
-          Symbolic lookup paths, not tree depths, disk reads, or latency
-          measurements. Covering indexes may skip the full-record fetch.
-        </span>
-      </figcaption>
     </figure>
   );
 }

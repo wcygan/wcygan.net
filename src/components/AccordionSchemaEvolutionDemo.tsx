@@ -109,17 +109,9 @@ export function AccordionSchemaEvolutionDemo() {
       aria-labelledby="schema-evolution-title"
     >
       <header className="schema-evolution-header">
-        <div>
-          <span className="schema-evolution-badge">Concept 5</span>
-          <p className="article-graphic-title" id="schema-evolution-title">
-            Schema Evolution Bellows &amp; Column Diff
-          </p>
-          <p className="schema-evolution-desc">
-            Reconciling schema drift: When downstream tables lag behind Iceberg
-            catalog type promotions, reconciliation issues idempotent ALTER
-            TABLE migrations.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="schema-evolution-title">
+          Schema Evolution Bellows &amp; Column Diff
+        </p>
         <div className="schema-evolution-actions">
           <button
             type="button"
@@ -207,12 +199,6 @@ export function AccordionSchemaEvolutionDemo() {
           <span className="term-text">{patchLog}</span>
         </div>
       </div>
-
-      <figcaption className="schema-evolution-caption">
-        <strong>Structural Reconciliation:</strong> Schema drift silently breaks
-        CDC pipelines. An automated schema crawler detects metadata divergence
-        and applies non-breaking idempotent DDL migrations.
-      </figcaption>
     </figure>
   );
 }

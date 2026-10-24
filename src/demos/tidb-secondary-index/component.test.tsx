@@ -78,9 +78,7 @@ describe("secondary-index workbench", () => {
     render(<TidbSecondaryIndexDemo />);
     await visible(true);
     expect(scene.props?.state.step).toBe(0);
-    expect(screen.getByRole("status").textContent).toContain(
-      "Follow one lookup",
-    );
+    expect(screen.getByRole("status").textContent).toContain("Ready");
     expect(screen.queryByLabelText("Query result")).toBeNull();
     click("Play");
     advance(600);

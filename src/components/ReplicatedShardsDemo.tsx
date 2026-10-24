@@ -219,13 +219,9 @@ export function ReplicatedShardsDemo() {
       data-graphic-key="replicated-shards-2pc"
       data-graphic-kind="svg"
       aria-labelledby="replicated-shards-title"
-      aria-describedby="replicated-shards-caption"
     >
       <p className="article-graphic-title" id="replicated-shards-title">
         One transaction, two replicated shards
-      </p>
-      <p className="replicated-shards-description">
-        A shard vote follows its own replication quorum
       </p>
       <div
         ref={stage}
@@ -233,13 +229,11 @@ export function ReplicatedShardsDemo() {
         data-graphic-stage="flush"
       >
         <svg
-          viewBox="0 0 680 580"
+          viewBox="0 0 680 560"
           role="img"
           aria-labelledby="replicated-shards-svg-title replicated-shards-svg-desc"
         >
-          <title id="replicated-shards-svg-title">
-            One transaction across two replicated shards
-          </title>
+          <title id="replicated-shards-svg-title">{frame.title}</title>
           <desc id="replicated-shards-svg-desc">
             A transaction coordinator asks two shard leaders to prepare. Each
             leader replicates PREPARE to one of two follower replicas in a
@@ -418,14 +412,6 @@ export function ReplicatedShardsDemo() {
               {tally}
             </text>
           </g>
-          <text
-            className="replicated-shards-quorum-note"
-            x="340"
-            y="568"
-            textAnchor="middle"
-          >
-            Each shard: leader + one replica = quorum (2/3)
-          </text>
         </svg>
       </div>
       <div className="replicated-shards-controls">
@@ -452,24 +438,6 @@ export function ReplicatedShardsDemo() {
           {step + 1} / {replicatedShardFrames.length}
         </span>
       </div>
-      <div
-        className="replicated-shards-status"
-        aria-live={intent !== "paused" ? "off" : "polite"}
-        aria-atomic="true"
-      >
-        <p>{frame.status}</p>
-      </div>
-      {reduced && (
-        <p className="replicated-shards-motion-note">
-          Reduced motion: use Step to advance without animation.
-        </p>
-      )}
-      <figcaption id="replicated-shards-caption">
-        This is a simplified pattern, not one protocol shared by every database:
-        consensus replicates each shard’s log; transaction coordination collects
-        one vote per shard. Real systems differ in their transaction protocols
-        and optimizations.
-      </figcaption>
     </figure>
   );
 }

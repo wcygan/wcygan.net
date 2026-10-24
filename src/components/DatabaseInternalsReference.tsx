@@ -72,7 +72,6 @@ export function DatabaseInternalsReference({
       </a>
 
       <div className="database-internals-reference-content">
-        <p className="database-internals-reference-kicker">Related reading</p>
         <h2 id={titleId} className="database-internals-reference-title">
           Database Internals
         </h2>

@@ -47,13 +47,10 @@ function StateTable({ frame }: { frame: ConsensusFrame }) {
   return (
     <div className="consensus-table-scroll" tabIndex={0}>
       <table>
-        <caption>
-          Each entry is index / term / command. Commit and applied are indexes.
-        </caption>
         <thead>
           <tr>
             <th scope="col">Server</th>
-            <th scope="col">Log</th>
+            <th scope="col">Index / Term / Command</th>
             <th scope="col">Commit</th>
             <th scope="col">Applied</th>
             <th scope="col">Value</th>
@@ -138,7 +135,6 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
   const { ready, onReady } = useSceneReady();
   const onUnavailable = useCallback(() => setUnavailable(true), []);
   const titleId = useId();
-  const guideId = useId();
   const frame = lesson.frames[step];
   const done = step === lesson.frames.length - 1;
   const active = visible && documentVisible;
@@ -200,26 +196,7 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
         <p id={titleId} className="article-graphic-title">
           {lesson.title}
         </p>
-        <p>{lesson.guide}</p>
       </header>
-      <div className="consensus-node-key" aria-label="Stable node colors">
-        {Array.from(
-          new Set(
-            lesson.frames.flatMap((state) =>
-              state.nodes.map((node) => node.id),
-            ),
-          ),
-        ).map((id) => (
-          <span key={id}>
-            <i
-              className="consensus-swatch"
-              style={colorStyle(nodeColor(id))}
-              aria-hidden="true"
-            />
-            {id}
-          </span>
-        ))}
-      </div>
       {lesson.layout === "membership" ? (
         <div className="consensus-legend">✓ = acknowledged</div>
       ) : (
@@ -268,8 +245,7 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
         data-scene-loading={pending}
         tabIndex={unavailable ? -1 : 0}
         role="group"
-        aria-label={`${lesson.title}: 3D view`}
-        aria-describedby={guideId}
+        aria-label={`${lesson.title}: 3D view. Arrow keys rotate or zoom; Home resets the view.`}
         onKeyDown={(event) => {
           const action = (
             {
@@ -299,8 +275,7 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
           {pending && <DemoSceneLoading />}
           {unavailable ? (
             <p className="consensus-fallback">
-              3D is unavailable. Every step is available in the explanation and
-              server state below.
+              3D is unavailable. Inspect server state below.
             </p>
           ) : loaded ? (
             <SceneBoundary onFailed={onUnavailable}>
@@ -361,17 +336,6 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
           {step + 1} / {lesson.frames.length}
         </span>
       </div>
-      <p id={guideId} className="consensus-camera-help">
-        Drag to orbit · scroll to zoom · arrow keys to rotate or zoom · Home to
-        reset
-        <span>
-          T = term · — = no known leader · × = offline. Status is each server’s
-          local view.
-        </span>
-        {reduced && (
-          <span>Reduced motion: use Next to inspect each settled step.</span>
-        )}
-      </p>
       <div
         className="consensus-status"
         role="status"
@@ -379,7 +343,6 @@ export function ConsensusDemo({ topic }: { topic: ConsensusTopic }) {
         aria-atomic="true"
       >
         <p className="consensus-step-title">{frame.title}</p>
-        <p>{frame.detail}</p>
       </div>
       {frame.configuration && (
         <p className="consensus-quorums">

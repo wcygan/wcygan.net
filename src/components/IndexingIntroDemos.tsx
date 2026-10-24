@@ -168,7 +168,6 @@ function IntroDemo({ indexed }: { indexed: boolean }) {
                 {insertedName ? `${insertedName} → ID 9` : "Name → primary key"}
               </span>
               <span aria-hidden="true">↓</span>
-              <span>Use the ID in the primary-key tree</span>
             </div>
           </>
         )}
@@ -390,11 +389,6 @@ function IndexTree({
           </div>
         ))}
       </div>
-      <p className="intro-tree-caption">
-        {secondary
-          ? "Leaf entries: name → ID"
-          : "Leaf entries: ID + full record"}
-      </p>
     </section>
   );
 }

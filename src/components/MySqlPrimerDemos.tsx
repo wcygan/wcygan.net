@@ -22,20 +22,16 @@ import "~/styles/mysql-primer.css";
 function PrimerFigure({
   name,
   graphicKey,
-  description,
   children,
   controls,
   status,
-  caption,
   playback,
 }: {
   name: string;
   graphicKey: string;
-  description: string;
   children: ReactNode;
   controls: ReactNode;
   status: ReactNode;
-  caption: string;
   playback: MySqlPlayback;
 }) {
   const id = useId();
@@ -46,13 +42,11 @@ function PrimerFigure({
       data-graphic-kind="svg"
       data-graphic-key={graphicKey}
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header className="mysql-primer-header">
         <p className="article-graphic-title" id={`${id}-title`}>
           {name}
         </p>
-        <p>{description}</p>
       </header>
       <div
         ref={playback.stageRef}
@@ -77,11 +71,10 @@ function PrimerFigure({
       >
         {status}
       </p>
-      <figcaption id={`${id}-caption`}>{caption}</figcaption>
     </figure>
   );
 }
-type MobileRow = { label: string; detail: string; tone: string };
+type MobileRow = { label: string; detail?: string; tone: string };
 function Diagram({
   label,
   children,
@@ -156,7 +149,7 @@ function Node({
   y: number;
   w?: number;
   label: string;
-  detail: string;
+  detail?: string;
   tone?: string;
 }) {
   return (
@@ -165,14 +158,16 @@ function Node({
       <text x={x + w / 2} y={y + 32} textAnchor="middle">
         {label}
       </text>
-      <text
-        className="mysql-svg-detail"
-        x={x + w / 2}
-        y={y + 57}
-        textAnchor="middle"
-      >
-        {detail}
-      </text>
+      {detail && (
+        <text
+          className="mysql-svg-detail"
+          x={x + w / 2}
+          y={y + 57}
+          textAnchor="middle"
+        >
+          {detail}
+        </text>
+      )}
     </g>
   );
 }
@@ -182,10 +177,10 @@ function Wire({ d, tone = "muted" }: { d: string; tone?: string }) {
   );
 }
 const REQUEST_STEPS = [
-  "The application sends SELECT to the MySQL server over a connection.",
-  "MySQL parses the SQL and chooses an execution plan.",
-  "The storage engine supplies the rows requested by the execution plan.",
-  "MySQL returns Ada's two orders. The application decides how to display them.",
+  "SELECT → server",
+  "Parse · plan · execute",
+  "InnoDB → rows",
+  "Orders 101 and 102",
 ];
 export function MySqlRequestDemo() {
   const [step, setStep] = useState(0);
@@ -200,7 +195,6 @@ export function MySqlRequestDemo() {
       playback={playback}
       name="A query round trip"
       graphicKey="mysql-request"
-      description="SQL enters the server; rows come back to your application."
       controls={
         <>
           <button
@@ -226,7 +220,6 @@ export function MySqlRequestDemo() {
         </>
       }
       status={REQUEST_STEPS[step]}
-      caption="One server, four responsibilities. Orange traces the request, blue marks stored data, and green marks the answer."
     >
       <Diagram
         label={`Query round trip: step ${step + 1} of 4`}
@@ -316,7 +309,6 @@ export function MySqlRelationsDemo() {
       playback={playback}
       name="Related rows"
       graphicKey="mysql-relations"
-      description="Store each name once; link orders through the customer key."
       controls={CUSTOMERS.map((r) => (
         <button
           type="button"
@@ -330,8 +322,7 @@ export function MySqlRelationsDemo() {
           {r.name}'s orders
         </button>
       ))}
-      status={`${customer.name} joins to ${result.length} ${result.length === 1 ? "order" : "orders"} through customer_id = ${customerId}. Joined result: ${result.map((r) => `#${r.id} ${r.book}`).join(", ")}.`}
-      caption="JOIN matches keys. Orders repeat the customer ID, not the name."
+      status={`${customer.name} · ${result.length} ${result.length === 1 ? "order" : "orders"} · customer_id = ${customerId}`}
     >
       <Diagram
         label={`${customer.name}'s customer key matches ${result.map((r) => r.id).join(" and ")}`}
@@ -406,7 +397,6 @@ export function MySqlQueryDemo() {
       playback={playback}
       name="From rows to a result"
       graphicKey="mysql-query"
-      description="WHERE chooses the contributors; SUM combines their amounts."
       controls={
         <>
           <button
@@ -432,12 +422,11 @@ export function MySqlQueryDemo() {
       }
       status={
         [
-          "Start with three orders belonging to two customers.",
-          "WHERE keeps orders 101 and 102. Order 103 belongs to a different customer.",
-          `SUM combines the two matching values: 2900 + 4500 = ${result.totalCents} cents.`,
+          "3 orders · 2 customers",
+          "Orders 101 and 102 selected",
+          `2900 + 4500 = ${result.totalCents} cents`,
         ][step]
       }
-      caption="Query meaning, not execution order. An index may produce the same answer. Amounts are integer cents."
     >
       <Diagram
         label="Three orders pass through WHERE; two matching amounts contribute to SUM"
@@ -528,7 +517,6 @@ export function MySqlConstraintsDemo() {
       playback={playback}
       name="Rules protect your data"
       graphicKey="mysql-constraints"
-      description="The database rejects a write that breaks an enforced rule."
       controls={options.map(([key, label]) => (
         <button
           key={key}
@@ -543,7 +531,6 @@ export function MySqlConstraintsDemo() {
         </button>
       ))}
       status={result.message}
-      caption="Each attempt uses unchanged seed data. PRIMARY KEY prevents duplicates, FOREIGN KEY protects relationships, and CHECK rejects invalid stock."
     >
       <Diagram
         label={result.message}
@@ -608,18 +595,13 @@ export function MySqlTransactionDemo() {
     reserved: { action: "insert", label: "Insert order 104" },
     ordered: { action: "commit", label: "Commit both" },
   };
-  const descriptions = {
-    ready: "Stock is 2 and order 104 is absent. No transaction is active.",
-    started:
-      "START TRANSACTION begins this application's two-statement operation.",
-    reserved:
-      "The stock update affects one row. This transaction sees stock 1; the change is still uncommitted.",
-    ordered:
-      "The transaction sees stock 1 and order 104. Both changes are ready for commit or rollback.",
-    committed:
-      "Committed: stock is 1 and order 104 is present. Both changes were saved together.",
-    "rolled-back":
-      "Rolled back: stock is 2 and order 104 is absent. Neither change was kept.",
+  const results = {
+    ready: "Stock 2 · order 104 absent",
+    started: "Transaction started",
+    reserved: "Pending stock 1 · order 104 absent",
+    ordered: "Pending stock 1 · order 104 present",
+    committed: "Committed · stock 1 · order 104 present",
+    "rolled-back": "Rolled back · stock 2 · order 104 absent",
   };
   const next = nextAction[transaction.phase];
   function act(action: TransactionAction) {
@@ -637,7 +619,6 @@ export function MySqlTransactionDemo() {
       playback={playback}
       name="One transaction"
       graphicKey="mysql-transaction"
-      description="Reserve inventory and create an order as one operation."
       controls={
         <>
           <button
@@ -671,8 +652,7 @@ export function MySqlTransactionDemo() {
           </button>
         </>
       }
-      status={descriptions[transaction.phase]}
-      caption="The application checks stock before inserting, then commits both changes together. This model shows atomicity; locks and isolation are separate lessons."
+      status={results[transaction.phase]}
     >
       <Diagram
         label="Committed and pending changes remain separate until commit"
@@ -696,7 +676,6 @@ export function MySqlTransactionDemo() {
                 : transaction.phase === "rolled-back"
                   ? "NEITHER KEPT"
                   : "COMMIT OR ROLLBACK",
-            detail: "Stock and order change together",
             tone: transaction.phase === "committed" ? "green" : "orange",
           },
         ]}

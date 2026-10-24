@@ -39,6 +39,19 @@ export function RaftLeaderRecoveryFigure() {
               ? "B restarts as a follower with durable term 5 and log through #4. Its commitment knowledge resets; A sends term 7, #5, and commit index 5."
               : beat.detail;
 
+  const status =
+    elapsed >= time(16000) && elapsed < time(19000)
+      ? "Term 7 election"
+      : elapsed >= time(20000) && elapsed < time(21600)
+        ? "A stored #5 · replication in flight"
+        : elapsed >= time(24000) && elapsed < time(25000)
+          ? "C stored #5 · acknowledgement in flight"
+          : elapsed >= time(28000) && elapsed < time(29000)
+            ? "Commit index 5 in flight"
+            : elapsed >= time(32000) && elapsed < time(33600)
+              ? "B restarting · catch-up in flight"
+              : beat.title;
+
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
     const motion = () => {
@@ -210,16 +223,8 @@ export function RaftLeaderRecoveryFigure() {
         aria-live={active ? "off" : "polite"}
         aria-atomic="true"
       >
-        <p>{beat.title}</p>
-        <p className="raft-step-explanation">{detail}</p>
+        <p>{status}</p>
       </div>
-      <figcaption>
-        Three servers; two votes to win. Timers use illustrative seconds. Each
-        server’s Commit label shows its local commitment knowledge; a packet’s
-        Commit is the leader’s advertised index. Orange entries are stored but
-        not yet known committed by that server.
-        {reduced && " Use Next to step through."}
-      </figcaption>
     </figure>
   );
 }

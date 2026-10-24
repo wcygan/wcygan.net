@@ -139,9 +139,7 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
         command(action);
       }}
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">{definition.description}</p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       {kind === "compensation" && (
         <DemoWorkbench.Options
           options={[
@@ -162,11 +160,7 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
         {pending && <DemoSceneLoading />}
         {unavailable || !loaded ? (
           <div className="temporal-spatial-fallback">
-            <p>
-              {unavailable
-                ? "3D is unavailable. Next and the recorded state below explain the same lesson."
-                : "Explore each causal step with Next. The 3D view loads as it approaches the viewport."}
-            </p>
+            <p>{unavailable ? "3D is unavailable." : "Loading 3D view…"}</p>
             {unavailable && (
               <button
                 type="button"
@@ -238,24 +232,11 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
           </button>
         ))}
       </div>
-      <DemoWorkbench.Guide>
-        {unavailable
-          ? "Recorded state, payload inspection, and manual steps remain usable."
-          : "Drag to orbit · Scroll to zoom · Focus the view: arrows orbit, +/− zoom, Home resets."}
-        {reduced && " Reduced motion: Next shows each settled step."}
-      </DemoWorkbench.Guide>
+
       <DemoWorkbench.Step live={playing && !frame.done ? "off" : "polite"}>
         <DemoWorkbench.StepTitle number={step + 1} total={frame.last + 1}>
           {moving ? "Delivering the next causal step" : frame.title}
         </DemoWorkbench.StepTitle>
-        <p>{frame.status}</p>
-        {moving && (
-          <p className="temporal-spatial-inflight">
-            {running
-              ? "Packet in transit. State commits after arrival."
-              : "Packet paused. Play resumes; Next settles the next step."}
-          </p>
-        )}
       </DemoWorkbench.Step>
       <dl
         className="temporal-spatial-state"
@@ -270,7 +251,7 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
       </dl>
       {frame.history.length > 0 && (
         <details className="temporal-spatial-history" open={kind === "history"}>
-          <summary>Inspect recorded events · simplified</summary>
+          <summary>Inspect recorded events</summary>
           <div
             className="temporal-spatial-record-controls"
             role="group"
@@ -303,11 +284,6 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
               </dl>
             </div>
           )}
-          <p className="temporal-spatial-history-note">
-            These selected teaching events omit task lifecycle details. They do
-            not present every failed Activity attempt as a separate raw history
-            event.
-          </p>
         </details>
       )}
       <details className="temporal-spatial-node-details">
@@ -331,11 +307,6 @@ function TemporalSpatialWorkbench({ kind }: { kind: DemoKind }) {
             ))}
         </dl>
       </details>
-      <p className="temporal-spatial-key">
-        Orange: code or command · Blue: durable coordination · Green:
-        acknowledged · Yellow: waiting · Red: failure
-      </p>
-      <figcaption>{definition.caption}</figcaption>
     </DemoWorkbench.Root>
   );
 }

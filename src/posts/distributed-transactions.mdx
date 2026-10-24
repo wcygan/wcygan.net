@@ -63,6 +63,6 @@ Distributed SQL databases combine transaction coordination across shards with co
 
 ### Replicated Shards
 
-Each participant in the 2PC exchange can itself be a replicated shard. A shard leader waits for its local consensus group to durably prepare the change before voting YES. The coordinator then gathers one vote from each shard and records a single transaction decision. This simplified view highlights the two coordination boundaries; implementations and optimizations differ.
+Each participant in the 2PC exchange can itself be a replicated shard. A shard leader waits for its local consensus group to durably prepare the change before voting YES. The coordinator then gathers one vote from each shard and records a single transaction decision.
 
 <ReplicatedShardsDemo />

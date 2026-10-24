@@ -58,7 +58,6 @@ export interface TransactionFrame {
 export interface TransactionScenario {
   id: string;
   label: string;
-  description: string;
   frames: TransactionFrame[];
 }
 export interface DemoDefinition {

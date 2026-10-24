@@ -169,7 +169,6 @@ const PARTITION_KEY_SCENARIOS = [
   {
     id: "created_at",
     label: "created_at",
-    verdict: "Balanced ranges; common date queries prune cleanly.",
     partitions: [
       { label: "Jan", percent: 21 },
       { label: "Feb", percent: 19 },
@@ -181,7 +180,6 @@ const PARTITION_KEY_SCENARIOS = [
   {
     id: "status",
     label: "status",
-    verdict: "One hot value dominates, so most reads still hit one partition.",
     partitions: [
       { label: "paid", percent: 82 },
       { label: "pending", percent: 8 },
@@ -193,7 +191,6 @@ const PARTITION_KEY_SCENARIOS = [
   {
     id: "tenant_id",
     label: "tenant_id",
-    verdict: "Works only if tenants are evenly sized.",
     partitions: [
       { label: "001-199", percent: 14 },
       { label: "200-399", percent: 15 },
@@ -238,17 +235,14 @@ const SHARD_KEY_RANGE_QUERY = {
 const SHARD_KEY_STRATEGIES: readonly {
   id: ShardKeyStrategy;
   label: string;
-  summary: string;
 }[] = [
   {
     id: "range",
     label: "Range",
-    summary: "Adjacent tenant IDs stay together, so this range query is local.",
   },
   {
     id: "hash",
     label: "Hash",
-    summary: "Tenant IDs scatter evenly, so this range query fans out.",
   },
 ];
 
@@ -270,14 +264,12 @@ const REBALANCE_SCENARIOS = [
     label: "Modulo",
     movedKeys: ["042", "118", "245", "250", "481", "817", "920"],
     stableKeys: ["252", "260"],
-    summary: "Adding a shard changes the divisor, so most keys remap.",
   },
   {
     id: "ring",
     label: "Consistent ring",
     movedKeys: ["245", "250", "252"],
     stableKeys: ["042", "118", "260", "481", "817", "920"],
-    summary: "Only keys in the new shard's slice move.",
   },
 ] as const;
 
@@ -291,8 +283,6 @@ const VIRTUAL_NODE_SCENARIOS = [
       { id: "c1", shard: "c", label: "C", x: 15, y: 65 },
     ],
     loads: { a: 47, b: 36, c: 17 },
-    summary:
-      "With one token per shard, each owner gets one large slice of the ring.",
   },
   {
     id: "virtual",
@@ -309,8 +299,6 @@ const VIRTUAL_NODE_SCENARIOS = [
       { id: "c3", shard: "c", label: "C3", x: 72, y: 48 },
     ],
     loads: { a: 34, b: 32, c: 34 },
-    summary:
-      "Virtual nodes break ownership into smaller slices, which smooths skew.",
   },
 ] as const;
 
@@ -326,7 +314,6 @@ const RING_FAILURE_SCENARIOS = [
       { key: "817", owner: "c", current: "c" },
       { key: "920", owner: "a", current: "a" },
     ],
-    summary: "Every key routes to the next live token clockwise.",
   },
   {
     id: "takeover",
@@ -339,8 +326,6 @@ const RING_FAILURE_SCENARIOS = [
       { key: "817", owner: "c", current: "c" },
       { key: "920", owner: "a", current: "a" },
     ],
-    summary:
-      "Only keys owned by the unavailable token move to the next live owner.",
   },
 ] as const;
 
@@ -401,7 +386,6 @@ export function ShardRequestRouterDemo() {
       <DemoHeader
         titleId="sp-router-title"
         title="Routing Requests To Shards"
-        copy="A request uses a shard key to find the database instance that owns the row."
       />
 
       <svg
@@ -480,7 +464,6 @@ export function ConsistentHashingRebalanceDemo() {
       <DemoHeader
         titleId="sp-rebalance-title"
         title="Consistent Hashing Ring Rebalance"
-        copy="The rebalancing strategy determines how much data moves when a shard is added."
       />
 
       <div className="sp-query-controls">
@@ -543,10 +526,6 @@ export function ConsistentHashingRebalanceDemo() {
           </div>
         </div>
       </div>
-
-      <p key={scenario.id} className="sp-demo-status sp-swap-line">
-        {scenario.summary}
-      </p>
     </figure>
   );
 }
@@ -567,7 +546,6 @@ export function VirtualNodeBalanceDemo() {
       <DemoHeader
         titleId="sp-token-ring-title"
         title="Virtual Nodes Smooth Load"
-        copy="A consistent-hashing ring gets less lumpy when each physical shard owns several smaller positions."
       />
 
       <div className="sp-query-controls">
@@ -624,10 +602,6 @@ export function VirtualNodeBalanceDemo() {
           })}
         </div>
       </div>
-
-      <p key={scenario.id} className="sp-demo-status sp-swap-line">
-        {scenario.summary}
-      </p>
     </figure>
   );
 }
@@ -648,7 +622,6 @@ export function RingFailureTakeoverDemo() {
       <DemoHeader
         titleId="sp-ring-failure-title"
         title="Ring Failure Takeover"
-        copy="When a shard disappears from the ring, only the keys it owned need a new live owner."
       />
 
       <div className="sp-query-controls">
@@ -707,10 +680,6 @@ export function RingFailureTakeoverDemo() {
           })}
         </div>
       </div>
-
-      <p key={scenario.id} className="sp-demo-status sp-swap-line">
-        {scenario.summary}
-      </p>
     </figure>
   );
 }
@@ -745,7 +714,6 @@ export function ConsistentHashingAddNodeDemo() {
       <DemoHeader
         titleId="sp-ring-add-node-title"
         title="Add Node Ring Reshard"
-        copy="Adding nodes to a consistent-hashing ring creates new ownership intervals; only keys inside those intervals move."
       />
 
       <div className="sp-ring-add-control">
@@ -840,12 +808,6 @@ export function ConsistentHashingAddNodeDemo() {
           ))}
         </div>
       </div>
-
-      <p key={nodeCount} className="sp-demo-status sp-swap-line">
-        {nodeCount === 3
-          ? "With three nodes, each key is owned by the next A, B, or C token clockwise."
-          : `${movedKeys.length} of ${RING_RESHARD_KEYS.length} keys move when the ring grows to ${nodeCount} nodes; ${stableKeyCount} keys keep their original owner.`}
-      </p>
     </figure>
   );
 }
@@ -907,11 +869,7 @@ export function ShardKeyRangeHashDemo() {
       data-graphic-frame="workbench"
       aria-labelledby="sp-shard-key-title"
     >
-      <DemoHeader
-        titleId="sp-shard-key-title"
-        title="Range vs Hash Splitter"
-        copy="The same tenant IDs can preserve range locality or scatter more evenly depending on the shard key strategy."
-      />
+      <DemoHeader titleId="sp-shard-key-title" title="Range vs Hash Splitter" />
 
       <div className="sp-query-controls">
         <div
@@ -981,10 +939,6 @@ export function ShardKeyRangeHashDemo() {
           </section>
         ))}
       </div>
-
-      <p className="sp-demo-status sp-swap-line" key={strategy}>
-        {activeStrategy.summary}
-      </p>
     </figure>
   );
 }
@@ -992,9 +946,6 @@ export function ShardKeyRangeHashDemo() {
 export function HotTenantShardDemo() {
   const [trafficByShard, setTrafficByShard] = useState(
     INITIAL_HOT_TENANT_TRAFFIC,
-  );
-  const trafficMix = SHARDS.map((shard) => `${trafficByShard[shard.id]}%`).join(
-    " / ",
   );
   const trafficTotal = totalTraffic(trafficByShard);
 
@@ -1004,11 +955,7 @@ export function HotTenantShardDemo() {
       data-graphic-frame="workbench"
       aria-labelledby="sp-hot-tenant-title"
     >
-      <DemoHeader
-        titleId="sp-hot-tenant-title"
-        title="Hot Tenant Problem"
-        copy="If one tenant sends most of the traffic, the shard that owns it gets hot while the other shards stay cool."
-      />
+      <DemoHeader titleId="sp-hot-tenant-title" title="Hot Tenant Problem" />
 
       <div className="sp-traffic-budget">
         <div>
@@ -1097,11 +1044,6 @@ export function HotTenantShardDemo() {
           );
         })}
       </div>
-
-      <p className="sp-demo-status">
-        Traffic mix: {trafficMix}. The total stays at 100%; any shard at{" "}
-        {HOT_TRAFFIC_THRESHOLD}% or higher is hot.
-      </p>
     </figure>
   );
 }
@@ -1124,11 +1066,7 @@ export function QueryPlannerPruningDemo() {
       data-graphic-frame="workbench"
       aria-labelledby="sp-pruning-title"
     >
-      <DemoHeader
-        titleId="sp-pruning-title"
-        title="Query Planner Pruning"
-        copy="A partition-aware query planner skips partitions that cannot contain matching rows."
-      />
+      <DemoHeader titleId="sp-pruning-title" title="Query Planner Pruning" />
 
       <div className="sp-query-controls">
         <div className="sp-query-tabs" role="tablist" aria-label="Query shape">
@@ -1203,11 +1141,7 @@ export function BadPartitionKeyDemo() {
       data-graphic-frame="workbench"
       aria-labelledby="sp-bad-key-title"
     >
-      <DemoHeader
-        titleId="sp-bad-key-title"
-        title="Bad Partition Key"
-        copy="A partition key should match common queries and distribute rows. A low-cardinality or skewed key can create one giant partition."
-      />
+      <DemoHeader titleId="sp-bad-key-title" title="Bad Partition Key" />
 
       <div className="sp-query-controls">
         <div
@@ -1251,29 +1185,16 @@ export function BadPartitionKeyDemo() {
           </div>
         ))}
       </div>
-
-      <p key={scenario.id} className="sp-demo-status sp-swap-line">
-        {scenario.verdict}
-      </p>
     </figure>
   );
 }
 
-function DemoHeader({
-  copy,
-  titleId,
-  title,
-}: {
-  copy: string;
-  titleId?: string;
-  title: string;
-}) {
+function DemoHeader({ titleId, title }: { titleId?: string; title: string }) {
   return (
     <div className="sp-demo-header">
       <p className="article-graphic-title" id={titleId}>
         {title}
       </p>
-      <p>{copy}</p>
     </div>
   );
 }

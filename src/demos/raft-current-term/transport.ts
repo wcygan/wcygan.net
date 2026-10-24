@@ -131,23 +131,11 @@ export function transportState(frame: number, elapsed: number) {
           granted: frame === 4,
         }
       : undefined;
-  const acknowledged = elapsed >= (flights.at(-1)?.end ?? Infinity);
-  const decision =
-    frame === 2 && elapsed >= flights[2].start
-      ? acknowledged
-        ? "ACK received: entry 2 is durably stored on A and B, but its term is 2 and A leads term 4. It stays uncommitted: C’s term-3 log can still win a later election and overwrite it."
-        : "Entry 2 is from term 2; A now leads term 4. B’s ACK will confirm durable storage. A cannot commit this older-term entry merely by counting its copies."
-      : frame === 7
-        ? acknowledged
-          ? "ACK received: entry 3 is from A’s current term 4 and is durably stored on A and B. A commits entry 3 and the preceding entry 2 together."
-          : "Entry 3 is from A’s current term 4. A waits for B’s durable-storage ACK before committing it. Entries 2 and 3 remain uncommitted until that reply arrives."
-        : undefined;
   if (!flights.length)
     return {
       ...target,
       flights,
       activeFlight,
-      decision,
       voteComparison,
       settled: true,
     };
@@ -193,7 +181,6 @@ export function transportState(frame: number, elapsed: number) {
   const leader = nodes.find((item) => item.role === "leader");
   return {
     ...target,
-    decision,
     voteComparison,
     nodes,
     committedThrough,

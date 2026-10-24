@@ -23,7 +23,6 @@ function Workbench({
   title,
   controls,
   children,
-  caption,
   playback,
   step,
 }: {
@@ -31,7 +30,7 @@ function Workbench({
   title: string;
   controls: ReactNode;
   children: ReactNode;
-  caption: ReactNode;
+
   playback: ReturnType<typeof usePrometheusPlayback>;
   step: number;
 }) {
@@ -49,7 +48,6 @@ function Workbench({
       data-graphic-key={`prometheus-${name}`}
       data-graphic-kind={"svg"}
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header className="prom2d-header">
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -70,7 +68,6 @@ function Workbench({
       <div className="prom2d-stage" data-graphic-stage="padded">
         {children}
       </div>
-      <figcaption id={`${id}-caption`}>{caption}</figcaption>
     </figure>
   );
 }
@@ -124,12 +121,6 @@ export function PrometheusScrapeDemo() {
           >
             {failed ? "Scenario: timeout" : "Scenario: success"}
           </button>
-        </>
-      }
-      caption={
-        <>
-          Read <code>/metrics</code>, append a sample. Timeout:{" "}
-          <code>up=0</code>; no new counter value.
         </>
       }
     >
@@ -395,7 +386,6 @@ export function PrometheusMetricTypesDemo() {
           </button>
         </>
       }
-      caption={<>Start: both rise. Finish: only the gauge falls.</>}
     >
       <div className="prom2d-metric-comparison">
         <div>
@@ -508,12 +498,6 @@ export function PrometheusRateDemo() {
           </button>
         </>
       }
-      caption={
-        <>
-          Count increases, handle resets, divide by time. Actual PromQL{" "}
-          <code>rate()</code> also extrapolates to window edges.
-        </>
-      }
     >
       <SampleChart
         label="Cumulative request counter · requests"
@@ -589,13 +573,13 @@ export function PrometheusRateDemo() {
       <p className="prom2d-takeaway" role="status">
         {!showCalculation
           ? step === 3 && restart
-            ? "Restart: 160 → 10. The counter starts over."
+            ? "Restart: 160 → 10."
             : step === 4
-              ? "Five samples collected. Next: calculate the rate."
+              ? "Five samples collected."
               : `Scrape ${visibleSamples.at(-1)!.time}s: ${visibleSamples.at(-1)!.value} requests so far.`
           : restart
-            ? "30 + 30 + 10 + 30 = 100 requests. A reset is not negative traffic."
-            : "30 + 30 + 30 + 30 = 120 requests. Both slopes agree."}
+            ? "30 + 30 + 10 + 30 = 100 requests."
+            : "30 + 30 + 30 + 30 = 120 requests."}
       </p>
     </Workbench>
   );
@@ -639,12 +623,6 @@ export function PrometheusHistogramDemo() {
           >
             Replay
           </button>
-        </>
-      }
-      caption={
-        <>
-          A 1.2s request changes only <code>+Inf</code>, <code>_count</code>,
-          and <code>_sum</code>. Finite buckets stay put.
         </>
       }
     >
@@ -737,12 +715,6 @@ export function PrometheusRecordingRuleDemo() {
           >
             Replay
           </button>
-        </>
-      }
-      caption={
-        <>
-          Four inputs → two stored aggregates. Original samples remain;
-          retention stays unchanged.
         </>
       }
     >
@@ -856,7 +828,7 @@ export function PrometheusRecordingRuleDemo() {
       </table>
       <p className="prom2d-takeaway" role="status">
         {state.evaluationCount === 0
-          ? "Evaluate to store the first aggregate samples."
+          ? "No recorded samples"
           : `4 original series + 2 aggregates · ${state.evaluationCount} recorded sample(s) each`}
       </p>
     </Workbench>

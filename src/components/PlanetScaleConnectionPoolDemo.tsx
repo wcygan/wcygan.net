@@ -21,7 +21,7 @@ const PS_COLORS = {
 };
 
 const VIEWBOX_W = 1000;
-const VIEWBOX_H = 680;
+const VIEWBOX_H = 620;
 
 // Request column geometry
 const REQ_EDGE_X = 253; // right edge of the request boxes
@@ -79,17 +79,11 @@ export function PlanetScaleConnectionPoolDemo() {
       data-graphic-key="ps-connection-pooling"
       data-graphic-kind="svg"
       aria-labelledby="ps-conn-pool-title"
-      aria-describedby="ps-conn-pool-description ps-conn-pool-caption"
     >
       <header className="ps-diagram-header">
-        <div>
-          <p className="ps-diagram-title" id="ps-conn-pool-title">
-            MySQL Connection Pool Architecture
-          </p>
-          <p className="ps-diagram-subtitle" id="ps-conn-pool-description">
-            Pre-allocated TCP sockets multiplexing concurrent transactions
-          </p>
-        </div>
+        <p className="ps-diagram-title" id="ps-conn-pool-title">
+          MySQL Connection Pool Architecture
+        </p>
         <button
           type="button"
           className="ps-diagram-replay-btn"
@@ -636,19 +630,6 @@ export function PlanetScaleConnectionPoolDemo() {
                 100% CONNECTION REUSE
               </text>
             </g>
-          </g>
-
-          {/* BOTTOM BANNER: Takeaway */}
-          <g transform="translate(25, 625)">
-            <text
-              x="0"
-              y="22"
-              className="ps-bottom-summary"
-              fill="var(--diagram-fg)"
-            >
-              POOLED ARCHITECTURE: Incoming web requests borrow from {poolSize}{" "}
-              pre-warmed sockets. Sockets return immediately to pool.
-            </text>
           </g>
         </svg>
       </div>

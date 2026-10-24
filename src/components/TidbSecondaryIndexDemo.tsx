@@ -50,16 +50,13 @@ function IndexSummary({ unavailable }: { unavailable: boolean }) {
     <div className="secondary-fallback">
       <p>
         {unavailable
-          ? "3D is unavailable. Use the controls to follow the lookup below."
+          ? "3D is unavailable."
           : `Email → row handle → full record · snapshot ${READ_TS}`}
       </p>
       <p>
         <strong>Secondary index · keys contain (email, row handle)</strong>
         <br />
         Region A · leader on TiKV 1
-      </p>
-      <p>
-        Logical views over RocksDB memory and SST files, not physical blocks.
       </p>
       <ul>
         {SECONDARY_ENTRIES.map((entry) => (
@@ -225,11 +222,8 @@ export function TidbSecondaryIndexDemo() {
           <span>
             {state.step === 0 ? "Ready" : `Step ${state.step} of ${LAST_STEP}`}
           </span>
-          <strong>
-            {current.title === "Ready" ? "Follow one lookup" : current.title}
-          </strong>
+          {state.step > 0 && <strong>{current}</strong>}
         </p>
-        <p>{current.narration}</p>
       </div>
       {done && (
         <div className="secondary-result" aria-label="Query result">

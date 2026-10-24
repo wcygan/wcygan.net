@@ -35,7 +35,6 @@ export function BigDatabaseWorkingSetFigure() {
       data-graphic-frame="plate"
       data-graphic-kind="svg"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -259,11 +258,6 @@ export function BigDatabaseWorkingSetFigure() {
             })}
         </svg>
       </div>
-      <figcaption id={`${id}-caption`}>
-        <p className="big-db-flow-status" role="status">
-          Illustrative page reads: 99% memory · 1% disk.
-        </p>
-      </figcaption>
     </figure>
   );
 }

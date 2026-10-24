@@ -13,18 +13,15 @@ import { DemoWorkbench } from "./DemoWorkbench";
 afterEach(cleanup);
 
 describe("DemoWorkbench composition", () => {
-  it("keeps independent accessible titles, guides, and one stage per figure", () => {
+  it("keeps independent accessible titles and one stage per figure", () => {
     render(
       <>
         {["First demo", "Second demo"].map((title) => (
           <DemoWorkbench.Root key={title} title={title}>
-            <DemoWorkbench.Header>
-              <p>Description</p>
-            </DemoWorkbench.Header>
+            <DemoWorkbench.Header />
             <DemoWorkbench.Stage state="ready">
               <canvas />
             </DemoWorkbench.Stage>
-            <DemoWorkbench.Guide>{title} instructions</DemoWorkbench.Guide>
           </DemoWorkbench.Root>
         ))}
       </>,
@@ -41,9 +38,9 @@ describe("DemoWorkbench composition", () => {
       });
       expect(figure.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
       expect(
-        document.getElementById(stage.getAttribute("aria-describedby")!)
+        document.getElementById(figure.getAttribute("aria-labelledby")!)
           ?.textContent,
-      ).toBe(title + " instructions");
+      ).toBe(title);
       expect(stage.tabIndex).toBe(0);
     }
   });
@@ -76,7 +73,6 @@ describe("DemoWorkbench composition", () => {
           replay={{ onClick: replay }}
           resetView={{ onClick: resetView, disabled: true }}
         />
-        <DemoWorkbench.Guide>Use the controls</DemoWorkbench.Guide>
         <DemoWorkbench.Step live="polite">
           <DemoWorkbench.Timer ref={timer} />
           <DemoWorkbench.StepTitle number={2} total={4}>

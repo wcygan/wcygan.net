@@ -4,7 +4,6 @@ import {
   Suspense,
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
   type KeyboardEvent,
@@ -12,6 +11,8 @@ import {
 } from "react";
 import {
   CELL_LAYERS,
+  CHANGED_PAGES,
+  DATABASE_PAGES,
   fleetSnapshot,
   nextPageStep,
   pageChangeSnapshot,
@@ -97,12 +98,12 @@ function SpatialWorkbench({
   };
   selection: ReactNode;
   fallback: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const figure = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const cameraMemory = useRef<CameraMemory | null>(null);
-  const hintId = useId();
+
   const [inView, setInView] = useState(false);
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -175,15 +176,14 @@ function SpatialWorkbench({
         data-graphic-stage="flush"
         data-scene-loading={pending}
         role="img"
-        aria-label={`${title}. An illustrative three-dimensional model; the same state is described below.`}
-        aria-describedby={hintId}
+        aria-label={`${title}: 3D view`}
         tabIndex={ready && !unavailable ? 0 : -1}
         onKeyDown={onKeyDown}
       >
         {pending && <DemoSceneLoading />}
         {unavailable || !inView ? (
           <div className="celld-spatial-fallback">
-            <p>{unavailable ? "3D view unavailable" : "Model overview"}</p>
+            {unavailable && <p>3D view unavailable</p>}
             {fallback}
           </div>
         ) : (
@@ -235,8 +235,6 @@ function SpatialWorkbench({
         </button>
         <span className="celld-playback-progress">
           Beat {tour.step + 1} of {tour.total + 1}
-          {playback.state === "reduced-motion" &&
-            " · Reduced motion: use Next step"}
           {playback.state === "complete" && " · complete"}
         </span>
       </div>
@@ -292,11 +290,8 @@ function SpatialWorkbench({
           Reset view
         </button>
       </div>
-      <p className="celld-spatial-hint" id={hintId}>
-        Drag to orbit · scroll to zoom · focus the view for arrow keys, + / −
-        and 0
-      </p>
-      <figcaption className="celld-spatial-caption">{children}</figcaption>
+
+      {children}
     </figure>
   );
 }
@@ -346,13 +341,15 @@ export function CelldCellAnatomyDemo() {
         </ol>
       }
     >
-      <p role="status" aria-live="polite">
-        {CELL_LAYERS[layer].explanation}
-      </p>
-      <p className="celld-spatial-note">
-        Logical responsibilities of one cell, not separate daemons or a physical
-        memory layout. The handler uses V8; a cell need not own a dedicated V8
-        isolate. Replication and acknowledgement are separate steps.
+      <p
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {CELL_LAYERS[layer].label}
+        {layer === "sqlite" && ` · ${DATABASE_PAGES.length} pages`}
+        {layer === "ltx" && ` · pages ${CHANGED_PAGES.join(", ")}`}
       </p>
     </SpatialWorkbench>
   );
@@ -413,34 +410,23 @@ export function CelldFleetDemo() {
                 .join(", ") || "capacity available"}
             </li>
           ))}
-          <li>
-            One shared bucket holds ownership records and long-term cell state
-          </li>
         </ul>
       }
     >
-      <p role="status" aria-live="polite">
-        {snapshot.explanation}
-      </p>
-      <ul className="celld-spatial-owners" aria-label="Current cell owners">
-        {snapshot.cells.map((cell) => (
-          <li key={cell.name}>
-            <span className="celld-spatial-cell-number">{cell.number}</span>
-            <span className="celld-spatial-cell-name">{cell.name}</span>
-            <span>
-              node {cell.owner}
-              {cell.hibernated ? " · hibernated" : ""}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="celld-spatial-note">
-        Each numbered tile is a separate cell with its own database. LOG denotes
-        node-log storage for recent replicated writes. This model shows
-        placement, not a failure or durability simulation. A hibernated handoff
-        preserves durable state, not live JavaScript memory; parked clients
-        reconnect.
-      </p>
+      <div className="celld-spatial-status">
+        <ul className="celld-spatial-owners" aria-label="Current cell owners">
+          {snapshot.cells.map((cell) => (
+            <li key={cell.name}>
+              <span className="celld-spatial-cell-number">{cell.number}</span>
+              <span className="celld-spatial-cell-name">{cell.name}</span>
+              <span>
+                node {cell.owner}
+                {cell.hibernated ? " · hibernated" : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </SpatialWorkbench>
   );
 }
@@ -506,25 +492,24 @@ export function CelldNamedStateDemo() {
         </ul>
       }
     >
-      <p role="status" aria-live="polite">
-        {namedStateSummary(state)}
-      </p>
-      <ul className="celld-spatial-state" aria-label="Named cell counters">
-        {NAMED_CELL_IDS.map((id) => (
-          <li key={id}>
-            <span>{state.cells[id].name}</span>
-            <span>
-              saved {state.cells[id].committedCount} · temporary{" "}
-              {state.cells[id].volatileCount}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="celld-spatial-note">
-        Each request represents an already acknowledged commit. Restart clears
-        only the explicitly temporary JavaScript values. This is a conceptual
-        model, not a running celld fleet or a durability test.
-      </p>
+      <div className="celld-spatial-status">
+        <p role="status" aria-live="polite">
+          {namedStateSummary(state)}
+        </p>
+      </div>
+      <div className="celld-spatial-status">
+        <ul className="celld-spatial-state" aria-label="Named cell counters">
+          {NAMED_CELL_IDS.map((id) => (
+            <li key={id}>
+              <span>{state.cells[id].name}</span>
+              <span>
+                saved {state.cells[id].committedCount} · temporary{" "}
+                {state.cells[id].volatileCount}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </SpatialWorkbench>
   );
 }
@@ -581,13 +566,18 @@ export function CelldPageChangesDemo() {
         </ul>
       }
     >
-      <p role="status" aria-live="polite">
-        {snapshot.explanation}
-      </p>
-      <p className="celld-spatial-note">
-        Orange identifies changed page images; blue pages retain their previous
-        images. Actual page numbers and metadata depend on the write. Initial
-        snapshots and compaction can include more pages.
+      <p
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        SQLite pages:{" "}
+        {snapshot.pages.map((page) => `${page.id} v${page.image}`).join(", ")}
+        {" · "}LTX pages:{" "}
+        {snapshot.ltxPageImages
+          .map((page) => `${page.id} v${page.image}`)
+          .join(", ") || "none"}
       </p>
     </SpatialWorkbench>
   );
@@ -597,21 +587,17 @@ export function CelldFailureDomainsDemo() {
   const [layout, setLayout] = useState<FailureLayout>("separate");
   const [phase, setPhase] = useState<FailurePhase>("acknowledged");
   const [tourStep, setTourStep] = useState(0);
-  const [comparison, setComparison] = useState(FAILURE_TOUR[0].comparison);
   function setTourFrame(step: number) {
     const frame = FAILURE_TOUR[step];
     setTourStep(step);
     setLayout(frame.layout);
     setPhase(frame.phase);
-    setComparison(frame.comparison);
   }
   function selectLayout(next: FailureLayout) {
-    setComparison("");
     setLayout(next);
     setTourStep(failureTourStep(next, phase));
   }
   function selectPhase(next: FailurePhase) {
-    setComparison("");
     setPhase(next);
     setTourStep(failureTourStep(layout, next));
   }
@@ -702,13 +688,7 @@ export function CelldFailureDomainsDemo() {
       }
     >
       <p role="status" aria-live="polite">
-        {comparison && `${comparison} `}
-        {snapshot.explanation}
-      </p>
-      <p className="celld-spatial-note">
-        {snapshot.caveat} The bucket remains separate and accessible in every
-        state. “Lose host + disks” means permanent destruction, not a process
-        restart. These copy states are illustrative, not measured failure tests.
+        {snapshot.status}
       </p>
     </SpatialWorkbench>
   );

@@ -10,7 +10,6 @@ import {
 const WorkbenchContext = createContext<{
   title: string;
   titleId: string;
-  guideId: string;
 } | null>(null);
 
 function useWorkbench() {
@@ -26,9 +25,8 @@ function Root({
   ...props
 }: Omit<ComponentPropsWithoutRef<"figure">, "title"> & { title: string }) {
   const titleId = useId();
-  const guideId = useId();
   return (
-    <WorkbenchContext value={{ title, titleId, guideId }}>
+    <WorkbenchContext value={{ title, titleId }}>
       <figure
         {...props}
         className={["demo-workbench", className].filter(Boolean).join(" ")}
@@ -41,14 +39,13 @@ function Root({
   );
 }
 
-function Header({ children }: { children?: ReactNode }) {
+function Header() {
   const { title, titleId } = useWorkbench();
   return (
     <header className="demo-workbench-header">
       <p id={titleId} className="article-graphic-title">
         {title}
       </p>
-      {children}
     </header>
   );
 }
@@ -63,17 +60,12 @@ function Options({
   onChange: (id: string) => void;
 }) {
   const { title } = useWorkbench();
-  const instructionId = useId();
   return (
     <div
       className="demo-workbench-options"
       role="group"
       aria-label={`${title} scenario`}
-      aria-describedby={instructionId}
     >
-      <p id={instructionId} className="demo-workbench-options-label">
-        Scenario · choose one
-      </p>
       {options.map((option) => (
         <button
           key={option.id}
@@ -98,7 +90,7 @@ function Stage({
   state: "loading" | "ready" | "unavailable";
   children: ReactNode;
 }) {
-  const { title, guideId } = useWorkbench();
+  const { title } = useWorkbench();
   return (
     <div
       ref={ref}
@@ -108,7 +100,6 @@ function Stage({
       tabIndex={state === "unavailable" ? -1 : 0}
       role="group"
       aria-label={`${title}: 3D view`}
-      aria-describedby={guideId}
     >
       {children}
     </div>
@@ -150,15 +141,6 @@ function Controls({
         Reset view
       </button>
     </div>
-  );
-}
-
-function Guide({ children }: { children: ReactNode }) {
-  const { guideId } = useWorkbench();
-  return (
-    <p id={guideId} className="demo-workbench-guide">
-      {children}
-    </p>
   );
 }
 
@@ -216,7 +198,6 @@ export const DemoWorkbench = {
   Options,
   Stage,
   Controls,
-  Guide,
   Step,
   StepTitle,
   Timer,

@@ -66,36 +66,42 @@ it.each([
     name: "routing",
     Demo: CelldRequestRoutingDemo,
     steps: 4,
-    initial: /client names room:lobby/i,
-    final: /response returns through the entry node/i,
+    initial: "room:lobby · Entry A · Owner B · Request ready",
+    final: "room:lobby · Entry A · Owner B · Response B → A → client",
   },
   {
     name: "ownership",
     Demo: CelldOwnershipDemo,
     steps: 3,
-    initial: /both will try to replace version 7/i,
-    final: /A cannot acknowledge this write/i,
+    initial: "Owner A · epoch 7 · B/C claims pending",
+    final: "Owner B · epoch 8 · A ACK rejected",
   },
   {
     name: "durability",
     Demo: CelldDurabilityDemo,
     steps: 3,
-    initial: /neither client has received/i,
-    final: /earlier acknowledgement depended on the durable follower copy/i,
+    initial:
+      "One node: bucket pending · ACK pending | One follower: fsync 0/1 · bucket pending · ACK pending",
+    final:
+      "One node: bucket covered · ACK allowed | One follower: fsync 1/1 · bucket covered · ACK allowed",
   },
   {
     name: "recovery",
     Demo: CelldRecoveryDemo,
     steps: 6,
-    initial: /Owner stops/i,
-    final: /Serve again/i,
+    initial:
+      "Lease active · Log open · Tail pending · Owner A e7 · SQLite pending · Serving stopped",
+    final:
+      "Lease expired · Log sealed · Tail recovered · Owner B e8 · SQLite restored · Serving B",
   },
   {
     name: "cell keys",
     Demo: CelldKeyChoiceDemo,
     steps: 6,
-    initial: /six equal synchronous work turns/i,
-    final: /hot cell took six rounds.*independent cells took two/i,
+    initial:
+      "Hot cell: 0/6 complete · 6 queued · 0 rounds | Independent cells: 0/6 complete · 6 queued · 0 rounds",
+    final:
+      "Hot cell: 6/6 complete · 0 queued · 6 rounds | Independent cells: 6/6 complete · 0 queued · 2 rounds",
   },
 ])(
   "finishes $name in finite steps and restores its initial state on reset",
@@ -104,18 +110,18 @@ it.each([
     const figure = screen.getByRole("figure");
     const status = within(figure).getByRole("status");
     const next = advanceButton(figure);
-    expect(status.textContent).toMatch(initial);
+    expect(status.textContent).toBe(initial);
     for (let step = 0; step < steps; step++) {
       expect(next.disabled).toBe(false);
       fireEvent.click(next);
     }
-    expect(status.textContent).toMatch(final);
+    expect(status.textContent).toBe(final);
     expect(next.disabled).toBe(true);
     const settledStatus = status.textContent;
     fireEvent.click(next);
     expect(status.textContent).toBe(settledStatus);
     fireEvent.click(within(figure).getByRole("button", { name: "Reset" }));
-    expect(status.textContent).toMatch(initial);
+    expect(status.textContent).toBe(initial);
     expect(next.disabled).toBe(false);
   },
 );
@@ -139,12 +145,12 @@ it("routes a warm request to its owner and returns the response through the entr
   );
   fireEvent.click(next);
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /Node A forwards this request to node B/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "room:lobby · Entry A · Owner B · Request A → B",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /handler runs on B.*local SQLite/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "room:lobby · Entry A · Owner B · SQLite B",
   );
   fireEvent.click(next);
   expect(edges()).toHaveLength(2);
@@ -160,36 +166,36 @@ it("shows the winning ownership epoch before refusing the stale owner's acknowle
   render(<CelldOwnershipDemo />);
   const next = advanceButton(screen.getByRole("figure"));
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /B wins.*epoch 8.*C's stale version-7 condition is rejected/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "Owner B · epoch 8 · B claim accepted · C claim rejected",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /old epoch-7 prefix.*cannot overwrite B's epoch-8 objects/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "Owner B · epoch 8 · Writer A · epoch 7",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /owner record.*B at epoch 8.*A cannot acknowledge/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "Owner B · epoch 8 · A ACK rejected",
   );
 });
 
 it("distinguishes bucket-before-ack and follower-before-ack durability", () => {
   render(<CelldDurabilityDemo />);
   const next = advanceButton(screen.getByRole("figure"));
-  expect(screen.getByRole("status").textContent).toMatch(
-    /committed locally.*Neither client has received a successful write response/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "One node: bucket pending · ACK pending | One follower: fsync 0/1 · bucket pending · ACK pending",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /uploads the write to the bucket.*sends the write to that peer's durable log/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "One node: bucket covered · ACK pending | One follower: fsync 0/1 · bucket pending · ACK pending",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /checks the current owner after its bucket proof.*follower fsync proof.*Both can now acknowledge/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "One node: bucket covered · ACK allowed | One follower: fsync 1/1 · bucket pending · ACK allowed",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /bucket upload finishes later.*earlier acknowledgement depended on the durable follower copy/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "One node: bucket covered · ACK allowed | One follower: fsync 1/1 · bucket covered · ACK allowed",
   );
 });
 
@@ -206,25 +212,31 @@ it("keeps an unavailable follower tail blocked and unclaimed across retries and 
     expect(advanceButton(figure).textContent).toBe("Retry tail");
     expect(advanceButton(figure).disabled).toBe(false);
     fireEvent.click(advanceButton(figure));
-    expect(screen.getByRole("status").textContent).toContain(
-      "B has not claimed or restored",
+    expect(screen.getByRole("status").textContent).toBe(
+      "Lease expired · Log fenced · Tail unreachable · Owner A e7 · SQLite pending · Serving stopped",
     );
   }
   fireEvent.click(screen.getByRole("button", { name: "Reset" }));
-  expect(screen.getByRole("status").textContent).toContain("Owner stops");
+  expect(screen.getByRole("status").textContent).toBe(
+    "Lease active · Log open · Tail pending · Owner A e7 · SQLite pending · Serving stopped",
+  );
   expect(unavailable.getAttribute("aria-pressed")).toBe("true");
   for (let step = 0; step < 3; step++) fireEvent.click(advanceButton(figure));
-  expect(screen.getByRole("status").textContent).toContain(
-    "B has not claimed or restored",
+  expect(screen.getByRole("status").textContent).toBe(
+    "Lease expired · Log fenced · Tail unreachable · Owner A e7 · SQLite pending · Serving stopped",
   );
 
   const complete = screen.getByRole("button", { name: "Complete tail" });
   fireEvent.click(complete);
   expect(complete.getAttribute("aria-pressed")).toBe("true");
   expect(unavailable.getAttribute("aria-pressed")).toBe("false");
-  expect(screen.getByRole("status").textContent).toContain("Owner stops");
+  expect(screen.getByRole("status").textContent).toBe(
+    "Lease active · Log open · Tail pending · Owner A e7 · SQLite pending · Serving stopped",
+  );
   for (let step = 0; step < 6; step++) fireEvent.click(advanceButton(figure));
-  expect(screen.getByRole("status").textContent).toContain("Serve again");
+  expect(screen.getByRole("status").textContent).toBe(
+    "Lease expired · Log sealed · Tail recovered · Owner B e8 · SQLite restored · Serving B",
+  );
   expect(advanceButton(figure).disabled).toBe(true);
 });
 
@@ -232,12 +244,12 @@ it("finishes independent cells while the hot cell still has queued turns", () =>
   render(<CelldKeyChoiceDemo />);
   const next = advanceButton(screen.getByRole("figure"));
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /one hot-cell turn completes.*three independent cells can each complete a turn/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "Hot cell: 1/6 complete · 5 queued · 1 round | Independent cells: 3/6 complete · 3 queued · 1 round",
   );
   fireEvent.click(next);
-  expect(screen.getByRole("status").textContent).toMatch(
-    /independent cells have finished.*hot cell still has 4 turns queued/,
+  expect(screen.getByRole("status").textContent).toBe(
+    "Hot cell: 2/6 complete · 4 queued · 2 rounds | Independent cells: 6/6 complete · 0 queued · 2 rounds",
   );
 });
 
@@ -345,8 +357,8 @@ describe("natural SVG autoplay", () => {
     expect(figure.dataset.playbackState).toBe("blocked");
     expect(figure.dataset.playbackStep).toBe("2");
     act(() => vi.advanceTimersByTime(36000));
-    expect(within(figure).getByRole("status").textContent).toContain(
-      "B has not claimed or restored",
+    expect(within(figure).getByRole("status").textContent).toBe(
+      "Lease expired · Log fenced · Tail unreachable · Owner A e7 · SQLite pending · Serving stopped",
     );
     expect(advanceButton(figure).textContent).toBe("Retry tail");
     fireEvent.click(advanceButton(figure));
@@ -354,7 +366,7 @@ describe("natural SVG autoplay", () => {
     expect(figure.dataset.playbackStep).toBe("2");
   });
 
-  it("explains reduced motion while preserving manual steps and a paused replay", () => {
+  it("preserves manual steps and a paused replay with reduced motion", () => {
     vi.stubGlobal("matchMedia", () => ({
       matches: true,
       addEventListener() {},
@@ -363,9 +375,6 @@ describe("natural SVG autoplay", () => {
     render(<CelldRequestRoutingDemo />);
     const figure = screen.getByRole("figure");
     expect(figure.dataset.playbackState).toBe("reduced-motion");
-    expect(
-      within(figure).getByText("Reduced motion: use the step controls"),
-    ).toBeDefined();
     expect(
       within(figure).getByRole<HTMLButtonElement>("button", { name: "Play" })
         .disabled,

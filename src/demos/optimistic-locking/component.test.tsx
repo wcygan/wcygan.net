@@ -131,7 +131,7 @@ describe("OptimisticLockingRaceDemo", () => {
     expect(
       container.querySelector(".optimistic-locking-race-live-table caption")
         ?.textContent,
-    ).toContain("Live SQL Table");
+    ).toContain("inventory_items");
 
     act(() => runAnimationFrame(0));
     act(() => runAnimationFrame(4_500));

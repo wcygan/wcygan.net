@@ -520,7 +520,7 @@ export default function MySqlStorageScene(props: SceneProps & StorageState) {
       frameloop="demand"
       dpr={[1, 1.5]}
       gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
-      fallback={<p>3D unavailable; follow the controls and result below.</p>}
+      fallback={<p>3D unavailable</p>}
     >
       <ambientLight intensity={1.1} />
       <directionalLight position={[4, 8, 6]} intensity={1.5} />

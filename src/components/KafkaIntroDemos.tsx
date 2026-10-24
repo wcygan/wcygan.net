@@ -34,14 +34,12 @@ function IntroFigure({
   graphicKey,
   children,
   controls,
-  caption,
   playback,
 }: {
   title: string;
   graphicKey: string;
   children: ReactNode;
   controls?: ReactNode;
-  caption: ReactNode;
   playback: ReturnType<typeof useKafkaAutoplay>;
 }) {
   const id = useId();
@@ -52,7 +50,6 @@ function IntroFigure({
       data-graphic-key={graphicKey}
       data-graphic-kind="dom"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <p
         id={`${id}-title`}
@@ -71,7 +68,6 @@ function IntroFigure({
       <div onClickCapture={playback.pause} onChangeCapture={playback.pause}>
         {controls}
       </div>
-      <figcaption id={`${id}-caption`}>{caption}</figcaption>
     </figure>
   );
 }
@@ -108,7 +104,6 @@ export function KafkaEventDemo() {
           </p>
         </div>
       }
-      caption="Applications supply keys and values; Kafka assigns partition offsets. This example uses JSON."
     >
       <div className="kafka-intro-record-route">
         <span>Checkout service</span>
@@ -206,7 +201,6 @@ export function KafkaDecouplingDemo() {
           </p>
         </div>
       }
-      caption="Checkout depends on an available Kafka cluster; downstream readers can recover later. Recovery and reading share one step here."
     >
       <div
         ref={flow}
@@ -291,9 +285,6 @@ function GroupAssignments({ name, count }: { name: string; count: number }) {
           </div>
         ))}
       </div>
-      <p className="kafka-intro-group-takeaway">
-        All 3 partitions · all 6 records
-      </p>
     </section>
   );
 }
@@ -342,7 +333,6 @@ export function KafkaConsumerGroupsDemo() {
           </p>
         </div>
       }
-      caption="Groups read independently; members share partitions within a group. This illustrative assignment may differ from Kafka's assignor."
     >
       <p className="kafka-intro-label">orders topic · 3 partitions</p>
       <div
@@ -367,9 +357,6 @@ export function KafkaConsumerGroupsDemo() {
           </div>
         ))}
       </div>
-      <p className="kafka-intro-subscribe-note">
-        Both groups subscribe to orders ↓
-      </p>
       <div className="kafka-intro-groups">
         <GroupAssignments name="Analytics" count={analytics} />
         <GroupAssignments name="Fulfillment" count={fulfillment} />
@@ -455,7 +442,6 @@ export function KafkaOffsetsDemo() {
           </p>
         </div>
       }
-      caption="Reading preserves records. Committed offsets mark restart positions; replay here moves only this standalone reader."
     >
       <div className="kafka-intro-log-heading">
         <span className="kafka-intro-label">orders · partition 0</span>
@@ -545,9 +531,8 @@ export function KafkaRetentionDemo() {
           </p>
         </div>
       }
-      caption="Completed cleanup: retention expires old segments; compaction removes older keyed values. Surviving offsets stay fixed; tombstones and cleanup timing are omitted."
     >
-      <p className="kafka-intro-label">Before cleanup · keys are order IDs</p>
+      <p className="kafka-intro-label">Before cleanup</p>
       <div
         className="kafka-intro-cleanup-log"
         aria-label="Six records before cleanup"
@@ -562,7 +547,7 @@ export function KafkaRetentionDemo() {
           ? "expire the old segment (offsets 0–2)"
           : "remove older values for the same key"}
       </p>
-      <p className="kafka-intro-label">After cleanup · original offsets</p>
+      <p className="kafka-intro-label">After cleanup</p>
       <div
         className="kafka-intro-cleanup-log"
         aria-label={`${retained.length} retained records after cleanup`}
@@ -635,7 +620,6 @@ export function KafkaPipelineDemo() {
           </p>
         </div>
       }
-      caption="Streams applications transform records; Connect exports them. Both run separately from brokers; each step combines processing, publishing, and export."
     >
       <div ref={flow} className="kafka-intro-pipeline-board">
         <FlowConnections container={flow} edges={PIPELINE_EDGES} />
@@ -700,9 +684,6 @@ export function KafkaPipelineDemo() {
           </div>
         </div>
       </div>
-      <p className="kafka-intro-pipeline-takeaway">
-        One retained stream can feed processing and integration.
-      </p>
     </IntroFigure>
   );
 }

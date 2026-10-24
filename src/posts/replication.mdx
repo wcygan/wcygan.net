@@ -57,9 +57,9 @@ The demo shows two places lag can build up: **writes are still traveling**, or
 
 ### Recovering from lag
 
-- **Slow processing:** select **Speed up B**, or stop writing and let B drain its queue.
-- **Slow delivery:** lower **Link 2 latency** so writes reach B sooner.
-- **Brief disconnection:** interrupt and reconnect Link 2. If B reconnects before
+- **Slow processing:** faster processing or fewer writes lets B drain its queue.
+- **Slow delivery:** lower network latency lets writes reach B sooner.
+- **Brief disconnection:** if B reconnects before
   being removed, it can retrieve missed messages still available in another
   member’s [XCom cache](https://dev.mysql.com/doc/refman/9.7/en/group-replication-performance-xcom-cache.html).
 - **Long disconnection:** after removal, B must rejoin and

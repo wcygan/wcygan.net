@@ -7,8 +7,7 @@ import "~/demos/tidb-learning/styles.css";
 /** One bounded lesson clock; SVG geometry remains mounted between steps. */
 export function TidbLearningDemo({ lesson: id }: { lesson: LessonId }) {
   const lesson = LESSONS[id];
-  const titleId = useId(),
-    statusId = useId();
+  const titleId = useId();
   const stageRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(644);
   const [phase, setPhase] = useState(0);
@@ -18,6 +17,7 @@ export function TidbLearningDemo({ lesson: id }: { lesson: LessonId }) {
   const [visible, setVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
   const last = lesson.beats.length - 1;
+  const result = outcome(id, phase, option);
   const active = playing && inView && visible && !reduced && phase < last;
   useEffect(() => {
     const stage = stageRef.current;
@@ -85,12 +85,9 @@ export function TidbLearningDemo({ lesson: id }: { lesson: LessonId }) {
       }
       aria-labelledby={titleId}
     >
-      <header className="tidb-learn-intro">
-        <p className="tidb-learn-title" id={titleId}>
-          {lesson.title}
-        </p>
-        <p className="tidb-learn-question">{lesson.question}</p>
-      </header>
+      <p className="tidb-learn-title" id={titleId}>
+        {lesson.title}
+      </p>
       {options.length > 0 && (
         <div
           className="tidb-learn-options"
@@ -173,25 +170,19 @@ export function TidbLearningDemo({ lesson: id }: { lesson: LessonId }) {
           Replay
         </button>
       </div>
-      {reduced && (
-        <p className="tidb-learn-motion-note">
-          Reduced motion: use Next step to follow the same lesson.
-        </p>
-      )}
       <div
         className="tidb-learn-status"
         role="status"
         aria-live={active ? "off" : "polite"}
         aria-atomic="true"
-        id={statusId}
       >
         <p className="tidb-learn-beat">
           <span>
             {phase + 1} / {lesson.beats.length}
           </span>{" "}
-          {lesson.beats[phase].title}
+          {lesson.beats[phase]}
         </p>
-        <p>{outcome(id, phase, option)}</p>
+        {result && <p>{result}</p>}
         {id === "index" && phase === last && (
           <p className="tidb-learn-result">id 427 · name Will · snapshot 120</p>
         )}
@@ -199,7 +190,6 @@ export function TidbLearningDemo({ lesson: id }: { lesson: LessonId }) {
           <p className="tidb-learn-result">SUM(amount) = 44</p>
         )}
       </div>
-      <figcaption>{lesson.caption}</figcaption>
     </figure>
   );
 }

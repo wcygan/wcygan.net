@@ -6,15 +6,9 @@ type LogOrderCaseProps = {
   label: string;
   firstLog: readonly LogEntry[];
   secondLog: readonly LogEntry[];
-  orderText: string;
 };
 
-function LogOrderCase({
-  label,
-  firstLog,
-  secondLog,
-  orderText,
-}: LogOrderCaseProps) {
+function LogOrderCase({ label, firstLog, secondLog }: LogOrderCaseProps) {
   const logsRef = useRef<HTMLDivElement>(null);
   const [connections, setConnections] = useState<string[]>([]);
 
@@ -70,7 +64,6 @@ function LogOrderCase({
           </div>
         ))}
       </div>
-      <p className="total-order-summary">{orderText}</p>
     </section>
   );
 }
@@ -84,7 +77,6 @@ export function TotalOrderBroadcastFigure() {
       data-graphic-frame="plate"
       data-graphic-kind="dom"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -96,19 +88,13 @@ export function TotalOrderBroadcastFigure() {
           label="Not totally ordered"
           firstLog={[1, 2, 3, 4, 5, 6]}
           secondLog={[2, 1, 4, 3, 6, 5]}
-          orderText="Same six messages, a different order."
         />
         <LogOrderCase
           label="Totally ordered"
           firstLog={[1, 2, 3, 4, 5, 6]}
           secondLog={[1, 2, 3, 4, 5, 6]}
-          orderText="Both logs match at all six positions."
         />
       </div>
-      <figcaption id={`${id}-caption`}>
-        Both replicas have delivered all six messages here. A replica may lag,
-        but the messages it has delivered follow the same order.
-      </figcaption>
     </figure>
   );
 }

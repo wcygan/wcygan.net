@@ -7,8 +7,6 @@ export const INTRO = {
       "Stored samples → queries and rules",
       "Firing alerts → Alertmanager → grouped, routed notifications",
     ],
-    caption:
-      "Measurements feed queries and alerts. Boxes show roles; distance does not represent latency.",
   },
   series: {
     title: "Series and Samples",
@@ -18,8 +16,6 @@ export const INTRO = {
       "30 s: A = 10, B = 12.",
       "45 s: A = 13, B = 14. Two label sets still mean two series.",
     ],
-    caption:
-      "Lane = label set · length = time · height = value. More samples extend history, not series count.",
   },
   alerts: {
     title: "Sustained Alerts",
@@ -29,8 +25,6 @@ export const INTRO = {
       "20 s · pending. A false evaluation would reset the timer.",
       "After 30 s continuously true → firing. Alertmanager delivers notifications.",
     ],
-    caption:
-      "for: 30s requires a sustained condition. Timeline = elapsed time, not queued requests.",
   },
 } as const;
 

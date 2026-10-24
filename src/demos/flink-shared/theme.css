@@ -45,14 +45,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.post-content .flink-visual .flink-visual-description {
-  margin: 0;
-  color: var(--flink-muted);
-  font:
-    14px/1.55 Inter,
-    system-ui,
-    sans-serif;
-}
 .post-content .flink-visual [data-graphic-stage] {
   border-color: var(--flink-border);
   background: var(--flink-panel);
@@ -93,16 +85,6 @@
 .post-content .flink-visual [tabindex]:focus-visible {
   outline: 2px solid var(--flink-orange);
   outline-offset: 2px;
-}
-.post-content .flink-visual figcaption {
-  color: var(--flink-muted);
-  border-block-start: 1px solid var(--flink-track);
-  padding-block-start: 16px;
-  margin-block-start: 16px;
-  font:
-    13px/1.55 Inter,
-    system-ui,
-    sans-serif;
 }
 .flink-visual [data-tone="blue"] {
   --flink-tone: var(--flink-blue);

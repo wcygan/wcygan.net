@@ -122,37 +122,28 @@ const TOUR_BEATS: TourBeat[] = [
   {
     value: 1,
     holdMs: 6000,
-    caption: "One connection — the baseline: 40 qps, 25 ms per query",
   },
   {
     value: 24,
     holdMs: 6000,
-    caption: "24 connections on 4 cores — peak throughput, all queries running",
   },
   {
     value: 64,
     holdMs: 6000,
-    caption:
-      "64 connections — past cores × 10, context switching bends the curve below peak",
   },
   {
     value: 150,
     holdMs: 6000,
-    caption: "150 connections — lock queues form, latency is 9× the sweet spot",
   },
   {
     value: 300,
     holdMs: 6400,
-    caption: "300 connections — half the peak throughput, 5 seconds per query",
   },
 ];
 
 export function ConnectionScalingCurveDemo() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { value, caption, phase, playing, start, onManualChange } = useDemoTour(
-    TOUR_BEATS,
-    1,
-  );
+  const { value, phase, start, onManualChange } = useDemoTour(TOUR_BEATS, 1);
   usePlayOnceOnVisible(rootRef, start);
   const connections = Math.round(value);
   const qps = useMemo(() => throughputQps(connections), [connections]);
@@ -173,13 +164,7 @@ export function ConnectionScalingCurveDemo() {
   return (
     <div className="ps-diagram-workbench ps-scaling-curve" ref={rootRef}>
       <div className="ps-diagram-header">
-        <div>
-          <p className="ps-diagram-title">Connections vs throughput</p>
-          <p className="ps-diagram-subtitle">
-            4-core MySQL · drag the slider — throughput peaks near cores × 6,
-            then falls
-          </p>
-        </div>
+        <p className="ps-diagram-title">Connections vs throughput</p>
         <button
           type="button"
           className="ps-diagram-replay-btn"
@@ -429,10 +414,6 @@ export function ConnectionScalingCurveDemo() {
           </g>
         </svg>
       </div>
-
-      <p className="ps-tour-caption" aria-live="polite">
-        {caption ?? (playing ? "" : "Drag the slider — or replay the tour")}
-      </p>
 
       <label className="ps-scaling-control">
         <span>

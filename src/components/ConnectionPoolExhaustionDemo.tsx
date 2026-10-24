@@ -20,7 +20,7 @@ const PS_COLORS = {
 };
 
 const VIEWBOX_W = 1000;
-const VIEWBOX_H = 680;
+const VIEWBOX_H = 620;
 
 // Request column geometry
 const REQ_EDGE_X = 253; // right edge of the request boxes
@@ -75,17 +75,11 @@ export function ConnectionPoolExhaustionDemo() {
       data-graphic-key="ps-connection-pool-exhaustion"
       data-graphic-kind="svg"
       aria-labelledby="ps-exhaustion-title"
-      aria-describedby="ps-exhaustion-description ps-exhaustion-caption"
     >
       <header className="ps-diagram-header">
-        <div>
-          <p className="ps-diagram-title" id="ps-exhaustion-title">
-            Connection Pool Exhaustion
-          </p>
-          <p className="ps-diagram-subtitle" id="ps-exhaustion-description">
-            Every socket ends up running the same 30s full table scan
-          </p>
-        </div>
+        <p className="ps-diagram-title" id="ps-exhaustion-title">
+          Connection Pool Exhaustion
+        </p>
         <button
           type="button"
           className="ps-diagram-replay-btn"
@@ -626,19 +620,6 @@ export function ConnectionPoolExhaustionDemo() {
                 FULL SCAN: 30s+ QUERY TIME
               </text>
             </g>
-          </g>
-
-          {/* BOTTOM BANNER: Takeaway */}
-          <g transform="translate(25, 625)">
-            <text
-              x="0"
-              y="22"
-              className="ps-bottom-summary"
-              fill="var(--diagram-fg)"
-            >
-              EXHAUSTION: All four sockets run the same unindexed scan for 30s+.
-              Waiters time out and are dropped.
-            </text>
           </g>
         </svg>
       </div>

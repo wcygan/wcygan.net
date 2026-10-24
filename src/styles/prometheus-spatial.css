@@ -90,13 +90,6 @@
   margin-block-start: 8px;
 }
 
-.prometheus-spatial-demo .prometheus-spatial-guide {
-  margin: 12px 0 16px;
-  color: oklch(0.499 0.008 106.715);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
 .prometheus-spatial-status {
   display: grid;
   gap: 8px;

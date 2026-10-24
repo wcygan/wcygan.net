@@ -96,7 +96,7 @@ export function GrowOnlyCounterMergeEquation() {
       className="gc-merge-figure"
       data-graphic-frame="plate"
       data-graphic-key="grow-only-counter-merge"
-      data-graphic-label="A and B merge their grow-only counter vectors"
+      aria-label="A and B merge their grow-only counter vectors"
     >
       <div
         className="gc-merge-paper"
@@ -108,10 +108,6 @@ export function GrowOnlyCounterMergeEquation() {
           <MergeEquationBody order={["A", "B"]} />
         </div>
       </div>
-      <figcaption>
-        Keep the larger count in each column. The first 1 comes from A; the
-        second 1 comes from B.
-      </figcaption>
     </figure>
   );
 }
@@ -122,7 +118,7 @@ export function GrowOnlyCounterDeliveryOrderEquation() {
       className="gc-merge-figure"
       data-graphic-frame="plate"
       data-graphic-key="grow-only-counter-delivery-order"
-      data-graphic-label="Both delivery orders produce the same counter vector"
+      aria-label="Both delivery orders produce the same counter vector"
     >
       <div
         className="gc-merge-paper gc-order-paper"
@@ -134,14 +130,7 @@ export function GrowOnlyCounterDeliveryOrderEquation() {
           <MergeCalculation order={["A", "B"]} />
           <MergeCalculation order={["B", "A"]} />
         </div>
-        <p className="gc-order-result" aria-hidden="true">
-          Same result
-        </p>
       </div>
-      <figcaption>
-        Reversing the delivery order does not change which count wins in each
-        column.
-      </figcaption>
     </figure>
   );
 }

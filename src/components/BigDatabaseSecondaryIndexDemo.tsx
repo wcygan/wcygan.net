@@ -2,7 +2,6 @@ import { useId } from "react";
 import { BigDatabaseSecondaryTree } from "~/components/BigDatabaseSecondaryTree";
 import {
   BigDatabasePlaybackControls,
-  BigDatabasePlaybackSteps,
   BigDatabasePlaybackStatus,
 } from "~/components/BigDatabasePlayback";
 import { useQueryPlayback } from "~/demos/big-database/use-query-playback";
@@ -22,10 +21,6 @@ export function BigDatabaseSecondaryIndexDemo() {
         <p className="article-graphic-title" id={id}>
           A secondary lookup traverses two trees
         </p>
-        <p className="big-db-flow-intro">
-          Find the email, carry its primary key, then fetch the row. Scroll the
-          trees sideways on narrow screens.
-        </p>
       </header>
       <BigDatabasePlaybackControls playback={playback} />
       <div
@@ -37,20 +32,14 @@ export function BigDatabaseSecondaryIndexDemo() {
           path={playback.snapshot.path}
           packet={playback.reduced ? undefined : playback.snapshot.packet}
         />
-        <BigDatabasePlaybackSteps
-          playback={playback}
-          label="Email → primary key → row"
-          count={`${playback.snapshot.step < 3 ? "1 index traversal" : "2 index traversals"} · cached pages`}
-        />
+        <p className="big-db-flow-count">
+          {playback.snapshot.step < 3
+            ? "1 index traversal"
+            : "2 index traversals"}{" "}
+          · cached pages
+        </p>
       </div>
       <BigDatabasePlaybackStatus playback={playback} />
-      <figcaption>
-        Illustrative non-covering lookup through a unique email index. The
-        secondary leaf stores the email and primary key; the clustered leaf
-        supplies the requested status. Both trees' pages are assumed cached. A
-        covering secondary index could avoid the second traversal. Playback is
-        slowed for teaching.
-      </figcaption>
     </figure>
   );
 }

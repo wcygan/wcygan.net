@@ -183,7 +183,7 @@ function buildLesson(compact: boolean) {
     {
       start: duration,
       settledAt: duration,
-      title: "Same committed log. Conflicting suffix removed.",
+      title: "Committed through #4 · x = 16",
       detail:
         "All three servers contain the same entries through #4. B's old #4–5 were never committed or applied; the committed prefix survived. Applying the agreed log produces x = 16.",
     },

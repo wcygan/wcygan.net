@@ -46,7 +46,6 @@ describe("bounded spatial tours", () => {
         firstRun[step].state.parts.parts[0].rows[0],
       );
       expect(firstRun[step].title.trim().length).toBeGreaterThan(0);
-      expect(firstRun[step].narration.trim().length).toBeGreaterThan(0);
     }
   });
 
@@ -61,7 +60,6 @@ describe("bounded spatial tours", () => {
       expect(spatialTourFrame(kind, step)).toEqual(terminal);
     }
     expect(spatialTourFrame(kind, 1.9)).toEqual(spatialTourFrame(kind, 1));
-    expect(terminal.narration).not.toBe(initial.narration);
   });
 
   it("starts every tour with the same baseline state", () => {
@@ -90,7 +88,6 @@ describe("bounded spatial tours", () => {
       expect(activeQuery.state.queried).toBe(true);
       expect(settled.state.queried).toBe(true);
       expect(settled.state).toEqual(activeQuery.state);
-      expect(settled.narration).not.toBe(activeQuery.narration);
 
       if (kind === "columns") {
         expect(columnReadWork(activeQuery.state.layout).readValues).toBe(12);
@@ -130,8 +127,6 @@ describe("column tour", () => {
     ]);
     expect(columnReadWork(tour[1].state.layout).readValues).toBe(24);
     expect(columnReadWork(tour[3].state.layout).readValues).toBe(12);
-    expect(tour[1].narration).toContain("24");
-    expect(tour[3].narration).toContain("12");
   });
 });
 
@@ -166,7 +161,6 @@ describe("dictionary tour", () => {
       expect(frame.state.dictionaryRow).toBeLessThan(12);
     }
     expect(COUNTRY_VALUES).toEqual(original);
-    expect(tour[5].narration).toContain("original order");
   });
 });
 
@@ -225,7 +219,6 @@ describe("partition tour", () => {
       "2026-02",
     ]);
     expect(JSON.stringify(MONTH_PARTITIONS)).toBe(before);
-    expect(tour[2].narration).toContain("12 rows remain stored");
   });
 });
 
@@ -253,6 +246,5 @@ describe("cluster tour", () => {
       expect(result.logicalRows).toBe(6);
       expect(result.storedRows).toBe(12);
     }
-    expect(tour[3].narration).toContain("210");
   });
 });

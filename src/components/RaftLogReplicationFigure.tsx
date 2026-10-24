@@ -304,15 +304,7 @@ export function RaftLogReplicationFigure() {
         aria-atomic="true"
       >
         <p>{beat.title}</p>
-        <p className="raft-step-explanation">{beat.event}</p>
       </div>
-      <figcaption>
-        Each server’s Commit label shows its local commitment knowledge; a
-        packet’s Commit is the leader’s advertised index. Green entries are
-        known committed by that server; orange entries are stored but not yet
-        known committed there. Illustrative timing.
-        {reduced && " Use Next to step through."}
-      </figcaption>
     </figure>
   );
 }

@@ -18,8 +18,7 @@ export function createPlayback(now = () => performance.now()) {
   let delivered: string[] = [];
   let messages: readonly Message[] = captureMessages(replicas);
   let action: Action | null = null;
-  let status =
-    "A and B have each incremented once. Choose a client action or saved message.";
+  let status = "A and B have each incremented once.";
   let elapsed = 0;
   let anchor = now();
   let active = false;
@@ -106,8 +105,7 @@ export function createPlayback(now = () => performance.now()) {
     action = null;
     elapsed = 0;
     anchor = now();
-    status =
-      "A and B have each incremented once. Choose a client action or saved message.";
+    status = "A and B have each incremented once.";
     publish();
   }
   return {

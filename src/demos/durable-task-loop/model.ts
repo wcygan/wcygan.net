@@ -637,7 +637,7 @@ function flashAround(progress: number, center: number, radius: number) {
 
 function phaseLabel(worker: WorkerSnapshot, queue: QueueSnapshot): string {
   if (worker.phase === "complete") {
-    return "Every activity task has been drained from the queue and completed. The Event History holds the full durable record.";
+    return "Every activity task has been drained from the queue and completed.";
   }
 
   if (worker.phase === "polling") {
@@ -651,7 +651,7 @@ function phaseLabel(worker: WorkerSnapshot, queue: QueueSnapshot): string {
   }
 
   if (worker.phase === "executing") {
-    return `The Worker runs ${worker.taskLabel}; this is real work, so it can take time and may fail.`;
+    return `The Worker runs ${worker.taskLabel}.`;
   }
 
   if (worker.phase === "backoff") {

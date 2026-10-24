@@ -27,15 +27,13 @@ The project brings Cloudflare's Durable Objects programming model to machines yo
 
 The problem starts when a service needs to remember something. A JavaScript variable disappears when its process restarts. Running more processes also gives you more separate copies of that variable. An object store can preserve bytes, but the application still needs somewhere to run its code and a rule for which process can change the state. celld supplies that runtime and ownership protocol.
 
-This draft follows [v0.6.1](https://github.com/denoland/celld/releases/tag/v0.6.1), a **beta** release, researched on October 1, 2026. The diagrams are explanatory models; their steps and geometry are not measurements of a running cluster.
+This draft follows [v0.6.1](https://github.com/denoland/celld/releases/tag/v0.6.1), a **beta** release, researched on October 1, 2026.
 
 ## What is a cell?
 
 A **cell** is celld's name for a Durable Object: an addressable unit of application logic with private storage. An **actor** is the general pattern behind it: send a message to a named object and let that object manage its own state. A **node** is one celld process. Nodes using the same fleet bucket or bucket prefix form a **fleet**.
 
-Start with three named counters. Each cell owns a separate SQLite database. Incrementing `room:blue` changes that cell's counter, while the other two keep their values. An acknowledged database write can survive a runtime restart; temporary JavaScript memory cannot. The first model lets you inspect that distinction.
-
-Each demo plays a short sequence as you scroll. Pause to inspect a state, or replay the sequence.
+Start with three named counters. Each cell owns a separate SQLite database. Incrementing `room:blue` changes that cell's counter, while the other two keep their values. An acknowledged database write can survive a runtime restart; temporary JavaScript memory cannot.
 
 <CelldNamedStateDemo />
 
@@ -54,8 +52,6 @@ celld combines three pieces:
 - **LTX** describes committed changes to SQLite pages for replication and recovery.
 
 The bucket holds deployments, ownership records, and durable storage data. Live SQL operations use the cell's local database; the bucket does not execute SQL. Restoring a large database can involve fetching pages on demand, but that is a storage-recovery mechanism. [The storage contract](https://github.com/denoland/celld/blob/v0.6.1/docs/guarantees.md#epoch-chain-restore) describes how epochs and page data fit together.
-
-Use the layer buttons below to inspect what each part does. The vertical stack separates responsibilities; it does not depict a physical memory layout or an exact file format.
 
 <CelldCellAnatomyDemo />
 
@@ -96,7 +92,7 @@ A replacement must recover the prior owner's unuploaded log before restoring and
 
 The project's RPO=0 claim means no loss of acknowledged writes under its durability assumptions. It is not protection against losing every relevant disk before upload. The [implementation records possible loss](https://github.com/denoland/celld/blob/v0.6.1/crates/celld/node_log.rs#L5219) when no complete witness survives and the members' outcomes are conclusive. Keeping compute nodes and storage on one physical machine gives them a shared failure domain. A second process on that machine cannot protect against losing the machine.
 
-A **failure domain** is a group of resources that can fail together. Stopping one process, rebooting a machine with its disks intact, and permanently losing that machine's disks are different failures. The next model compares where a recent acknowledged write can survive before the bucket upload finishes. A surviving follower holds recovery data; it does not automatically become a second serving cell.
+A **failure domain** is a group of resources that can fail together. Stopping one process, rebooting a machine with its disks intact, and permanently losing that machine's disks are different failures. A surviving follower holds recovery data; it does not automatically become a second serving cell.
 
 <CelldFailureDomainsDemo />
 

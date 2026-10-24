@@ -2,7 +2,6 @@ import { useId } from "react";
 import { BigDatabasePageDiagram } from "~/components/BigDatabasePageDiagram";
 import {
   BigDatabasePlaybackControls,
-  BigDatabasePlaybackSteps,
   BigDatabasePlaybackStatus,
 } from "~/components/BigDatabasePlayback";
 import { useQueryPlayback } from "~/demos/big-database/use-query-playback";
@@ -21,9 +20,6 @@ export function BigDatabaseCacheHitDemo() {
       <header>
         <p className="article-graphic-title" id={id}>
           A lookup served from RAM
-        </p>
-        <p className="big-db-flow-intro">
-          The needed leaf page is already in the buffer pool.
         </p>
       </header>
       <BigDatabasePlaybackControls playback={playback} />
@@ -57,18 +53,9 @@ export function BigDatabaseCacheHitDemo() {
             },
           ]}
         />
-        <BigDatabasePlaybackSteps
-          playback={playback}
-          label="Cached leaf page"
-          count="0 SSD page reads"
-        />
+        <p className="big-db-flow-count">0 SSD page reads</p>
       </div>
       <BigDatabasePlaybackStatus playback={playback} />
-      <figcaption>
-        Illustrative primary-key lookup with upper index pages and the needed
-        leaf page cached. Playback is slowed for teaching. The reported 98.7%
-        hit rate counts page reads, not whole queries.
-      </figcaption>
     </figure>
   );
 }

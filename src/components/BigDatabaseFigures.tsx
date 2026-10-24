@@ -28,12 +28,10 @@ function IconLabel({
 function Figure({
   figureRef,
   title,
-  caption,
   children,
 }: {
   figureRef?: Ref<HTMLElement>;
   title: string;
-  caption: string;
   children: ReactNode;
 }) {
   const id = useId();
@@ -44,7 +42,6 @@ function Figure({
       data-graphic-frame="plate"
       data-graphic-kind="dom"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -54,7 +51,6 @@ function Figure({
       <div className="big-db-stage" data-graphic-stage="padded">
         {children}
       </div>
-      <figcaption id={`${id}-caption`}>{caption}</figcaption>
     </figure>
   );
 }
@@ -98,10 +94,7 @@ export function BigDatabaseHardwareFigure() {
   const ramGiB = (256 * 10 ** 9) / 2 ** 30;
   const freeTiB = (6.7 * 10 ** 12) / 2 ** 40;
   return (
-    <Figure
-      title="The hardware each MySQL instance runs on"
-      caption="Each MySQL instance runs on heavyweight hardware."
-    >
+    <Figure title="The hardware each MySQL instance runs on">
       <section
         className="big-db-resource big-db-hardware-resource"
         data-tone="cpu"
@@ -137,9 +130,6 @@ export function BigDatabaseHardwareFigure() {
             </g>
           ))}
         </svg>
-        <p className="big-db-note">
-          Each slot represents one core of capacity.
-        </p>
       </section>
       <section className="big-db-resource big-db-hardware-resource">
         <div className="big-db-row">
@@ -181,10 +171,7 @@ export function BigDatabaseHardwareFigure() {
 
 export function BigDatabaseWorkingSetBudgetFigure() {
   return (
-    <Figure
-      title="The active data fits in memory"
-      caption="Estimated working set: two weeks of recent row and index pages plus the upper levels of every index. The bar shows the upper estimate."
-    >
+    <Figure title="The active data fits in memory">
       <section className="big-db-resource">
         <div className="big-db-row">
           <span className="big-db-label">Working set</span>
@@ -208,10 +195,6 @@ export function BigDatabaseWorkingSetBudgetFigure() {
           percent={(100 / (14.8 * 1024)) * 100}
           label="The entire 100 GiB buffer pool is only about 0.66 percent of the 14.8 TiB stored dataset."
         />
-        <p className="big-db-note">
-          The 100 GiB pool is 0.66% of stored data and serves 98.7% of page
-          reads.
-        </p>
       </section>
     </Figure>
   );
@@ -282,10 +265,7 @@ const trafficChart = defineChart({
 
 export function BigDatabaseTrafficFigure() {
   return (
-    <Figure
-      title="Read traffic over 24 hours"
-      caption="Illustrative daily pattern for the total SELECT rate across the three primaries; not a measured trace."
-    >
+    <Figure title="Read traffic over 24 hours">
       <div className="big-db-traffic-summary">
         <div>
           <IconLabel kind="read">Reads</IconLabel>
@@ -312,10 +292,7 @@ export function BigDatabaseTrafficFigure() {
 export function BigDatabaseTopologyFigure() {
   const id = useId();
   return (
-    <Figure
-      title="Three primaries, six replicas"
-      caption="Each primary sends changes to two replicas in its region. These arrows show replication only. Data ownership, application routing, and relationships between primaries are not specified by the notes."
-    >
+    <Figure title="Three primaries, six replicas">
       <p className="big-db-label">9 servers · 2 local replicas per primary</p>
       <div className="big-db-topology">
         {[1, 2, 3].map((n) => (
@@ -376,11 +353,7 @@ export function BigDatabaseIncreasingIdsFigure() {
   const reads = treeReadSnapshot(playback.elapsed);
   const temperatureId = useId();
   return (
-    <Figure
-      figureRef={playback.figure}
-      title="Reads favor recent rows"
-      caption="In this example, most reads reach newer rows on the right."
-    >
+    <Figure figureRef={playback.figure} title="Reads favor recent rows">
       <svg
         className="big-db-id-tree"
         viewBox="0 -36 360 336"
@@ -399,9 +372,6 @@ export function BigDatabaseIncreasingIdsFigure() {
             ))}
           </linearGradient>
         </defs>
-        <text className="big-db-id-context" x="8" y="-10">
-          One B+ tree in the database
-        </text>
         <g className="big-db-id-branches">
           <path d="M180 42V62M84 82V62H276V82" />
           <path d="M84 110V132M28 154V132H140V154M84 132V154" />

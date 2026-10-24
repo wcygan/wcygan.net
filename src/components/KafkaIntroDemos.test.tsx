@@ -35,7 +35,6 @@ it("keeps all six figures discoverable with exactly one stage and controls outsi
   for (const figure of figures) {
     expect(figure.querySelectorAll("[data-graphic-stage]")).toHaveLength(1);
     expect(figure.querySelector("[data-graphic-stage] button")).toBeNull();
-    expect(figure.querySelector("figcaption")?.textContent).toBeTruthy();
     expect(figure.getAttribute("aria-labelledby")).toBeTruthy();
   }
   expect(screen.getByText(/"event": "OrderPlaced"/)).toBeTruthy();

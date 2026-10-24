@@ -154,7 +154,6 @@ describe("Prometheus 2D workbenches", () => {
       fireEvent.click(getByRole("button", { name: "Next step" }));
     expect(container.textContent).toContain("100 / 60 = 1.67 req/s");
     expect(container.textContent).toContain("-60 / 60 = -1.00 req/s");
-    expect(container.textContent).toContain("Actual PromQL");
     fireEvent.click(getByRole("button", { name: "Restart at 45s: on" }));
     for (let index = 0; index < 5; index++)
       fireEvent.click(getByRole("button", { name: "Next step" }));

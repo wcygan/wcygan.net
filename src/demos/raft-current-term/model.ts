@@ -10,7 +10,6 @@ export type Node = {
 };
 export type Snapshot = {
   title: string;
-  detail: string;
   context: string;
   tally: string;
   nodes: Node[];
@@ -90,8 +89,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
   if (index === 0)
     return {
       title: "One copy in term 2",
-      detail:
-        "A leads term 2 and accepts an entry at index 2. Only A stores it. With three servers, a second copy would already form a majority, so this entry has not yet been replicated.",
       context: "Term 2 · A leads",
       tally: "Old entry: 1 / 3 copies",
       nodes: nodes([oldLog, base, base], "A"),
@@ -100,8 +97,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
   if (index === 1)
     return {
       title: "A different entry in term 3",
-      detail:
-        "A crashes. C wins term 3 with B and C, whose logs both end at index 1. C accepts a different entry at index 2, from term 3, without replicating it.",
       context: "Term 3 · C leads",
       tally: "C elected by B + C",
       nodes: nodes([oldLog, base, otherLog], "C", ["A"]),
@@ -110,8 +105,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
   if (index === 2)
     return {
       title: "Two copies still are not enough",
-      detail:
-        "C crashes. A returns and later wins term 4 with A and B. A accepts a term-4 entry locally, but copies only its older term-2 entry to B. Term 2 now has two copies; term 4 still has one. Neither entry can be declared committed by counting these copies.",
       context: "Term 4 · A leads",
       tally: "Old entry: 2 / 3 · uncommitted",
       nodes: nodes([protectedLog, oldLog, otherLog], "A", ["C"]),
@@ -121,8 +114,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
     return protectedBranch
       ? {
           title: "Commit a current-term entry first",
-          detail:
-            "Return to (c). Instead of crashing with only one copy of its current-term entry, A replicates the term-4 entry to B. B stores it and acknowledges. This current-term majority commits index 3 and the entire preceding log, including the term-2 entry.",
           context: "Term 4 · A leads",
           tally: "Current-term entry: 2 / 3 · committed",
           nodes: nodes([protectedLog, protectedLog, otherLog], "A", ["C"]),
@@ -130,8 +121,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
         }
       : {
           title: "Stop before a current-term entry",
-          detail:
-            "A crashes before committing any term-4 entry. C returns with its term-3 entry intact. Two durable copies of the term-2 entry still do not protect it.",
           context: "A is down · C returns",
           tally: "Old entry: 2 / 3 · uncommitted",
           nodes: nodes([protectedLog, oldLog, otherLog], null, ["A"]),
@@ -157,9 +146,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
       title: protectedBranch
         ? "C cannot win with its old log"
         : "C can win despite the two copies",
-      detail: protectedBranch
-        ? "A crashes and C later requests votes in term 5. B refuses: its last entry is term 4, newer than C's term 3. C has only its own vote and cannot win."
-        : "C later requests votes in term 5. Its last entry is term 3, newer than B's term 2. B votes for C; with its own vote, C wins.",
       context: protectedBranch
         ? "Term 5 · C is a candidate"
         : "Term 5 · C leads",
@@ -171,8 +157,6 @@ export function currentTermState(step: number, branch: Branch): Snapshot {
   if (protectedBranch) return currentTermState(4, "current");
   return {
     title: "The old entry is overwritten",
-    detail:
-      "C first replaces B's uncommitted term-2 entry. A then restarts as a follower and receives C's term-5 replication request. A also replaces its term-2 entry and deletes the uncommitted term-4 suffix. All three logs now contain C's term-3 entry. These older-term copies alone still do not commit it in term 5.",
     context: "Term 5 · C leads",
     tally: "Term-2 entry overwritten · term-3 copies remain uncommitted",
     nodes: nodes([otherLog, otherLog, otherLog], "C"),
@@ -253,8 +237,6 @@ export function currentTermFrame(frame: number) {
     ...beat,
     ...(frame === 6 && {
       title: "Try the other ending",
-      detail:
-        "(d) and (e) are alternative endings. Rewind to (c): A and B store term 2; only A stores term 4; C is offline with term 3. This time A replicates its term-4 entry before crashing.",
     }),
   };
 }

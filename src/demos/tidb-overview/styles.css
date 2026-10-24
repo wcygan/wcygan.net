@@ -155,16 +155,10 @@
   color: var(--to-muted);
   white-space: nowrap;
 }
-.tidb-overview .tidb-overview-placement-note {
-  margin-block: 20px 12px;
-  color: var(--to-muted);
-  font-size: 14px;
-  line-height: 1.5;
-}
 .tidb-overview-stores {
   display: grid;
   gap: 8px;
-  margin: 0;
+  margin: 20px 0 0;
 }
 .tidb-overview-store {
   display: grid;
@@ -231,13 +225,8 @@
   text-align: center;
   font-size: 14px;
 }
-.tidb-overview .tidb-overview-candidates {
-  margin-block: 12px;
-  text-align: center;
-  color: var(--to-muted);
-  font-size: 14px;
-}
 .tidb-overview-engines {
+  margin-block-start: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
@@ -251,13 +240,9 @@
   border-color: var(--to-ink);
 }
 .tidb-overview .tidb-overview-engine-title {
+  margin-block-end: 12px;
   font-size: 16px;
   font-weight: 500;
-}
-.tidb-overview .tidb-overview-plan {
-  margin-block: 4px 12px;
-  font-size: 14px;
-  color: var(--to-muted);
 }
 .tidb-overview-row-store {
   display: grid;
@@ -306,6 +291,7 @@
 }
 @media (max-width: 520px) {
   .tidb-overview-engines {
+    margin-block-start: 12px;
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }

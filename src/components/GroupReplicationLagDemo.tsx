@@ -194,7 +194,6 @@ export function GroupReplicationLagDemo() {
         role="group"
         tabIndex={unavailable ? undefined : 0}
         aria-label="3D replication scene camera"
-        aria-describedby={`${id}-camera`}
         onKeyDown={onCameraKey}
       >
         <WallClock
@@ -228,11 +227,6 @@ export function GroupReplicationLagDemo() {
           ) : null}
         </div>
       </div>
-      <p className="group-lag-camera-hint" id={`${id}-camera`}>
-        {unavailable
-          ? "The text simulation remains available."
-          : "Drag to orbit · Scroll to zoom · Focus scene: arrow keys, + / −, Home"}
-      </p>
       <div className="database-log-controls">
         <div>
           <button
@@ -336,7 +330,6 @@ export function GroupReplicationLagDemo() {
             {state.disconnected ? "Reconnect Link 2" : "Interrupt Link 2"}
           </button>
         </div>
-        <p>Illustrated timing · Higher values increase lag.</p>
       </fieldset>
       <div
         className={unavailable ? "group-lag-status" : "sr-only"}
@@ -431,9 +424,6 @@ export function GroupReplicationLagDemo() {
         </p>
         <p id={`${id}-read-summary`}>
           {state.reads && readSummary(state.reads)}
-        </p>
-        <p className="group-lag-read-note">
-          Replication and the wall clock pause while this comparison is open.
         </p>
         <button type="button" onClick={() => readDialog.current?.close()}>
           Close

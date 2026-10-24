@@ -156,8 +156,6 @@ function independent(): TransactionScenario {
   return {
     id: "partial-commit",
     label: "Independent commits",
-    description:
-      "The same transfer crosses two independent local transaction boundaries.",
     frames: [start, split, debit, debited, credit, failed],
   };
 }
@@ -183,7 +181,6 @@ function placementTogether(): TransactionScenario {
   return {
     id: "together",
     label: "Together",
-    description: "Colocated accounts need one local commit.",
     frames: [start, staged, done],
   };
 }
@@ -269,9 +266,6 @@ function twoPhaseCommit(interrupted = false): TransactionScenario {
   return {
     id: interrupted ? "interrupted" : "commit",
     label: interrupted ? "Decision interrupted" : "Commit",
-    description: interrupted
-      ? "Interrupt delivery after A commits; recover the decision to release B."
-      : "Prepare both participants, then deliver one durable commit decision.",
     frames,
   };
 }
@@ -317,7 +311,6 @@ function twoPhaseAbort(): TransactionScenario {
   return {
     id: "abort",
     label: "Abort",
-    description: "A No vote prevents the transfer from committing anywhere.",
     frames: [start, staged, prepared, rejected, voted, decision, done],
   };
 }
@@ -327,8 +320,6 @@ function placementSeparate(): TransactionScenario {
   return {
     id: "separate",
     label: "Separate",
-    description:
-      "Separate shards require two participants to agree on one outcome.",
     frames: commit.frames.map((frame, index) =>
       index === 0
         ? next(
@@ -433,9 +424,6 @@ function threePhase(partition: boolean): TransactionScenario {
   return {
     id: partition ? "partition" : "recovery",
     label: partition ? "Network partition" : "Participant recovery",
-    description: partition
-      ? "Partition the participants while Pre-commit is only partially delivered."
-      : "Connected participants recover after both acknowledge the additional phase.",
     frames,
   };
 }
@@ -610,12 +598,6 @@ function spanner(
         : mode === "leader-failure"
           ? "Leader failure"
           : "Quorum loss",
-    description:
-      mode === "commit"
-        ? "Prepare within B's replica group, decide within A's group, then apply."
-        : mode === "leader-failure"
-          ? "Recover a replicated decision after the coordinator leader fails."
-          : "Lose two replicas of the coordinator group after its commit decision.",
     frames,
   };
 }

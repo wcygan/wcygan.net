@@ -141,7 +141,6 @@ export function CdcWalKafkaDemo() {
               aria-hidden="true"
             />
             <strong>Debezium</strong>
-            <span>Logical decoding cursor</span>
             <code>
               {snapshot.cursorLsn ? `LSN ${snapshot.cursorLsn}` : "LSN —"}
             </code>

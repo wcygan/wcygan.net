@@ -79,10 +79,6 @@ export function ConsistentHashingRingCanvasDemo() {
     () => deriveHashRingModel(state, { cssHeight: 460, cssWidth: 720 }),
     [state],
   );
-  const note =
-    nodeCount === HASH_RING_MIN_NODE_COUNT
-      ? "Three nodes is the baseline ring. Increase the node count to add one more node."
-      : `The ring now has ${nodeCount} nodes. Red keys changed owners when the latest node was added.`;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -138,7 +134,6 @@ export function ConsistentHashingRingCanvasDemo() {
       <DemoHeader
         titleId="sp-hash-ring-title"
         title="Consistent Hashing Ring"
-        copy="Compare the current ring with the previous node count. Key positions stay fixed; red keys are the ones whose next clockwise token changed when the latest node was added."
       />
 
       <div
@@ -190,8 +185,6 @@ export function ConsistentHashingRingCanvasDemo() {
             value={keyCount}
             valueLabel={`${metrics.keyCount} dots`}
           />
-
-          <p className="sp-hash-ring-note">{note}</p>
         </div>
       </div>
     </figure>
@@ -238,21 +231,12 @@ function HashRingRangeControl({
   );
 }
 
-function DemoHeader({
-  copy,
-  titleId,
-  title,
-}: {
-  copy: string;
-  titleId: string;
-  title: string;
-}) {
+function DemoHeader({ titleId, title }: { titleId: string; title: string }) {
   return (
     <div className="sp-demo-header">
       <p className="article-graphic-title" id={titleId}>
         {title}
       </p>
-      <p>{copy}</p>
     </div>
   );
 }

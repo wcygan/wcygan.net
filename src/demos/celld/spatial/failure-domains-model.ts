@@ -33,8 +33,7 @@ export interface FailureSnapshot {
   phase: FailurePhase;
   title: string;
   status: string;
-  explanation: string;
-  caveat: string;
+
   source: string;
   lossSource: string;
   recovery: FailureRecovery;
@@ -169,23 +168,13 @@ export function failureSnapshot(
         : recovery === "tail-unavailable"
           ? "Write 42 has no surviving copy"
           : "The bucket retains this write";
-  const explanation =
-    recovery === "not-needed"
-      ? "The owner committed the write and its current follower fsynced it. A fleet proof can acknowledge the write while its bucket upload is still pending. The follower holds a node-log copy, not a second serving cell."
-      : recovery === "follower-tail"
-        ? "The owner host and its disk are permanently lost. The separate follower retains a complete tail. Recovery must fence and seal the prior log session, then upload the retained data before restoring the cell."
-        : recovery === "tail-unavailable"
-          ? "Both celld processes shared the destroyed host. Their disks held the only copies of write 42; the surviving bucket stops at write 41. Recovery cannot recover this write from older history. It waits while member fate is inconclusive; if every member is conclusively unavailable, the current implementation records bounded loss and continues with retained data."
-          : "The same host loss happened after the upload completed. This write remains in the surviving bucket even when both node disks are lost. Data coverage is established here; ownership and node-log recovery checks still gate activation.";
 
   return {
     layout,
     phase,
     title,
     status,
-    explanation,
-    caveat:
-      "Illustrative permanent disk loss; the bucket survives outside the host. A follower HTTP error or an expired lease does not prove data loss. A surviving follower must certify a complete retained range; this diagram does not promise immediate failover.",
+
     source: FAILURE_SOURCE,
     lossSource: FAILURE_LOSS_SOURCE,
     recovery,

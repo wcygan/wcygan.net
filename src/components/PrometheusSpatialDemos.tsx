@@ -125,7 +125,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         ? "Local Storage"
         : INTRO[kind].title;
   const titleId = useId();
-  const guideId = useId();
+
   const stage = useRef<HTMLDivElement>(null);
   const { ready, onReady } = useSceneReady();
   const [loaded, setLoaded] = useState(false);
@@ -238,7 +238,6 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         role="group"
         tabIndex={0}
         aria-label={`${title}: interactive 3D view`}
-        aria-describedby={guideId}
         onKeyDown={(event) => {
           const kind = VIEW_KEYS[event.key];
           if (!kind || !cameraAvailable) return;
@@ -246,6 +245,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
           command(kind);
         }}
       >
+        {unavailable && <p>3D is unavailable.</p>}
         {(!ready || unavailable) && (
           <StaticSummary kind={kind} scenario={scenario} step={step} />
         )}
@@ -330,12 +330,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
           </button>
         ))}
       </div>
-      <p id={guideId} className="prometheus-spatial-guide">
-        {unavailable
-          ? "3D is unavailable; showing the same model as text."
-          : "Drag or arrows: orbit · +/−: zoom · Home: reset"}
-        {kind === "cardinality" && " · Select a cube"}
-      </p>
+
       <div
         className="prometheus-spatial-status"
         role="status"
@@ -375,13 +370,6 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
           </>
         )}
       </div>
-      <figcaption>
-        {kind === "cardinality"
-          ? "Cube = emitted label set · orange = selection. Ten user IDs multiply these twelve combinations to 120."
-          : kind !== "storage"
-            ? INTRO[kind].caption
-            : "Width = time. WAL recovers Head; compaction preserves samples; retention deletes expired blocks. Simplified sequence."}
-      </figcaption>
     </figure>
   );
 }

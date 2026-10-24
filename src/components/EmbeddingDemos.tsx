@@ -163,9 +163,7 @@ function EmbeddingFigure({
       >
         {!ready && !unavailable && <DemoSceneLoading />}
         {unavailable ? (
-          <p className="embeddings-fallback">
-            3D is unavailable. The controls and results below still work.
-          </p>
+          <p className="embeddings-fallback">3D is unavailable.</p>
         ) : (
           <div className="embeddings-canvas" aria-hidden="true">
             <SceneBoundary onUnavailable={onUnavailable}>
@@ -184,7 +182,6 @@ function EmbeddingFigure({
         )}
       </div>
       <div className="embeddings-camera">
-        <span>Drag to orbit · scroll to zoom</span>
         <button
           type="button"
           disabled={!ready || unavailable}
@@ -233,7 +230,6 @@ export function EmbeddingJobMatchDemo() {
       }
       beforeStage={
         <div className="embeddings-profile-summary">
-          <span>{profile.name}’s profile summary</span>
           <p>{profile.summary}</p>
         </div>
       }
@@ -268,11 +264,6 @@ export function EmbeddingJobMatchDemo() {
           </li>
         ))}
       </ol>
-      <figcaption className="embeddings-job-caption">
-        The scene turns these example scores into angles: aligned vectors have
-        higher cosine similarity. The 3D projection is illustrative, not a
-        model’s full embedding space.
-      </figcaption>
     </EmbeddingFigure>
   );
 }
@@ -393,17 +384,15 @@ export function EmbeddingSearchDemo() {
   );
 }
 
-const METRICS: { id: SimilarityMetric; label: string; reason: string }[] = [
-  { id: "cosine", label: "Cosine", reason: "Smallest angle to the query." },
+const METRICS: { id: SimilarityMetric; label: string }[] = [
+  { id: "cosine", label: "Cosine" },
   {
     id: "dot",
     label: "Dot product",
-    reason: "Farthest reach along the query’s direction.",
   },
   {
     id: "distance",
     label: "Distance",
-    reason: "Shortest gap between the endpoints.",
   },
 ];
 
@@ -455,8 +444,7 @@ export function EmbeddingSimilarityDemo() {
         <p>
           <strong>
             {selected.label} picks {winner.id}.
-          </strong>{" "}
-          {selected.reason}
+          </strong>
         </p>
         <p>
           {normalized

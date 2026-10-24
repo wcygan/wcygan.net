@@ -28,27 +28,23 @@ import "~/demos/temporal-2d/styles.css";
 
 function Figure({
   title,
-  intro,
   playback,
   statusTitle,
-  detail,
-  caption,
   children,
   options,
   facts,
 }: {
   title: string;
-  intro: string;
+
   playback: TemporalPlayback;
   statusTitle: string;
-  detail: string;
-  caption: string;
+
   children: ReactNode;
   options?: ReactNode;
   facts?: ReactNode;
 }) {
   const titleId = useId();
-  const captionId = useId();
+
   return (
     <figure
       ref={playback.ref}
@@ -57,7 +53,6 @@ function Figure({
       data-graphic-kind="svg"
       data-graphic-label={title}
       aria-labelledby={titleId}
-      aria-describedby={captionId}
       data-playback={
         playback.reduced
           ? "reduced"
@@ -70,7 +65,6 @@ function Figure({
         <p className="article-graphic-title" id={titleId}>
           {title}
         </p>
-        <p className="temporal-demo-intro">{intro}</p>
       </header>
       {options}
       {facts}
@@ -103,11 +97,7 @@ function Figure({
           {playback.step} / {playback.last}
         </span>
       </div>
-      {playback.reduced && (
-        <p className="temporal-demo-motion-note">
-          Reduced motion: use Next step to inspect the same sequence.
-        </p>
-      )}
+
       <div
         className="temporal-demo-status"
         role="status"
@@ -115,9 +105,7 @@ function Figure({
         aria-atomic="true"
       >
         <p className="temporal-demo-status-title">{statusTitle}</p>
-        <p>{detail}</p>
       </div>
-      <figcaption id={captionId}>{caption}</figcaption>
     </figure>
   );
 }
@@ -128,11 +116,8 @@ export function TemporalRecoveryDemo() {
   return (
     <Figure
       title="A crash between order steps"
-      intro="Follow an order through completed work and a process crash. Which progress survives?"
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
-      caption="Conceptual comparison: completed Activity results were recorded before the crash. The memory-only example has no other recovery store. Temporal preserves progress; it does not make already performed external effects disappear."
     >
       <RecoveryScene playback={playback} />
     </Figure>
@@ -145,11 +130,8 @@ export function TemporalWorkflowDemo() {
   return (
     <Figure
       title="Workflow and Activities"
-      intro="Workflow code coordinates the order. Activities execute the external operations."
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
-      caption="Conceptual simulation of one sequential Workflow. Orange commands schedule Activities; green results permit the next step. Activities run on your Workers. The task loop and Event History are simplified."
     >
       <WorkflowScene playback={playback} />
     </Figure>
@@ -162,11 +144,8 @@ export function TemporalTimerDemo() {
   return (
     <Figure
       title="A durable timer"
-      intro="A 24-hour wait belongs to the Service. No application Worker thread stays occupied."
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
-      caption="Conceptual timeline with time compressed into steps. The Service remains available while the application Worker is offline. Timer expiry is durable; application code resumes only when a Worker processes the pending task. Selected events, not complete history."
     >
       <TimerScene playback={playback} />
     </Figure>
@@ -179,11 +158,8 @@ export function TemporalSignalDemo() {
   return (
     <Figure
       title="Approval by Signal"
-      intro="Human approval can arrive while your Workers are offline. Acceptance and application processing are separate."
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
-      caption="Conceptual Signal example. A Client sends approval; the Service records it and schedules work. A successful Signal request does not mean the Workflow has processed the message. The Worker must return and handle it."
     >
       <SignalScene playback={playback} />
     </Figure>
@@ -243,13 +219,10 @@ export function TemporalRetryDemo() {
   return (
     <Figure
       title="Timeout, backoff, retry"
-      intro="A Worker crash produces no result. The Service waits for a timeout before scheduling the next attempt."
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
       options={options}
       facts={facts}
-      caption="Illustrative policy with immediate task dispatch and no heartbeats. Three means three total attempts. This is an attempt timeline, not Event History: intermediate Activity retries can be omitted from history."
     >
       <RetryScene playback={playback} outcome={outcome} />
     </Figure>
@@ -262,11 +235,8 @@ export function TemporalIdempotencyDemo() {
   return (
     <Figure
       title="One payment, two attempts"
-      intro="The provider charges the card, then the Worker crashes before reporting completion. A retry follows."
       playback={playback}
       statusTitle={state.title}
-      detail={state.detail}
-      caption="Conceptual provider that honors idempotency keys. Both attempts use the same order-1042:charge key on the left. The provider returns its first charge; without a key it creates another. Provider key scope and retention must fit your process."
     >
       <IdempotencyScene playback={playback} />
     </Figure>

@@ -14,6 +14,7 @@ bun run pre-commit  # Format, typecheck, and tests
 bun run test        # Vitest unit tests
 bun run build       # Production build and prerendering
 bun scripts/verify-reading-path.ts # Browser checks with the dev server running
+bun scripts/audit-demo-copy.ts    # Review copy in article-imported demo code
 ```
 
 `just dev` runs Vite through Portless. It uses `portless.json` and
@@ -361,10 +362,13 @@ New or redesigned diagrams must:
   Election” or “Log Replication”;
 - default to black, white, and warm gray, using structure before color;
 - explain one invariant through direct labels and inspectable state;
+- omit taglines, subtitles, helper paragraphs, explanatory captions, and copy
+  narrating controls; retain short names, field labels, units, accessible
+  equivalents, and current state, with the lesson explained in article prose;
 - use grouping, rhythm, line treatment, and persistent settled state to compare
   alternatives;
 - move slowly enough for the reader to identify each causal beat;
-- end with a concise status or quantified takeaway instead of looping forever;
+- end with concise current state or a quantified result instead of looping forever;
 - preserve the same lesson in a useful reduced-motion state;
 - keep controls outside the stage with a `44x44px` minimum touch target; and
 - be verified in the real MDX article on desktop and mobile.

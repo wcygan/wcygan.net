@@ -153,7 +153,7 @@ describe("consensus walkthrough playback", () => {
     fireEvent.click(screen.getByText("Inspect server state"));
     expect(screen.getByRole("table")).toBeTruthy();
     expect(screen.getByRole("status").textContent).toContain(
-      LESSONS.repair.frames[1].detail,
+      LESSONS.repair.frames[1].title,
     );
   });
 
@@ -167,7 +167,7 @@ describe("consensus walkthrough playback", () => {
     next();
     expect(step()).toBe(1);
     expect(screen.getByRole("status").textContent).toContain(
-      LESSONS.snapshot.frames[1].detail,
+      LESSONS.snapshot.frames[1].title,
     );
     expect(screen.getByRole("table").textContent).toContain("Snapshot through");
   });

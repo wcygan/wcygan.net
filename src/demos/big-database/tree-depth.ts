@@ -49,7 +49,7 @@ export function treeDepthSnapshot(elapsed: number) {
         ? pointOnPath(DEPTH_PATHS[level], progress)
         : null,
     status: complete
-      ? "4 levels visited: 3 routing pages + 1 leaf. This hot lookup needs no disk read."
+      ? "4 levels visited: 3 routing pages + 1 leaf."
       : descriptions[level],
   };
 }

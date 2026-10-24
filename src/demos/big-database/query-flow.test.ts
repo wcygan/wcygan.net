@@ -60,7 +60,7 @@ describe("one leaf-page lookup", () => {
       "clusteredLeaf",
     ]);
     const entry = flowSnapshot("secondary", 2 * FLOW_STEP_MS);
-    expect(entry.current.label).toContain("primary key is 9001");
+    expect(entry.current.label).toContain("primary key 9001");
     expect(entry.current.node).toBe("pool");
     const handoff = flowSnapshot("secondary", 3 * FLOW_STEP_MS);
     expect(handoff.path).toBe("primaryKey");

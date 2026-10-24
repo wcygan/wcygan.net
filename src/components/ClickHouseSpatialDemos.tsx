@@ -58,18 +58,6 @@ const TITLES: Record<SceneKind, string> = {
   partitions: "Month Partitions",
   cluster: "Shards and Replicas",
 };
-const CAPTIONS: Record<SceneKind, string> = {
-  columns:
-    "Width separates fields; depth separates six records. A row-oriented read touches four fields per record in this toy model. Column-oriented storage can read just day and revenue_cents. The 24 versus 12 counts are logical values, not bytes, timing, or a universal speedup. This shows logical grouping: small Compact parts need not use one physical file per column.",
-  compression:
-    "Blue, purple, and green identify US, DE, and JP throughout the scene. Dictionary encoding replaces repeated country values with IDs into a dictionary and decodes to the same ordered sequence. These tiny strings do not establish a compression ratio: the dictionary also costs space. This illustrates LowCardinality encoding, separately from general-purpose LZ4 or ZSTD compression.",
-  parts:
-    "Each tray is an immutable sorted part; cube labels are sort keys. Blue P1 and purple P2 are replaced by green P3 when they merge. Both orange rows with key 3 remain: ordinary MergeTree does not deduplicate equal keys. One partition is shown; obsolete parts are cleaned up later. The tiny batches explain the mechanism, not recommended production batch sizes.",
-  partitions:
-    "Each colored month group contains two parts with two rows each. Selecting a month eliminates other partition groups from this query while retaining their stored rows. Parts merge only within the same partition. This is partition pruning, distinct from a sparse primary index or sharding across machines.",
-  cluster:
-    "Width separates blue and green shards containing different rows; depth separates copies of the same shard. Orange query routes read one up-to-date replica per shard, and the coordinator combines 60 + 150. Purple dashed links identify copies, not extra logical data. This is a classic self-managed topology; ClickHouse Cloud uses SharedMergeTree and shared storage.",
-};
 
 class SceneBoundary extends Component<
   { children: ReactNode; onUnavailable: () => void },
@@ -122,7 +110,7 @@ function ClusterData({ selection }: { selection: ReplicaSelection }) {
 function SpatialDemo({ kind }: { kind: SceneKind }) {
   const title = TITLES[kind];
   const titleId = useId();
-  const guideId = useId();
+
   const stageRef = useRef<HTMLDivElement>(null);
   const { ready, onReady } = useSceneReady();
   const [clientReady, setClientReady] = useState(false);
@@ -286,9 +274,6 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         <p id={titleId} className="ch-title article-graphic-title">
           {title}
         </p>
-        <span className="clickhouse-spatial-dimension">
-          3D · orbit and inspect
-        </span>
       </header>
       <div
         ref={stageRef}
@@ -298,7 +283,6 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         tabIndex={cameraAvailable ? 0 : -1}
         role="group"
         aria-label={`${title}: interactive 3D view`}
-        aria-describedby={guideId}
         onPointerDownCapture={playback.pause}
         onWheelCapture={playback.pause}
         onKeyDown={(event) => {
@@ -312,7 +296,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         {pending && <DemoSceneLoading />}
         {(!ready || unavailable) && (
           <div className="clickhouse-spatial-fallback">
-            <p>{title} · interactive data model</p>
+            {unavailable && <p>3D is unavailable.</p>}
             {data}
           </div>
         )}
@@ -550,11 +534,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
           </button>
         ))}
       </div>
-      <p id={guideId} className="clickhouse-spatial-guide">
-        {unavailable
-          ? "3D is unavailable. The data and controls retain the same lesson."
-          : "Drag to orbit. Focus the view: arrows rotate, +/− zoom, Home resets."}
-      </p>
+
       <div
         className="ch-status clickhouse-spatial-status"
         role="status"
@@ -565,9 +545,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
           {playback.step + 1} / {playback.totalSteps} ·{" "}
           {inspecting ? "Paused for inspection" : frame.title}
         </p>
-        {!inspecting && (
-          <p className="clickhouse-spatial-narration">{frame.narration}</p>
-        )}
+
         {kind === "columns" && (
           <>
             <p>
@@ -575,14 +553,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
                 {layout === "rows" ? "Row layout" : "Column layout"}:{" "}
                 {queried ? columnWork.readValues : columnWork.totalValues}{" "}
                 logical values {queried ? "read" : "stored"}.
-              </strong>{" "}
-              {queried
-                ? "Six day values and six revenue values are requested. Switch layouts to compare the read units."
-                : "Four fields across six records. Read day and revenue, then compare layouts."}
-            </p>
-            <p className="clickhouse-spatial-takeaway">
-              24 row-layout values / 12 projected-column values · illustrative
-              logical work
+              </strong>
             </p>
           </>
         )}
@@ -594,12 +565,8 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
                   ? "3 dictionary entries + 12 small IDs."
                   : "12 repeated country labels."}
               </strong>{" "}
-              {encoded
-                ? `Row ${dictionaryRow + 1}: ID ${dictionary.ids[dictionaryRow]} → ${COUNTRY_VALUES[dictionaryRow]}. Decoding preserves row order.`
-                : "Encode the country column, then follow an ID back to its dictionary entry."}
-            </p>
-            <p className="clickhouse-spatial-takeaway">
-              Same 12 values · no byte-saving or speed claim
+              {encoded &&
+                `Row ${dictionaryRow + 1}: ID ${dictionary.ids[dictionaryRow]} → ${COUNTRY_VALUES[dictionaryRow]}`}
             </p>
           </>
         )}
@@ -609,12 +576,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
               <strong>
                 {rowQuery.count} rows in {parts.parts.length} active{" "}
                 {parts.parts.length === 1 ? "part" : "parts"}.
-              </strong>{" "}
-              {parts.merged
-                ? "P3 replaces P1 and P2. Both rows with key 3 remain."
-                : parts.insertedBatches === 1
-                  ? "P1 is already sorted. Insert the second batch and query before merging."
-                  : "Both parts are readable now. A query does not wait for a merge."}
+              </strong>
             </p>
             {queried && (
               <p className="clickhouse-spatial-takeaway">
@@ -630,10 +592,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
               <strong>
                 {partitions.readRows} of {partitions.totalRows} rows selected;{" "}
                 {partitions.prunedGroups.length} month groups pruned.
-              </strong>{" "}
-              {month === "all"
-                ? "All three groups are candidates for this query."
-                : `Only ${month} is a candidate for this query.`}
+              </strong>
             </p>
             <p className="clickhouse-spatial-takeaway">
               All {partitions.totalRows} rows remain stored · 2 parts per month
@@ -646,9 +605,7 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
               <strong>
                 {cluster.logicalRows} logical rows; {cluster.storedRows} across
                 four copies.
-              </strong>{" "}
-              The query reads one synchronized replica per shard in this
-              example.
+              </strong>
             </p>
             {queried && (
               <p className="clickhouse-spatial-takeaway">
@@ -662,7 +619,6 @@ function SpatialDemo({ kind }: { kind: SceneKind }) {
         <summary>Inspect the data</summary>
         {data}
       </details>
-      <figcaption className="ch-caption">{CAPTIONS[kind]}</figcaption>
     </figure>
   );
 }

@@ -195,19 +195,14 @@ export function lagStatus(state: LagState) {
     return "Distributed recovery: B applies local work, retrieves missing transactions from the donor, and catches up before becoming online.";
   if (state.recoverySource === "cache")
     return "XCom is recovering missed messages from the primary’s cache. Received entries are applied separately.";
-  if (!state.submitted)
-    return "Write an update, then read all three databases to compare their versions.";
+  if (!state.submitted) return "No writes submitted.";
   if (state.submitted > state.ordered)
     return `Transaction ${state.submitted}: group messages travel before primary commit. Ordering and certification must finish first.`;
   if (state.ordered > state.committed)
     return `Transaction ${state.ordered} is ordered and conflict-checked. The primary can now commit.`;
-  if (state.reduced && state.pending)
-    return state.submitted < MAX_WRITES
-      ? "Write another update to grow the queue, or select Apply pending to let both replicas catch up."
-      : "Select Apply pending to let both replicas catch up.";
   if (state.pending)
-    return `${state.committed} of ${MAX_WRITES} writes committed. ${state.submitted < MAX_WRITES ? "Write again to grow the queue, or read" : "Read"} all three databases while Replica B catches up.`;
-  return `All three databases read version ${state.committed}. ${state.submitted === MAX_WRITES ? "Reset to start again." : "Select Write to add another update."}`;
+    return `${state.committed} of ${MAX_WRITES} writes committed. Replica B has pending writes.`;
+  return `All three databases read version ${state.committed}.`;
 }
 
 export function readSummary(reads: NonNullable<LagState["reads"]>) {

@@ -142,7 +142,6 @@ export function DataRetentionCascadeDemo() {
           <CascadeTier
             className="data-retention-tier--customer"
             label="Customer service"
-            meta="owns the parent"
           >
             <CascadeEntity
               entity={requireEntity(entitiesByKey, "customer-91")}
@@ -155,7 +154,6 @@ export function DataRetentionCascadeDemo() {
           <CascadeTier
             className="data-retention-tier--orders"
             label="Order service"
-            meta="owns two child records"
           >
             <CascadeEntity
               entity={requireEntity(entitiesByKey, "order-7012")}
@@ -174,7 +172,6 @@ export function DataRetentionCascadeDemo() {
           <CascadeTier
             className="data-retention-tier--shipments"
             label="Shipment service"
-            meta="owns each order's shipment"
           >
             <CascadeEntity
               entity={requireEntity(entitiesByKey, "shipment-5012")}
@@ -223,18 +220,15 @@ function CascadeTier({
   children,
   className,
   label,
-  meta,
 }: {
   children: ReactNode;
   className: string;
   label: string;
-  meta: string;
 }) {
   return (
     <section className={`data-retention-tier ${className}`}>
       <header className="data-retention-tier-header">
         <strong>{label}</strong>
-        <span>{meta}</span>
       </header>
       <div className="data-retention-tier-entities">{children}</div>
     </section>

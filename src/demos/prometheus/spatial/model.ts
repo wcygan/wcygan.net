@@ -55,10 +55,6 @@ export function cardinalitySnapshot(scenario: CardinalityScenario) {
       scenario === "users"
         ? "2 methods × 3 routes × 2 statuses × 10 users"
         : "2 methods × 3 routes × 2 statuses",
-    message:
-      scenario === "users"
-        ? "10 user IDs multiply the emitted combinations by ten."
-        : "2 methods × 3 routes × 2 statuses.",
   };
 }
 
@@ -70,7 +66,6 @@ export type StorageBlock = {
 
 export type StorageSnapshot = {
   title: string;
-  explanation: string;
   blocks: StorageBlock[];
   head: { startHour: number; endHour: number; samples: number };
   walSamples: number;
@@ -92,8 +87,6 @@ export function storageSnapshot(step: number): StorageSnapshot {
   if (tick === 0) {
     return {
       title: "Recent samples enter Head and WAL",
-      explanation:
-        "Recent samples live in Head, backed by the write-ahead log (WAL).",
       blocks: [block(0, 2), block(2, 4), block(4, 6)],
       head: { startHour: 6, endHour: 8, samples: 6 },
       walSamples: 6,
@@ -104,8 +97,6 @@ export function storageSnapshot(step: number): StorageSnapshot {
   if (tick === 1) {
     return {
       title: "Head becomes an immutable block",
-      explanation:
-        "Head persists as a block; newer samples start a fresh Head and WAL.",
       blocks: [block(0, 2), block(2, 4), block(4, 6), block(6, 8)],
       head: { startHour: 8, endHour: 10, samples: 3 },
       walSamples: 3,
@@ -116,8 +107,6 @@ export function storageSnapshot(step: number): StorageSnapshot {
   if (tick === 2) {
     return {
       title: "Compact blocks and recover Head",
-      explanation:
-        "Compaction preserves samples. After restart, the WAL recovers the three active Head samples.",
       blocks: [block(0, 6), block(6, 8)],
       head: { startHour: 8, endHour: 10, samples: 3 },
       walSamples: 3,
@@ -127,8 +116,6 @@ export function storageSnapshot(step: number): StorageSnapshot {
 
   return {
     title: "Retention expires a whole block",
-    explanation:
-      "The expired 0–6 h block is deleted. Remaining samples keep their original resolution.",
     blocks: [block(6, 8)],
     head: { startHour: 8, endHour: 10, samples: 3 },
     walSamples: 3,

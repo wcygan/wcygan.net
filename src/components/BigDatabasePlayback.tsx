@@ -23,33 +23,6 @@ export function BigDatabasePlaybackControls({
     </div>
   );
 }
-export function BigDatabasePlaybackSteps({
-  playback,
-  label,
-  count,
-}: {
-  playback: QueryPlayback;
-  label: string;
-  count: string;
-}) {
-  return (
-    <div className="big-db-flow-explanation">
-      <p className="big-db-label">{label}</p>
-      <ol>
-        {playback.steps.map((entry, i) => (
-          <li
-            key={entry.label}
-            aria-current={playback.snapshot.step === i ? "step" : undefined}
-            data-done={i < playback.snapshot.step}
-          >
-            {entry.label}
-          </li>
-        ))}
-      </ol>
-      <p className="big-db-flow-count">{count}</p>
-    </div>
-  );
-}
 export function BigDatabasePlaybackStatus({
   playback,
 }: {

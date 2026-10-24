@@ -10,29 +10,25 @@ export function checkCandidate(candidate: Candidate) {
       return {
         failed: null,
         value: "order 104 · customer 2",
-        message:
-          "Accepted: order 104 has a unique id and an existing customer. The inventory remains nonnegative.",
+        message: "Accepted · order 104",
       };
     case "duplicate-id":
       return {
         failed: 0,
         value: "order 101 again",
-        message:
-          "Rejected: PRIMARY KEY prevents a second order with id 101. The stored rows remain unchanged.",
+        message: "Rejected · PRIMARY KEY · id 101",
       };
     case "missing-customer":
       return {
         failed: 1,
         value: "customer_id = 99",
-        message:
-          "Rejected: FOREIGN KEY prevents an order for customer 99, who does not exist. The stored rows remain unchanged.",
+        message: "Rejected · FOREIGN KEY · customer 99",
       };
     case "negative-stock":
       return {
         failed: 2,
         value: "stock = -1",
-        message:
-          "Rejected: CHECK (stock >= 0) prevents negative inventory. The stored rows remain unchanged.",
+        message: "Rejected · CHECK (stock >= 0)",
       };
   }
 }

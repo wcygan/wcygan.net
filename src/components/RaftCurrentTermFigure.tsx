@@ -126,7 +126,6 @@ export function RaftCurrentTermFigure() {
             </li>
           ))}
         </ol>
-        <p className="raft-current-term-action">{state.title}</p>
         <div className="raft-current-term-clock" aria-hidden="true">
           <span
             style={{
@@ -328,12 +327,8 @@ export function RaftCurrentTermFigure() {
           </tbody>
         </table>
         <p className="raft-current-term-tally">{state.tally}</p>
-        {state.decision && (
-          <p className="raft-current-term-decision">{state.decision}</p>
-        )}
         {state.voteComparison && (
           <div className="raft-current-term-voting-rule">
-            <p>B checks the candidate’s log</p>
             <dl>
               <div>
                 <dt>B’s last log term</dt>
@@ -344,30 +339,9 @@ export function RaftCurrentTermFigure() {
                 <dd>{state.voteComparison.candidateTerm}</dd>
               </div>
             </dl>
-            <p>
-              {!state.voteComparison.delivered
-                ? "C’s request is traveling to B. B has not voted yet."
-                : state.voteComparison.granted
-                  ? "3 > 2: C’s log is newer, so B votes for C. C becomes leader only when the reply arrives."
-                  : "3 < 4: C’s log is older, so B rejects C. C’s own vote is not enough to win."}
-            </p>
-            <p>
-              Compare the last entry’s term first; compare its index only if the
-              terms tie. A newer election term does not make a log newer.
-            </p>
           </div>
         )}
-        <p className="raft-current-term-key">
-          Numbers are entry terms. Stored does not mean committed. Dashed:
-          uncommitted. Green / solid: committed.
-        </p>
       </div>
-      {reduced && !playing && (
-        <p className="raft-current-term-motion-note">
-          Reduced motion is on. Use Back and Next to inspect each step, or Play
-          to watch.
-        </p>
-      )}
       <div
         className="raft-current-term-controls"
         role="group"
@@ -408,17 +382,12 @@ export function RaftCurrentTermFigure() {
         aria-atomic="true"
       >
         <p>{state.title}</p>
-        <p>{state.detail}</p>
         {complete && (
           <section
             className="raft-current-term-comparison"
             aria-labelledby={id + "-comparison"}
           >
             <p id={id + "-comparison"}>Figure 8, with three servers</p>
-            <p>
-              (d) and (e) are alternatives from (c). Numbers in boxes are entry
-              terms; column numbers are log indexes.
-            </p>
             <div className="raft-current-term-panels">
               {paperPanels.map((panel) => {
                 const snapshot = currentTermFrame(panel.frame);
@@ -467,35 +436,9 @@ export function RaftCurrentTermFigure() {
                 );
               })}
             </div>
-            <dl className="raft-current-term-outcomes">
-              <div>
-                <dt>Only the old entry</dt>
-                <dd>
-                  Entry 2’s ACK confirms durable storage only. Its term 2 is
-                  older than A’s current term 4, so C can still win and
-                  overwrite it.
-                </dd>
-              </div>
-              <div>
-                <dt>Current term committed</dt>
-                <dd>
-                  Entry 3’s ACK confirms a majority stored an entry from current
-                  term 4. A commits entries 2 and 3 together; B rejects C’s
-                  older log.
-                </dd>
-              </div>
-            </dl>
           </section>
         )}
       </div>
-      <figcaption>
-        Three servers; two form a majority. A plays the paper’s S1, and C plays
-        S5. Both alternative endings play once, then stop. Borders show whether
-        an entry is committed, not whether each server knows it. Adapted from
-        Figure 8 of the Raft paper.
-        {reduced &&
-          " Reduced motion shows the conclusion. Play starts the story if you choose."}
-      </figcaption>
     </figure>
   );
 }

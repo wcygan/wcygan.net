@@ -174,16 +174,7 @@ export function RaftMajorityOverlapFigure() {
           Shared {shared.length === 1 ? "server" : "servers"}:{" "}
           {shared.join(", ")}
         </p>
-        <p className="raft-step-explanation">
-          {complete
-            ? "All ten majorities shown. Every comparison has an overlap."
-            : "Green rings identify servers in both groups."}
-        </p>
       </div>
-      <figcaption>
-        Two groups of three in a five-server cluster.
-        {reduced && " Use Next to compare."}
-      </figcaption>
     </figure>
   );
 }

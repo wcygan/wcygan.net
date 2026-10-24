@@ -17,11 +17,6 @@ export function MySqlPlaybackControls({
       <button type="button" onClick={playback.replay}>
         Replay
       </button>
-      {playback.reducedMotion && (
-        <span className="mysql-playback-note">
-          Reduced motion · use the step controls
-        </span>
-      )}
     </div>
   );
 }

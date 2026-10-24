@@ -163,6 +163,7 @@ export function OpenStreetMap({
   return (
     <figure
       className="osm-map-frame"
+      aria-label={`OpenStreetMap centered on ${markerLabel}`}
       data-graphic-frame="workbench"
       style={style}
     >
@@ -181,7 +182,6 @@ export function OpenStreetMap({
           </p>
         )}
       </div>
-      <figcaption>OpenStreetMap view centered on Berlin, Germany</figcaption>
     </figure>
   );
 }

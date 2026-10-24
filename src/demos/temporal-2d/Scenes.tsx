@@ -508,11 +508,6 @@ export function SignalScene({ playback }: { playback: TemporalPlayback }) {
             ? "Worker processed the Signal"
             : "Waiting holds no Worker thread"}
       </Label>
-      {!compact && (
-        <Label x={12} y={453}>
-          Signals are asynchronous messages to a running Workflow.
-        </Label>
-      )}
     </SvgScene>
   );
 }

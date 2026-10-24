@@ -12,7 +12,6 @@ import {
   visibleRowVersion,
   ROW_VERSIONS,
   READ_TS,
-  VISIBLE_VERSION,
 } from "./model";
 import { createPlayback, SPEEDS, STEP_DURATION_MS } from "./playback";
 
@@ -43,7 +42,10 @@ describe("secondary-index read", () => {
     expect(visibleRowVersion(ROW_VERSIONS, MATCH_ID, 80)?.name).toBe("Will C.");
     expect(visibleRowVersion(ROW_VERSIONS, MATCH_ID, 99)?.commitTs).toBe(80);
     expect(visibleRowVersion(ROW_VERSIONS, MATCH_ID, 100)?.name).toBe("Will");
-    expect(VISIBLE_VERSION).toMatchObject({ name: "Will", commitTs: 100 });
+    expect(visibleRowVersion(ROW_VERSIONS, MATCH_ID, READ_TS)).toMatchObject({
+      name: "Will",
+      commitTs: 100,
+    });
     expect(visibleRowVersion(ROW_VERSIONS, MATCH_ID, 140)?.name).toBe(
       "William",
     );
@@ -56,7 +58,7 @@ describe("secondary-index read", () => {
       source: "SST B" as const,
     }));
     expect(visibleRowVersion(compacted, MATCH_ID, READ_TS)).toEqual({
-      ...VISIBLE_VERSION,
+      ...visibleRowVersion(ROW_VERSIONS, MATCH_ID, READ_TS),
       source: "SST B",
     });
     expect(visibleRowVersion(compacted, MATCH_ID, 140)?.name).toBe("William");

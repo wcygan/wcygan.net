@@ -19,9 +19,6 @@ it("stores inherited copies on delivery without committing them", () => {
   expect(node(2, arrival(2, 2), "B").log[1].term).toBe(2);
   expect(transportState(2, arrival(2, 3)).committedThrough).toBe(1);
   expect(flightsFor(2)[3].label).toBe("Durably stored · entry 2");
-  expect(transportState(2, arrival(2, 3)).decision).toContain(
-    "It stays uncommitted",
-  );
 });
 it("commits current-term entries only after the durable acknowledgement", () => {
   expect(node(7, arrival(7, 0) - 1, "B").log).toHaveLength(2);
@@ -29,12 +26,6 @@ it("commits current-term entries only after the durable acknowledgement", () => 
   expect(transportState(7, arrival(7, 1) - 1).committedThrough).toBe(1);
   expect(transportState(7, arrival(7, 1)).committedThrough).toBe(3);
   expect(flightsFor(7)[1].label).toBe("Durably stored · entry 3");
-  expect(transportState(7, arrival(7, 1) - 1).decision).toContain(
-    "remain uncommitted",
-  );
-  expect(transportState(7, arrival(7, 1)).decision).toContain(
-    "commits entry 3 and the preceding entry 2 together",
-  );
 });
 it("delivers a denial without electing the stale candidate", () => {
   expect(node(8, arrival(8, 0), "B").vote).toBe("refused");

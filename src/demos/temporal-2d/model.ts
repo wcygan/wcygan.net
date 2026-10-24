@@ -25,14 +25,7 @@ export function recoverySnapshot(input: number) {
     "Replacement Workers start",
     "Durable execution continues",
   ];
-  const details = [
-    "Compare a process whose progress lives only in memory with one whose completed results are recorded durably.",
-    "Both Workers know reservation-7. Temporal also records the completed Activity result.",
-    "Both Workers know charge-1. The durable path has two recorded Activity results before the crash.",
-    "Worker memory disappears. External effects still exist; the durable recorded results survive.",
-    "The fragile process lost its progress. The durable process can continue from recorded results.",
-    "The durable Workflow can provision the order using the recorded reservation and charge; no repeat of those completed Activities is needed.",
-  ];
+
   return {
     step,
     completedEffects,
@@ -42,7 +35,6 @@ export function recoverySnapshot(input: number) {
     durableResults,
     durableProvisioned: step === 5,
     title: titles[step],
-    detail: details[step],
   };
 }
 
@@ -87,14 +79,6 @@ export function workflowSnapshot(input: number) {
           : completed === ORDER_ACTIVITIES.length
             ? "Order fulfilled"
             : `${activities[completed - 1].name}: result recorded`,
-    detail:
-      step === 0
-        ? "Workflow code chooses the order. Activities perform the external operations."
-        : active
-          ? `A Worker executes Activity code against the ${active.effect.toLowerCase()}.`
-          : completed === ORDER_ACTIVITIES.length
-            ? "Four Activity results are recorded. The Workflow can finish."
-            : "The Service records the result; Workflow code can choose the next step.",
   };
 }
 
@@ -119,30 +103,12 @@ export function acceptCharge(ledger: PaymentLedger, key?: string) {
 
 export const IDEMPOTENCY_LAST_STEP = 5;
 const IDEMPOTENCY_STEPS = [
-  [
-    "One charge requested",
-    "Compare the same order with a stable provider key and with no key.",
-  ],
-  [
-    "Provider accepts payment",
-    "Both requests create a charge. The Worker has not reported completion yet.",
-  ],
-  [
-    "Worker crashes",
-    "The provider has the charge, but Temporal has no recorded completion result.",
-  ],
-  [
-    "Timeout, then retry",
-    "After the configured timeout and backoff, another Worker can execute the Activity again.",
-  ],
-  [
-    "Provider receives a second call",
-    "The stable key returns the first charge. Without a key, the provider creates another charge.",
-  ],
-  [
-    "Completion recorded",
-    "Both Activities now have a result. Only the provider with deduplication performed one charge.",
-  ],
+  "One charge requested",
+  "Provider accepts payment",
+  "Worker crashes",
+  "Timeout, then retry",
+  "Provider receives a second call",
+  "Completion recorded",
 ] as const;
 
 export function idempotencySnapshot(input: number) {
@@ -169,8 +135,8 @@ export function idempotencySnapshot(input: number) {
   });
   return {
     step,
-    title: IDEMPOTENCY_STEPS[step][0],
-    detail: IDEMPOTENCY_STEPS[step][1],
+    title: IDEMPOTENCY_STEPS[step],
+
     lanes,
   };
 }
@@ -207,23 +173,13 @@ export function waitingSnapshot(input: number, kind: WaitKind) {
     "Worker returns to poll the task",
     "Worker processes the task and resumes",
   ];
-  const details = [
-    kind === "timer"
-      ? "The Service stores a durable timer. No Worker thread is held for 24 hours."
-      : "Workflow code waits for approval. A waiting Workflow holds no Worker thread.",
-    "The Service is still available. Application code cannot run while its Workers are offline.",
-    kind === "timer"
-      ? "The Service records the timer event even while the Worker is offline."
-      : "A Client sends approval. The Service records the signal while the Worker is offline.",
-    "The Worker is available again, but the pending Workflow Task has not been processed yet.",
-    "The Worker processes the task, restores Workflow state, and continues past the wait.",
-  ];
+
   return {
     ...state,
     step,
     event,
     title: titles[step],
-    detail: details[step],
+
     pendingTask: state.inputRecorded && !state.resumed,
   };
 }
@@ -275,40 +231,30 @@ export function retryBeats(outcome: RetryOutcome) {
     {
       time: 0,
       title: "Attempt 1 starts",
-      detail:
-        "The 5s Start-To-Close timeout starts when the Worker begins the Activity.",
     },
     {
       time: 1,
       title: "Worker crashes at 1s",
-      detail:
-        "No result arrives. The Service does not instantly detect this Worker crash.",
     },
     {
       time: 5,
       title: "Attempt 1 times out at 5s",
-      detail: "The timeout expires. The retry policy requires a 1s backoff.",
     },
     {
       time: 6,
       title: "Attempt 2 starts at 6s",
-      detail: "The Worker begins a new attempt after the first backoff.",
     },
     {
       time: 7,
       title: "Worker crashes again at 7s",
-      detail: "The Service waits for this attempt’s own timeout.",
     },
     {
       time: 11,
       title: "Attempt 2 times out at 11s",
-      detail:
-        "The next backoff doubles to 2s. Maximum Attempts counts the first attempt too.",
     },
     {
       time: 13,
       title: "Attempt 3 starts at 13s",
-      detail: "This is the final permitted attempt in the chosen policy.",
     },
     {
       time: schedule[2].end,
@@ -316,10 +262,6 @@ export function retryBeats(outcome: RetryOutcome) {
         outcome === "success"
           ? "Result recorded at 15s"
           : "Retry limit reached at 18s",
-      detail:
-        outcome === "success"
-          ? "Attempt 3 succeeds. Workflow code can resume with the result."
-          : "Attempt 3 times out. The Activity fails and Workflow code must handle the error.",
     },
   ];
 }

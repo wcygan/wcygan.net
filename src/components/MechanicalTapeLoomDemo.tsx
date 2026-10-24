@@ -131,17 +131,9 @@ export function MechanicalTapeLoomDemo() {
       aria-labelledby="tape-loom-title"
     >
       <header className="tape-loom-header">
-        <div>
-          <span className="tape-loom-badge">Concept 1</span>
-          <p className="article-graphic-title" id="tape-loom-title">
-            The Dual Tape &amp; Repair Loom
-          </p>
-          <p className="tape-loom-desc">
-            Physical comparison between the Canonical Lake Tape and Operational
-            Datastore Tape with mechanical stamping and CDC optical
-            verification.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="tape-loom-title">
+          The Dual Tape &amp; Repair Loom
+        </p>
         <div className="tape-loom-actions">
           <button
             type="button"
@@ -215,7 +207,6 @@ export function MechanicalTapeLoomDemo() {
               <div className="tape-track-header">
                 <span className="track-icon">❄️</span>
                 <strong>Lake Log (Apache Iceberg)</strong>
-                <span className="track-sub">Canonical Record of Truth</span>
               </div>
               <div className="tape-slots-view">
                 {records.map((r, i) => (
@@ -262,7 +253,6 @@ export function MechanicalTapeLoomDemo() {
               <div className="tape-track-header">
                 <span className="track-icon">🐬</span>
                 <strong>Datastore (MySQL Live)</strong>
-                <span className="track-sub">Operational State</span>
               </div>
               <div className="tape-slots-view">
                 {records.map((r, i) => {
@@ -314,13 +304,6 @@ export function MechanicalTapeLoomDemo() {
           </div>
         </div>
       </div>
-
-      <figcaption className="tape-loom-caption">
-        <strong>Pattern in action:</strong> The comparator detects when slot #
-        {currentRecord.id}&apos;s live database state differs from the lake.
-        Flink applies an idempotent write to bring MySQL in line, and Debezium
-        streams confirmation back.
-      </figcaption>
     </figure>
   );
 }

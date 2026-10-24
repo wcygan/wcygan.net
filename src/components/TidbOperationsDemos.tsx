@@ -39,11 +39,7 @@ export function TidbQuorumDemo() {
       data-graphic-key="tidb-quorum"
       data-graphic-kind="svg"
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">
-          One Region, three voting replicas, two required for a new log commit.
-        </p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <DemoWorkbench.Options
         options={QUORUM_OPTIONS}
         value={String(unavailable)}
@@ -52,7 +48,7 @@ export function TidbQuorumDemo() {
         }
       />
       <div className="tidb-ops-stage" data-graphic-stage="padded">
-        <p className="tidb-ops-label">Region A · same key range on each node</p>
+        <p className="tidb-ops-label">Region A</p>
         <svg
           className="tidb-ops-svg"
           viewBox="0 0 320 253"
@@ -135,17 +131,9 @@ export function TidbQuorumDemo() {
             {state.canCommit
               ? "Write quorum remains."
               : "Write quorum is lost."}
-          </strong>{" "}
-          {state.canCommit
-            ? "The connected majority can commit new entries."
-            : "One replica cannot commit new entries alone."}
+          </strong>
         </p>
       </DemoWorkbench.Step>
-      <figcaption>
-        Illustrative separate failure domains; the leader stays reachable here.
-        Leader election and recovery take time. This diagram makes no guarantee
-        about read availability.
-      </figcaption>
     </DemoWorkbench.Root>
   );
 }
@@ -160,15 +148,9 @@ export function TidbAgreementDiagram() {
       data-graphic-key="tidb-agreement"
       aria-labelledby={`${id}-heading`}
     >
-      <header className="tidb-ops-header">
-        <p className="article-graphic-title" id={`${id}-heading`}>
-          Two layers of agreement
-        </p>
-        <p>
-          Transaction atomicity across Regions; replicated durability within
-          each.
-        </p>
-      </header>
+      <p className="article-graphic-title" id={`${id}-heading`}>
+        Two layers of agreement
+      </p>
       <div className="tidb-ops-stage" data-graphic-stage="padded">
         <ol className="tidb-ops-commit-steps">
           <li>Prewrite keys in both Regions</li>
@@ -273,12 +255,6 @@ export function TidbAgreementDiagram() {
         </svg>
         <p className="tidb-ops-label">L = leader · F = follower</p>
       </div>
-      <figcaption>
-        Simplified classic two-phase commit. The primary transaction key is a
-        protocol role, not a table’s primary key. Each Region uses Raft for its
-        own replicated log; Raft alone does not make the whole transaction
-        atomic. Optimized commit protocols can differ.
-      </figcaption>
     </figure>
   );
 }
@@ -294,11 +270,7 @@ export function TidbScalingDemo() {
       data-graphic-key="tidb-scaling"
       data-graphic-kind="diagram"
     >
-      <DemoWorkbench.Header>
-        <p className="demo-workbench-description">
-          Compare SQL capacity with storage capacity in an illustrative cluster.
-        </p>
-      </DemoWorkbench.Header>
+      <DemoWorkbench.Header />
       <DemoWorkbench.Options
         options={SCALING_OPTIONS}
         value={scenario}
@@ -352,9 +324,6 @@ export function TidbScalingDemo() {
             ))}
           </ul>
         </div>
-        <p className="tidb-ops-label">
-          A–D are key ranges. Each retains three replicas.
-        </p>
       </div>
       {scenario === "storage" && (
         <div className="tidb-ops-controls">
@@ -369,34 +338,6 @@ export function TidbScalingDemo() {
           </button>
         </div>
       )}
-      <DemoWorkbench.Step live="polite">
-        <p className="tidb-ops-takeaway">
-          {scenario === "baseline" ? (
-            <>
-              Choose a resource to add. The SQL and storage layers scale
-              independently.
-            </>
-          ) : scenario === "sql" ? (
-            <>More SQL compute; the storage placement stays the same.</>
-          ) : state.redistributed ? (
-            <>
-              Replicas now span four storage nodes. Each Region still has three
-              copies.
-            </>
-          ) : (
-            <>
-              The new storage node starts empty. Moving Region replicas takes
-              time.
-            </>
-          )}
-        </p>
-      </DemoWorkbench.Step>
-      <figcaption>
-        Illustrative placement, not a timing or throughput prediction. Regions
-        can split as data grows, and rebalancing takes time. More nodes do not
-        guarantee linear throughput; one hot key cannot split into parallel
-        writes.
-      </figcaption>
     </DemoWorkbench.Root>
   );
 }

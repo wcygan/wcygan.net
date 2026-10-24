@@ -45,43 +45,32 @@ export function namedStateTourFrame(step: number): NamedState {
 export interface FailureTourFrame {
   layout: FailureLayout;
   phase: FailurePhase;
-  comparison: string;
 }
 
 export const FAILURE_TOUR: readonly FailureTourFrame[] = [
   {
     layout: "separate",
     phase: "acknowledged",
-    comparison: "Begin with owner and follower disks on separate hosts.",
   },
   {
     layout: "separate",
     phase: "lose-host",
-    comparison: "Permanently lose the owner host and its disk before upload.",
   },
   {
     layout: "separate",
     phase: "bucket-covered",
-    comparison:
-      "Alternative history: upload completes before the same host loss. The independent bucket already retains the write as well as the surviving follower.",
   },
   {
     layout: "shared",
     phase: "acknowledged",
-    comparison:
-      "Start a new comparison: the same acknowledged write, with both compute disks on one host.",
   },
   {
     layout: "shared",
     phase: "lose-host",
-    comparison:
-      "Losing that shared host before upload destroys both recent disk copies.",
   },
   {
     layout: "shared",
     phase: "bucket-covered",
-    comparison:
-      "Alternative history: upload completes before the same host loss. The bucket already retained the write; this does not restore destroyed copies.",
   },
 ];
 

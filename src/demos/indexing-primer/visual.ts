@@ -33,7 +33,7 @@ export interface TreeGroup {
 export interface TreeVisual {
   groups: TreeGroup[];
   query: string;
-  takeaway: string;
+  result?: string;
   height: number;
 }
 
@@ -173,10 +173,10 @@ function handoff(from: TreeGroup, to: TreeGroup, active: boolean) {
 export function visual(id: string, step: number): TreeVisual {
   const lesson = lessons.find((candidate) => candidate.id === id);
   if (!lesson) throw new Error(`Unknown indexing lesson: ${id}`);
-  const s = Math.max(0, Math.min(Math.floor(step), lesson.steps.length - 1));
+  const s = Math.max(0, Math.min(Math.floor(step), lesson.stepCount - 1));
   let groups: TreeGroup[] = [];
   let query = "";
-  let takeaway = "";
+  let result: string | undefined;
   let height = 340;
 
   if (id === "scan") {
@@ -203,7 +203,7 @@ export function visual(id: string, step: number): TreeVisual {
       }),
     ];
     query = "WHERE name = 'Zoe'";
-    takeaway =
+    result =
       s === 3
         ? "9 records checked · Zoe found"
         : `${s * 3} of 9 records checked`;
@@ -230,12 +230,12 @@ export function visual(id: string, step: number): TreeVisual {
       }),
     ];
     query = id === "insert" ? "INSERT ID 9, name 'Zoe'" : "WHERE id = 9";
-    takeaway =
+    result =
       s === 2
         ? id === "insert"
           ? "1 leaf changed · no table scan"
           : "2 index pages visited · 1 matching record"
-        : "9 ≥ 7 · take the right branch";
+        : undefined;
   }
 
   if (id === "pages") {
@@ -269,10 +269,8 @@ export function visual(id: string, step: number): TreeVisual {
     });
     groups = [index];
     query = "WHERE id = 8";
-    takeaway =
-      s === 2
-        ? "1 page loaded · records 7, 8 and 9 available"
-        : "Storage and memory work with whole pages";
+    result =
+      s === 2 ? "1 page loaded · records 7, 8 and 9 available" : undefined;
     height = 490;
   }
 
@@ -321,7 +319,7 @@ export function visual(id: string, step: number): TreeVisual {
       });
     }
     query = s === 1 ? "INSERT 9 · leaf is full" : "INSERT ID 9";
-    takeaway =
+    result =
       s === 2
         ? "Separator 8 · left keys < 8 · right keys ≥ 8"
         : s === 1
@@ -400,11 +398,11 @@ export function visual(id: string, step: number): TreeVisual {
         : id === "stable"
           ? "Grow ID 9's unindexed payload · split its full page"
           : "SELECT * WHERE name = 'Zoe'";
-    takeaway =
+    result =
       id === "cover"
         ? s === 2
           ? "Zoe + ID 9 returned · 0 primary-row fetches"
-          : "Name + ID are already in the upper leaf"
+          : undefined
         : id === "stable"
           ? s === 2
             ? "New primary leaf · same Zoe → ID 9 entry"
@@ -413,7 +411,7 @@ export function visual(id: string, step: number): TreeVisual {
               : "Zoe → ID 9 · primary record in the last leaf"
           : s === 2
             ? "Name → ID 9 → full record · 2 tree lookups"
-            : "Upper leaves store names + IDs; lower leaves store records";
+            : undefined;
     height = 560;
   }
 
@@ -441,12 +439,7 @@ export function visual(id: string, step: number): TreeVisual {
       }),
     ];
     query = "WHERE id BETWEEN 4 AND 8";
-    takeaway =
-      s === 3
-        ? "5 records returned · stop before 9"
-        : s > 0
-          ? "Seek once at 4 · then follow leaf links"
-          : "Linked leaves preserve sorted order";
+    result = s === 3 ? "5 records returned · stop before 9" : undefined;
   }
 
   if (id === "compound") {
@@ -497,12 +490,6 @@ export function visual(id: string, step: number): TreeVisual {
         : s === 1
           ? "WHERE city = 'Austin'"
           : "INDEX (city, name)";
-    takeaway =
-      s === 2
-        ? "Zoe occurs in separate city groups · no single name slice"
-        : s === 1
-          ? "Austin is one continuous slice of this index"
-          : "Sort by city first; names are ordered within each city";
   }
 
   if (id === "selectivity") {
@@ -534,12 +521,12 @@ export function visual(id: string, step: number): TreeVisual {
     ];
     if (s === 2) groups[0].title = "PRIMARY INDEX · ID + ACTIVE";
     query = s === 2 ? "WHERE active = 'yes'" : "WHERE id = 9";
-    takeaway =
+    result =
       s === 1
         ? "1 of 9 matches · 8 records skipped"
         : s === 2
           ? "8 matches · all 9 records examined"
-          : "Useful indexes eliminate enough work to repay their cost";
+          : undefined;
   }
 
   if (id === "writes") {
@@ -611,13 +598,13 @@ export function visual(id: string, step: number): TreeVisual {
       };
     });
     query = "INSERT (9, 'Zoe', 'Boston')";
-    takeaway =
+    result =
       s === 2
         ? "3 index entries maintained · 1 logical insert"
         : s === 1
           ? "Primary + name entries added · city entry still pending"
-          : "Each relevant index must receive its own entry";
+          : undefined;
   }
 
-  return { groups, query, takeaway, height };
+  return { groups, query, result, height };
 }

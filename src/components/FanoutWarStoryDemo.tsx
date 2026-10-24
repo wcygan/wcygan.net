@@ -18,7 +18,6 @@ export function FanoutWarStoryDemo() {
   const markerSuffix = useId().replaceAll(":", "");
   const titleId = `fanout-war-story-title-${markerSuffix}`;
   const descriptionId = `fanout-war-story-description-${markerSuffix}`;
-  const captionId = `fanout-war-story-caption-${markerSuffix}`;
   const deployPoint = WAR_STORY_POINTS.find(
     (point) => point.hour === WAR_STORY_DEPLOY_HOUR,
   );
@@ -42,15 +41,12 @@ export function FanoutWarStoryDemo() {
       data-phase="settled"
       data-complete="true"
       aria-labelledby={titleId}
-      aria-describedby={`${descriptionId} ${captionId}`}
+      aria-describedby={descriptionId}
     >
       <header className="fanout-war-story-header">
-        <div>
-          <p className="article-graphic-title" id={titleId}>
-            Traffic over time
-          </p>
-          <p>The hot path normalizes after the bug is fixed</p>
-        </div>
+        <p className="article-graphic-title" id={titleId}>
+          Traffic over time
+        </p>
       </header>
 
       <div

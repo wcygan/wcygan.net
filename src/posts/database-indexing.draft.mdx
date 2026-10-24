@@ -8,7 +8,7 @@ draft: true
 
 import { IndexingPrimerDemo } from "~/components/IndexingPrimerDemos";
 
-An index is an ordered structure that helps a database locate data. It trades storage space and write maintenance for less searching. These small demos show the basic mechanics; the page sizes, tree depth, and work counts are illustrative.
+An index is an ordered structure that helps a database locate data. It trades storage space and write maintenance for less searching.
 
 ## Finding a record
 
@@ -36,7 +36,7 @@ Knowing the new record’s key is enough to locate its destination leaf. This is
 
 ## Making room for new entries
 
-Pages have finite space. Splits keep the tree usable as data grows, but they add work to a write. The capacity of three keys here is only for teaching.
+Pages have finite space. Splits keep the tree usable as data grows, but they add work to a write.
 
 <IndexingPrimerDemo lesson="split" />
 
@@ -78,7 +78,7 @@ Each index occupies space and must stay consistent with the table. Inserts add e
 
 ## Keeping references stable
 
-InnoDB secondary entries use primary keys instead of physical record addresses. Keeping that key unchanged allows a reference to survive changes in storage placement. Here, a full row grows because an unindexed field changes. The primary leaf splits, but the name entry still stores the same ID. The split and tiny page capacities are illustrative.
+InnoDB secondary entries use primary keys instead of physical record addresses. Keeping that key unchanged allows a reference to survive changes in storage placement. Here, a full row grows because an unindexed field changes. The primary leaf splits, but the name entry still stores the same ID.
 
 <IndexingPrimerDemo lesson="stable" />
 

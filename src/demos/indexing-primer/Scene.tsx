@@ -493,7 +493,7 @@ export default function Scene({
       frameloop="demand"
       dpr={[1, 1.5]}
       gl={{ antialias: true, powerPreference: "low-power" }}
-      fallback={<p className="ip-fallback">{visual.takeaway}</p>}
+      fallback={<p className="ip-fallback">3D unavailable</p>}
     >
       <color attach="background" args={[colors.background]} />
       <ambientLight intensity={1.4} />

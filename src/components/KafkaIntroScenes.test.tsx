@@ -170,9 +170,6 @@ describe("Kafka introduction 3D shells", () => {
     const logs = screen.getByRole("list", { name: "Partition contents" });
     expect(logs.textContent).toBe("P0: A@0, A@1, A@2P1: B@0, B@1P2: C@0");
     expect(
-      screen.getByText("Three logs; no single order across all three."),
-    ).toBeTruthy();
-    expect(
       (
         screen.getByRole("button", {
           name: "All records sent",

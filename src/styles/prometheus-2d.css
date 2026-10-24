@@ -18,12 +18,6 @@
   gap: 4px;
 }
 
-.prom2d .prom2d-description {
-  color: var(--prom2d-muted);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
 .prom2d-controls {
   display: flex;
   flex-wrap: wrap;
@@ -67,8 +61,7 @@
 }
 
 .prom2d .prom2d-status,
-.prom2d .prom2d-takeaway,
-.prom2d .prom2d-note {
+.prom2d .prom2d-takeaway {
   font-size: 14px;
   line-height: 1.55;
 }
@@ -80,11 +73,6 @@
 .prom2d .prom2d-takeaway {
   padding-block-start: 12px;
   border-block-start: 1px solid var(--prom2d-line);
-}
-
-.prom2d .prom2d-note {
-  color: var(--prom2d-muted);
-  font-size: 13px;
 }
 
 .prom2d .prom2d-label {

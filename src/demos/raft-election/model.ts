@@ -241,7 +241,7 @@ export function transition(state: Simulation, action: Action): Simulation {
       s.status = `${winner} leads term ${s.nodes[winner].term}. Heartbeats continue. Crash the leader again to trigger another election.`;
     } else if (s.crashed.length > NODES.length - MAJORITY) {
       s.status =
-        "Fewer than three nodes remain online. Candidates keep retrying, but cannot win a majority. Reset to restore the cluster.";
+        "Fewer than three nodes remain online. Candidates keep retrying, but cannot win a majority.";
     }
   }
   s.now = target;

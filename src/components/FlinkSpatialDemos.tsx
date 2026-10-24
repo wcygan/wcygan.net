@@ -51,49 +51,37 @@ class SceneBoundary extends Component<
 
 const descriptions: Record<
   SceneKind,
-  { title: string; steps: number; caption: string; initial: string }
+  { title: string; steps: number; initial: string }
 > = {
   keyed: {
     title: "Keyed State",
     steps: KEY_RECORDS.length,
-    caption:
-      "One independent count per key, even when keys share a subtask. This assignment is illustrative, not Flink’s actual hashing.",
     initial: "Six records; three independent key counts.",
   },
   runtime: {
     title: "Flink Workers",
     steps: 3,
-    caption:
-      "Raised blocks are subtasks. Yellow dashed routes coordinate; colored solid routes carry records. Placement is illustrative. Task slots allocate resources, not dedicated CPU cores.",
     initial: "JobManager coordinates; TaskManagers execute.",
   },
   recovery: {
     title: "Checkpoint Recovery",
     steps: 11,
-    caption:
-      "Restore source position and count together from a completed checkpoint, then replay. This scene models state recovery; external sink guarantees require a suitable protocol.",
     initial: "Consume → checkpoint → crash → restore → replay.",
   },
   shuffle: {
     title: "Bring the same key together",
     steps: 4,
     initial: "Two sources; ownership follows the key.",
-    caption:
-      "Same key, same owner, regardless of source. Dashed routes show possible destinations. This illustrates keyBy; the assignment is not Flink’s hash function.",
   },
   skew: {
     title: "One hot key limits parallel work",
     steps: 10,
     initial: "Twelve records; four equally capable subtasks.",
-    caption:
-      "Three batches of four; each subtask serves one record per teaching step. Compare one hot key with four balanced keys. Idle workers cannot split a per-key counter.",
   },
   barrier: {
     title: "Take a consistent checkpoint",
     steps: 6,
     initial: "Two input channels; one checkpoint boundary.",
-    caption:
-      "Each input pauses at its yellow barrier until both arrive. Later records stay outside the snapshot. One operator with aligned checkpoints; unaligned checkpoints and global acknowledgments omitted.",
   },
 };
 
@@ -282,7 +270,6 @@ function SpatialWorkbench({ kind }: { kind: SceneKind }) {
     >
       <header className="flink-visual-heading">
         <p className="article-graphic-title">{description.title}</p>
-        <p className="flink-visual-description">{description.initial}</p>
       </header>
       <div
         ref={stage}
@@ -301,10 +288,7 @@ function SpatialWorkbench({ kind }: { kind: SceneKind }) {
       >
         {pending && <DemoSceneLoading />}
         {unavailable ? (
-          <p className="flink-spatial-fallback">
-            3D is unavailable. Use Step and the state below to follow the same
-            lesson.
-          </p>
+          <p className="flink-spatial-fallback">3D is unavailable.</p>
         ) : loaded ? (
           <div className="flink-spatial-canvas" aria-hidden="true">
             <SceneBoundary onUnavailable={onUnavailable}>
@@ -432,9 +416,6 @@ function SpatialWorkbench({ kind }: { kind: SceneKind }) {
         {message}
       </p>
       <Summary kind={kind} step={step} balanced={balanced} />
-      <figcaption>
-        {description.caption} Steps show completed events; Play retraces routes.
-      </figcaption>
     </figure>
   );
 }

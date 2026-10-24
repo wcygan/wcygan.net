@@ -169,7 +169,7 @@ it("waits for a ready presentation and 30% visibility before the initial entranc
 it("starts the same bounded lesson when a useful textual fallback becomes available", async () => {
   await mount("architecture", { ready: false });
   act(() => onUnavailable());
-  expect(screen.getByText(/3D is unavailable\. Next/)).toBeTruthy();
+  expect(screen.getByText(/3D is unavailable/)).toBeTruthy();
   advance(1000);
   advance(1600);
   expect(figure().getAttribute("data-moving")).toBe("true");
@@ -328,10 +328,10 @@ it("preserves manual replay and retries a failed 3D mount without losing current
   await mount();
   expect(button("Play").disabled).toBe(true);
   act(() => onUnavailable());
-  expect(screen.getByText(/3D is unavailable\. Next/)).toBeTruthy();
+  expect(screen.getByText(/3D is unavailable/)).toBeTruthy();
   for (let index = 0; index < 5; index += 1) fireEvent.click(button("Next"));
   expect(screen.getByRole("status").textContent).toContain(
-    "No new reserve Activity is scheduled",
+    "Consume R-42 from the recorded result",
   );
   expect(screen.getByText("Reserve 1 · Charge 0")).toBeTruthy();
   expect(button("Reset view").disabled).toBe(true);

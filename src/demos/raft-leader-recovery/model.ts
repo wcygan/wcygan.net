@@ -106,7 +106,7 @@ const authoredBeats = [
     settledAt: 34000,
   },
   {
-    title: "Committed entries survived. New writes resumed.",
+    title: "Committed through #5 · x = 18",
     detail:
       "A leads term 7. All three servers store the same log through #5 and know it is committed. The commands produce x = 18 when applied in order.",
     settledAt: 36000,

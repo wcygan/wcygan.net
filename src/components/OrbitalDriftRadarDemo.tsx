@@ -168,16 +168,9 @@ export function OrbitalDriftRadarDemo() {
       aria-labelledby="orbital-radar-title"
     >
       <header className="orbital-radar-header">
-        <div>
-          <span className="orbital-radar-badge">Concept 2</span>
-          <p className="article-graphic-title" id="orbital-radar-title">
-            Orbital Drift &amp; Convergence Radar
-          </p>
-          <p className="orbital-radar-desc">
-            Visualizing data integrity as gravitational resonance: the outer
-            ring (Lake source of truth) vs inner ring (Live Datastore).
-          </p>
-        </div>
+        <p className="article-graphic-title" id="orbital-radar-title">
+          Orbital Drift &amp; Convergence Radar
+        </p>
         <div className="orbital-radar-controls">
           <button
             type="button"
@@ -417,13 +410,6 @@ export function OrbitalDriftRadarDemo() {
           </div>
         </div>
       </div>
-
-      <figcaption className="orbital-radar-caption">
-        <strong>Geometrical alignment:</strong> When live data drifts out of
-        phase with canonical lake storage, the tension filament stretches. A
-        scheduled sweep detects misalignment and applies a centripetal
-        correction via event bus.
-      </figcaption>
     </figure>
   );
 }

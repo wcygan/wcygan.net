@@ -20,20 +20,14 @@ export const CELL_LAYERS = {
   handler: {
     label: "JavaScript",
     position: [0, 1.6, 0] as Point,
-    explanation:
-      "The room:blue handler runs in V8. JavaScript memory is temporary; a cell does not retain it across a restart or hibernation.",
   },
   sqlite: {
     label: "SQLite",
     position: [0, 0, 0] as Point,
-    explanation:
-      "room:blue owns a private SQLite database. This illustrated commit changes pages 2 and 5; the other pages do not change.",
   },
   ltx: {
     label: "LTX changes",
     position: [0, -1.6, 0] as Point,
-    explanation:
-      "celld captures committed SQLite changes in LTX format. With a baseline already stored, this later commit emits new images of pages 2 and 5, plus transaction and checksum metadata.",
   },
 } as const;
 
@@ -54,12 +48,6 @@ export function pageChangeSnapshot(step: PageStep) {
   return {
     pages,
     ltxPageImages: step === 2 ? pages.filter((page) => page.changed) : [],
-    explanation:
-      step === 0
-        ? "A baseline for this six-page database is already stored. All six page images begin at version 1."
-        : step === 1
-          ? "One illustrated SQLite commit replaces pages 2 and 5 with version 2. Pages 1, 3, 4 and 6 retain their prior images."
-          : "The later LTX record carries the new images of pages 2 and 5, plus transaction and checksum metadata. It builds on the stored baseline; two pages alone are not a complete database.",
   };
 }
 
@@ -93,7 +81,6 @@ export interface FleetNode {
 export function fleetSnapshot(view: FleetView): {
   nodes: FleetNode[];
   cells: PlacedCell[];
-  explanation: string;
 } {
   const expanded = view !== "two-nodes";
   const nodes: FleetNode[] = expanded
@@ -122,11 +109,6 @@ export function fleetSnapshot(view: FleetView): {
       ],
     };
   });
-  const explanation =
-    view === "handoff"
-      ? "The hibernated room:blue cell has moved from A to C. It remains one cell with one owner; its database identity stays the same. This is one illustrative handoff, not the final balancing result."
-      : view === "third-node"
-        ? "Node C joins the same bucket. Existing cells still have their original owners in this selected state. Adding capacity does not create a serving copy of every cell on every node."
-        : "Six independent cells are placed on two nodes. Each cell has one serving owner. Follower node logs hold replicated recent writes, not another serving JavaScript instance of each cell.";
-  return { nodes, cells, explanation };
+
+  return { nodes, cells };
 }

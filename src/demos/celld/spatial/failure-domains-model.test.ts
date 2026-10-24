@@ -14,7 +14,6 @@ describe("failure domains for a recent fleet-acknowledged write", () => {
       ]);
       expect(snapshot.completeFollowerTail).toBe(true);
       expect(snapshot.recovery).toBe("not-needed");
-      expect(snapshot.explanation).toContain("not a second serving cell");
     },
   );
 
@@ -28,8 +27,7 @@ describe("failure domains for a recent fleet-acknowledged write", () => {
       retainedCopies: 1,
       recovery: "follower-tail",
     });
-    expect(snapshot.explanation).toContain("seal the prior log session");
-    expect(snapshot.explanation).toContain("before restoring");
+
     expect(snapshot.hosts.filter((host) => host.lost)).toHaveLength(1);
   });
 
@@ -44,9 +42,7 @@ describe("failure domains for a recent fleet-acknowledged write", () => {
       recovery: "tail-unavailable",
     });
     expect(snapshot.slots.every((slot) => !slot.containsWrite)).toBe(true);
-    expect(snapshot.explanation).toContain("cannot recover this write");
-    expect(snapshot.explanation).toContain("fate is inconclusive");
-    expect(snapshot.explanation).toContain("records bounded loss");
+
     expect(
       snapshot.hosts.find((host) => host.id === "host-a")?.members,
     ).toEqual(["owner", "follower"]);
@@ -69,17 +65,8 @@ describe("failure domains for a recent fleet-acknowledged write", () => {
       expect(snapshot.hosts.find((host) => host.id === "storage")?.lost).toBe(
         false,
       );
-      expect(snapshot.explanation).toContain("still gate activation");
     },
   );
-
-  it("distinguishes an HTTP failure from the illustrative destruction of disks", () => {
-    const snapshot = failureSnapshot("shared", "lose-host");
-    expect(snapshot.caveat).toContain("permanent disk loss");
-    expect(snapshot.caveat).toContain("HTTP error");
-    expect(snapshot.caveat).toContain("does not prove data loss");
-    expect(snapshot.caveat).toContain("does not promise immediate failover");
-  });
 
   it("keeps source geometry stable when the write's coverage changes", () => {
     const pending = failureSnapshot("separate", "acknowledged");

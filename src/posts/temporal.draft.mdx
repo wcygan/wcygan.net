@@ -39,13 +39,6 @@ between the Temporal Service and your application.
 This is a practical introduction to where Temporal fits, what its programming
 model feels like, and how to try it locally. My earlier post on
 [durable execution](/durable-execution) focuses on the underlying recovery idea.
-The twelve explainers here are small conceptual simulations; the experiment
-near the end runs a real Temporal Workflow. The demos play as they come into
-view, then hold their final state. Use **Pause** and **Next** to inspect each
-transition, or **Replay** to watch again. With reduced motion, use the manual
-steps. The 3D views also let you orbit the model. Their spatial layouts show
-responsibilities and relationships, rather than a literal arrangement of
-Temporal's machines.
 
 ## The process can outlive its application
 
@@ -139,8 +132,7 @@ a dump of the worker's memory.
 The recorded result is the important boundary. If the Temporal Service recorded
 the reservation Activity's completed result, history can supply it later. History
 is ordered within an execution's run; it is not a transcript of every log
-message, every variable assignment, or every failed Activity attempt. The
-illustrated records are a simplified teaching sequence.
+message, every variable assignment, or every failed Activity attempt.
 
 ## How a new worker reconstructs state
 
@@ -301,8 +293,8 @@ and need its own retry policy or human intervention.
 
 <TemporalCompensationDemo />
 
-Try the failed-refund scenario as well. An execution that remembers outstanding
-cleanup is useful, but the application still needs a policy for resolving it.
+An execution that remembers outstanding cleanup is useful, but the application
+still needs a policy for resolving it.
 
 ## Try it on your own machine
 

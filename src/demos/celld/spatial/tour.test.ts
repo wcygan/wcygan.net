@@ -83,7 +83,7 @@ describe("finite celld spatial tours", () => {
     expect(frames[0].ltxPageImages).toHaveLength(0);
     expect(frames[1].ltxPageImages).toHaveLength(0);
     expect(frames[2].ltxPageImages.map((page) => page.id)).toEqual([2, 5]);
-    expect(frames[2].explanation).toContain("not a complete database");
+
     for (const id of [1, 3, 4, 6]) {
       expect(frames[2].pages.find((page) => page.id === id)?.image).toBe(1);
     }
@@ -112,9 +112,9 @@ describe("finite celld spatial tours", () => {
     );
     expect(frames[1].recovery).toBe("follower-tail");
     expect(frames[2].recovery).toBe("bucket");
-    expect(FAILURE_TOUR[2].comparison).toContain("before the same host loss");
+
     expect(frames[3].ownerLost).toBe(false);
-    expect(FAILURE_TOUR[3].comparison).toContain("new comparison");
+
     expect(frames[4].retainedCopies).toBe(0);
     expect(frames[5]).toMatchObject({
       ownerLost: true,
@@ -122,8 +122,6 @@ describe("finite celld spatial tours", () => {
       bucketCovered: true,
       recovery: "bucket",
     });
-    expect(FAILURE_TOUR[5].comparison).toContain("before the same host loss");
-    expect(FAILURE_TOUR[5].comparison).toContain("does not restore");
   });
 
   it("resumes from the selected failure comparison rather than an old cursor", () => {

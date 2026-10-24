@@ -58,9 +58,15 @@ describe("database indexing explanations", () => {
     ).toBe(true);
     expect(stable.textContent).toContain("42 → B");
     next(figure);
-    expect(figure.querySelector("figcaption")?.textContent).toContain(
-      "0 changed with a stable ID, plus 1 mapping update",
-    );
+    expect(
+      Array.from(
+        figure.querySelectorAll(".indexing-result strong"),
+        (count) => count.textContent,
+      ),
+    ).toEqual(["3", "0"]);
+    expect(
+      within(figure).getByText("1 location mapping updated").textContent,
+    ).toBe("1 location mapping updated");
     expect(
       (
         within(figure).getByRole("button", {
@@ -118,7 +124,12 @@ describe("database indexing explanations", () => {
       removeEventListener: vi.fn(),
     }));
     render(<OneRecordMovesDemo />);
-    expect(screen.getByText(/Move complete:/)).toBeTruthy();
+    expect(
+      Array.from(
+        document.querySelectorAll(".indexing-result strong"),
+        (count) => count.textContent,
+      ),
+    ).toEqual(["3", "0"]);
     expect(requestAnimationFrame).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Replay" }));
     fireEvent.click(screen.getByRole("button", { name: "Next step" }));

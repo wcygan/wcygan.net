@@ -9,8 +9,6 @@ import { TidbLearningDemo } from "~/components/TidbLearningDemos";
 
 **TiDB is a distributed SQL database:** one familiar SQL interface, with data and work spread across machines. These ten demos explore [TiDB Self-Managed](https://docs.pingcap.com/tidb/stable/tidb-architecture/), starting with the problem it solves.
 
-Demos play as you scroll. **Pause** to inspect; drag 3D scenes to look around.
-
 ## Outgrowing one machine
 
 More data and queries eventually compete for one host's resources. TiDB separates SQL compute from storage.
@@ -43,7 +41,7 @@ Each Region uses **Raft**, a protocol for agreeing on changes. With three voting
 
 <TidbLearningDemo lesson="quorum" />
 
-Try losing one follower, then two. Copies need separate failure domains: three processes on one laptop still fail together.
+Copies need separate failure domains: three processes on one laptop still fail together.
 
 ## Commit across Regions
 
@@ -59,7 +57,7 @@ The email index finds a row ID. A second lookup retrieves the requested name. A 
 
 ## Read a consistent snapshot
 
-A read timestamp fixes which committed versions are visible. Try snapshots **80**, **120**, and **160**.
+A read timestamp fixes which committed versions are visible.
 
 <TidbLearningDemo lesson="snapshot" />
 
@@ -135,4 +133,4 @@ Next, [enable a TiFlash replica](https://docs.pingcap.com/tidb/stable/create-tif
 
 Press **Ctrl+C** in the Playground terminal to stop. Untagged data is disposable; [use a tag](https://docs.pingcap.com/tidb/stable/tiup-playground/) to keep it between runs.
 
-For deeper detail: PingCAP's [architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/), [storage](https://docs.pingcap.com/tidb/stable/tidb-storage/), and [transaction](https://docs.pingcap.com/tidb/stable/tidb-faq/#does-tidb-support-distributed-transactions) guides. Demo counts, boundaries, and timing are illustrative.
+For deeper detail: PingCAP's [architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/), [storage](https://docs.pingcap.com/tidb/stable/tidb-storage/), and [transaction](https://docs.pingcap.com/tidb/stable/tidb-faq/#does-tidb-support-distributed-transactions) guides.

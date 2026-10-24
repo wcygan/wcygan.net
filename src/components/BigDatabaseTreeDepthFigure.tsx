@@ -20,7 +20,6 @@ export function BigDatabaseTreeDepthFigure() {
       data-graphic-frame="workbench"
       data-graphic-kind="svg"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -38,7 +37,6 @@ export function BigDatabaseTreeDepthFigure() {
         </div>
       </header>
       <div className="big-db-stage" data-graphic-stage="padded">
-        <p className="big-db-label">20 billion rows can fit in four levels</p>
         <svg
           className="big-db-depth-svg"
           viewBox="0 0 360 370"
@@ -148,15 +146,9 @@ export function BigDatabaseTreeDepthFigure() {
           )}
         </svg>
       </div>
-      <figcaption id={`${id}-caption`}>
+      <figcaption>
         <p className="big-db-depth-status" role="status" aria-live="polite">
           {state.status}
-        </p>
-        <p>
-          Illustrative fan-out: about 1,000 child pointers per routing page and
-          100 rows per leaf. Four levels can address about 100 billion rows.
-          Only a few branches are drawn. Actual depth depends on key widths and
-          page occupancy.
         </p>
       </figcaption>
     </figure>

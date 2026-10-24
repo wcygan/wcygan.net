@@ -31,7 +31,6 @@ describe("Temporal Service and worker ownership", () => {
       architectureSnapshot(6).history,
     );
     expect(architectureSnapshot(7).nodes.service.tone).toBe("blue");
-    expect(architectureSnapshot(7).status).toContain("application workers");
   });
 });
 
@@ -178,9 +177,6 @@ describe("Compensation is another business operation", () => {
     expect(failed.done).toBe(true);
     expect(failed.last).toBe(6);
     expect(failed.nodes.refund.tone).toBe("red");
-    expect(compensationSnapshot(5, "refund-fails").status).toContain(
-      "rejected every refund attempt before issuing any refund",
-    );
     expect(failed.nodes.manual.visible).toBe(true);
     expect(failed.routes).toEqual(["manual"]);
     expect(value(failed, "Payment")).toBe("Captured");

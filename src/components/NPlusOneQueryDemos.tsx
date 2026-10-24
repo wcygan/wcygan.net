@@ -26,17 +26,11 @@ export function NPlusOneQueryDemos() {
       data-graphic-key="query-race"
       data-graphic-kind="dom"
       aria-labelledby="query-race-title"
-      aria-describedby="query-race-description query-race-caption"
     >
       <header className="query-race-header">
-        <div>
-          <p className="article-graphic-title" id="query-race-title">
-            Round trips for 10 known order ids
-          </p>
-          <p id="query-race-description">
-            The database access pattern can impact application latency
-          </p>
-        </div>
+        <p className="article-graphic-title" id="query-race-title">
+          Round trips for 10 known order ids
+        </p>
         <DemoReplayButton
           ariaLabel="Replay query round trip comparison"
           isComplete={snapshot.isComplete}
@@ -76,12 +70,6 @@ export function NPlusOneQueryDemos() {
           ? "Comparison complete. Both approaches returned 10 rows. The batch lookup used one round trip and 35 milliseconds; individual lookups used ten round trips and 250 milliseconds."
           : ""}
       </p>
-
-      <figcaption id="query-race-caption">
-        Individual lookups cost 25ms while a batch lookup costs 35ms; the rows
-        are identical but batching avoids round-trip latency and database
-        overhead
-      </figcaption>
     </figure>
   );
 }

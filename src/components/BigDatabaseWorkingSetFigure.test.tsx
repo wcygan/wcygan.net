@@ -68,13 +68,10 @@ it("runs continuously across cycle boundaries and suspends offscreen", () => {
   advance(5000);
   expect(packets(view)).toEqual(before);
 });
-it("preserves the explanation without moving packets under reduced motion", () => {
+it("preserves the labeled hit and miss rates without moving packets under reduced motion", () => {
   const { view, visible, advance } = setup(true);
   visible(true);
   advance(40000);
-  expect(view.getByRole("status").textContent).toBe(
-    "Illustrative page reads: 99% memory · 1% disk.",
-  );
   expect(view.container.querySelector(".big-db-reuse-packet")).toBeNull();
   expect(view.getByText("100 GiB · 99% hits")).toBeTruthy();
   expect(view.getByText("14.8 TiB · 1% misses")).toBeTruthy();

@@ -126,16 +126,9 @@ export function SplitFlapMatrixDemo() {
       aria-labelledby="split-flap-title"
     >
       <header className="split-flap-header">
-        <div>
-          <span className="split-flap-badge">Concept 3</span>
-          <p className="article-graphic-title" id="split-flap-title">
-            The Split-Flap Matrix Differential
-          </p>
-          <p className="split-flap-desc">
-            Macro-scale partition scanner: laser diff sweep identifies corrupted
-            rows, dispatches repair events, and flips records into alignment.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="split-flap-title">
+          The Split-Flap Matrix Differential
+        </p>
         <div className="split-flap-actions">
           <button
             type="button"
@@ -203,7 +196,7 @@ export function SplitFlapMatrixDemo() {
                         : "cell-synced"
                   }`}
                   onClick={() => toggleCellCorrupt(c.id)}
-                  title={`Record #${c.id}: Lake=${c.valLake}, DB=${c.valDb} (Click to toggle)`}
+                  title={`Record #${c.id}: Lake=${c.valLake}, DB=${c.valDb}`}
                 >
                   <div className="cell-face cell-top">
                     <span className="cell-id">#{c.id}</span>
@@ -242,12 +235,6 @@ export function SplitFlapMatrixDemo() {
           </div>
         )}
       </div>
-
-      <figcaption className="split-flap-caption">
-        <strong>Macro-to-micro batch diffing:</strong> Airflow schedules a query
-        against the partition. Every mismatched cell generates a targeted repair
-        event payload for Flink to apply idempotently via mechanical flip.
-      </figcaption>
     </figure>
   );
 }

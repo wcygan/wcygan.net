@@ -70,10 +70,6 @@ export function IncrementalEtlFlowDemo() {
           <p className="article-graphic-title" id="etl-flow-title">
             Online → Offline Data Flow
           </p>
-          <p>
-            Follow one <code>users</code> row from the online commit to its
-            offline HDFS copy.
-          </p>
           <p className="sr-only" id="etl-flow-description">
             The MySQL users record with id 42 and the Opal row on HDFS both
             start with plan free. The application submits an update, MySQL

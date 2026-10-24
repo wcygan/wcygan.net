@@ -491,9 +491,7 @@ export default function TidbArchitectureScene(props: Props) {
           throw error;
         }
       }}
-      fallback={
-        <p>3D is unavailable. Play a scenario to follow the query below.</p>
-      }
+      fallback={<p>3D is unavailable.</p>}
     >
       <World {...props} />
     </SceneCanvas>

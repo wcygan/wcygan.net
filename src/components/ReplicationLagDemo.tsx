@@ -54,10 +54,6 @@ export function ReplicationLagDemo() {
         <p className="article-graphic-title" id="replication-lag-title">
           Replication Lag
         </p>
-        <p>
-          A write may be accepted before every region has copied it, so failover
-          has to know which replicas are current enough to serve.
-        </p>
       </div>
 
       <canvas

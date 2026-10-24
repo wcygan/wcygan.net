@@ -50,7 +50,6 @@ export function OperationOrderFigure() {
       data-graphic-frame="plate"
       data-graphic-kind="dom"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-caption`}
     >
       <header>
         <p className="article-graphic-title" id={`${id}-title`}>
@@ -71,9 +70,6 @@ export function OperationOrderFigure() {
           variant="reordered"
         />
       </div>
-      <figcaption id={`${id}-caption`}>
-        The replicas end up with different values.
-      </figcaption>
     </figure>
   );
 }

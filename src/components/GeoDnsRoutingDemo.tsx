@@ -108,10 +108,6 @@ export function GeoDnsRoutingDemo() {
         <p className="article-graphic-title" id="geo-dns-routing-title">
           GeoDNS Routing
         </p>
-        <p>
-          DNS answers the same hostname with the closest regional entry point
-          for the user making the query.
-        </p>
       </div>
 
       <div className="geo-dns-routing-board">

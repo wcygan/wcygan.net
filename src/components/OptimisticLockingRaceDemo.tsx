@@ -29,21 +29,12 @@ export function OptimisticLockingRaceDemo() {
       data-phase={snapshot.phase}
       data-resetting={isResetting ? "true" : "false"}
       aria-labelledby="optimistic-locking-race-title"
-      aria-describedby="optimistic-locking-race-description optimistic-locking-race-static optimistic-locking-race-caption"
+      aria-describedby="optimistic-locking-race-static"
     >
       <header className="optimistic-locking-race-header">
-        <div>
-          <p
-            className="article-graphic-title"
-            id="optimistic-locking-race-title"
-          >
-            A stale version cannot decrement inventory
-          </p>
-          <p id="optimistic-locking-race-description">
-            Both workers read version 7. Worker B can reserve the second unit
-            only after its stale write is rejected and it rereads version 8.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="optimistic-locking-race-title">
+          A stale version cannot decrement inventory
+        </p>
         <button
           type="button"
           className="optimistic-locking-race-replay"
@@ -103,12 +94,6 @@ export function OptimisticLockingRaceDemo() {
       <p className="sr-only" aria-live="polite">
         {snapshot.isComplete ? FINAL_ANNOUNCEMENT : ""}
       </p>
-
-      <figcaption id="optimistic-locking-race-caption">
-        The version predicate turns the update into a compare-and-swap: a stale
-        version changes zero rows, so the application must reread before
-        retrying.
-      </figcaption>
     </figure>
   );
 }
@@ -215,7 +200,6 @@ function LiveInventoryTable({ snapshot }: { snapshot: RaceSnapshot }) {
     <table className="optimistic-locking-race-live-table">
       <caption>
         <span className="optimistic-locking-race-live-table-caption">
-          <span>Live SQL Table</span>
           <code>inventory_items</code>
         </span>
       </caption>

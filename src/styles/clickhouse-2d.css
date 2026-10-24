@@ -3,11 +3,6 @@
   gap: 8px;
   margin-block-end: 16px;
 }
-.clickhouse-demo.ch-2d .ch-header > .ch-subtitle {
-  margin: 0;
-  color: var(--ch-muted);
-  font: 400 14px/1.6 var(--ch-font-mono);
-}
 .clickhouse-demo.ch-2d .ch-options {
   margin-block-end: 16px;
 }
@@ -49,11 +44,6 @@
 .clickhouse-demo.ch-2d .ch-controls {
   margin-block: 16px;
 }
-.clickhouse-demo.ch-2d .ch-motion-note {
-  flex-basis: 100%;
-  color: var(--ch-muted);
-  font: 400 12px/1.5 var(--ch-font-mono);
-}
 .clickhouse-demo.ch-2d .ch-status {
   display: grid;
   gap: 8px;
@@ -70,11 +60,6 @@
 .clickhouse-demo.ch-2d .ch-readable-metrics {
   color: var(--ch-muted);
   font: 400 13px/1.6 var(--ch-font-mono);
-}
-.clickhouse-demo.ch-2d .ch-caption {
-  margin-block-start: 16px;
-  padding-block-start: 16px;
-  border-block-start: 1px solid var(--ch-border);
 }
 @media (max-width: 639px) {
   .clickhouse-demo.ch-2d .ch-stage {

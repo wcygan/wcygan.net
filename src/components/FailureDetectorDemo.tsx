@@ -299,11 +299,6 @@ export function FailureDetectorDemo() {
             : "No timeouts."}
         </span>
       </div>
-      <figcaption className="fd-guide">
-        Hearts refill each follower’s timer. Red means timed out.
-        <br />
-        Drag to rotate · scroll to zoom · ½ speed
-      </figcaption>
       <div className="fd-actions" role="group" aria-label="Experiment controls">
         <button
           disabled={pending}
@@ -340,15 +335,14 @@ export function FailureDetectorDemo() {
       </p>
       {settled && (
         <p className="fd-paused">
-          Paused at {seconds(state.now)}: {expired.join(", ")} timed out. Select
-          Reset to begin again.
+          Paused at {seconds(state.now)}: {expired.join(", ")} timed out.
         </p>
       )}
       <dialog
         ref={diagnostic}
         className="fd-notice"
         aria-labelledby={`${id}-timeout`}
-        aria-describedby={`${id}-diagnostic ${id}-restart`}
+        aria-describedby={`${id}-diagnostic`}
         onClose={() => resetButton.current?.focus({ preventScroll: true })}
       >
         <h2 id={`${id}-timeout`}>
@@ -365,16 +359,13 @@ export function FailureDetectorDemo() {
             Injected faults: <DiagnosticCopy>{faults}</DiagnosticCopy>
           </p>
         )}
-        <p id={`${id}-restart`}>
-          Dismiss to inspect the frozen scene, or select Reset to begin again.
-        </p>
         <div className="fd-actions">
           <button
             disabled={pending}
             type="button"
             onClick={() => diagnostic.current?.close()}
           >
-            Dismiss
+            Inspect scene
           </button>
           <button disabled={pending} type="button" onClick={reset}>
             Reset

@@ -6,16 +6,12 @@ function BPlusTreeFigure({
   graphicKey,
   hash,
   title,
-  description,
   frameTitle,
-  caption,
 }: {
   graphicKey: string;
   hash: string;
   title: string;
-  description: string;
   frameTitle: string;
-  caption: string;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>();
@@ -84,15 +80,11 @@ function BPlusTreeFigure({
       data-graphic-kind="embed"
       data-graphic-key={graphicKey}
       aria-labelledby={`${graphicKey}-title`}
-      aria-describedby={`${graphicKey}-description ${graphicKey}-caption`}
     >
       <header className="big-db-btree-header">
-        <div>
-          <p className="article-graphic-title" id={`${graphicKey}-title`}>
-            {title}
-          </p>
-          <p id={`${graphicKey}-description`}>{description}</p>
-        </div>
+        <p className="article-graphic-title" id={`${graphicKey}-title`}>
+          {title}
+        </p>
         <button type="button" onClick={replay} aria-label={`Replay ${title}`}>
           Replay
         </button>
@@ -110,13 +102,6 @@ function BPlusTreeFigure({
           onLoad={measure}
         />
       </div>
-      <figcaption id={`${graphicKey}-caption`}>
-        {caption} Read more in the{" "}
-        <a href="https://planetscale.com/blog/btrees-and-database-indexes">
-          PlanetScale B+tree article
-        </a>
-        .
-      </figcaption>
     </figure>
   );
 }
@@ -127,9 +112,7 @@ export function BigDatabaseBPlusTreeSearchDemo() {
       graphicKey="big-db-bplus-search"
       hash="bplustree-search"
       title="A B+tree search follows routing keys"
-      description="Follow the keys to a leaf; in the primary-key tree, that leaf contains the row."
       frameTitle="Interactive B+tree search"
-      caption="Interactive B+tree model from PlanetScale. It demonstrates routing and leaf traversal; its compact nodes are illustrative, not literal InnoDB page contents or fanout."
     />
   );
 }
@@ -140,9 +123,7 @@ export function BigDatabaseBPlusTreeDepthDemo() {
       graphicKey="big-db-bplus-depth"
       hash="bplustree-depth-line"
       title="More rows add tree levels slowly"
-      description="Explore how index depth changes as the number of entries grows."
       frameTitle="Interactive B+tree depth by record count"
-      caption="Illustrative depth model. Actual index depth depends on page size, key width, record size, and page fill. Each table and secondary index has its own B+tree."
     />
   );
 }

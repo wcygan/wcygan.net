@@ -13,7 +13,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export interface TourBeat {
   value: number;
   holdMs: number;
-  caption: string;
 }
 
 export interface TourPhase {
@@ -58,7 +57,6 @@ function runTimed(
 
 export function useDemoTour(beats: TourBeat[], initialValue: number) {
   const [value, setValue] = useState(initialValue);
-  const [caption, setCaption] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [phase, setPhase] = useState<TourPhase | null>(null);
   const tokenRef = useRef(0);
@@ -73,7 +71,6 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
   const stop = useCallback(() => {
     tokenRef.current += 1;
     setPlaying(false);
-    setCaption(null);
     setPhase(null);
   }, []);
 
@@ -86,7 +83,6 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
       setPlaying(true);
       for (let i = 0; i < beats.length; i += 1) {
         const beat = beats[i];
-        setCaption(beat.caption);
         if (i === 0 || reduced) {
           setValue(beat.value);
         } else {
@@ -127,7 +123,7 @@ export function useDemoTour(beats: TourBeat[], initialValue: number) {
     [stop],
   );
 
-  return { value, caption, phase, playing, start, onManualChange };
+  return { value, phase, playing, start, onManualChange };
 }
 
 /** Play the tour once, the first time the element scrolls into view. */

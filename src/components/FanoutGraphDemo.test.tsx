@@ -35,7 +35,6 @@ describe("FanoutGraphDemo", () => {
     expect(
       container.querySelectorAll(".fanout-graph-request-orb"),
     ).toHaveLength(0);
-    expect(container.textContent).toContain("One browser request multiplies");
     expect(container.textContent).toContain("Svc A");
     expect(container.textContent).toContain("2.5 req/s");
 

@@ -6,11 +6,7 @@ const A_STATE: Vector = [1, 0];
 const B_INITIAL_STATE: Vector = [0, 1];
 const B_MERGED_STATE: Vector = [1, 1];
 
-const EXPLANATIONS = [
-  "A and B accept one like each without knowing about the other. A1 and B1 are concurrent.",
-  "Server A replicates its counter. The message carries information about the like accepted at A1.",
-  "Server B receives A's state and can now show 2 likes. A1 influenced B2, so A1 happened before B2.",
-] as const;
+const STEP_COUNT = 3;
 
 function Event({
   x,
@@ -195,13 +191,10 @@ export function CausalRelationshipDemo() {
         >
           {step === 2 ? "Replay" : "Step"}
         </button>
-        <span>
-          {step + 1} of {EXPLANATIONS.length}
+        <span role="status" aria-live="polite">
+          {step + 1} of {STEP_COUNT}
         </span>
       </div>
-      <p className="causal-explanation" role="status" aria-live="polite">
-        {EXPLANATIONS[step]}
-      </p>
     </figure>
   );
 }

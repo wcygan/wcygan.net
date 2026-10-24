@@ -49,17 +49,13 @@ export function lookupSnapshot(lookup: Lookup): {
   };
 }
 export function lookupMessage(lookup: Lookup) {
-  if (lookup.step === 0)
-    return "Follow the secondary index to find customer_id = 1.";
-  if (lookup.step === 1)
-    return "The secondary-index root directs customer 1 to its leaf.";
-  if (lookup.step === 2)
-    return "Two leaf entries contain customer_id = 1 and primary keys 101 and 102.";
+  if (lookup.step === 0) return "customer_id = 1";
+  if (lookup.step === 1) return "Secondary root → leaf";
+  if (lookup.step === 2) return "2 matching entries · IDs 101, 102";
   if (lookup.scenario === "covered")
-    return "Both requested columns are in the secondary entries. Return two rows; skip the clustered-row lookup.";
-  if (lookup.step === 3)
-    return "Follow primary keys 101 and 102 to their full rows in the clustered index.";
-  return "Return two order IDs and their totals. The secondary entries found the rows; the clustered index supplied the remaining columns.";
+    return "2 rows returned · 0 clustered fetches";
+  if (lookup.step === 3) return "2 clustered rows fetched";
+  return "2 rows returned";
 }
 
 export type PageId = 1 | 2;
@@ -85,9 +81,8 @@ export function readPage(state: BufferPool, page: PageId): BufferPool {
   };
 }
 export function bufferMessage(state: BufferPool) {
-  if (!state.last)
-    return "The demo memory is empty. Read a page to bring a copy from disk into the buffer pool.";
+  if (!state.last) return "Memory empty";
   return state.last.outcome === "hit"
-    ? `Page ${state.last.page} is already in the buffer pool. This logical request is served from memory.`
-    : `Page ${state.last.page} was absent from the buffer pool. Read it from disk and keep a copy in memory.`;
+    ? `Page ${state.last.page} · memory hit`
+    : `Page ${state.last.page} · disk miss`;
 }

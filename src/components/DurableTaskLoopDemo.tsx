@@ -70,11 +70,6 @@ export function DurableTaskLoopDemo() {
         <p className="article-graphic-title" id="durable-task-loop-title">
           The coordination loop
         </p>
-        <p>
-          The Temporal Service queues pending tasks; a Worker processes the
-          queue, running each activity and reporting every outcome to the Event
-          History.
-        </p>
       </div>
 
       <canvas

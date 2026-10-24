@@ -40,13 +40,6 @@
 }
 .post-content
   :is(.mysql-primer, .mysql-storage-demo)
-  header
-  > p:not(.article-graphic-title) {
-  color: var(--mysql-muted);
-  font-size: 14px;
-}
-.post-content
-  :is(.mysql-primer, .mysql-storage-demo)
   :is(button, .demo-workbench-options button[data-scenario]) {
   min-block-size: 44px;
   min-inline-size: 44px;
@@ -108,23 +101,13 @@
 .post-content
   :is(.mysql-primer-status, .mysql-storage-demo .demo-workbench-status) {
   color: var(--mysql-ink);
-  min-block-size: 52px;
   font-size: 16px;
   line-height: 1.6;
-}
-.post-content
-  :is(.mysql-primer, .mysql-storage-demo)
-  :is(figcaption, .demo-workbench-guide) {
-  color: var(--mysql-muted);
-  font-size: 13px;
-  line-height: 1.6;
-  margin-block: 16px 0;
 }
 .post-content
   :is(
     .mysql-primer-step,
     .mysql-storage-actions > span,
-    .mysql-storage-camera-help,
     .mysql-storage-metric
   ) {
   color: var(--mysql-muted);
@@ -170,9 +153,4 @@
   align-items: center;
   gap: 8px;
   margin-block: 16px;
-}
-.post-content :is(.mysql-primer, .mysql-storage-demo) .mysql-playback-note {
-  color: var(--mysql-muted);
-  font-size: 12px;
-  line-height: 1.5;
 }

@@ -38,14 +38,12 @@ const COMPACT_LAYOUT_MAX_WIDTH = 620;
 const TAU = Math.PI * 2;
 
 // Layout is content-driven: each panel is sized to its own history length and
-// the canvas height is the sum of what the panels and caption actually need, so
+// the canvas height is the sum of what the panels need, so
 // there is no proportion-dependent dead space. measureCrashDemoHeight() and the
 // draw functions share these constants to stay in lockstep.
 const WIDE = {
   padding: 18,
   colGap: 16,
-  caption: 48,
-  capGap: 10,
   rowH: 32,
   footer: 32,
 };
@@ -53,8 +51,6 @@ const COMPACT = {
   paddingNarrow: 12,
   paddingWide: 14,
   panelGap: 12,
-  caption: 64,
-  capGap: 8,
   rowH: 30,
   footer: 30,
 };
@@ -85,16 +81,14 @@ export function measureCrashDemoHeight(
       padding * 2 +
         panelHeight(workflowRows, true) +
         COMPACT.panelGap +
-        panelHeight(activityRows, true) +
-        COMPACT.capGap +
-        COMPACT.caption,
+        panelHeight(activityRows, true),
     );
   }
   const tallest = Math.max(
     panelHeight(workflowRows, false),
     panelHeight(activityRows, false),
   );
-  return Math.round(WIDE.padding * 2 + tallest + WIDE.capGap + WIDE.caption);
+  return Math.round(WIDE.padding * 2 + tallest);
 }
 
 export function drawWorkerCrashModesDemo(
@@ -122,10 +116,9 @@ function drawWide(
   snapshot: CrashSnapshot,
   width: number,
 ) {
-  const { padding, colGap, caption, capGap, rowH } = WIDE;
+  const { padding, colGap, rowH } = WIDE;
   const workflowHeight = panelHeight(snapshot.workflowTask.maxRows, false);
   const activityHeight = panelHeight(snapshot.activity.maxRows, false);
-  const tallest = Math.max(workflowHeight, activityHeight);
   const colWidth = (width - padding * 2 - colGap) / 2;
 
   drawActPanel(
@@ -144,13 +137,6 @@ function drawWide(
     false,
     rowH,
   );
-
-  drawCaption(
-    ctx,
-    rect(padding, padding + tallest + capGap, width - padding * 2, caption),
-    snapshot,
-    false,
-  );
 }
 
 function drawCompact(
@@ -159,7 +145,7 @@ function drawCompact(
   width: number,
 ) {
   const padding = width < 360 ? COMPACT.paddingNarrow : COMPACT.paddingWide;
-  const { panelGap, caption, capGap, rowH } = COMPACT;
+  const { panelGap, rowH } = COMPACT;
   const colWidth = width - padding * 2;
   const workflowHeight = panelHeight(snapshot.workflowTask.maxRows, true);
   const activityHeight = panelHeight(snapshot.activity.maxRows, true);
@@ -180,13 +166,6 @@ function drawCompact(
     snapshot.activeAct === "activity",
     true,
     rowH,
-  );
-
-  drawCaption(
-    ctx,
-    rect(padding, activityTop + activityHeight + capGap, colWidth, caption),
-    snapshot,
-    true,
   );
 }
 
@@ -220,19 +199,8 @@ function drawActPanel(
   drawText(ctx, act.title, box.x + 16, box.y + 25, {
     color: COLORS.ink,
     font: `800 ${compact ? 14 : 15}px ${UI_FONT}`,
-    maxWidth: box.width - 32 - tagWidth(ctx, act.tag),
+    maxWidth: box.width - 32,
   });
-  drawBadge(
-    ctx,
-    box.x + box.width - tagWidth(ctx, act.tag) - 12,
-    box.y + 11,
-    act.tag,
-    {
-      fill: COLORS.shell,
-      stroke: COLORS.line,
-      color: COLORS.muted,
-    },
-  );
 
   if (idle) {
     drawText(ctx, "plays next", box.x + 16, box.y + box.height / 2 + 4, {
@@ -403,19 +371,6 @@ function drawFooter(
     drawFooterProgress(ctx, box, act.footerProgress, compact);
     return;
   }
-
-  if (act.showFootnote) {
-    const accent = act.kind === "workflow-task" ? COLORS.green : COLORS.gold;
-    ctx.beginPath();
-    ctx.fillStyle = accent;
-    ctx.arc(box.x + 4, box.y + box.height / 2, 3.5, 0, TAU);
-    ctx.fill();
-    drawText(ctx, act.footnote, box.x + 14, box.y + box.height / 2 + 4, {
-      color: COLORS.muted,
-      font: `700 ${compact ? 10 : 11}px ${UI_FONT}`,
-      maxWidth: box.width - 16,
-    });
-  }
 }
 
 function drawFooterProgress(
@@ -494,45 +449,6 @@ function drawTimeoutMeter(
       1.2,
     );
   }
-}
-
-function drawCaption(
-  ctx: CanvasRenderingContext2D,
-  box: Rect,
-  snapshot: CrashSnapshot,
-  compact: boolean,
-) {
-  drawRoundedRect(ctx, box, 8, "rgb(255 255 255 / 78%)", COLORS.line, 1);
-
-  const activeAct =
-    snapshot.activeAct === "workflow-task"
-      ? snapshot.workflowTask
-      : snapshot.activity;
-  const dot = captionColor(activeAct.kind, activeAct.phase);
-
-  ctx.beginPath();
-  ctx.fillStyle = dot;
-  ctx.arc(box.x + 16, box.y + box.height / 2, 4.5, 0, TAU);
-  ctx.fill();
-
-  const textX = box.x + 30;
-  const maxWidth = box.x + box.width - 14 - textX;
-  const lines = wrapText(
-    ctx,
-    snapshot.caption,
-    `700 ${compact ? 12 : 13}px ${UI_FONT}`,
-    maxWidth,
-    compact ? 3 : 2,
-  );
-  const lineHeight = compact ? 16 : 18;
-  const startY =
-    box.y + box.height / 2 - ((lines.length - 1) * lineHeight) / 2 + 4;
-  lines.forEach((line, index) => {
-    drawText(ctx, line, textX, startY + index * lineHeight, {
-      color: COLORS.ink,
-      font: `700 ${compact ? 12 : 13}px ${UI_FONT}`,
-    });
-  });
 }
 
 function drawPhaseCap(
@@ -616,69 +532,6 @@ function workerWord(state: WorkerState): string {
   if (state === "completing") return "completing";
   if (state === "resumed") return "resumed";
   return "done";
-}
-
-function captionColor(
-  kind: ActSnapshot["kind"],
-  phase: ActSnapshot["phase"],
-): string {
-  if (phase === "waiting") return COLORS.gold;
-  if (phase === "publishing") return COLORS.green;
-  if (phase === "complete")
-    return kind === "workflow-task" ? COLORS.green : COLORS.gold;
-  return COLORS.blue;
-}
-
-function tagWidth(ctx: CanvasRenderingContext2D, tag: string): number {
-  ctx.font = `800 10px ${UI_FONT}`;
-  return ctx.measureText(tag).width + 18;
-}
-
-function wrapText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  font: string,
-  maxWidth: number,
-  maxLines: number,
-): string[] {
-  ctx.font = font;
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word;
-    if (ctx.measureText(candidate).width <= maxWidth || !current) {
-      current = candidate;
-      continue;
-    }
-    lines.push(current);
-    current = word;
-    if (lines.length === maxLines - 1) break;
-  }
-
-  // Whatever is left lands on the final line, ellipsized by the caller's width.
-  const consumed = lines.join(" ");
-  const remainder = text.slice(consumed.length).trim();
-  lines.push(remainder || current);
-  return lines.slice(0, maxLines);
-}
-
-function drawBadge(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  label: string,
-  options: { fill: string; stroke: string; color: string },
-) {
-  ctx.font = `800 10px ${UI_FONT}`;
-  const width = ctx.measureText(label).width + 18;
-  const badge = rect(x, y, width, 22);
-  drawRoundedRect(ctx, badge, 999, options.fill, options.stroke, 1);
-  drawText(ctx, label, x + 9, y + 15, {
-    color: options.color,
-    font: `800 10px ${UI_FONT}`,
-  });
 }
 
 function drawShadow(ctx: CanvasRenderingContext2D, box: Rect, blur: number) {

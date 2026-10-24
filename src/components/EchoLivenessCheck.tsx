@@ -266,18 +266,11 @@ export function EchoLivenessCheck() {
       data-state={visualState}
       aria-busy={isRequestActive}
       aria-labelledby="anton-probe-title"
-      aria-describedby="anton-probe-description"
     >
       <header className="anton-probe-header">
-        <div>
-          <p className="article-graphic-title" id="anton-probe-title">
-            Live edge check
-          </p>
-          <p id="anton-probe-description">
-            Pings <a href={ECHO_URL}>echo.wcygan.net</a> straight from this
-            browser.
-          </p>
-        </div>
+        <p className="article-graphic-title" id="anton-probe-title">
+          Live edge check
+        </p>
         <button
           type="button"
           className="anton-probe-button"
@@ -302,7 +295,6 @@ export function EchoLivenessCheck() {
         {showReadyPreview ? (
           <div className="anton-probe-ready anton-probe-state">
             <div className="anton-probe-ready-summary">
-              <p>Run the check to trace a live request through the cluster.</p>
               <span className="anton-probe-ready-status">Not checked</span>
             </div>
           </div>

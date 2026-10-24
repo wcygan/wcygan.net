@@ -457,9 +457,7 @@ export default function Scene(props: Props) {
           throw error;
         }
       }}
-      fallback={
-        <p>3D is unavailable. Follow the lookup in the status below.</p>
-      }
+      fallback={<p>3D is unavailable.</p>}
     >
       <World {...props} />
     </SceneCanvas>

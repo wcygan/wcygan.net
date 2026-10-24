@@ -61,9 +61,6 @@
     sans-serif;
   color: var(--mysql-muted);
 }
-.mysql-storage-fallback ol {
-  padding-inline-start: 20px;
-}
 .post-content .mysql-storage-demo .mysql-storage-counters {
   display: flex;
   flex-wrap: wrap;

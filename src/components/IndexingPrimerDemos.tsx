@@ -51,14 +51,13 @@ export function IndexingPrimerDemo({ lesson: id }: { lesson: string }) {
   const titleId = useId();
   const state = visual(id, step);
   const [width, setWidth] = useState(640);
-  const message = lesson.steps[step];
   const spatial = lesson.dimension === "3D";
   const playback = useIndexingPlayback({
     stageRef: ref,
     step,
-    lastStep: lesson.steps.length - 1,
+    lastStep: lesson.stepCount - 1,
     ready: !spatial || unavailable || sceneReady,
-    onStep: () => setStep((s) => Math.min(lesson.steps.length - 1, s + 1)),
+    onStep: () => setStep((s) => Math.min(lesson.stepCount - 1, s + 1)),
     onReset: () => setStep(0),
   });
   useEffect(() => {
@@ -151,7 +150,15 @@ export function IndexingPrimerDemo({ lesson: id }: { lesson: string }) {
             <TreeDiagram visual={state} width={width} />
           )}
         </div>
-        <div className="ip-metric">{state.takeaway}</div>
+        {state.result && (
+          <div
+            className="ip-metric"
+            role="status"
+            aria-live={playback.active ? "off" : "polite"}
+          >
+            {state.result}
+          </div>
+        )}
       </div>
       <div className="ip-controls">
         <button
@@ -164,7 +171,7 @@ export function IndexingPrimerDemo({ lesson: id }: { lesson: string }) {
         </button>
         <button
           type="button"
-          disabled={step === lesson.steps.length - 1}
+          disabled={step === lesson.stepCount - 1}
           onClick={playback.manualStep}
         >
           Next step
@@ -218,13 +225,6 @@ export function IndexingPrimerDemo({ lesson: id }: { lesson: string }) {
           </>
         )}
       </div>
-      <p
-        className="ip-status"
-        role="status"
-        aria-live={playback.active ? "off" : "polite"}
-      >
-        {message}
-      </p>
     </figure>
   );
 }
