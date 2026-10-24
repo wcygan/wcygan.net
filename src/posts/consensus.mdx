@@ -3,8 +3,10 @@ title: Consensus
 date: "2026-10-23T08:00:00-05:00"
 description: How Raft preserves decisions across failures
 tags: [Distributed Systems]
+relatedReading: Database Internals
 ---
 
+import { DatabaseInternalsReference } from "~/components/DatabaseInternalsReference";
 import { TotalOrderBroadcastFigure } from "~/components/TotalOrderBroadcastFigure";
 import { OperationOrderFigure } from "~/components/OperationOrderFigure";
 import { RaftLeaderElectionFigure } from "~/components/RaftLeaderElectionFigure";
@@ -14,6 +16,15 @@ import { RaftLogReplicationFigure } from "~/components/RaftLogReplicationFigure"
 import { RaftLeaderRecoveryFigure } from "~/components/RaftLeaderRecoveryFigure";
 import { RaftLogConflictFigure } from "~/components/RaftLogConflictFigure";
 import { RaftCurrentTermFigure } from "~/components/RaftCurrentTermFigure";
+
+<DatabaseInternalsReference
+  chapters={[
+    {
+      number: 14,
+      concept: "Consensus, total order broadcast, and Raft",
+    },
+  ]}
+/>
 
 Consensus algorithms let multiple processes in a distributed system agree on a value. They aim to provide three properties:
 
