@@ -1,5 +1,6 @@
 import { createBuilder } from "vite";
 import { renderDiagrams } from "./render-diagrams.mjs";
+import { verifyProductionPrerender } from "./verify-prerender.ts";
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled rejection during build:", err);
@@ -18,6 +19,7 @@ try {
 try {
   const builder = await createBuilder({}, null);
   await builder.buildApp();
+  await verifyProductionPrerender();
   process.exit(0);
 } catch (error) {
   console.error(error);

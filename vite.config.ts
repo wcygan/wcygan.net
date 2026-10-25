@@ -41,6 +41,9 @@ export default defineConfig(({ command }) => ({
     port: process.env.PORT ? Number(process.env.PORT) : 3000,
     host: process.env.HOST || "localhost",
   },
+  preview: {
+    host: "127.0.0.1",
+  },
   css: {
     postcss: "./postcss.config.js",
   },
