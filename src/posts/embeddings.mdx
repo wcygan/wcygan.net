@@ -12,17 +12,19 @@ import {
 
 An **embedding** represents something as a list of numbers, called a **vector**. An embedding model learns to give related things similar vectors, so an application can compare them using math.
 
-## Geographic Coordinate System
+## Geographic coordinates
 
-The [Geographic Coordinate System](https://en.wikipedia.org/wiki/Geographic_coordinate_system) (GPS) is a close relative of embeddings. The latitude and longitude tell us where it is on the globe.
-Chicago is roughly 41.9° north, 87.6° west. Those two numbers place it on a globe
-and let us calculate how far it is from another city.
+[Geographic coordinates](https://en.wikipedia.org/wiki/Geographic_coordinate_system)
+are a familiar way to represent a place with numbers. A city's latitude and
+longitude tell us where it is on the globe. Chicago is roughly 41.9° north,
+87.6° west. Those two numbers let us calculate how far it is from another city.
 
 <EmbeddingCoordinatesDemo />
 
-Text embeddings use a similar idea. A model gives each piece of text coordinates
+People define the coordinate system for places. For text embeddings, a model
+learns to assign coordinates based on relationships between pieces of text.
+Those coordinates form a vector
 in an [embedding space](https://developers.google.com/machine-learning/crash-course/embeddings/embedding-space).
-The positions represent learned relationships.
 
 Real text embeddings often have hundreds or thousands of numbers. Unlike latitude
 and longitude, each number usually has no simple meaning on its own. What matters
