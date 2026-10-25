@@ -10,11 +10,6 @@ import {
   useState,
 } from "react";
 import { CITIES } from "~/demos/embeddings/geography";
-import {
-  JOB_DESCRIPTIONS,
-  JOB_PROFILES,
-  rankJobsForProfile,
-} from "~/demos/embeddings/job-matching";
 import { DOCUMENTS, QUERIES, rankNeighbors } from "~/demos/embeddings/model";
 import {
   metricScore,
@@ -28,10 +23,10 @@ import type { ViewCommand } from "~/demos/embeddings/scene-helpers";
 const GlobeScene = lazy(() => import("~/demos/embeddings/GlobeScene"));
 const SpaceScene = lazy(() => import("~/demos/embeddings/SpaceScene"));
 const MetricScene = lazy(() => import("~/demos/embeddings/MetricScene"));
-const JobMatchScene = lazy(() => import("~/demos/embeddings/JobMatchScene"));
 
 type ViewKind = "reset" | "left" | "right" | "up" | "down" | "in" | "out";
 interface SceneState {
+  zoomable: boolean;
   active: boolean;
   started: boolean;
   reduced: boolean;
@@ -68,18 +63,18 @@ class SceneBoundary extends Component<
 
 function EmbeddingFigure({
   name,
+  zoomable = true,
   title,
   className,
   controls,
-  beforeStage,
   children,
   scene,
 }: {
   name: string;
+  zoomable?: boolean;
   title: string;
   className?: string;
   controls: ReactNode | ((resetView: () => void) => ReactNode);
-  beforeStage?: ReactNode;
   children?: ReactNode;
   scene: (state: SceneState) => ReactNode;
 }) {
@@ -140,7 +135,6 @@ function EmbeddingFigure({
           ? controls(() => command("reset"))
           : controls}
       </div>
-      {beforeStage}
       <div
         ref={stage}
         className="embeddings-stage"
@@ -152,10 +146,10 @@ function EmbeddingFigure({
         aria-label={`${title.replace(
           /\.$/,
           "",
-        )}. Arrow keys rotate; plus and minus zoom; Home resets the view.`}
+        )}. Arrow keys rotate;${zoomable ? " plus and minus zoom;" : ""} Home resets the view.`}
         onKeyDown={(event) => {
           const kind = VIEW_KEYS[event.key];
-          if (kind) {
+          if (kind && (zoomable || (kind !== "in" && kind !== "out"))) {
             event.preventDefault();
             command(kind);
           }
@@ -169,6 +163,7 @@ function EmbeddingFigure({
             <SceneBoundary onUnavailable={onUnavailable}>
               <Suspense fallback={null}>
                 {scene({
+                  zoomable,
                   active: visible && documentVisible,
                   started,
                   reduced,
@@ -192,79 +187,6 @@ function EmbeddingFigure({
       </div>
       {children}
     </figure>
-  );
-}
-
-export function EmbeddingJobMatchDemo() {
-  const [profileId, setProfileId] = useState(JOB_PROFILES[0].id);
-  const profile = JOB_PROFILES.find((candidate) => candidate.id === profileId)!;
-  const rankedJobs = rankJobsForProfile(profile);
-  const bestJob = rankedJobs[0];
-  const sceneJobs = JOB_DESCRIPTIONS.map((job) => ({
-    ...job,
-    score: profile.scores[job.id],
-  }));
-
-  return (
-    <EmbeddingFigure
-      name="job-match"
-      title="Match a profile to a job"
-      className="embeddings-job-match"
-      controls={
-        <div
-          className="embeddings-choices"
-          role="group"
-          aria-label="User profile"
-        >
-          {JOB_PROFILES.map((candidate) => (
-            <button
-              key={candidate.id}
-              type="button"
-              aria-pressed={candidate.id === profileId}
-              onClick={() => setProfileId(candidate.id)}
-            >
-              {candidate.name}
-            </button>
-          ))}
-        </div>
-      }
-      beforeStage={
-        <div className="embeddings-profile-summary">
-          <p>{profile.summary}</p>
-        </div>
-      }
-      scene={(state) => <JobMatchScene {...state} jobs={sceneJobs} />}
-    >
-      <div className="embeddings-result-heading">
-        <span>Job summaries</span>
-        <span>Cosine similarity</span>
-      </div>
-      <ol
-        className="embeddings-job-results"
-        aria-label="Jobs ranked by similarity"
-      >
-        {rankedJobs.map((job, index) => (
-          <li key={job.id} data-best-match={job.id === bestJob.id}>
-            <div className="embeddings-job-copy">
-              <span className="embeddings-job-rank">{index + 1}</span>
-              <div>
-                <strong>{job.title}</strong>
-                <p>{job.summary}</p>
-              </div>
-            </div>
-            <div
-              className="embeddings-job-score"
-              aria-label={`Cosine similarity ${job.score.toFixed(2)}`}
-            >
-              <span className="embeddings-job-bar" aria-hidden="true">
-                <span style={{ width: `${job.score * 100}%` }} />
-              </span>
-              <span>{job.score.toFixed(2)}</span>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </EmbeddingFigure>
   );
 }
 
@@ -308,6 +230,7 @@ export function EmbeddingSearchDemo() {
   return (
     <EmbeddingFigure
       name="search"
+      zoomable={false}
       title="Semantic Search"
       controls={
         <>

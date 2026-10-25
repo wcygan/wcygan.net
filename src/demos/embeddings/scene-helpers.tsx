@@ -18,6 +18,7 @@ export function SceneCamera({
   pose = [2.2, 1.6, 12],
   target = [0, 0, 0],
   horizontalOnly = false,
+  zoomable = true,
   onUnavailable,
 }: {
   view: ViewCommand;
@@ -27,6 +28,7 @@ export function SceneCamera({
   pose?: Point;
   target?: Point;
   horizontalOnly?: boolean;
+  zoomable?: boolean;
   onUnavailable: () => void;
 }) {
   const { camera, size, invalidate, gl } = useThree();
@@ -61,6 +63,7 @@ export function SceneCamera({
       camera.position.set(...preset);
       ortho.zoom = fit;
     } else if (view.kind === "in" || view.kind === "out") {
+      if (!zoomable) return;
       ortho.zoom = Math.max(
         fit * 0.65,
         Math.min(fit * 2.4, ortho.zoom * (view.kind === "in" ? 1.2 : 1 / 1.2)),
@@ -85,12 +88,13 @@ export function SceneCamera({
     camera.lookAt(...center);
     ortho.updateProjectionMatrix();
     invalidate();
-  }, [camera, invalidate, view]);
+  }, [camera, invalidate, view, zoomable]);
   return (
     <OrbitControls
       target={target}
       enabled={active}
       enablePan={false}
+      enableZoom={zoomable}
       enableDamping={false}
       minPolarAngle={horizontalOnly ? polarAngle : undefined}
       maxPolarAngle={horizontalOnly ? polarAngle : undefined}

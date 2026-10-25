@@ -16,6 +16,7 @@ import {
 } from "./EmbeddingDemos";
 
 interface SceneProps {
+  zoomable: boolean;
   active: boolean;
   reduced: boolean;
   view: { kind: string; revision: number };
@@ -206,8 +207,6 @@ describe("embedding scene lifecycle", () => {
 
     for (const [key, kind] of [
       ["ArrowLeft", "left"],
-      ["+", "in"],
-      ["-", "out"],
       ["Home", "reset"],
     ]) {
       fireEvent.keyDown(stage, { key });
@@ -215,13 +214,19 @@ describe("embedding scene lifecycle", () => {
       expect(scenes.space!.selectedId).toBe(selected);
       expect(scenes.space!.queryId).toBe("pet");
     }
-    expect(scenes.space!.view.revision).toBe(4);
+    expect(scenes.space!.view.revision).toBe(2);
+    expect(scenes.space!.zoomable).toBe(false);
+    expect(stage.getAttribute("aria-label")).not.toContain("zoom");
+    for (const key of ["+", "=", "-"]) {
+      fireEvent.keyDown(stage, { key });
+      expect(scenes.space!.view.revision).toBe(2);
+    }
     fireEvent.click(screen.getByRole("button", { name: "Reset view" }));
-    expect(scenes.space!.view).toEqual({ kind: "reset", revision: 5 });
+    expect(scenes.space!.view).toEqual({ kind: "reset", revision: 3 });
     fireEvent.change(screen.getByRole("combobox", { name: "Query" }), {
       target: { value: "drink" },
     });
-    expect(scenes.space!.view).toEqual({ kind: "reset", revision: 5 });
+    expect(scenes.space!.view).toEqual({ kind: "reset", revision: 3 });
   });
 
   it("retains coordinate controls and clears loading when a scene throws", async () => {

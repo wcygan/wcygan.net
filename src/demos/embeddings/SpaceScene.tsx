@@ -16,6 +16,7 @@ import {
 } from "./scene-helpers";
 
 interface Props {
+  zoomable: boolean;
   queryId: string;
   count: number;
   selectedId: string | null;
@@ -101,6 +102,7 @@ function World(props: Props) {
     <>
       <SceneCamera
         view={props.view}
+        zoomable={props.zoomable}
         active={props.active}
         onUnavailable={props.onUnavailable}
         width={10.2}

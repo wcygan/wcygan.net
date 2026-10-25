@@ -1,0 +1,48 @@
+---
+title: Embeddings
+date: October 25, 2026
+description: Finding meaning in a space of numbers
+tags: [Machine Learning, Data, Architecture]
+---
+
+import {
+  EmbeddingCoordinatesDemo,
+  EmbeddingSearchDemo,
+} from "~/components/EmbeddingDemos";
+
+An **embedding** represents something as a list of numbers, called a **vector**. An embedding model learns to give related things similar vectors, so an application can compare them using math.
+
+## Geographic Coordinate System
+
+The [Geographic Coordinate System](https://en.wikipedia.org/wiki/Geographic_coordinate_system) (GPS) is a close relative of embeddings. The latitude and longitude tell us where it is on the globe.
+Chicago is roughly 41.9° north, 87.6° west. Those two numbers place it on a globe
+and let us calculate how far it is from another city.
+
+<EmbeddingCoordinatesDemo />
+
+Text embeddings use a similar idea. A model gives each piece of text coordinates
+in an [embedding space](https://developers.google.com/machine-learning/crash-course/embeddings/embedding-space).
+The positions represent learned relationships.
+
+Real text embeddings often have hundreds or thousands of numbers. Unlike latitude
+and longitude, each number usually has no simple meaning on its own. What matters
+is how the vectors compare.
+
+## Search by meaning
+
+[Semantic search](https://www.sbert.net/examples/sentence_transformer/applications/semantic-search/README.html)
+uses embeddings to find relationships between text with similar meaning. For example, a search for “a purring pet” should be able to find “a sleeping cat,” even though
+the phrases share no words.
+
+The demo below uses three-dimensional vectors to visualize the idea.
+
+<EmbeddingSearchDemo />
+
+The query and each phrase have a vector. The demo ranks phrases by
+[cosine similarity](https://developers.google.com/machine-learning/clustering/dnn-clustering/supervised-similarity),
+which compares the directions of two vectors. A higher score means their
+directions are more alike.
+
+In an application, you would embed documents once and save their vectors.
+For each search, embed the query into the same space, compare it with the saved
+vectors, and return the best matches.
