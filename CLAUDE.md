@@ -70,6 +70,38 @@ change is intentional and accepted.
 - **Accessible without hover:** keyboard, touch, reduced-motion, and narrow
   viewports are first-class states.
 
+## Article writing
+
+Use `$write-clearly` when drafting or revising article prose. For technical
+explanations, prefer **descriptive technical writing**: concrete, accurate
+language and recognizable terminology. First person, personal examples, and
+reasoned judgments remain welcome. Scope this preference to explanatory section
+headings and prose; preserve the genre of narrative posts and the existing rules
+for article titles and UI labels.
+
+- Name the concept, mechanism, or concrete tradeoff in a section heading. Prefer
+  established terms that readers can recognize and search for. Plain phrases such
+  as “Paying for faster reads” work when they describe an actual cost.
+- Explain what the system does, how it works, and the conditions or costs that
+  matter. Keep terminology consistent across the explanation and its examples.
+- Use instructional headings when a section gives actual steps to perform a
+  task. Avoid vague journey language in sections that explain a concept.
+- Link technical definitions where a source helps readers verify the explanation
+  or explore further. Prefer primary documentation for the version discussed and
+  immutable commit permalinks for code references. Link the first substantive
+  mention rather than every occurrence.
+
+Examples for explanatory sections:
+
+| Prefer                 | Replace              |
+| ---------------------- | -------------------- |
+| Table scans            | Start with a scan    |
+| Index and page routing | Follow the tree      |
+| Secondary indexes      | Index another column |
+
+Review the table of contents before finishing: readers should be able to predict
+each section's subject without reading its body.
+
 ## Canonical color system
 
 These are the accepted shared-shell values. Prefer promoting them to semantic
