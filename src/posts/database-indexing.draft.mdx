@@ -1,96 +1,177 @@
 ---
 title: Database Indexing
-date: October 1, 2026
-description: How indexes find records and trade off writes
+date: October 24, 2026
+description: How indexes find rows and trade off writes
 tags: [Databases, Architecture, Performance]
 draft: true
 ---
 
 import { IndexingPrimerDemo } from "~/components/IndexingPrimerDemos";
 
-An index is an ordered structure that helps a database locate data. It trades storage space and write maintenance for less searching.
+An **[index](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_index)** helps a database find rows without checking every row. Indexes can
+reduce the work a query needs to do, but they use storage and add work to writes.
 
-## Finding a record
+These examples use MySQL's InnoDB engine. The `people` table has an `id`, a `name`,
+and a `city`. Its **[primary key](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_primary_key)**, `id`, uniquely identifies each row.
 
-A table can contain millions of records. Without a useful index for your filter, the engine may inspect every record to find the matches. Our example searches a name in records ordered by ID.
+## Table scans
+
+A **[full table scan](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_full_table_scan)** examines every row to find those that match a query. The
+`people` table is ordered by `id`.
+To find every person named Zoe, the database checks each row's `name`.
 
 <IndexingPrimerDemo lesson="scan" />
 
-## Following a sorted tree
+## Index and page routing
 
-An index keeps keys in order. A B+ tree uses separator keys to route searches into smaller groups. It remains shallow because each page can have many children.
+InnoDB's indexes use a [B-tree structure](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_b_tree).
+The tree groups index entries into **[pages](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_page)**. **[Branch pages](https://dev.mysql.com/doc/refman/8.4/en/sorted-index-builds.html)** contain routing
+keys that direct a lookup to a child page. **[Leaf pages](https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html)** contain the entries.
+
+For `id = 9`, a routing key directs the lookup to the last leaf page. The database
+skips the other leaf pages.
 
 <IndexingPrimerDemo lesson="tree" />
 
-## Reading storage pages
+Leaf pages are linked in key order. A [range query](https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html) can find its first matching
+entry, then follow neighboring leaf pages until it reaches the end of the range.
 
-Each outlined page below holds three visible records. Real pages hold many more records than this illustration. Reading one page can make several neighboring records available.
+## Secondary indexes
 
-<IndexingPrimerDemo lesson="pages" />
+InnoDB stores full rows in the leaves of its **[primary index](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_clustered_index)**, ordered by
+the primary key. A [secondary index](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)
+provides another order for finding those rows.
 
-## Inserting without a scan
-
-Knowing the new record’s key is enough to locate its destination leaf. This is why an insert does not need the name scan shown earlier.
-
-<IndexingPrimerDemo lesson="insert" />
-
-## Making room for new entries
-
-Pages have finite space. Splits keep the tree usable as data grows, but they add work to a write.
-
-<IndexingPrimerDemo lesson="split" />
-
-## Searching a different column
-
-InnoDB stores full records in its primary-key tree. A secondary index on name gives a name search its own sorted path. Its entries contain the primary key, which leads to the full record.
+An index on `name` stores names alongside primary keys, such as `Zoe → 9`. To
+fetch Zoe's full row, the database looks up Zoe in the name index to get ID 9,
+then looks up that ID in the primary index.
 
 <IndexingPrimerDemo lesson="secondary" />
 
-## Finding several neighboring keys
+## Covering indexes
 
-An ordered index is useful for more than equality. After seeking a starting key, a range search can follow the linked leaves until it reaches the end of the range.
-
-<IndexingPrimerDemo lesson="range" />
-
-## Choosing the order of columns
-
-A compound index sorts by its first column, then its second. Its leading columns determine which filters naturally form a searchable continuous range. Engines may have additional strategies such as skip scans; this shows the basic ordering.
-
-<IndexingPrimerDemo lesson="compound" />
-
-## Answering from the index
-
-A covering index contains every field needed by a query. It can avoid the usual second lookup for the table record. Adding fields also increases index size and write maintenance.
+A **[covering index](https://dev.mysql.com/doc/refman/8.4/en/glossary.html#glos_covering_index)** contains all the columns a particular query needs. The name
+index already contains `name` and the primary key, `id`, so a query for those two
+columns can read them from the name index alone. It avoids the second lookup
+shown above.
 
 <IndexingPrimerDemo lesson="cover" />
 
-## Skipping enough work to matter
+Whether an index covers a query depends on the columns the query needs. Adding
+`city` to the result would require fetching the row, because the name index does
+not contain that value.
 
-Selectivity describes how narrow a filter is. An index is not automatically the cheapest plan. Fetching many scattered full records can cost more than scanning the table; caching, row size, and the requested fields all matter.
+## Composite indexes
 
-<IndexingPrimerDemo lesson="selectivity" />
+A [composite index](https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html)
+is defined on more than one column. An index on `(city, name)` sorts entries by city
+first, then by name within each city.
 
-## Paying for indexes on writes
+All Austin entries sit together. Zoe can appear in several city groups, so a
+search by name alone does not identify one continuous range of entries.
 
-Each index occupies space and must stay consistent with the table. Inserts add entries, deletes remove them, and updates maintain affected entries. The counts below describe structures maintained, not physical disk writes.
+<IndexingPrimerDemo lesson="compound" />
+
+This grouping resembles [partitioning](https://dev.mysql.com/doc/refman/8.4/en/partitioning-overview.html): specifying a city narrows
+the search to that city's names. Here, the groups are ranges within one ordered
+index. Table partitioning divides the table's rows into separate storage
+partitions.
+
+Choose column order to support the filters and sorting your queries use.
+
+## Paying for faster reads
+
+An insert adds an entry to the primary index and every secondary index. Updating
+an indexed value also changes its index entry. Each additional index uses storage
+and adds work to writes.
 
 <IndexingPrimerDemo lesson="writes" />
 
-## Keeping references stable
+The demo counts index entries, not physical disk writes. An index needs to skip
+enough work to help: fetching most rows through a secondary index can cost more
+than scanning the table.
 
-InnoDB secondary entries use primary keys instead of physical record addresses. Keeping that key unchanged allows a reference to survive changes in storage placement. Here, a full row grows because an unindexed field changes. The primary leaf splits, but the name entry still stores the same ID.
+## Comparing real access paths
 
-<IndexingPrimerDemo lesson="stable" />
+Different access paths can return the same rows while doing different amounts
+of work. Compare the rows each path examines and its execution time.
 
-## What to remember
+Use [EXPLAIN](https://dev.mysql.com/doc/refman/8.4/en/using-explain.html) to inspect
+the access path and estimated row counts for your application's queries. For a
+`SELECT` you can safely run,
+[EXPLAIN ANALYZE](https://dev.mysql.com/doc/refman/8.4/en/explain.html#explain-analyze)
+executes the query and reports actual row counts and timing. Check these plans
+before adding another index.
 
-Choose indexes around the filters, joins, and ordering your queries actually use. An index is useful when it avoids enough work to pay for its storage and maintenance. Use your database’s query plan to check whether it is used and how many records the query reads.
+## Code examples
 
-The primary and secondary layouts here describe MySQL’s InnoDB engine. Other engines organize records differently. PostgreSQL usually keeps rows in a separate heap; its update and index-maintenance behavior also depends on row versions and HOT updates.
+The [conceptual-database crate](https://github.com/wcygan/examples/tree/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database)
+contains three runnable Rust examples, an HTTP API, and a MySQL comparison script.
+All links below point to the same pinned revision.
 
-## Further reading
+The Rust examples store rows in an in-memory hash map and keep secondary indexes
+of row IDs. Their row and index counts represent logical work. They do not model
+InnoDB disk I/O or covering reads.
 
-- [InnoDB clustered and secondary indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)
-- [InnoDB index pages](https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html)
-- [MySQL multiple-column indexes](https://dev.mysql.com/doc/refman/8.4/en/multiple-column-indexes.html)
-- [Understanding EXPLAIN](https://dev.mysql.com/doc/refman/8.4/en/using-explain.html)
+- **[Indexing walkthrough](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/examples/walkthrough.rs#L3-L91)**
+  demonstrates primary and secondary lookups, date ranges, latest orders, forced
+  scans, and rollback of a failed batch.
+  - [Secondary lookups](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/src/query.rs#L290-L300)
+    read row IDs from an index, then fetch their rows from the primary map.
+  - [Composite ordering](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/src/tree.rs#L40-L49)
+    groups entries by customer, then date, then order ID.
+  - [Index maintenance](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/src/database.rs#L132-L149)
+    updates the primary map and four secondary indexes for every new order.
+
+- **[Access-path comparison](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/examples/index_strategies.rs#L27-L87)**
+  loads one million generated orders and compares five ways to answer the same
+  query:
+
+  ```sql
+  SELECT * FROM orders
+  WHERE product_id = 7
+    AND state = 'cancelled';
+  ```
+
+  Every access path returns the same 24 orders, but reads different numbers of
+  index entries and rows:
+
+  | Access path                             | Index entries read | Rows fetched |
+  | --------------------------------------- | -----------------: | -----------: |
+  | Full scan                               |                  0 |    1,000,000 |
+  | State index, then filter by product     |             20,087 |       20,087 |
+  | Product index, then filter by state     |                886 |          886 |
+  | Intersect the product and state indexes |             20,962 |           24 |
+  | Composite product/state index           |                 24 |           24 |
+  - [Index intersection](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/src/query.rs#L303-L327)
+    walks two ordered ID lists and fetches rows whose IDs appear in both.
+  - [Work counters](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/src/query.rs#L51-L64)
+    report index entries read and full rows fetched. These counts are from the
+    Rust program, not MySQL measurements.
+
+  Run the pinned version with Rust installed:
+
+  ```bash
+  git clone https://github.com/wcygan/examples.git
+  cd examples
+  git checkout --detach 3205ebd3742799518de1e3c616fe218d9c90d5dd
+  cargo run --release --locked -p conceptual-database --example index_strategies
+  ```
+
+- **[Tree implementation comparison](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/examples/tree_swap.rs#L177-L214)**
+  compares database workloads using Rust's standard B-tree and bbtree.
+  - [Swapping trees](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/examples/tree_swap.rs#L216-L233)
+    rebuilds the indexes with the other tree and checks that query results stay
+    the same.
+
+- **[HTTP API examples](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/README.md#L65-L123)**
+  show requests for seeding rows, querying indexes, and comparing forced scans.
+  The [setup commands](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/README.md#L11-L21)
+  include starting the server.
+
+- **[MySQL 8.4 comparison](https://github.com/wcygan/examples/blob/3205ebd3742799518de1e3c616fe218d9c90d5dd/crates/conceptual-database/mysql/index_strategies.sql#L4-L58)**
+  creates an InnoDB `orders` table, generates data, and compares access paths with
+  `EXPLAIN ANALYZE`. Run it in a disposable database: it drops and recreates
+  `orders`. Its data generator differs from the Rust examples, so its row counts
+  differ from the table above. Inspect the resulting plans to see which indexes
+  MySQL actually uses.

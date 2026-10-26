@@ -1,25 +1,28 @@
 import { useId } from "react";
-import type { Page, TreeVisual } from "./visual";
+import type { TreeVisual } from "./visual";
+import type { Travel } from "./transition";
+import { linkPoints, routePath, routePrefix } from "./geometry";
 export function TreeDiagram({
   visual,
   width = 640,
+  travel,
 }: {
   visual: TreeVisual;
   width?: number;
+  travel?: Travel;
 }) {
   const id = useId();
   const scale = width / 640;
   const x = (v: number) => v * scale;
-  const all = visual.groups.flatMap((g) => g.pages);
-  const find = (id: string) => all.find((p) => p.id === id)!;
-  function route(a: Page, b: Page, kind: string) {
-    if (kind === "leaf")
-      return `M${x(a.x + a.width / 2)} ${a.y} H${x(b.x - b.width / 2)}`;
-    const sy = a.y + a.height / 2,
-      dy = b.y - b.height / 2;
-    const middle = (sy + dy) / 2;
-    return `M${x(a.x)} ${sy} V${middle} H${x(b.x)} V${dy}`;
-  }
+  const traveled = travel
+    ? routePrefix(
+        travel.reverse
+          ? linkPoints(visual, travel, width).reverse()
+          : linkPoints(visual, travel, width),
+        travel.progress,
+      )
+    : undefined;
+  const packet = traveled?.at(-1);
   return (
     <svg
       className="ip-tree-svg"
@@ -53,8 +56,8 @@ export function TreeDiagram({
             {g.title}
           </text>
           {g.links.map((link, i) => {
-            const a = find(link.from),
-              b = find(link.to);
+            const traveling =
+              travel?.from === link.from && travel?.to === link.to;
             const role =
               link.kind === "handoff" && link.active
                 ? "handoff"
@@ -66,9 +69,14 @@ export function TreeDiagram({
                 key={i}
                 className="ip-tree-link"
                 data-active={link.active}
+                data-traveling={traveling}
                 data-kind={link.kind}
-                d={route(a, b, link.kind)}
-                markerEnd={`url(#${id}-${role})`}
+                d={routePath(linkPoints(visual, link, width))}
+                markerEnd={
+                  traveling && travel?.reverse
+                    ? undefined
+                    : `url(#${id}-${role})`
+                }
               />
             );
           })}
@@ -77,11 +85,12 @@ export function TreeDiagram({
               px = x(p.x) - w / 2,
               py = p.y - p.height / 2;
             const header = 26,
-              cellH = (p.height - header) / Math.max(1, p.entries.length);
+              cellH = (p.height - header) / Math.max(3, p.entries.length);
             return (
               <g
                 key={p.id}
                 className="ip-tree-page"
+                data-page-id={p.id}
                 data-kind={p.kind}
                 data-state={p.state}
               >
@@ -93,6 +102,14 @@ export function TreeDiagram({
                   height={p.height}
                   rx="4"
                 />
+                <rect
+                  className="ip-page-header"
+                  x={px + 0.75}
+                  y={py + 0.75}
+                  width={w - 1.5}
+                  height={header - 0.75}
+                  rx="3"
+                />
                 <text className="ip-svg-page-title" x={px + 8} y={py + 17}>
                   {p.title}
                 </text>
@@ -102,12 +119,20 @@ export function TreeDiagram({
                 />
                 {p.entries.map((entry, i) => {
                   const branch = p.kind === "branch";
-                  const cx = branch ? px + (i * w) / p.entries.length : px + 4;
+                  const cellX = branch
+                    ? px + (i * w) / p.entries.length
+                    : px + 4;
+                  const cx = cellX + (branch ? 3 : 0);
+                  const padding = width < 480 && !branch ? 1 : 3;
                   const cy = branch
-                    ? py + header + 3
-                    : py + header + i * cellH + 3;
-                  const cw = branch ? w / p.entries.length : w - 8;
-                  const ch = branch ? p.height - header - 6 : cellH - 6;
+                    ? py + header + padding
+                    : py + header + i * cellH + padding;
+                  const cw = branch ? w / p.entries.length - 6 : w - 8;
+                  const ch = branch
+                    ? p.height - header - padding * 2
+                    : cellH - padding * 2;
+                  const stacked = !branch && entry.value && cw < 84;
+                  const keyY = cy + ch / 2 - (stacked ? 8 : 0);
                   return (
                     <g
                       key={entry.key + i}
@@ -115,10 +140,17 @@ export function TreeDiagram({
                       data-state={entry.state}
                     >
                       <rect x={cx} y={cy} width={cw} height={ch} rx="2" />
+                      {branch && i > 0 && (
+                        <path
+                          className="ip-page-divider"
+                          d={`M${cellX} ${py + header} V${py + p.height}`}
+                        />
+                      )}
                       <text
                         className="ip-svg-key"
                         x={branch ? cx + cw / 2 : cx + 6}
-                        y={cy + ch / 2 + 5}
+                        y={keyY}
+                        dominantBaseline="central"
                         textAnchor={branch ? "middle" : "start"}
                       >
                         {entry.key.includes(" / ")
@@ -132,9 +164,10 @@ export function TreeDiagram({
                       {entry.value && (
                         <text
                           className="ip-svg-value"
-                          x={cx + cw - 6}
-                          y={cy + ch / 2 + 5}
-                          textAnchor="end"
+                          x={stacked ? cx + 6 : cx + cw - 6}
+                          y={cy + ch / 2 + (stacked ? 8 : 0)}
+                          dominantBaseline="central"
+                          textAnchor={stacked ? "start" : "end"}
                         >
                           {entry.value}
                         </text>
@@ -153,6 +186,20 @@ export function TreeDiagram({
           })}
         </g>
       ))}
+      {traveled && packet && (
+        <g aria-hidden="true">
+          <path className="ip-travel-trace" d={routePath(traveled)} />
+          <circle
+            className="ip-travel-packet"
+            data-route-from={travel?.from}
+            data-route-to={travel?.to}
+            data-route-progress={travel?.progress.toFixed(3)}
+            cx={packet.x}
+            cy={packet.y}
+            r="5"
+          />
+        </g>
+      )}
     </svg>
   );
 }

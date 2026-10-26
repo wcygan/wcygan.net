@@ -1,6 +1,15 @@
-import { lessons } from "./model";
+import { lessons, type LessonId } from "./model";
 
 export const WIDTH = 640;
+const ROUTER_HEIGHT = 56;
+const LEAF_HEIGHT = 134;
+const ROUTER_Y = 60;
+const PAGE_GAP = 40;
+const leafY = (routerY: number) =>
+  routerY + (ROUTER_HEIGHT + LEAF_HEIGHT) / 2 + PAGE_GAP;
+const SECOND_ROUTER_Y =
+  leafY(ROUTER_Y) + (LEAF_HEIGHT + ROUTER_HEIGHT) / 2 + PAGE_GAP;
+const stageHeight = (routerY: number) => leafY(routerY) + LEAF_HEIGHT / 2 + 24;
 export type EntryState = "active" | "found" | "checked" | "muted" | "new";
 export interface Entry {
   key: string;
@@ -11,7 +20,7 @@ export interface Page {
   id: string;
   title: string;
   entries: Entry[];
-  kind: "branch" | "leaf" | "memory";
+  kind: "branch" | "leaf";
   x: number;
   y: number;
   width: number;
@@ -71,33 +80,22 @@ const secondaryEntries = () => [
 
 interface TreeOptions {
   rootY?: number;
-  leafY?: number;
   rootState?: EntryState;
   leafStates?: (EntryState | undefined)[];
   activeBranches?: number[];
   activeLeafLinks?: number[];
-  leafHeight?: number;
-  rootTitle?: string;
 }
 
-/** Coordinates are shared by SVG and 3D renderers; each page uses its center. */
 function tree(
   id: string,
   title: string,
   leaves: Entry[][],
   options: TreeOptions = {},
 ): TreeGroup {
-  const centers =
-    leaves.length === 4
-      ? [88, 240, 400, 552]
-      : leaves.length === 2
-        ? [208, 432]
-        : leaves.length === 1
-          ? [320]
-          : [112, 320, 528];
+  const centers = leaves.length === 2 ? [208, 432] : [112, 320, 528];
   const root: Page = {
     id: `${id}-root`,
-    title: options.rootTitle ?? "SEPARATOR KEYS",
+    title: "Keys",
     entries: leaves.slice(1).map((entries) => ({
       key: /^\d+$/.test(entries[0].key)
         ? String(Number(entries[0].key))
@@ -105,28 +103,36 @@ function tree(
     })),
     kind: "branch",
     x: 320,
-    y: options.rootY ?? 65,
+    y: options.rootY ?? ROUTER_Y,
     width: 164,
-    height: 70,
+    height: ROUTER_HEIGHT,
     state: options.rootState,
   };
   for (const branch of options.activeBranches ?? []) {
     const separator = root.entries[Math.max(0, branch - 1)];
     if (separator) separator.state = "active";
   }
+  if (options.activeBranches?.length)
+    for (const entry of root.entries)
+      if (entry.state !== "active") entry.state = "muted";
   const pages = [
     root,
     ...leaves.map(
       (entries, index): Page => ({
         id: `${id}-leaf-${index + 1}`,
-        title: `LEAF ${index + 1}`,
+        title: `Page ${index + 1}`,
         entries,
         kind: "leaf",
         x: centers[index],
-        y: options.leafY ?? 210,
-        width: leaves.length === 4 ? 136 : 176,
-        height: options.leafHeight ?? 144,
-        state: options.leafStates?.[index],
+        y: leafY(root.y),
+        width: 176,
+        height: LEAF_HEIGHT,
+        state:
+          options.leafStates?.[index] ??
+          (options.activeBranches?.length &&
+          !options.activeBranches.includes(index)
+            ? "muted"
+            : undefined),
       }),
     ),
   ];
@@ -147,10 +153,10 @@ function tree(
 }
 
 function primary(leaves = primaryEntries(), options: TreeOptions = {}) {
-  return tree("primary", "PRIMARY INDEX · ID + RECORD", leaves, options);
+  return tree("primary", "Primary index · ID + row", leaves, options);
 }
 function secondary(leaves = secondaryEntries(), options: TreeOptions = {}) {
-  return tree("secondary", "NAME INDEX · NAME + PRIMARY KEY", leaves, options);
+  return tree("secondary", "Name index · name + ID", leaves, options);
 }
 function mark(
   leaves: Entry[][],
@@ -170,14 +176,14 @@ function handoff(from: TreeGroup, to: TreeGroup, active: boolean) {
   });
 }
 
-export function visual(id: string, step: number): TreeVisual {
+export function visual(id: LessonId, step: number): TreeVisual {
   const lesson = lessons.find((candidate) => candidate.id === id);
   if (!lesson) throw new Error(`Unknown indexing lesson: ${id}`);
   const s = Math.max(0, Math.min(Math.floor(step), lesson.stepCount - 1));
   let groups: TreeGroup[] = [];
   let query = "";
   let result: string | undefined;
-  let height = 340;
+  let height = stageHeight(ROUTER_Y);
 
   if (id === "scan") {
     const entries = primaryEntries().map((leaf, index) =>
@@ -202,244 +208,67 @@ export function visual(id: string, step: number): TreeVisual {
         activeLeafLinks: s > 2 ? [0, 1] : s > 1 ? [0] : [],
       }),
     ];
-    query = "WHERE name = 'Zoe'";
+    query = "SELECT * FROM people WHERE name = 'Zoe'";
     result =
-      s === 3
-        ? "9 records checked · Zoe found"
-        : `${s * 3} of 9 records checked`;
+      s === 3 ? "9 rows checked · Zoe found" : `${s * 3} of 9 rows checked`;
   }
 
-  if (id === "tree" || id === "insert") {
-    let entries = primaryEntries();
-    if (id === "insert" && s < 2) entries[2] = [record(7), record(8)];
-    if (s === 2)
-      entries = mark(
-        entries,
-        (entry) => entry.key === "09",
-        id === "insert" ? "new" : "found",
-      );
+  if (id === "tree") {
+    const entries =
+      s === 2
+        ? mark(primaryEntries(), (entry) => entry.key === "09", "found")
+        : primaryEntries();
     groups = [
       primary(entries, {
         rootState: s >= 1 ? "active" : undefined,
         leafStates: [
           undefined,
           undefined,
-          s === 2 ? (id === "insert" ? "new" : "found") : undefined,
+          s === 2 ? "found" : s === 1 ? "active" : undefined,
         ],
         activeBranches: s >= 1 ? [2] : [],
       }),
     ];
-    query = id === "insert" ? "INSERT ID 9, name 'Zoe'" : "WHERE id = 9";
-    result =
-      s === 2
-        ? id === "insert"
-          ? "1 leaf changed · no table scan"
-          : "2 index pages visited · 1 matching record"
-        : undefined;
+    query = "SELECT * FROM people WHERE id = 9";
+    result = s === 2 ? "2 pages visited · 1 matching row" : undefined;
   }
 
-  if (id === "pages") {
-    const entries =
-      s > 0
-        ? mark(primaryEntries(), (entry) => entry.key === "08", "found")
-        : primaryEntries();
-    const index = primary(entries, {
-      rootState: s > 0 ? "active" : undefined,
-      activeBranches: s > 0 ? [2] : [],
-      leafStates: [undefined, undefined, s > 0 ? "active" : undefined],
-      leafY: 195,
-      leafHeight: 144,
-    });
-    index.pages.push({
-      id: "memory-page",
-      title: "BUFFER POOL · CACHED PAGE",
-      entries: s === 2 ? [record(7), record(8, "found"), record(9)] : [],
-      kind: "memory",
-      x: 320,
-      y: 380,
-      width: 300,
-      height: 144,
-      state: s === 2 ? "found" : "muted",
-    });
-    index.links.push({
-      from: "primary-leaf-3",
-      to: "memory-page",
-      kind: "handoff",
-      active: s === 2,
-    });
-    groups = [index];
-    query = "WHERE id = 8";
-    result =
-      s === 2 ? "1 page loaded · records 7, 8 and 9 available" : undefined;
-    height = 490;
-  }
-
-  if (id === "split") {
-    groups = [
-      tree(
-        "split",
-        "PRIMARY INDEX · PAGE SPLIT",
-        s === 2
-          ? [
-              [record(6), record(7)],
-              [record(8), record(9, "new")],
-            ]
-          : [[record(6), record(7), record(8)]],
-        {
-          rootState: s === 2 ? "active" : undefined,
-          leafStates:
-            s === 2 ? ["active", "new"] : [s === 1 ? "active" : undefined],
-          activeBranches: s === 2 ? [0, 1] : [],
-          activeLeafLinks: s === 2 ? [0] : [],
-          rootTitle: s === 2 ? "NEW SEPARATOR" : "PARENT PAGE",
-        },
-      ),
-    ];
-    if (s < 2) {
-      groups[0].pages[0].title = "PARENT · ID ≥ 6";
-      groups[0].pages[0].entries = [{ key: "≥ 6" }];
-    }
-    if (s === 1) {
-      groups[0].pages.push({
-        id: "incoming-record",
-        title: "INCOMING",
-        entries: [record(9, "new")],
-        kind: "memory",
-        x: 528,
-        y: 65,
-        width: 176,
-        height: 70,
-        state: "new",
-      });
-      groups[0].links.push({
-        from: "incoming-record",
-        to: "split-leaf-1",
-        kind: "handoff",
-        active: true,
-      });
-    }
-    query = s === 1 ? "INSERT 9 · leaf is full" : "INSERT ID 9";
-    result =
-      s === 2
-        ? "Separator 8 · left keys < 8 · right keys ≥ 8"
-        : s === 1
-          ? "6, 7, 8 + incoming 9 · split needed"
-          : "This leaf currently holds 6, 7, 8";
-  }
-
-  if (id === "secondary" || id === "cover" || id === "stable") {
+  if (id === "secondary" || id === "cover") {
     const nameLeaves =
       s > 0
         ? mark(secondaryEntries(), (entry) => entry.key === "Zoe", "found")
         : secondaryEntries();
     const nameTree = secondary(nameLeaves, {
-      leafY: 200,
       rootState: s > 0 ? "active" : undefined,
       leafStates: [undefined, undefined, s > 0 ? "found" : undefined],
       activeBranches: s > 0 ? [2] : [],
     });
-    let recordLeaves = primaryEntries();
-    if (id === "stable")
-      recordLeaves =
-        s === 2
-          ? [
-              [record(7), record(8)],
-              [{ ...record(9, "found"), value: "Zoe + bio" }],
-            ]
-          : [
-              [
-                record(7),
-                record(8),
-                {
-                  ...record(9, s === 1 ? "new" : undefined),
-                  value: s === 1 ? "Zoe + bio" : "Zoe",
-                },
-              ],
-            ];
-    else if (id === "secondary" && s === 2)
-      recordLeaves = mark(recordLeaves, (entry) => entry.key === "09", "found");
+    const recordLeaves =
+      id === "secondary" && s === 2
+        ? mark(primaryEntries(), (entry) => entry.key === "09", "found")
+        : primaryEntries();
     const recordTree = primary(recordLeaves, {
-      rootY: 335,
-      leafY: 470,
+      rootY: SECOND_ROUTER_Y,
       rootState: id === "cover" ? "muted" : s === 2 ? "active" : undefined,
       leafStates:
         id === "cover"
           ? ["muted", "muted", "muted"]
-          : id === "stable"
-            ? s === 2
-              ? [undefined, "found"]
-              : s === 1
-                ? ["new"]
-                : []
-            : [undefined, undefined, s === 2 ? "found" : undefined],
-      activeBranches:
-        id === "cover"
-          ? []
-          : id === "stable"
-            ? s === 2
-              ? [1]
-              : []
-            : s === 2
-              ? [2]
-              : [],
+          : [undefined, undefined, s === 2 ? "found" : undefined],
+      activeBranches: id === "secondary" && s === 2 ? [2] : [],
     });
-    if (id === "stable") {
-      recordTree.title = "PRIMARY INDEX · LAST BRANCH (ID ≥ 7)";
-      for (const page of recordTree.pages.slice(1))
-        page.width = s === 2 ? 208 : 300;
-      recordTree.pages[0].title = s === 2 ? "NEW SEPARATOR" : "PARENT · ID ≥ 7";
-      if (s < 2) recordTree.pages[0].entries = [{ key: "≥ 7" }];
-    }
-    if (id !== "cover") handoff(nameTree, recordTree, s === 2);
+    if (id === "secondary") handoff(nameTree, recordTree, s === 2);
     groups = [nameTree, recordTree];
     query =
       id === "cover"
-        ? "SELECT name, id WHERE name = 'Zoe'"
-        : id === "stable"
-          ? "Grow ID 9's unindexed payload · split its full page"
-          : "SELECT * WHERE name = 'Zoe'";
+        ? "SELECT name, id FROM people WHERE name = 'Zoe'"
+        : "SELECT * FROM people WHERE name = 'Zoe'";
     result =
-      id === "cover"
-        ? s === 2
-          ? "Zoe + ID 9 returned · 0 primary-row fetches"
-          : undefined
-        : id === "stable"
-          ? s === 2
-            ? "New primary leaf · same Zoe → ID 9 entry"
-            : s === 1
-              ? "ID 9 has a larger bio · its primary page needs room"
-              : "Zoe → ID 9 · primary record in the last leaf"
-          : s === 2
-            ? "Name → ID 9 → full record · 2 tree lookups"
-            : undefined;
-    height = 560;
-  }
-
-  if (id === "range") {
-    let entries = primaryEntries();
-    if (s >= 2)
-      entries = mark(
-        entries,
-        (entry) =>
-          Number(entry.key) >= 4 && Number(entry.key) <= (s === 3 ? 8 : 6),
-        "found",
-      );
-    if (s === 3)
-      entries = mark(entries, (entry) => entry.key === "09", "muted");
-    groups = [
-      primary(entries, {
-        rootState: s > 0 ? "active" : undefined,
-        leafStates: [
-          undefined,
-          s > 0 ? "active" : undefined,
-          s === 3 ? "found" : undefined,
-        ],
-        activeBranches: s > 0 ? [1] : [],
-        activeLeafLinks: s === 3 ? [1] : [],
-      }),
-    ];
-    query = "WHERE id BETWEEN 4 AND 8";
-    result = s === 3 ? "5 records returned · stop before 9" : undefined;
+      s === 2
+        ? id === "cover"
+          ? "Name + ID returned · 1 tree lookup"
+          : "2 tree lookups · ID 9 returned"
+        : undefined;
+    height = stageHeight(SECOND_ROUTER_Y);
   }
 
   if (id === "compound") {
@@ -462,71 +291,40 @@ export function visual(id: string, step: number): TreeVisual {
             entries[1],
           ]
         : s === 2
-          ? mark(entries, (entry) => entry.key === "Zoe", "found")
+          ? entries.map((leaf) =>
+              leaf.map((entry) => ({
+                ...entry,
+                state:
+                  entry.key === "Zoe"
+                    ? ("found" as const)
+                    : ("checked" as const),
+              })),
+            )
           : entries;
-    const compound = tree(
-      "compound",
-      "COMPOUND INDEX · CITY, THEN NAME",
-      marked,
-      {
-        rootState: s === 1 ? "active" : s === 2 ? "muted" : undefined,
-        activeBranches: s === 1 ? [0] : [],
-        activeLeafLinks: s === 2 ? [0] : [],
-        leafStates:
-          s === 1 ? ["found", undefined] : s === 2 ? ["active", "active"] : [],
-      },
-    );
-    compound.pages[0].entries = [{ key: "Boston" }];
-    compound.pages[1].title = "CITY · AUSTIN";
-    compound.pages[2].title = "CITY · BOSTON";
+    const compound = tree("compound", "City + name index", marked, {
+      rootState: s === 1 ? "active" : s === 2 ? "muted" : undefined,
+      activeBranches: s === 1 ? [0] : [],
+      activeLeafLinks: s === 2 ? [0] : [],
+      leafStates:
+        s === 1 ? ["found", undefined] : s === 2 ? ["active", "active"] : [],
+    });
+    compound.pages[0].entries = [
+      { key: "Boston", state: s === 1 ? "active" : undefined },
+    ];
+    compound.pages[1].title = "Austin";
+    compound.pages[2].title = "Boston";
     compound.pages[1].width = 208;
     compound.pages[2].width = 208;
     compound.pages[1].x = 196;
     compound.pages[2].x = 444;
     groups = [compound];
-    query =
-      s === 2
-        ? "WHERE name = 'Zoe'"
-        : s === 1
-          ? "WHERE city = 'Austin'"
-          : "INDEX (city, name)";
-  }
-
-  if (id === "selectivity") {
-    const entries =
-      s === 1
-        ? mark(primaryEntries(), (entry) => entry.key === "09", "found")
-        : s === 2
-          ? primaryEntries().map((leaf) =>
-              leaf.map((entry) => ({
-                ...entry,
-                value: entry.key === "09" ? "no" : "yes",
-                state:
-                  entry.key === "09" ? ("muted" as const) : ("found" as const),
-              })),
-            )
-          : primaryEntries();
-    groups = [
-      primary(entries, {
-        rootState: s === 1 ? "active" : s === 2 ? "muted" : undefined,
-        activeBranches: s === 1 ? [2] : [],
-        activeLeafLinks: s === 2 ? [0, 1] : [],
-        leafStates:
-          s === 1
-            ? [undefined, undefined, "found"]
-            : s === 2
-              ? ["found", "found", "found"]
-              : [],
-      }),
-    ];
-    if (s === 2) groups[0].title = "PRIMARY INDEX · ID + ACTIVE";
-    query = s === 2 ? "WHERE active = 'yes'" : "WHERE id = 9";
     result =
       s === 1
-        ? "1 of 9 matches · 8 records skipped"
+        ? "Austin entries are together"
         : s === 2
-          ? "8 matches · all 9 records examined"
+          ? "Zoe appears in both city groups"
           : undefined;
+    query = s === 2 ? "WHERE name = 'Zoe'" : "WHERE city = 'Austin'";
   }
 
   if (id === "writes") {
@@ -538,19 +336,19 @@ export function visual(id: string, step: number): TreeVisual {
     }[] = [
       {
         id: "write-primary",
-        title: "PRIMARY",
+        title: "Primary index",
         separators: ["4", "7"],
         entries: [record(7), record(8), record(9)],
       },
       {
         id: "write-name",
-        title: "NAME",
+        title: "Name index",
         separators: ["Leo", "Noah"],
         entries: [nameEntry(3), nameEntry(5), nameEntry(9)],
       },
       {
         id: "write-city",
-        title: "CITY",
+        title: "City index",
         separators: ["Boston"],
         entries: [
           { key: "Boston", value: "→ 4" },
@@ -570,24 +368,30 @@ export function visual(id: string, step: number): TreeVisual {
       const x = [112, 320, 528][index];
       const root: Page = {
         id: `${definition.id}-root`,
-        title: "SEPARATORS",
-        entries: definition.separators.map((key) => ({ key })),
+        title: "Keys",
+        entries: definition.separators.map((key, index) => ({
+          key,
+          state:
+            active && index === definition.separators.length - 1
+              ? "active"
+              : undefined,
+        })),
         kind: "branch",
         x,
-        y: 65,
+        y: ROUTER_Y,
         width: 176,
-        height: 70,
+        height: ROUTER_HEIGHT,
         state: active ? "active" : undefined,
       };
       const leaf: Page = {
         id: `${definition.id}-leaf`,
-        title: "LAST LEAF",
+        title: "Last page",
         entries,
         kind: "leaf",
         x,
-        y: 210,
+        y: leafY(root.y),
         width: 176,
-        height: 144,
+        height: LEAF_HEIGHT,
         state: active ? "new" : undefined,
       };
       return {
@@ -597,7 +401,7 @@ export function visual(id: string, step: number): TreeVisual {
         links: [{ from: root.id, to: leaf.id, kind: "branch", active }],
       };
     });
-    query = "INSERT (9, 'Zoe', 'Boston')";
+    query = "INSERT INTO people VALUES (9, 'Zoe', 'Boston')";
     result =
       s === 2
         ? "3 index entries maintained · 1 logical insert"
