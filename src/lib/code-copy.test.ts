@@ -8,7 +8,7 @@ const cleanups: (() => void)[] = [];
 function codeBlock() {
   const block = document.createElement("pre");
   block.className = "shiki";
-  block.innerHTML = `<code><span class="line">const greeting = &quot;hello&quot;;</span>\n<span class="line">console.log(greeting);</span>\n</code><button type="button" data-code-copy data-copy-state="idle" aria-label="Copy code" aria-live="polite">Copy</button>`;
+  block.innerHTML = `<code><span class="line">const greeting = &quot;hello&quot;;</span>\n<span class="line">console.log(greeting);</span>\n</code><button type="button" data-code-copy data-copy-state="idle" data-copy-label="idle" aria-label="Copy code"><span class="code-copy-label" data-label="idle" aria-hidden="true">Copy</span><span class="code-copy-label" data-label="copied" aria-hidden="true">Copied</span><span class="code-copy-label" data-label="error" aria-hidden="true">Retry copy</span></button><span class="sr-only" data-code-copy-status role="status" aria-live="polite" aria-atomic="true"></span>`;
   document.body.append(block);
   const button = block.querySelector("button");
   if (!button) throw new Error("Expected the code-copy button");
@@ -45,6 +45,9 @@ describe("article code copy", () => {
     useClipboard(writeText);
     install();
     const button = codeBlock();
+    const labels = [...button.children];
+    const status = document.querySelector("[data-code-copy-status]")!;
+    expect(status.textContent).toBe("");
 
     button.click();
     await Promise.resolve();
@@ -52,15 +55,22 @@ describe("article code copy", () => {
     expect(writeText).toHaveBeenCalledWith(
       'const greeting = "hello";\nconsole.log(greeting);\n',
     );
-    expect(button.textContent).toBe("Copied");
+    expect(button.dataset.copyLabel).toBe("copied");
+    for (const [index, label] of labels.entries())
+      expect(button.children[index]).toBe(label);
     expect(button.getAttribute("aria-label")).toBe("Code copied");
     expect(button.dataset.copyState).toBe("copied");
+    expect(status.textContent).toBe("Code copied");
+    expect(document.querySelector("[data-code-copy-status]")).toBe(status);
 
     vi.advanceTimersByTime(2000);
 
-    expect(button.textContent).toBe("Copy");
+    expect(button.dataset.copyLabel).toBe("idle");
+    for (const [index, label] of labels.entries())
+      expect(button.children[index]).toBe(label);
     expect(button.getAttribute("aria-label")).toBe("Copy code");
     expect(button.dataset.copyState).toBe("idle");
+    expect(status.textContent).toBe("");
   });
 
   it("waits for the clipboard before reporting that code was copied", async () => {
@@ -73,7 +83,8 @@ describe("article code copy", () => {
     button.click();
     button.click();
 
-    expect(button.textContent).toBe("Copying…");
+    expect(button.dataset.copyLabel).toBe("idle");
+    expect(button.dataset.copyState).toBe("copying");
     expect(button.getAttribute("aria-busy")).toBe("true");
     expect(writeText.mock.calls).toEqual([
       ['const greeting = "hello";\nconsole.log(greeting);\n'],
@@ -82,7 +93,7 @@ describe("article code copy", () => {
     pending.resolve();
     await pending.promise;
 
-    expect(button.textContent).toBe("Copied");
+    expect(button.dataset.copyLabel).toBe("copied");
     expect(button.getAttribute("aria-busy")).toBe("false");
   });
 
@@ -96,8 +107,11 @@ describe("article code copy", () => {
     await Promise.resolve();
     vi.advanceTimersByTime(5000);
 
-    expect(button.textContent).toBe("Copy failed — retry");
+    expect(button.dataset.copyLabel).toBe("error");
     expect(button.getAttribute("aria-label")).toBe(
+      "Copy failed. Retry copying code",
+    );
+    expect(document.querySelector('[role="status"]')?.textContent).toBe(
       "Copy failed. Retry copying code",
     );
     expect(button.dataset.copyState).toBe("error");
@@ -106,11 +120,40 @@ describe("article code copy", () => {
     button.click();
     await Promise.resolve();
 
-    expect(button.textContent).toBe("Copied");
+    expect(button.dataset.copyLabel).toBe("copied");
     expect(writeText.mock.calls).toEqual([
       ['const greeting = "hello";\nconsole.log(greeting);\n'],
       ['const greeting = "hello";\nconsole.log(greeting);\n'],
     ]);
+  });
+
+  it("keeps the previous result visible while another copy is pending", async () => {
+    const pending = Promise.withResolvers<void>();
+    const writeText = vi
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockReturnValueOnce(pending.promise);
+    useClipboard(writeText);
+    install();
+    const button = codeBlock();
+
+    button.click();
+    await Promise.resolve();
+    expect(button.dataset.copyLabel).toBe("copied");
+    button.click();
+    expect(button.dataset.copyState).toBe("copying");
+    expect(button.dataset.copyLabel).toBe("copied");
+    expect(document.querySelector('[role="status"]')?.textContent).toBe("");
+    vi.advanceTimersByTime(5000);
+    expect(button.dataset.copyLabel).toBe("copied");
+
+    pending.resolve();
+    await pending.promise;
+    expect(button.getAttribute("aria-label")).toBe("Code copied");
+    expect(button.dataset.copyLabel).toBe("copied");
+    expect(document.querySelector('[role="status"]')?.textContent).toBe(
+      "Code copied",
+    );
   });
 
   it("offers a retry when the Clipboard API is unavailable", async () => {
@@ -119,14 +162,14 @@ describe("article code copy", () => {
 
     button.click();
 
-    expect(button.textContent).toBe("Copy failed — retry");
+    expect(button.dataset.copyLabel).toBe("error");
     expect(button.dataset.copyState).toBe("error");
 
     useClipboard(vi.fn().mockResolvedValue(undefined));
     button.click();
     await Promise.resolve();
 
-    expect(button.textContent).toBe("Copied");
+    expect(button.dataset.copyLabel).toBe("copied");
   });
 
   it("cleans up pending copies, timers, and the document listener", async () => {
@@ -136,17 +179,18 @@ describe("article code copy", () => {
     const button = codeBlock();
 
     button.click();
-    expect(button.textContent).toBe("Copying…");
+    expect(button.dataset.copyLabel).toBe("idle");
+    expect(button.dataset.copyState).toBe("copying");
     cleanupPending();
     pending.resolve();
     await pending.promise;
-    expect(button.textContent).toBe("Copy");
+    expect(button.dataset.copyLabel).toBe("idle");
 
     useClipboard(vi.fn().mockResolvedValue(undefined));
     const cleanupCopied = install();
     button.click();
     await Promise.resolve();
-    expect(button.textContent).toBe("Copied");
+    expect(button.dataset.copyLabel).toBe("copied");
     cleanupCopied();
     button.textContent = "Uninstalled";
     vi.advanceTimersByTime(2000);

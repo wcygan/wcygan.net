@@ -9773,7 +9773,7 @@
   box-sizing: border-box;
   max-inline-size: 100%;
   margin: 24px 0;
-  padding: 64px 14px 16px 4px;
+  padding: 16px 80px 16px 4px;
   background: var(--code-bg) !important;
   border: 1px solid var(--code-bright-black);
   border-radius: 4px;
@@ -9800,7 +9800,8 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  min-width: max-content;
+  min-inline-size: 0;
+  overflow-x: auto;
 }
 
 .shiki code::before {
@@ -9833,11 +9834,12 @@
   user-select: none;
 }
 
-/* Code-copy labels and results are actual button text. */
 .shiki button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  inset-block-start: 4px;
+  inset-inline-end: 8px;
+  inline-size: 56px;
+  block-size: 44px;
   min-inline-size: 44px;
   min-block-size: 44px;
   background: rgba(38, 38, 38, 0.94);
@@ -9849,15 +9851,28 @@
   font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.2;
+  white-space: normal;
   opacity: 1;
   transition:
-    border-color 0.15s ease,
-    color 0.15s ease,
-    opacity 0.15s ease;
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.shiki .code-copy-label {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.shiki button[data-copy-label="idle"] [data-label="idle"],
+.shiki button[data-copy-label="copied"] [data-label="copied"],
+.shiki button[data-copy-label="error"] [data-label="error"] {
+  opacity: 1;
 }
 
 .shiki button:hover {
@@ -9865,15 +9880,22 @@
   border-color: var(--code-cursor);
 }
 
-.shiki button[data-copy-state="copied"] {
+.shiki button[data-copy-label="copied"] {
   color: var(--code-bright-green);
   border-color: var(--code-green);
   background: rgba(127, 225, 115, 0.12);
 }
 
-.shiki button[data-copy-state="error"] {
+.shiki button[data-copy-label="error"] {
   color: var(--code-yellow);
   border-color: var(--code-yellow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiki button,
+  .shiki .code-copy-label {
+    transition: none;
+  }
 }
 
 .optimistic-locking-sql-transcript .shiki {

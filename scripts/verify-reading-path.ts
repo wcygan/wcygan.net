@@ -130,10 +130,13 @@ async function inspect(route: string, viewport: string) {
       return { text: text(link), color: style.color, decoration: style.textDecorationLine };
     });
     const copyButtons = [...document.querySelectorAll('button[data-code-copy]')].map(button => {
-      check(text(button) === 'Copy', 'Code-copy control must have visible text Copy');
+      const label = button.querySelector('[data-label="' + button.dataset.copyLabel + '"]');
+      check(text(label) === 'Copy' && getComputedStyle(label).opacity === '1', 'Code-copy control must have visible text Copy');
+      check(button.getAttribute('aria-label') === 'Copy code', 'Code-copy control needs an accessible name');
+      check(!!button.closest('.shiki').querySelector('[data-code-copy-status][role="status"]'), 'Code-copy control needs persistent live feedback');
       check(button.dataset.copyState === 'idle', 'Initial code-copy state must be observable as idle');
       check(button.getBoundingClientRect().height >= 44 && button.getBoundingClientRect().width >= 44, 'Code-copy target must be at least 44px square');
-      return { text: text(button), state: button.dataset.copyState, ...rect(button) };
+      return { text: text(label), state: button.dataset.copyState, ...rect(button) };
     });
     if (article) {
       const navigation = [...article.querySelectorAll('a.post-back-link')];

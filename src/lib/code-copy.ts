@@ -1,20 +1,23 @@
 type CopyState = "idle" | "copying" | "copied" | "error";
 
-const copyLabels: Record<CopyState, { text: string; accessible: string }> = {
-  idle: { text: "Copy", accessible: "Copy code" },
-  copying: { text: "Copying…", accessible: "Copying code" },
-  copied: { text: "Copied", accessible: "Code copied" },
-  error: {
-    text: "Copy failed — retry",
-    accessible: "Copy failed. Retry copying code",
-  },
+const copyLabels: Record<CopyState, string> = {
+  idle: "Copy code",
+  copying: "Copying code",
+  copied: "Code copied",
+  error: "Copy failed. Retry copying code",
 };
 
 function setCopyState(button: HTMLButtonElement, state: CopyState) {
-  button.textContent = copyLabels[state].text;
-  button.setAttribute("aria-label", copyLabels[state].accessible);
+  button.setAttribute("aria-label", copyLabels[state]);
   button.dataset.copyState = state;
+  if (state !== "copying") button.dataset.copyLabel = state;
   button.setAttribute("aria-busy", String(state === "copying"));
+  const status = button
+    .closest(".shiki")
+    ?.querySelector("[data-code-copy-status]");
+  if (status)
+    status.textContent =
+      state === "copied" || state === "error" ? copyLabels[state] : "";
 }
 
 export function installCodeCopy(root: Document = document): () => void {

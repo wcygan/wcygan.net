@@ -62,6 +62,7 @@ export default defineConfig(({ command }) => ({
           rehypeShiki,
           {
             theme: idleToesTheme,
+            tabindex: false,
             langs: [
               "javascript",
               "typescript",
@@ -89,8 +90,10 @@ export default defineConfig(({ command }) => ({
               } satisfies ShikiTransformer,
               {
                 name: "add-code-copy-button",
-                pre(node) {
+                code(node) {
                   node.properties.tabIndex = 0;
+                },
+                pre(node) {
                   node.children.push({
                     type: "element",
                     tagName: "button",
@@ -98,11 +101,35 @@ export default defineConfig(({ command }) => ({
                       type: "button",
                       "data-code-copy": "",
                       "data-copy-state": "idle",
+                      "data-copy-label": "idle",
                       "aria-label": "Copy code",
+                    },
+                    children: [
+                      ["idle", "Copy"],
+                      ["copied", "Copied"],
+                      ["error", "Retry copy"],
+                    ].map(([label, text]) => ({
+                      type: "element" as const,
+                      tagName: "span",
+                      properties: {
+                        className: ["code-copy-label"],
+                        "data-label": label,
+                        "aria-hidden": "true",
+                      },
+                      children: [{ type: "text" as const, value: text }],
+                    })),
+                  });
+                  node.children.push({
+                    type: "element",
+                    tagName: "span",
+                    properties: {
+                      className: ["sr-only"],
+                      "data-code-copy-status": "",
+                      role: "status",
                       "aria-live": "polite",
                       "aria-atomic": "true",
                     },
-                    children: [{ type: "text", value: "Copy" }],
+                    children: [],
                   });
                 },
               } satisfies ShikiTransformer,
