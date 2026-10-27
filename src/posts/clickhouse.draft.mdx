@@ -5,287 +5,249 @@ description: Analytical SQL over streams of events
 tags: [Data, Databases, Architecture]
 ---
 
-import {
-  ClickHouseWorkloadDemo,
-  ClickHousePipelineDemo,
-  ClickHousePruningDemo,
-  ClickHouseAggregationDemo,
-  ClickHouseMaterializedViewDemo,
-} from "~/components/ClickHouseDemos";
-import {
-  ClickHouseColumnsDemo,
-  ClickHouseCompressionDemo,
-  ClickHousePartitionsDemo,
-  ClickHousePartsDemo,
-  ClickHouseClusterDemo,
-} from "~/components/ClickHouseSpatialDemos";
-
-ClickHouse looks useful for systems that collect a lot of events. Before
-adding another database to my toolbox, I want to understand what it makes easier,
-what it asks of me, and how to try it on my own computer.
-
 [ClickHouse is a column-oriented SQL database for analytical queries](https://clickhouse.com/docs/get-started/about/intro).
-It is built to filter, group, and summarize large datasets. The
-[open-source repository](https://github.com/ClickHouse/ClickHouse) is licensed
-under Apache 2.0; [ClickHouse Cloud](https://clickhouse.com/docs/cloud) is a managed
-offering around the database. This post uses the open-source server locally.
+It filters, groups, and summarizes large datasets. I want to understand which
+workloads benefit from that design, what it costs to operate, and how to try it
+on my own computer.
 
-I'll use web events throughout: a time, country, event type, and revenue in
-integer cents.
+The [open-source repository](https://github.com/ClickHouse/ClickHouse) is licensed
+under Apache 2.0. [ClickHouse Cloud](https://clickhouse.com/docs/cloud) is a managed
+offering around the database. This post uses the open-source server locally,
+with web events as the running example: a time, country, event type, and revenue
+in integer cents.
 
-## What kind of question does it answer?
+## Transactional and analytical workloads
 
-An application might ask, “What is the current state of order 104?” It needs a
-small number of records and may need to change several of them in a transaction.
-That is a typical **transactional** workload, often called OLTP.
+A **transactional** workload, often called OLTP, typically retrieves or changes a
+small number of records. An application asking “What is the current state of
+order 104?” may also need to change several records in one transaction.
 
-An analytics query might ask, “How many purchases did we receive in each country
-last week?” It examines many events and returns a small summary. That is
-**analytical** work, often called OLAP. ClickHouse targets this second pattern.
-[The introduction compares these workloads](https://clickhouse.com/docs/get-started/about/intro).
+An **analytical** workload, often called OLAP, examines many records and returns a
+small summary. “How many purchases did we receive in each country last week?”
+requires aggregating events across that period. ClickHouse targets this access
+pattern. [The introduction compares these workloads](https://clickhouse.com/docs/get-started/about/intro).
 
-<ClickHouseWorkloadDemo />
+I would investigate ClickHouse for:
 
-Some places I would investigate it:
-
-- **Product analytics:** group page views, signups, and purchases by time,
+- **Product analytics:** grouping page views, signups, and purchases by time,
   customer, or feature.
-- **Observability:** search structured logs and compute error rates or latency
+- **Observability:** searching structured logs and computing error rates or latency
   percentiles across many requests.
-- **Usage reporting:** turn an append-heavy event stream into customer-facing
+- **Usage reporting:** turning an append-heavy event stream into customer-facing
   counts and trends.
 
-These are applications of its analytical design, not a claim that every such
-workload needs ClickHouse. I would first identify the slow query, its data volume,
-and how fresh the answer must be. “Real-time analytics” includes both how quickly
-new data arrives and how quickly a query returns; it doesn't promise a particular
-latency for my application.
+These workloads fit its analytical design, but that alone does not establish a
+need for ClickHouse. I would first identify the slow query, its data volume, and
+how fresh its answer must be. “Real-time analytics” describes both ingestion
+latency and query latency; it does not promise a particular latency for my
+application.
 
-## Put analytics beside the application
+## Analytics ingestion and query freshness
 
-A common architecture keeps operational records in PostgreSQL or MySQL and sends
-events or captured changes into ClickHouse for analysis. The application database
-handles its own transactions; the analytical database answers questions over the
-delivered data.
+A common architecture stores operational records in PostgreSQL or MySQL and
+sends events or captured changes to ClickHouse. The application database handles
+its transactions. ClickHouse runs analytical queries over the data it receives.
 
-<ClickHousePipelineDemo />
+Source commits, insertion into ClickHouse, and dashboard refreshes are separate
+steps. A query can summarize only the events that have reached ClickHouse. A
+dashboard may continue showing an older result until it refreshes. Fast query
+execution and fresh data are separate properties.
 
-A committed purchase does not instantly appear everywhere. Follow it through the
-feed, insertion, and dashboard query. Fast queries and fresh data are separate
-properties: the query can only summarize events that have reached ClickHouse,
-and a dashboard can keep showing an older result until it refreshes.
+An insert-only feed still needs retry handling. Change data capture may require
+an initial snapshot and a plan for source updates and deletes. Those behaviors
+belong to a connector; the open-source server does not automatically watch
+another database. The official
+[PostgreSQL ingestion guide](https://clickhouse.com/docs/integrations/clickpipes/postgres),
+for example, describes ClickPipes, a managed ClickHouse Cloud service. The local
+lab below inserts data directly.
 
-The demo assumes an insert-only feed and one logical delivery. Real feeds need
-retry handling. Change data capture may also need an initial snapshot and a plan
-for source updates and deletes. A connector supplies that behavior; the
-open-source server does not automatically watch another database. For example, the official
-[PostgreSQL ingestion guide](https://clickhouse.com/docs/integrations/clickpipes/postgres)
-describes ClickPipes, a managed ClickHouse Cloud service. The local lab below
-inserts data directly.
+## Column-oriented storage
 
-## Columns let a query leave data alone
+A query over a table with many fields may need only its day and `revenue_cents`.
+A row-oriented layout stores each record's fields together. A column-oriented
+layout groups values from the same field, so the query can read the columns it
+needs.
 
-Imagine a table with many fields, but a query that needs only its day and
-`revenue_cents`. A row-oriented layout keeps the fields of each record together.
-A column-oriented layout groups values from the same field together, allowing
-the query to read its required columns.
+Logical column selection does not directly predict disk traffic or a speedup
+ratio. Physical reads operate on compressed chunks and depend on indexes,
+caching, and the execution plan.
 
-<ClickHouseColumnsDemo />
+## Dictionary encoding and compression
 
-The visual counts logical values to explain the layout. Real storage reads happen
-in compressed chunks and depend on indexes, caching, and the execution plan.
-The count is not a prediction of disk traffic or a speedup ratio.
+An event table may contain millions of country values but only a few distinct
+country codes. `LowCardinality(String)` applies **dictionary encoding**: it stores
+the distinct values in a dictionary and represents each row with a reference to
+one of them. Each reference decodes to the original value.
 
-The blocks show logical grouping, rather than a promise of one physical file per
-column. ClickHouse has several physical part formats, including Compact parts
-that store columns together in a file.
-[The MergeTree reference describes those formats](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree#data-storage).
-
-## Repeated values can share a dictionary
-
-An event table might contain millions of country values but only a few distinct
-country codes. `LowCardinality(String)` uses **dictionary encoding**: store the
-distinct values in a dictionary and represent each row with a reference into it.
-The reference still decodes to the original value.
-
-<ClickHouseCompressionDemo />
-
-The dictionary takes space too. Twelve tiny strings are a teaching example, not
-proof that the encoded representation is smaller. Whether it helps depends on
-the values, their number of repetitions, and the surrounding storage format.
+The dictionary consumes space too, so encoding does not always produce a smaller
+representation. The benefit depends on the values, how often they repeat, and
+the surrounding storage format.
 [The LowCardinality reference describes its intended use](https://clickhouse.com/docs/reference/data-types/lowcardinality).
 
-Dictionary encoding is distinct from general compression codecs such as LZ4 or
-ZSTD. Storing similar values together creates opportunities for both encoding
-and compression. ClickHouse combines column storage with these techniques and
-execution over batches
-of values, usually described as **vectorized execution**. These are separate
-advantages: less data to read, less data to move, and less per-row execution
-overhead. [The performance overview explains those mechanisms](https://clickhouse.com/docs/get-started/about/why-clickhouse-is-so-fast).
+Dictionary encoding differs from general compression codecs such as LZ4 or
+ZSTD. Grouping similar values creates opportunities for both encoding and
+compression. ClickHouse combines these techniques with execution over batches
+of values, usually called **vectorized execution**. The mechanisms address
+separate costs: reading data, moving data, and executing operations per row.
+[The performance overview explains those mechanisms](https://clickhouse.com/docs/get-started/about/why-clickhouse-is-so-fast).
 
-## A large input can become a small answer
+## Data parts and background merges
 
-Consider a query that keeps purchase events and sums their revenue. Each block
-can produce a partial sum. Combining those sums gives
-the same result as summing all the matching events together.
+An **engine** is the storage implementation selected in a table definition.
+**MergeTree** is the main storage-engine family. It stores inserted batches as
+immutable, sorted **data parts**, each a separately stored group of rows.
+Several parts can be active at once, each with its own sorted data and index.
+Background merges combine smaller parts into larger parts and replace the
+active inputs.
+[The parts guide explains their lifecycle](https://clickhouse.com/docs/concepts/core-concepts/parts).
 
-Here, a **processing block** means a batch of values moving through query
-execution. It is separate from the storage groups introduced below.
+A column-oriented layout also does not require one physical file per column.
+ClickHouse supports several physical part formats, including Compact parts that
+store columns together in one file.
+[The MergeTree reference describes those formats](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree#data-storage).
 
-<ClickHouseAggregationDemo />
+Rows are queryable before the background merge finishes. Ordinary MergeTree
+preserves duplicate rows, so a merge does not automatically deduplicate data.
+[The MergeTree reference distinguishes these behaviors](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree).
 
-This illustrates a decomposable aggregate, `SUM`. Averages need a sum and count;
-you cannot safely average partial averages when their groups have different
-sizes. Other aggregate functions have their own intermediate states.
+Many tiny inserts can create too many small parts and increase merge work.
+[Batching or asynchronous inserts](https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy)
+can reduce that work. An asynchronous insert can buffer several requests before
+writing a part; its acknowledgement and retry settings still matter. The lab
+uses explicit batches.
 
-ClickHouse can use multiple processing lanes on one server. The work is not
-limited to one row at a time, and adding another machine is not the first
-requirement for parallelism. The actual pipeline depends on the query and
-settings. [The query-parallelism guide explains how blocks flow through it](https://clickhouse.com/docs/concepts/core-concepts/query-parallelism).
+## Sort order and sparse primary indexes
 
-## Sort order helps it skip work
+Within a data part, a table's `ORDER BY` determines row order. The lab uses
+`ORDER BY (country, event_time)`: rows sort by country, then by time within each
+country.
 
-An **engine** is the storage implementation chosen in a table definition. The
-main storage-engine family is **MergeTree**. A table's `ORDER BY` determines
-how rows are sorted inside each data part, a separately stored group of rows.
-For our events, we will use
-`ORDER BY (country, event_time)`: country first, then time within each country.
+ClickHouse's sparse primary index records keys at intervals rather than for
+every row. These entries identify **granules**, groups of rows that might match
+a query condition. The query still reads candidate data and applies its filter.
+[The primary-index guide walks through this process](https://clickhouse.com/docs/concepts/core-concepts/primary-indexes).
 
-ClickHouse's sparse primary index records keys at intervals rather than an entry
-for every row. It uses those entries to identify **granules**, groups of rows
-that might match a condition. It still needs to read candidate data and apply
-the filter. [The primary-index guide walks through this process](https://clickhouse.com/docs/concepts/core-concepts/primary-indexes).
+The default row granularity is 8,192, and adaptive sizing also depends on bytes.
+The index conservatively selects candidate ranges; the query still needs to
+check the rows within them.
+[MergeTree documents the storage settings](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree).
 
-<ClickHousePruningDemo />
+Choose the key for the queries the table needs to serve. A leading country key
+can help country-filtered queries, but it is not a universal choice for queries
+across all countries. ClickHouse's primary key also **does not enforce
+uniqueness**: events with the same key can coexist. That differs from the
+primary-key contract of a typical transactional table.
 
-The visual uses a simplified table sorted by day; the lab uses country and time.
-Our tiny granules make the steps visible. Real granules are much larger; the
-default row granularity is 8,192, with adaptive sizing also affected by bytes.
-The model explains conservative range selection, rather than reproducing every
-index rule. [MergeTree documents the storage settings](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree).
-
-The key should follow the queries you run. A leading country key can help
-country-filtered queries; it is not a universal choice for queries across all
-countries. Also, ClickHouse's primary key **does not enforce uniqueness**. Two
-events with the same key can coexist. This is a different contract from the
-primary key of a typical transactional table.
-
-## Partitions group data by its lifecycle
+## Partitions and data lifecycle
 
 A **partition** groups a table's parts using an expression such as
-`toYYYYMM(event_time)`. Monthly groups make operations such as removing old data
-easier to express. They do not imply a separate server for every month.
-
-<ClickHousePartitionsDemo />
+`toYYYYMM(event_time)`. Monthly partitions make lifecycle operations, such as
+removing old data, easier to express. A partition does not imply a separate
+server for each month.
 
 A compatible date filter can exclude entire partitions before the query checks
-primary-key granules inside the remaining parts. Selecting a month only changes
-what the query considers; the other months remain stored. Dropping a partition
-is a separate operation that removes its data.
+primary-key granules in the remaining parts. Selecting one month changes the
+query's candidates; the other months remain stored. Dropping a partition is a
+separate operation that removes its data.
 [The partition guide explains pruning and data management](https://clickhouse.com/docs/concepts/core-concepts/partitions).
 
-Choose a partition key mainly for data management. Too many tiny partitions
-create many separate groups of parts, and parts in different partitions cannot
-merge together. The sort key still does the work of organizing rows inside each
-part for useful filtering.
+Choose a partition key mainly for data management. Many tiny partitions create
+many separate groups of parts. Parts in different partitions cannot merge with
+one another. Within each part, the sort key organizes rows for filtering.
 
-## Inserts create parts; merges consolidate them
+## Parallel aggregation
 
-With MergeTree, inserted batches become immutable, sorted **data parts**. A table
-can have several active parts, each with its own sorted data and index.
-Background merges create larger parts from smaller ones and replace the active
-inputs. [The parts guide explains their lifecycle](https://clickhouse.com/docs/concepts/core-concepts/parts).
+After selecting relevant partitions, granules, and columns, a query processes
+the values it reads. A **processing block** is a batch of values moving through
+query execution, distinct from a stored data part or granule.
 
-<ClickHousePartsDemo />
+A query that filters purchase events and sums their revenue can compute a
+partial sum for each processing block, then combine the partial sums. The
+result equals the sum of all matching events.
 
-The rows are queryable before the background merge. Ordinary MergeTree preserves
-duplicate rows; merging is not automatically deduplication. This model puts both
-parts in one partition, since parts from different partitions are not merged
-together. [The MergeTree reference distinguishes these behaviors](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/mergetree).
+`SUM` is a decomposable aggregate. An average requires both a sum and a count:
+averaging partial averages gives an incorrect result when their groups have
+different sizes. Other aggregate functions use their own intermediate states.
 
-Many tiny inserts can create too many small parts and extra merge work.
-[Batching or asynchronous inserts](https://clickhouse.com/docs/concepts/best-practices/selecting-an-insert-strategy)
-can help. An asynchronous insert can buffer several requests before writing a
-part; its acknowledgement and retry settings still matter. For this exercise,
-we use explicit batches.
+ClickHouse can divide query work among multiple processing lanes on one server.
+Parallel execution does not require another machine. The actual pipeline depends
+on the query and settings.
+[The query-parallelism guide explains how blocks flow through it](https://clickhouse.com/docs/concepts/core-concepts/query-parallelism).
 
-## Compute a repeated summary as events arrive
+## Incremental materialized views
 
-If a dashboard repeatedly asks for daily purchase revenue, we can compute partial
-totals on ingestion instead of scanning all raw events for every request.
+Partial aggregation can also move work from repeated queries into ingestion.
+A dashboard that repeatedly requests daily purchase revenue can use partial
+totals computed as events arrive, reducing the need to scan all raw events for
+every request.
 
-A ClickHouse **incremental materialized view** runs a query on a newly inserted
-block and writes the result into a target table. It adds work to ingestion and
-can reduce work at query time. [The materialized-view guide describes this tradeoff](https://clickhouse.com/docs/concepts/features/materialized-views/incremental-materialized-view).
+A ClickHouse **incremental materialized view** runs a query on each newly inserted
+block and writes the result to a target table. It moves work into ingestion to
+reduce work at query time.
+[The materialized-view guide describes this tradeoff](https://clickhouse.com/docs/concepts/features/materialized-views/incremental-materialized-view).
 
-<ClickHouseMaterializedViewDemo />
+The lab uses append-only data. Creating the view does not automatically process
+rows already in the source table. Updating or deleting old source rows does not
+automatically reverse their contributions to the target. Backfills, retries,
+and corrections need an explicit design.
 
-This is an append-only example. Creating the view does not automatically process
-the source's existing rows. Changes or deletions to old source rows do not
-automatically reverse the previously written summary. A backfill, retries, and
-corrections need an explicit design.
-
-The target may contain several partial totals for the same day. Our lab uses
-`SummingMergeTree`, but still queries it with `sum(...) GROUP BY ...`, so the
-answer doesn't depend on background merges having completed.
+The target may hold several partial totals for the same day. The lab uses
+`SummingMergeTree` and still queries the target with `sum(...) GROUP BY ...`.
+That aggregation produces the answer without waiting for background merges to
+finish.
 [The target-engine documentation explains why that aggregation matters](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/summingmergetree).
 
-## Shards and replicas solve different problems
+## Shards and replicas
 
 A **shard** holds a subset of the data. A **replica** holds a copy of a shard's
-data. A distributed analytical query can ask the shards for partial results
-and combine them. It should not count every replica as another independent
-dataset. [The Distributed engine documents query routing and aggregation](https://clickhouse.com/docs/reference/engines/table-engines/special/distributed).
+data. The partial-result aggregation described above can extend across machines:
+a distributed analytical query requests partial results from the shards and
+combines them. Counting every replica as an independent dataset would
+count the same data more than once.
+[The Distributed engine documents query routing and aggregation](https://clickhouse.com/docs/reference/engines/table-engines/special/distributed).
 
-<ClickHouseClusterDemo />
-
-In this 3D teaching topology, moving across the scene changes the data subset;
-moving in depth changes the copy of that subset. The model assumes those replicas
-are caught up.
-
-This is a classic self-managed topology. ReplicatedMergeTree uses coordination
-through ClickHouse Keeper or ZooKeeper; replication is asynchronous and needs
-operational care. A replica can lag behind new writes.
+In a classic self-managed deployment, ReplicatedMergeTree coordinates through
+ClickHouse Keeper or ZooKeeper. Replication is asynchronous, so a replica can lag
+behind new writes and requires operational care.
 [The replication reference describes that contract](https://clickhouse.com/docs/reference/engines/table-engines/mergetree-family/replication).
-ClickHouse Cloud uses SharedMergeTree and shared object storage, so these boxes
-are not a diagram of its infrastructure.
+ClickHouse Cloud uses a different architecture with SharedMergeTree and shared
+object storage.
 [The Cloud architecture has its own explanation](https://clickhouse.com/docs/products/cloud/features/infrastructure/shared-merge-tree).
-The local lab below uses one server and doesn't configure replication.
+The local lab uses one server without replication.
 
-## Where I would be cautious
+## Workload and operational tradeoffs
 
-ClickHouse supports joins, updates, and deletes. Its analytical focus doesn't
-mean those operations are absent. It does mean I would investigate their cost
-and semantics before treating it as my application's transactional database.
+ClickHouse supports joins, updates, and deletes. I would investigate their cost
+and semantics before using it as my application's transactional database.
 [Update strategies](https://clickhouse.com/docs/concepts/features/operations/update/overview)
 and [transaction support](https://clickhouse.com/docs/guides/developer/transactional)
 have specific constraints and evolving options.
 
-I would be cautious if most requests fetch one mutable entity, if correctness
-depends on uniqueness or foreign-key enforcement, or if the application needs
-general multi-table transactions. For analytics, I would still need to choose
-types and sort keys, watch parts and merge capacity, and budget memory for large
-joins or high-cardinality grouping. High cardinality means many distinct values,
-which can make an aggregate's intermediate state large.
+I would be cautious when most requests retrieve one mutable entity, correctness
+depends on uniqueness or foreign-key enforcement, or the application requires
+general multi-table transactions. An analytical deployment still requires
+choosing types and sort keys, monitoring parts and merge capacity, and budgeting
+memory for large joins or high-cardinality grouping. **High cardinality** means
+many distinct values, which can make an aggregate's intermediate state large.
 
-The useful question is whether the dominant workload resembles “summarize many
-events” enough to make this trade worthwhile.
+I would evaluate whether summarizing many events is enough of the workload to
+justify those choices and operating costs.
 
-## Try it locally
+## Run ClickHouse locally
 
-This exercise uses Docker with its Compose plugin. It generates synthetic data,
-so there is no dataset to download. The server version is pinned to
+The lab uses Docker with its Compose plugin and generates its own synthetic
+data. The server is pinned to
 [26.9.8.3](https://github.com/ClickHouse/ClickHouse/releases/tag/v26.9.8.3-stable),
-the stable release used to verify these commands on October 1, 2026. It is a
-reproducible learning baseline, rather than a promise about the latest version
-when you read this.
+the stable release used to verify these commands on October 1, 2026. The pin
+makes the exercise reproducible; it does not identify the latest release at the
+time of reading.
 
 ### Start a server
 
-In a new directory, save this as `compose.yaml`. It uses the
-[official ClickHouse Docker image](https://clickhouse.com/docs/get-started/setup/self-managed/docker),
-keeps data in a named volume, and exposes HTTP only on your computer at
-`127.0.0.1:8124`. The credentials are for this local exercise.
+Create a directory and save the following configuration as `compose.yaml`.
+It uses the [official ClickHouse Docker image](https://clickhouse.com/docs/get-started/setup/self-managed/docker),
+stores data in a named volume, and binds HTTP to `127.0.0.1:8124` on your
+computer. Use these credentials only for the local exercise.
 
 ```yaml
 name: clickhouse-primer-lab
@@ -321,7 +283,7 @@ volumes:
   clickhouse-data:
 ```
 
-With Docker running, start the server and open its bundled SQL client:
+Start Docker, then start the server and open its bundled SQL client:
 
 ```sh
 docker compose up -d --wait --wait-timeout 180
@@ -331,9 +293,9 @@ docker compose exec clickhouse clickhouse-client \
 
 ### Generate a million events
 
-At the client prompt, paste these statements. `numbers(1000000)` supplies the
-integers from 0 through 999,999. We derive every event deterministically from
-that number; the distribution is intentionally synthetic.
+Run the following statements at the client prompt. `numbers(1000000)` supplies
+integers from 0 through 999,999. Each event is derived deterministically from
+that number, producing an intentionally synthetic distribution.
 
 ```sql
 SELECT version();
@@ -365,17 +327,17 @@ SELECT
 FROM numbers(1000000);
 ```
 
-`LowCardinality(String)` is suitable here for repeated values such as country
-codes and event types. It uses dictionary encoding; it is not a suggestion to
-apply that type to every string.
+Country codes and event types repeat in this dataset, making them suitable
+examples of `LowCardinality(String)` and its dictionary encoding. This does not
+make it the appropriate type for every string.
 [The type reference describes its intended use](https://clickhouse.com/docs/reference/data-types/lowcardinality).
 
-The monthly partition groups data for lifecycle operations. It is separate from
-the within-part sort order and from distributing data across machines. All our
-initial events fall in September, so this dataset doesn't demonstrate skipping
-several monthly partitions.
+The monthly partition groups data for lifecycle operations. Partitioning,
+sorting rows within a part, and distributing data across machines are separate
+mechanisms. All initial events fall in September, so this dataset does not
+demonstrate pruning across several monthly partitions.
 
-### Ask an analytical question
+### Query and inspect the event data
 
 ```sql
 SELECT count() AS events FROM lab.events;
@@ -390,7 +352,7 @@ GROUP BY country
 ORDER BY country;
 ```
 
-The first result is 1,000,000. The second is:
+The count query returns 1,000,000. Grouping the events by country returns:
 
 | country | events | purchases | revenue_cents |
 | ------- | -----: | --------: | ------------: |
@@ -398,7 +360,7 @@ The first result is 1,000,000. The second is:
 | GB      | 333333 |     33333 |     168150270 |
 | US      | 333333 |     33333 |     168483600 |
 
-Try a narrower query and inspect its index selection:
+Inspect index selection for a query restricted to one country and one day:
 
 ```sql
 EXPLAIN indexes = 1
@@ -411,17 +373,17 @@ SETTINGS use_query_condition_cache = 0,
          use_skip_indexes_on_data_read = 0;
 ```
 
-In the verified run, `PrimaryKey` selected 5 of 123 granules. That is a plan
-observation for this dataset and version, not a timing benchmark. The settings
-make the index-selection example easier to inspect without query-condition
-cache effects; they are not general performance recommendations.
+In the verified run, `PrimaryKey` selected 5 of 123 granules. This describes the
+plan for this dataset and version; it is not a timing benchmark. The settings
+remove query-condition cache effects to make index selection easier to inspect.
+They are not general performance recommendations.
 
-Run the query itself by removing `EXPLAIN indexes = 1` and the `SETTINGS` clause.
-It returns 14,477,400 cents. Replace the sum with `count()` to see the 28,800
-matching events. If you try different keys or filters, compare what the plan
-can skip and whether it preserves the same answer.
+Remove `EXPLAIN indexes = 1` and the `SETTINGS` clause to execute the query.
+It returns 14,477,400 cents. Replace the sum with `count()` to count the 28,800
+matching events. When comparing keys or filters, check both the ranges the plan
+can skip and whether the query still returns the same answer.
 
-You can also inspect the active storage parts:
+Inspect the table's active storage parts:
 
 ```sql
 SELECT partition, name, rows, marks
@@ -430,12 +392,13 @@ WHERE database = 'lab' AND table = 'events' AND active
 ORDER BY name;
 ```
 
-Part names and counts can change as background work runs. `system.parts` exposes
-physical storage state; it isn't another application table to maintain yourself.
+Background work can change part names and counts. `system.parts` exposes the
+server's physical storage state; the application does not maintain it as another
+table.
 
-### Observe a materialized view's starting point
+### Create an incremental materialized view
 
-Create a target and view **after** the million rows already exist:
+Create the target table and view **after** inserting the million rows:
 
 ```sql
 CREATE TABLE lab.daily_events
@@ -461,8 +424,8 @@ GROUP BY country, day;
 SELECT sum(events) FROM lab.daily_events;
 ```
 
-The result is 0: the view has not backfilled the existing events. Insert another
-100,000 events, with IDs continuing from the first batch:
+The result is 0 because creating the view did not backfill existing events.
+Insert another 100,000 events, continuing the IDs from the first batch:
 
 ```sql
 INSERT INTO lab.events
@@ -488,43 +451,44 @@ GROUP BY country, day
 ORDER BY day, country;
 ```
 
-The raw table now has 1,100,000 events. The target accounts for 100,000 events,
-all from the second batch. The missing first million is deliberate: it makes
-the view's insertion boundary visible. A production rollup would need a planned
-backfill and a way to avoid gaps or double counting while ingestion continues.
+The raw table contains 1,100,000 events, but the target accounts for only the
+100,000 events in the second batch. Excluding the first million demonstrates
+that the view processes new insertions. A production rollup would need a planned
+backfill that avoids gaps or double counting while ingestion continues.
 
-### Keep or clear the experiment
+### Stop or remove the local server
 
-Exit the client with `exit`. From another terminal in the same directory, you
-can query through HTTP too:
+Exit the SQL client with `exit`. To query over HTTP, run this command from
+another terminal in the same directory:
 
 ```sh
 curl --fail --user practice:practice-local-only \
   'http://127.0.0.1:8124/?query=SELECT%20count()%20FROM%20lab.events'
 ```
 
-This should print `1100000`. Stop the server while keeping its volume:
+The command should print `1100000`. Stop the server and retain its data volume:
 
 ```sh
 docker compose down
 ```
 
-Restarting preserves the tables and rows, so do not rerun the creation and insert
-statements blindly. To stop the lab and **erase its saved data**, use:
+The volume preserves tables and rows across restarts. Rerunning the creation
+and insert statements without checking that state can conflict with or add to
+existing data. To stop the lab and **erase its saved data**, run:
 
 ```sh
 docker compose down -v
 ```
 
-If Docker is inconvenient, the official [SQL playground](https://sql.clickhouse.com/)
-lets you explore existing datasets without installing a server. The
-[quick-install guide](https://clickhouse.com/docs/get-started/setup/self-managed/quick-install)
-also covers the native binary and `clickhouse local` for file-oriented experiments.
+The official [SQL playground](https://sql.clickhouse.com/) provides existing
+datasets to query without installing a server. For a local alternative to
+Docker, the [quick-install guide](https://clickhouse.com/docs/get-started/setup/self-managed/quick-install)
+covers the native binary and `clickhouse local` for file-oriented experiments.
 
-## A few places to read the source
+## Source code entry points
 
-After running the SQL, the repository becomes easier to navigate. Three useful
-entry points in the tested release are:
+The tested release has three source-code entry points for the mechanisms in
+this post:
 
 - [ColumnVector.h](https://github.com/ClickHouse/ClickHouse/blob/v26.9.8.3-stable/src/Columns/ColumnVector.h):
   array-backed numeric columns and operations such as filtering.
@@ -533,7 +497,6 @@ entry points in the tested release are:
 - [AggregateFunctionSum.h](https://github.com/ClickHouse/ClickHouse/blob/v26.9.8.3-stable/src/AggregateFunctions/AggregateFunctionSum.h):
   the implementation behind a familiar aggregate.
 
-I would next try a real event dataset and two or three questions I actually need
-answered. That would turn “ClickHouse seems useful” into something testable:
-which data it reads, how fresh the result is, and what the ingestion pipeline
-costs to operate.
+I would next query a real event dataset with two or three questions I need
+answered. That would let me evaluate which data ClickHouse reads, how fresh the
+results are, and what the ingestion pipeline costs to operate.

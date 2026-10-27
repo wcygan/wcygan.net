@@ -1,0 +1,48 @@
+{
+  "startingKnowledge": "Basic SQL tables, SELECT, WHERE, GROUP BY, arithmetic sums, and applications writing records; terminal and Docker use for the local lab. No ClickHouse storage or cluster knowledge is assumed.",
+  "prerequisites": {
+    "transactional-and-analytical-workloads": [],
+    "analytics-ingestion-and-query-freshness": [
+      "transactional-and-analytical-workloads"
+    ],
+    "column-oriented-storage": ["transactional-and-analytical-workloads"],
+    "dictionary-encoding-and-compression": ["column-oriented-storage"],
+    "data-parts-and-background-merges": ["column-oriented-storage"],
+    "sort-order-and-sparse-primary-indexes": [
+      "data-parts-and-background-merges"
+    ],
+    "partitions-and-data-lifecycle": ["sort-order-and-sparse-primary-indexes"],
+    "parallel-aggregation": [
+      "partitions-and-data-lifecycle",
+      "dictionary-encoding-and-compression"
+    ],
+    "incremental-materialized-views": [
+      "analytics-ingestion-and-query-freshness",
+      "parallel-aggregation"
+    ],
+    "shards-and-replicas": [
+      "analytics-ingestion-and-query-freshness",
+      "parallel-aggregation"
+    ],
+    "workload-and-operational-tradeoffs": ["parallel-aggregation"],
+    "run-clickhouse-locally": [],
+    "start-a-server": ["run-clickhouse-locally"],
+    "generate-a-million-events": [
+      "start-a-server",
+      "dictionary-encoding-and-compression",
+      "partitions-and-data-lifecycle"
+    ],
+    "query-and-inspect-the-event-data": ["generate-a-million-events"],
+    "create-an-incremental-materialized-view": [
+      "query-and-inspect-the-event-data",
+      "incremental-materialized-views"
+    ],
+    "stop-or-remove-the-local-server": [
+      "create-an-incremental-materialized-view"
+    ],
+    "source-code-entry-points": [
+      "parallel-aggregation",
+      "query-and-inspect-the-event-data"
+    ]
+  }
+}

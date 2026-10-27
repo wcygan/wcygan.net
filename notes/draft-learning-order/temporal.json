@@ -1,0 +1,35 @@
+{
+  "startingKnowledge": "Basic sequential and asynchronous application code, service API calls, database transactions, and process crashes. No prior Temporal terminology is assumed.",
+  "prerequisites": {
+    "durable-execution-and-process-recovery": [],
+    "workflow-definitions-and-activities": [
+      "durable-execution-and-process-recovery"
+    ],
+    "clients-service-and-workers": ["workflow-definitions-and-activities"],
+    "event-history": ["clients-service-and-workers"],
+    "workflow-replay-and-determinism": ["event-history"],
+    "activity-retries-and-timeouts": ["clients-service-and-workers"],
+    "task-queue-dispatch": ["activity-retries-and-timeouts"],
+    "activity-idempotency": ["event-history", "activity-retries-and-timeouts"],
+    "durable-timers": ["event-history"],
+    "signals-and-asynchronous-input": ["event-history"],
+    "parallel-activities-and-joins": ["clients-service-and-workers"],
+    "sagas-and-compensating-actions": ["activity-retries-and-timeouts"],
+    "workloads-that-need-durable-coordination": [
+      "workflow-replay-and-determinism",
+      "durable-timers",
+      "signals-and-asynchronous-input",
+      "sagas-and-compensating-actions"
+    ],
+    "run-a-local-recovery-experiment": [
+      "workflow-replay-and-determinism",
+      "activity-retries-and-timeouts",
+      "durable-timers"
+    ],
+    "adoption-and-operational-checks": [
+      "workloads-that-need-durable-coordination",
+      "activity-idempotency",
+      "run-a-local-recovery-experiment"
+    ]
+  }
+}

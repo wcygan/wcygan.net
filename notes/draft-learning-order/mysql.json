@@ -1,0 +1,22 @@
+{
+  "startingKnowledge": "Basic application programming and the idea of storing records; no prior SQL, storage-engine, transaction, or replication knowledge is required.",
+  "prerequisites": {
+    "tables-keys-and-joins": [],
+    "constraints": ["tables-keys-and-joins"],
+    "filtering-and-aggregation": ["tables-keys-and-joins"],
+    "query-processing": ["filtering-and-aggregation"],
+    "index-lookups-and-covering-queries": ["query-processing"],
+    "buffer-pool": ["index-lookups-and-covering-queries"],
+    "transactions": ["tables-keys-and-joins"],
+    "row-locks": ["transactions"],
+    "redo-and-crash-recovery": ["buffer-pool", "transactions"],
+    "asynchronous-replication": ["transactions"],
+    "relational-workloads": ["constraints", "transactions"],
+    "run-the-bookstore-locally": [
+      "constraints",
+      "index-lookups-and-covering-queries",
+      "row-locks"
+    ],
+    "further-reading": []
+  }
+}

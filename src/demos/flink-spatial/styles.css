@@ -1,4 +1,4 @@
-/* PlanetScale spatial lessons: dark platforms, colored ownership, upright labels. */
+/* PlanetScale spatial lessons: light platforms, colored ownership, upright labels. */
 .flink-spatial-stage {
   position: relative;
   height: 380px;
@@ -83,7 +83,7 @@
   white-space: nowrap;
   padding: 4px 6px;
   color: var(--flink-text);
-  background: oklch(0.178 0 0 / 0.96);
+  background: #fffffff5;
   border: 1px solid var(--flink-border);
   border-radius: 2px;
   font:

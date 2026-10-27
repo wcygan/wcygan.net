@@ -16,7 +16,7 @@
   display: block;
   white-space: nowrap;
   color: var(--mysql-ink);
-  background: oklch(0.178 0 0 / 0.92);
+  background: #ffffffeb;
   padding: 3px 5px;
   border-radius: 2px;
   font:

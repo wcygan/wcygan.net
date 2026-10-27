@@ -73,7 +73,7 @@ export function Runtime({
       <SurfaceId
         position={[0, 0, size / 2 + 0.006]}
         scale={size * 0.28}
-        color={CELLD_COLORS.darkInk}
+        color={CELLD_COLORS.onAccent}
       >
         JS
       </SurfaceId>
@@ -81,7 +81,7 @@ export function Runtime({
         position={[0, 0, -size / 2 - 0.006]}
         rotation={[0, Math.PI, 0]}
         scale={size * 0.28}
-        color={CELLD_COLORS.darkInk}
+        color={CELLD_COLORS.onAccent}
       >
         JS
       </SurfaceId>

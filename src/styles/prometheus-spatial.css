@@ -48,7 +48,7 @@
 }
 
 .prometheus-spatial-demo :is(button, [tabindex]):focus-visible {
-  outline: 2px solid oklch(0.661 0.202 39.353);
+  outline: 2px solid #b43d08;
   outline-offset: 2px;
 }
 
@@ -69,8 +69,8 @@
   pointer-events: none;
   white-space: nowrap;
   padding: 2px 4px;
-  background: oklch(0.178 0 0 / 0.94);
-  color: oklch(0.985 0 0);
+  background: #fffffff0;
+  color: #202020;
   font:
     500 11px/1.3 "JetBrains Mono",
     Lilex,
@@ -79,7 +79,7 @@
 }
 
 .prometheus-spatial-label--accent {
-  color: oklch(0.661 0.202 39.353);
+  color: #b43d08;
 }
 
 .prometheus-spatial-actions {
@@ -184,15 +184,15 @@
 }
 
 .post-content .prometheus-spatial-stage {
-  background: oklch(0.178 0 0);
-  border: 1px solid oklch(0.32 0 0);
-  color: oklch(0.985 0 0);
+  background: #f7f7f5;
+  border: 1px solid #777770;
+  color: #202020;
 }
 .prometheus-spatial-stage .prometheus-spatial-fallback {
-  color: oklch(0.752 0 0);
+  color: #595954;
 }
 .prometheus-spatial-stage .prometheus-spatial-fallback-count {
-  color: oklch(0.985 0 0);
+  color: #202020;
 }
 .post-content .prometheus-spatial-stage code {
   background: transparent;

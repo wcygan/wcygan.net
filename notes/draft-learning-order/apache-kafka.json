@@ -1,0 +1,35 @@
+{
+  "startingKnowledge": "Basic application requests and background work; no prior Kafka terminology is assumed. The local lab separately requires Docker and a shell.",
+  "prerequisites": {
+    "records-topics-and-partitions": [],
+    "record": ["records-topics-and-partitions"],
+    "topic": ["record"],
+    "partitions": ["topic"],
+    "keyed-partition-routing": ["partitions"],
+    "hot-keys-and-uneven-load": ["keyed-partition-routing"],
+    "partition-placement-across-brokers": ["keyed-partition-routing"],
+    "replication-and-broker-failures": ["partition-placement-across-brokers"],
+    "retained-records": ["partitions"],
+    "retention-and-compaction": ["retained-records", "keyed-partition-routing"],
+    "independent-processing": ["retained-records"],
+    "consumer-groups": ["independent-processing"],
+    "committed-offsets-and-replay": [
+      "consumer-groups",
+      "retention-and-compaction"
+    ],
+    "consumer-lag": ["committed-offsets-and-replay"],
+    "stream-processing-and-integration": [
+      "consumer-groups",
+      "partition-placement-across-brokers"
+    ],
+    "run-kafka-locally": ["replication-and-broker-failures", "consumer-lag"],
+    "start-a-broker-and-create-a-topic": ["run-kafka-locally"],
+    "write-six-keyed-records": ["start-a-broker-and-create-a-topic"],
+    "read-the-history-with-two-consumer-groups": ["write-six-keyed-records"],
+    "replay-an-existing-group": ["read-the-history-with-two-consumer-groups"],
+    "when-kafka-fits": [
+      "replay-an-existing-group",
+      "stream-processing-and-integration"
+    ]
+  }
+}

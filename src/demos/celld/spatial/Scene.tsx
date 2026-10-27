@@ -217,13 +217,13 @@ function Anatomy({ layer }: { layer: CellLayer }) {
             color={C.orange}
             outline={C.darkInk}
           />
-          <SurfaceId position={[0, 0, 0.338]} color={C.darkInk}>
+          <SurfaceId position={[0, 0, 0.338]} color={C.onAccent}>
             {String(page)}
           </SurfaceId>
           <SurfaceId
             position={[0, 0.233, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
-            color={C.darkInk}
+            color={C.onAccent}
           >
             {String(page)}
           </SurfaceId>
@@ -280,20 +280,20 @@ function PageChanges({ step }: { step: PageStep }) {
               color={page.changed ? C.orange : C.blue}
               outline={C.darkInk}
             />
-            <SurfaceId position={[0, 0, 0.373]} color={C.darkInk}>
+            <SurfaceId position={[0, 0, 0.373]} color={C.onAccent}>
               {String(page.id)}
             </SurfaceId>
             <SurfaceId
               position={[0, page.changed ? 0.398 : 0.298, 0]}
               rotation={[-Math.PI / 2, 0, 0]}
-              color={C.darkInk}
+              color={C.onAccent}
             >
               {String(page.id)}
             </SurfaceId>
             <SurfaceId
               position={[0, 0, -0.373]}
               rotation={[0, Math.PI, 0]}
-              color={C.darkInk}
+              color={C.onAccent}
             >
               {String(page.id)}
             </SurfaceId>
@@ -320,13 +320,13 @@ function PageChanges({ step }: { step: PageStep }) {
             color={C.orange}
             outline={C.darkInk}
           />
-          <SurfaceId position={[0, 0, 0.373]} color={C.darkInk}>
+          <SurfaceId position={[0, 0, 0.373]} color={C.onAccent}>
             {String(page.id)}
           </SurfaceId>
           <SurfaceId
             position={[0, 0.288, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
-            color={C.darkInk}
+            color={C.onAccent}
           >
             {String(page.id)}
           </SurfaceId>
@@ -401,18 +401,18 @@ function Fleet({ view }: { view: FleetView }) {
             position={[0, 0.224, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
             scale={0.39}
-            color={C.darkInk}
+            color={C.onAccent}
           >
             {cell.number}
           </SurfaceId>
-          <SurfaceId position={[0, 0, 0.383]} scale={0.33} color={C.darkInk}>
+          <SurfaceId position={[0, 0, 0.383]} scale={0.33} color={C.onAccent}>
             {cell.number}
           </SurfaceId>
           <SurfaceId
             position={[0, 0, -0.383]}
             rotation={[0, Math.PI, 0]}
             scale={0.33}
-            color={C.darkInk}
+            color={C.onAccent}
           >
             {cell.number}
           </SurfaceId>

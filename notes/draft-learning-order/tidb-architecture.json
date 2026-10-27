@@ -1,0 +1,19 @@
+{
+  "startingKnowledge": "Basic SQL tables, primary keys, SELECT queries, and updates on a single database; no knowledge of distributed storage or replication is assumed.",
+  "prerequisites": {
+    "single-machine-resource-limits": [],
+    "sql-storage-and-coordination": [],
+    "region-key-ranges": ["sql-storage-and-coordination"],
+    "point-read-routing": ["region-key-ranges"],
+    "secondary-index-lookups": ["point-read-routing"],
+    "raft-replication-and-quorum": ["region-key-ranges"],
+    "cross-region-transactions": ["raft-replication-and-quorum"],
+    "snapshot-isolation": ["cross-region-transactions"],
+    "tiflash-columnar-replicas": ["point-read-routing", "snapshot-isolation"],
+    "independent-compute-and-storage-scaling": ["tiflash-columnar-replicas"],
+    "run-a-local-tidb-cluster": [
+      "secondary-index-lookups",
+      "tiflash-columnar-replicas"
+    ]
+  }
+}

@@ -4,7 +4,7 @@
   --prom2d-muted: oklch(0.499 0.008 106.715);
   --prom2d-line: oklch(0.915 0.007 97.423);
   --prom2d-surface: oklch(0.973 0.004 91.446);
-  --prom2d-accent: oklch(0.661 0.202 39.353);
+  --prom2d-accent: #b43d08;
   color: var(--prom2d-ink);
   font-variant-numeric: tabular-nums;
 }
@@ -50,7 +50,7 @@
 }
 
 .prom2d-controls button:focus-visible {
-  outline: 2px solid oklch(0.667 0.15 241.774);
+  outline: 2px solid #076fa8;
   outline-offset: 2px;
 }
 
@@ -381,15 +381,15 @@
 
 /* PlanetScale stages: measurement orange, query blue, health green/red. */
 .post-content .prom2d-stage {
-  --prom2d-ink: oklch(0.985 0 0);
-  --prom2d-muted: oklch(0.752 0 0);
-  --prom2d-line: oklch(0.32 0 0);
-  --prom2d-surface: oklch(0.226 0 0);
-  --prom2d-accent: oklch(0.661 0.202 39.353);
-  background: oklch(0.178 0 0);
+  --prom2d-ink: #202020;
+  --prom2d-muted: #595954;
+  --prom2d-line: #777770;
+  --prom2d-surface: #ffffff;
+  --prom2d-accent: #b43d08;
+  background: #f7f7f5;
   color: var(--prom2d-ink);
   padding: 24px;
-  border: 1px solid oklch(0.32 0 0);
+  border: 1px solid #777770;
   font-family: var(--font-mono);
 }
 .prom2d-stage .prom2d-node {
@@ -397,25 +397,25 @@
   stroke: var(--prom2d-accent);
 }
 .prom2d-stage .prom2d-wire {
-  stroke: oklch(0.667 0.15 241.774);
+  stroke: #076fa8;
 }
 .prom2d-stage .prom2d-chart-stored {
   color: var(--prom2d-accent);
 }
 .prom2d-stage .prom2d-chart-corrected {
-  color: oklch(0.667 0.15 241.774);
+  color: #076fa8;
 }
 .prom2d-stage .prom2d-bar {
-  fill: oklch(0.681 0.191 146.483);
+  fill: #187636;
 }
 .prom2d-stage .prom2d-value {
   color: var(--prom2d-accent);
 }
 .prom2d-stage .prom2d-rule-arrow {
-  color: oklch(0.667 0.15 241.774);
+  color: #076fa8;
 }
 .prom2d-stage .prom2d-status {
-  color: oklch(0.809 0.166 84.552);
+  color: #866100;
 }
 @media (max-width: 639px) {
   .post-content .prom2d-stage {
@@ -423,12 +423,12 @@
   }
 }
 .prom2d-stage .prom2d-corrected-key {
-  color: oklch(0.667 0.15 241.774);
+  color: #076fa8;
 }
 
 /* Short causal beats; each teaching sequence ends in a persistent result. */
 .prom2d-scrape-packet {
-  fill: oklch(0.809 0.166 84.552);
+  fill: #866100;
 }
 @media (prefers-reduced-motion: no-preference) {
   .prom2d-bar {

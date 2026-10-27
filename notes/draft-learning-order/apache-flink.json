@@ -1,0 +1,30 @@
+{
+  "startingKnowledge": "Basic application programming, records, and simple SQL aggregations; no prior Flink runtime, distributed state, or stream-processing knowledge.",
+  "prerequisites": {
+    "sources-operators-and-sinks": [],
+    "bounded-and-unbounded-input": ["sources-operators-and-sinks"],
+    "jobmanager-and-taskmanagers": ["sources-operators-and-sinks"],
+    "keyed-state": ["jobmanager-and-taskmanagers"],
+    "keyed-shuffles": ["keyed-state"],
+    "hot-keys-and-workload-skew": ["keyed-state"],
+    "event-enrichment-with-broadcast-state": ["keyed-state"],
+    "event-time-and-watermarks": ["bounded-and-unbounded-input", "keyed-state"],
+    "backpressure": ["sources-operators-and-sinks"],
+    "checkpoints-and-barrier-alignment": ["keyed-state"],
+    "checkpoint-recovery-and-source-replay": [
+      "checkpoints-and-barrier-alignment"
+    ],
+    "exactly-once-state-and-external-writes": [
+      "checkpoint-recovery-and-source-replay"
+    ],
+    "stateful-processing-use-cases": [
+      "hot-keys-and-workload-skew",
+      "event-time-and-watermarks",
+      "exactly-once-state-and-external-writes"
+    ],
+    "run-flink-locally": [
+      "bounded-and-unbounded-input",
+      "checkpoint-recovery-and-source-replay"
+    ]
+  }
+}

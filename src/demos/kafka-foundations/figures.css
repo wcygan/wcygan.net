@@ -1,0 +1,226 @@
+.kafka-foundation-figure {
+  container-type: inline-size;
+}
+
+.kafka-foundation-figure .kafka-foundation-stage {
+  padding: 24px;
+  background: #f7f7f5;
+  color: #202020;
+  font: 16px/1.5 var(--font-mono);
+  font-feature-settings: normal;
+  font-variant-ligatures: normal;
+}
+
+.kafka-foundation-record,
+.kafka-foundation-topic {
+  min-inline-size: 0;
+  border: 1px solid #777770;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.kafka-foundation-record {
+  border-color: #b43d08;
+  overflow: hidden;
+}
+
+.kafka-foundation-topic .kafka-foundation-topic-name {
+  margin: 0;
+  padding: 20px 24px;
+  border-block-end: 1px solid #d6d6ce;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.kafka-foundation-record-id {
+  margin: 0;
+  color: #b43d08;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.kafka-foundation-record-figure .kafka-foundation-stage {
+  padding: 16px;
+}
+
+.kafka-foundation-record-header {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-block-end: 1px solid #efc6aa;
+  background: #ffebdc;
+}
+
+.kafka-foundation-record .kafka-foundation-metadata {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.85fr) minmax(0, 1.5fr);
+  gap: 12px;
+  margin: 0;
+}
+
+.kafka-foundation-metadata > div {
+  min-inline-size: 0;
+}
+
+.kafka-foundation-record .kafka-foundation-fields {
+  margin: 0;
+  padding: 16px;
+}
+
+.kafka-foundation-metadata dt,
+.kafka-foundation-fields dt {
+  margin-block-end: 4px;
+  color: #595954;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kafka-foundation-metadata dd,
+.kafka-foundation-fields dd {
+  margin: 0;
+}
+
+.kafka-foundation-metadata time {
+  font-size: 14px;
+}
+
+.kafka-foundation-metadata time > span {
+  white-space: nowrap;
+}
+
+.post-content .kafka-foundation-fields pre {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #202020;
+  font: inherit;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow-x: auto;
+}
+
+.post-content .kafka-foundation-fields pre > code {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.kafka-foundation-fields [data-token="key"] {
+  color: #076fa8;
+}
+
+.kafka-foundation-fields [data-token="string"] {
+  color: #187636;
+}
+
+.kafka-foundation-topic .kafka-foundation-topic-records {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 24px;
+  list-style: none;
+}
+
+.kafka-foundation-topic-records > li {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #777770;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.kafka-foundation-topic-records > li[data-focused="true"] {
+  border-color: #b43d08;
+}
+
+.kafka-foundation-topic-id {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+[data-focused="true"] > .kafka-foundation-topic-id {
+  color: #b43d08;
+}
+
+.kafka-foundation-topic-key {
+  color: #595954;
+}
+
+@media (max-width: 720px) {
+  .kafka-foundation-topic .kafka-foundation-topic-records {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .kafka-foundation-figure .kafka-foundation-stage {
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  .kafka-foundation-topic .kafka-foundation-topic-name {
+    padding: 16px;
+  }
+
+  .kafka-foundation-record-figure .kafka-foundation-stage {
+    padding: 12px;
+  }
+
+  .kafka-foundation-record-header {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .kafka-foundation-metadata time {
+    font-size: 12px;
+  }
+
+  .kafka-foundation-record .kafka-foundation-fields {
+    padding: 12px;
+  }
+
+  .post-content .kafka-foundation-fields pre {
+    font-size: 12px;
+  }
+
+  .kafka-foundation-topic .kafka-foundation-topic-records {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .kafka-foundation-topic-records > li {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  [data-graphic-key="kafka-foundation-topic"] .kafka-foundation-stage {
+    padding: 8px;
+  }
+
+  .kafka-foundation-topic .kafka-foundation-topic-records {
+    padding: 8px;
+  }
+
+  .kafka-foundation-topic-records > li {
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    gap: 4px;
+  }
+}

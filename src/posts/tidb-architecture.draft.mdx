@@ -5,77 +5,55 @@ description: SQL across machines, from queries to replicas
 tags: [Data, Distributed Systems]
 ---
 
-import { TidbLearningDemo } from "~/components/TidbLearningDemos";
+**TiDB is a distributed SQL database.** Applications use SQL while TiDB distributes query execution and data storage across machines. In [TiDB Self-Managed](https://docs.pingcap.com/tidb/stable/tidb-architecture/), separate components handle SQL execution, transactional storage, cluster coordination, and columnar analytics.
 
-**TiDB is a distributed SQL database:** one familiar SQL interface, with data and work spread across machines. These ten demos explore [TiDB Self-Managed](https://docs.pingcap.com/tidb/stable/tidb-architecture/), starting with the problem it solves.
+## Single-machine resource limits
 
-## Outgrowing one machine
+As data and query volume grow, SQL execution and storage compete for one host's resources. TiDB separates SQL compute from storage so these layers can grow independently.
 
-More data and queries eventually compete for one host's resources. TiDB separates SQL compute from storage.
+## SQL, storage, and coordination
 
-<TidbLearningDemo lesson="capacity" />
+TiDB plans SQL queries, TiKV stores rows, and **PD**, the Placement Driver, coordinates placement and timestamps. The optional TiFlash component keeps a column-oriented copy of the data for analytics.
 
-## Meet the components
+TiDB supports the MySQL protocol, but protocol compatibility does not guarantee application compatibility. Check [compatibility](https://docs.pingcap.com/tidb/stable/mysql-compatibility/) before migrating: stored procedures and triggers are unsupported.
 
-TiDB plans SQL. TiKV stores rows. **PD**, the Placement Driver, coordinates placement and timestamps. Optional TiFlash stores columns.
+## Region key ranges
 
-<TidbLearningDemo lesson="roles" />
+A **Region** is a contiguous range of keys. Splitting a Region produces smaller key ranges that the cluster can place independently.
 
-TiDB speaks the MySQL protocol. Check [compatibility](https://docs.pingcap.com/tidb/stable/mysql-compatibility/) before migrating; stored procedures and triggers are unsupported.
+## Point-read routing
 
-## Split the data
+A **point read** retrieves a row by key. For example, an application can request an order by its primary key. It sends SQL to TiDB, which identifies the Region containing the requested key and retrieves the row from TiKV.
 
-A **Region** is a contiguous range of keys. Splitting creates smaller ranges that can be placed independently.
+## Secondary index lookups
 
-<TidbLearningDemo lesson="regions" />
+A query that searches orders by buyer and returns an amount can require two lookups. A secondary index on buyer returns a row ID; TiDB then uses that ID to retrieve the amount from the row. A covering index can avoid the second lookup by including the requested data.
 
-## Follow a read
+## Raft replication and quorum
 
-The application sends SQL. TiDB locates the right Region and requests a row from TiKV.
+Each Region has replicas that hold copies of its key range. **Raft** keeps those replicas in agreement about changes. A new entry requires acknowledgment from a majority of voting replicas, called a **quorum**. In a group of three voting replicas, two must acknowledge the entry. If two are unavailable, the remaining replica cannot form a quorum.
 
-<TidbLearningDemo lesson="routing" />
+Replicas need separate failure domains. Three processes on one laptop still fail together if that laptop fails.
 
-## Keep copies
+## Cross-Region transactions
 
-Each Region uses **Raft**, a protocol for agreeing on changes. With three voting replicas, two must acknowledge a new entry.
+A transaction groups updates into one commit or abort outcome. An order and its inventory update can touch different Regions, so a transaction protocol coordinates their outcome across those Regions. This all-or-nothing property is **atomicity**. Raft replication within each Region and transaction coordination across Regions solve different problems: keeping replicas in agreement and preserving the transaction's atomicity.
 
-<TidbLearningDemo lesson="quorum" />
+## Snapshot isolation
 
-Copies need separate failure domains: three processes on one laptop still fail together.
+Transactions produce committed versions of the data. A read timestamp determines which of those versions a query can see. A version committed after that timestamp is outside the query's snapshot.
 
-## Commit across Regions
+[Snapshot isolation](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/) can allow write skew. A consistent snapshot does not guarantee serializable transactions.
 
-An order and its inventory update can touch different Regions. A transaction protocol connects their outcomes.
+## TiFlash columnar replicas
 
-<TidbLearningDemo lesson="transaction" />
+Point lookups and large aggregations benefit from different data layouts. TiFlash adds columnar replicas for analytical queries over transactional data, an approach called **hybrid transactional and analytical processing (HTAP)**.
 
-## Look up an index
+TiFlash replicas are enabled per table. For [consistent reads](https://docs.pingcap.com/tidb/stable/tiflash-overview/), TiFlash validates replication progress and may wait for its replicas to catch up.
 
-The email index finds a row ID. A second lookup retrieves the requested name. A covering index can avoid that second lookup.
+## Independent compute and storage scaling
 
-<TidbLearningDemo lesson="index" />
-
-## Read a consistent snapshot
-
-A read timestamp fixes which committed versions are visible.
-
-<TidbLearningDemo lesson="snapshot" />
-
-[Snapshot isolation](https://docs.pingcap.com/tidb/stable/transaction-isolation-levels/) can allow write skew; it does not guarantee serializable transactions.
-
-## Analyze columns
-
-Point lookups and large aggregations need different layouts. TiFlash adds columnar replicas for analytical queries over transactional data: **hybrid transactional and analytical processing (HTAP)**.
-
-<TidbLearningDemo lesson="tiflash" />
-
-TiFlash replicas are enabled per table. [Consistent reads](https://docs.pingcap.com/tidb/stable/tiflash-overview/) validate replication progress and may wait for catch-up.
-
-## Grow each layer
-
-Add TiDB servers for SQL execution, or TiKV stores for data capacity. Region replicas move as the cluster rebalances.
-
-<TidbLearningDemo lesson="scaling" />
+TiDB servers add SQL execution capacity; TiKV stores add data capacity. The cluster moves Region replicas as it rebalances.
 
 | Consider TiDB when…                             | Remember…                              |
 | ----------------------------------------------- | -------------------------------------- |
@@ -83,11 +61,11 @@ Add TiDB servers for SQL execution, or TiKV stores for data capacity. Region rep
 | Analytics needs recent application data         | Test TiFlash on representative queries |
 | Compute and storage grow at different rates     | Hot keys can remain bottlenecks        |
 
-If one MySQL or PostgreSQL machine comfortably serves the workload, its simpler operation may be enough.
+A single-machine MySQL or PostgreSQL database may be simpler to operate when it comfortably serves the workload.
 
-## Try it locally
+## Run a local TiDB cluster
 
-[TiUP Playground](https://docs.pingcap.com/tidb/stable/quick-start-with-tidb/) runs a learning cluster on macOS or Linux. Install a MySQL client first. These v8.5.8 commands follow the documentation; I haven't run this lab yet.
+[TiUP Playground](https://docs.pingcap.com/tidb/stable/quick-start-with-tidb/) runs a learning cluster on macOS or Linux. Install a MySQL client before starting the cluster. The commands below follow the documentation and pin TiDB to v8.5.8; I haven't run this lab yet.
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf \
@@ -97,15 +75,15 @@ curl --proto '=https' --tlsv1.2 -sSf \
 tiup playground v8.5.8 --db 1 --pd 1 --kv 1 --tiflash 1
 ```
 
-Check the [TiFlash requirements](https://docs.pingcap.com/tidb/stable/hardware-and-software-requirements/); use `--tiflash 0` if unsupported. This single-machine setup cannot demonstrate replica failover.
+Check the [TiFlash requirements](https://docs.pingcap.com/tidb/stable/hardware-and-software-requirements/) before starting Playground. Use `--tiflash 0` if your machine does not support TiFlash. This single-machine setup cannot demonstrate replica failover.
 
-In another terminal, connect to the address printed by Playground, normally:
+In another terminal, connect with the MySQL client. Use the address printed by Playground, normally:
 
 ```sh
 mysql --comments --host 127.0.0.1 --port 4000 -u root
 ```
 
-Run a tiny transaction and aggregation:
+Create four orders, update one inside a transaction, and query the result:
 
 ```sql
 CREATE DATABASE tidb_learning;
@@ -129,8 +107,8 @@ SELECT SUM(amount) FROM orders;   -- 44
 EXPLAIN SELECT * FROM orders WHERE buyer = 'Will';
 ```
 
-Next, [enable a TiFlash replica](https://docs.pingcap.com/tidb/stable/create-tiflash-replicas/), wait until `AVAILABLE = 1`, and compare the aggregation's execution plans. Four rows teach query behavior; performance testing needs a realistic dataset.
+To compare row and columnar query execution, [enable a TiFlash replica](https://docs.pingcap.com/tidb/stable/create-tiflash-replicas/) and wait until `AVAILABLE = 1`. Then compare the aggregation's execution plans. Four rows illustrate query behavior; performance testing requires a realistic dataset.
 
-Press **Ctrl+C** in the Playground terminal to stop. Untagged data is disposable; [use a tag](https://docs.pingcap.com/tidb/stable/tiup-playground/) to keep it between runs.
+Press **Ctrl+C** in the Playground terminal to stop the cluster. Untagged data is disposable. To retain data between runs, [use a tag](https://docs.pingcap.com/tidb/stable/tiup-playground/).
 
-For deeper detail: PingCAP's [architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/), [storage](https://docs.pingcap.com/tidb/stable/tidb-storage/), and [transaction](https://docs.pingcap.com/tidb/stable/tidb-faq/#does-tidb-support-distributed-transactions) guides.
+PingCAP's [architecture](https://docs.pingcap.com/tidb/stable/tidb-architecture/), [storage](https://docs.pingcap.com/tidb/stable/tidb-storage/), and [transaction](https://docs.pingcap.com/tidb/stable/tidb-faq/#does-tidb-support-distributed-transactions) guides describe the components and protocols in more detail.

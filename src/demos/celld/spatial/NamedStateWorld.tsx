@@ -93,7 +93,7 @@ export function NamedStateWorld({ state }: { state: NamedState }) {
                 RUNTIME_Z + RUNTIME_SIZE / 2 + 0.008,
               ]}
               scale={0.19}
-              color={CELLD_COLORS.darkInk}
+              color={CELLD_COLORS.onAccent}
             >
               TEMP
             </SurfaceId>
@@ -104,7 +104,7 @@ export function NamedStateWorld({ state }: { state: NamedState }) {
                 RUNTIME_Z + RUNTIME_SIZE / 2 + 0.008,
               ]}
               scale={0.19}
-              color={CELLD_COLORS.darkInk}
+              color={CELLD_COLORS.onAccent}
             >
               {String(cell.volatileCount)}
             </SurfaceId>

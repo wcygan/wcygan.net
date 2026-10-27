@@ -1,19 +1,19 @@
 /** PlanetScale semantic colors. Hex values are required by Three.js materials. */
 export const TEMPORAL_PALETTE = {
-  canvas: "#111111",
-  panel: "#1c1c1c",
-  text: "#fafafa",
-  muted: "#cfcfcf",
-  dim: "#b5b5b5",
-  border: "#818181",
-  track: "#383838",
-  connector: "#818181",
-  orange: "#f35815",
-  blue: "#0e73cc",
-  green: "#27b648",
-  yellow: "#f2b600",
-  red: "#ff455d",
-  focus: "#65baff",
+  canvas: "#f7f7f5",
+  panel: "#ffffff",
+  text: "#202020",
+  muted: "#595954",
+  dim: "#595954",
+  border: "#777770",
+  track: "#d6d6ce",
+  connector: "#777770",
+  orange: "#b43d08",
+  blue: "#076fa8",
+  green: "#187636",
+  yellow: "#866100",
+  red: "#c12e46",
+  focus: "#b43d08",
 } as const;
 
 export type TemporalColor = keyof typeof TEMPORAL_PALETTE;

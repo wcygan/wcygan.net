@@ -18461,32 +18461,30 @@ th {
     gap: 4px;
   }
 }
-/* PlanetScale dark stages: preserve warm editorial styling outside the demos. */
+/* PlanetScale light stages: preserve warm editorial styling outside the demos. */
 :where(.celld-demo, .celld-spatial-demo) {
-  color-scheme: dark;
-  --celld-bg: oklch(0.178 0 0);
-  --celld-panel: oklch(0.226 0 0);
-  --celld-fg: oklch(0.985 0 0);
-  --celld-muted: oklch(0.783 0 0);
-  --celld-border: oklch(1 0 0 / 0.22);
-  --celld-control-border: oklch(1 0 0 / 0.42);
-  --celld-track: oklch(1 0 0 / 0.1);
-  --celld-connector: oklch(0.603 0 0);
+  color-scheme: light;
+  --celld-bg: #f7f7f5;
+  --celld-panel: #ffffff;
+  --celld-fg: #202020;
+  --celld-muted: #595954;
+  --celld-border: #777770;
+  --celld-control-border: #777770;
+  --celld-track: #d6d6ce;
+  --celld-connector: #777770;
   --celld-dark-ink: oklch(0.178 0 0);
-  --celld-orange: oklch(0.661 0.202 39.353);
-  --celld-blue: oklch(0.667 0.15 241.774);
-  --celld-green: oklch(0.681 0.191 146.483);
-  /* Chroma rounds inward to keep the yellow inside sRGB. */
-  --celld-yellow: oklch(0.809 0.165 84.552);
-  --celld-red: oklch(0.668 0.22 18.688);
-  /* Small colored labels need more lightness than their geometric accents. */
-  --celld-orange-label: oklch(0.84 0.066 39.353);
-  --celld-blue-label: oklch(0.84 0.063 241.774);
-  --celld-green-label: oklch(0.84 0.182 146.483);
-  --celld-red-label: oklch(0.84 0.063 18.688);
+  --celld-orange: #b43d08;
+  --celld-blue: #076fa8;
+  --celld-green: #187636;
+  --celld-yellow: #866100;
+  --celld-red: #c12e46;
+  --celld-orange-label: #b43d08;
+  --celld-blue-label: #076fa8;
+  --celld-green-label: #187636;
+  --celld-red-label: #c12e46;
 }
 
-/* celld: canonical dark frame and controls for all ten explanations. */
+/* celld: canonical light frame and controls for all ten explanations. */
 .site-container .post-content .celld-demo {
   min-inline-size: 0;
   margin-block: 32px;
@@ -18758,7 +18756,7 @@ th {
   font-weight: 500;
 }
 .celld-work-slot[data-complete="true"] > rect {
-  fill: var(--celld-green);
+  fill: color-mix(in srgb, var(--celld-green) 12%, var(--celld-panel));
   stroke: var(--celld-green);
 }
 .celld-work-slot[data-complete="true"] > text {
@@ -18811,7 +18809,7 @@ th {
   }
 }
 
-/* celld: five inspectable Three.js models, styled with semantic dark tokens. */
+/* celld: five inspectable Three.js models, styled with semantic light tokens. */
 
 .site-container .post-content .celld-spatial-header > .article-graphic-title {
   margin: 0 0 12px;
@@ -19038,7 +19036,7 @@ th {
   }
 }
 
-/* Kafka introduction: PlanetScale dark stages and semantic event colors. */
+/* Kafka introduction: PlanetScale light stages and semantic event colors. */
 .kafka-intro-flow,
 .kafka-intro-pipeline-board {
   position: relative;
@@ -19074,18 +19072,18 @@ th {
 }
 
 .kafka-intro-figure {
-  --kafka-intro-ink: oklch(0.985 0 0);
-  --kafka-intro-muted: oklch(0.776 0 0);
-  --kafka-intro-line: oklch(1 0 0 / 0.22);
-  --kafka-intro-paper: oklch(0.178 0 0);
-  --kafka-intro-raised: oklch(0.226 0 0);
-  --kafka-intro-focus: oklch(0.661 0.202 39.353);
-  --kafka-intro-blue: oklch(0.552 0.161 252.205);
-  --kafka-intro-info: oklch(0.667 0.15 241.774);
-  --kafka-intro-green: oklch(0.681 0.191 146.483);
-  --kafka-intro-yellow: oklch(0.809 0.166 84.552);
-  --kafka-intro-red: oklch(0.668 0.22 18.688);
-  color-scheme: dark;
+  --kafka-intro-ink: #202020;
+  --kafka-intro-muted: #595954;
+  --kafka-intro-line: #777770;
+  --kafka-intro-paper: #f7f7f5;
+  --kafka-intro-raised: #ffffff;
+  --kafka-intro-focus: #b43d08;
+  --kafka-intro-blue: #076fa8;
+  --kafka-intro-info: #076fa8;
+  --kafka-intro-green: #187636;
+  --kafka-intro-yellow: #866100;
+  --kafka-intro-red: #c12e46;
+  color-scheme: light;
   padding: 20px;
   border: 1px solid var(--kafka-intro-line);
   border-radius: 8px;
@@ -19261,7 +19259,7 @@ th {
   padding: 12px;
   border-block-start: 1px solid var(--kafka-intro-line);
 }
-.kafka-intro-payload pre {
+.post-content .kafka-intro-payload pre {
   margin: 8px 0 0;
   padding: 0;
   border: 0;
@@ -19297,7 +19295,11 @@ th {
   min-inline-size: 24px;
   block-size: 32px;
   border: 1px solid var(--kafka-intro-info);
-  background: var(--kafka-intro-blue);
+  background: color-mix(
+    in srgb,
+    var(--kafka-intro-blue) 12%,
+    var(--kafka-intro-raised)
+  );
   color: var(--kafka-intro-ink);
 }
 .kafka-intro-groups {
@@ -19379,7 +19381,11 @@ th {
   margin: 0;
   padding: 16px 0;
   border: 1px solid var(--kafka-intro-info);
-  background: var(--kafka-intro-blue);
+  background: color-mix(
+    in srgb,
+    var(--kafka-intro-blue) 12%,
+    var(--kafka-intro-raised)
+  );
 }
 .kafka-intro-offset-number {
   font-size: 22px;
@@ -19619,8 +19625,8 @@ th {
   font-feature-settings: normal;
   font-variant-ligatures: normal;
   text-align: center;
-  color: oklch(0.985 0 0);
-  background: oklch(0.178 0 0 / 0.94);
+  color: #202020;
+  background: #fffffff0;
   padding: 2px 4px;
   border-radius: 2px;
 }
@@ -19632,16 +19638,16 @@ th {
   transform: translateY(-32px);
 }
 .kafka-intro-scene-label[data-tone="accent"] {
-  color: oklch(0.661 0.202 39.353);
+  color: #b43d08;
 }
 .kafka-intro-scene-label[data-tone="green"] {
-  color: oklch(0.681 0.191 146.483);
+  color: #187636;
 }
 .kafka-intro-scene-label[data-tone="yellow"] {
-  color: oklch(0.809 0.166 84.552);
+  color: #866100;
 }
 .kafka-intro-scene-label[data-tone="red"] {
-  color: oklch(0.668 0.22 18.688);
+  color: #c12e46;
 }
 .kafka-intro-scene-fallback {
   display: grid;
@@ -19649,7 +19655,7 @@ th {
   height: 100%;
   margin: 0;
   padding: 24px;
-  color: oklch(0.776 0 0);
+  color: #595954;
   font-size: 14px;
   text-align: center;
 }

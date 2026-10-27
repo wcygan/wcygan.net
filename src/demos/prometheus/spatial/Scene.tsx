@@ -73,8 +73,8 @@ function Label({
 function Box({
   position,
   size,
-  color = "#0e73cc",
-  outline = "#76c5ff",
+  color = "#076fa8",
+  outline = "#076fa8",
 }: {
   position: Point;
   size: Point;
@@ -333,10 +333,10 @@ function Cardinality({
         index,
         new Color(
           index === selectedIndex
-            ? "#f35815"
+            ? "#b43d08"
             : record.status === "500"
-              ? "#ff455d"
-              : "#27b648",
+              ? "#c12e46"
+              : "#187636",
         ),
       );
     });
@@ -362,7 +362,7 @@ function Cardinality({
               [-2.55, status * 2, 3.55],
               [-2.55, status * 2, -3.55],
             ]}
-            color="#818181"
+            color="#777770"
             dashed
             dashSize={0.12}
             gapSize={0.12}
@@ -410,7 +410,7 @@ function IntroScene({
                 [-3.8, 0, lane * 2 - 1],
                 [3.8, 0, lane * 2 - 1],
               ]}
-              color="#818181"
+              color="#777770"
               dashed
               dashSize={0.12}
               gapSize={0.1}
@@ -431,7 +431,7 @@ function IntroScene({
                     <Box
                       position={[0, height / 2, 0]}
                       size={[0.65, height, 0.65]}
-                      color={lane ? "#0e73cc" : "#f35815"}
+                      color={lane ? "#076fa8" : "#b43d08"}
                     />
                   </SampleGrowth>
                   <Label
@@ -456,7 +456,7 @@ function IntroScene({
               position={[-3 + i * 2, 0.3, 0]}
               size={[1.3, 0.6, 1.3]}
               color={
-                i <= step ? (step === 3 ? "#ff455d" : "#f2b600") : "#1c1c1c"
+                i <= step ? (step === 3 ? "#c12e46" : "#866100") : "#ecece8"
               }
             />
             <Label position={[-3 + i * 2, 1.2, 0]}>{i * 10} s</Label>
@@ -467,7 +467,7 @@ function IntroScene({
             [-3, 0.3, 0.8],
             [3, 0.3, 0.8],
           ]}
-          color="#818181"
+          color="#777770"
           dashed
           dashSize={0.12}
           gapSize={0.12}
@@ -483,12 +483,12 @@ function IntroScene({
       </>
     );
   const nodes: { label: string; position: Point; color: string }[] = [
-    { label: "APPLICATION", position: [-3, 0.5, -1.5], color: "#f35815" },
-    { label: "PROMETHEUS", position: [0, 0.5, 0], color: "#0e73cc" },
+    { label: "APPLICATION", position: [-3, 0.5, -1.5], color: "#b43d08" },
+    { label: "PROMETHEUS", position: [0, 0.5, 0], color: "#076fa8" },
     {
       label: step === 3 ? "ALERTMANAGER" : "QUERY / RULE",
       position: [3, 0.5, 1.5],
-      color: step === 3 ? "#ff455d" : "#27b648",
+      color: step === 3 ? "#c12e46" : "#187636",
     },
   ];
   return (
@@ -503,14 +503,14 @@ function IntroScene({
       ))}
       <Line
         points={PIPELINE_ROUTES[0]}
-        color={step >= 1 ? "#f35815" : "#818181"}
+        color={step >= 1 ? "#b43d08" : "#777770"}
         dashed
         dashSize={0.12}
         gapSize={0.1}
       />
       <Line
         points={PIPELINE_ROUTES[1]}
-        color={step >= 2 ? "#27b648" : "#818181"}
+        color={step >= 2 ? "#187636" : "#777770"}
         dashed
         dashSize={0.12}
         gapSize={0.1}
@@ -521,7 +521,7 @@ function IntroScene({
           route={PIPELINE_ROUTES[step === 1 ? 0 : 1]}
           animate={animate}
           reducedMotion={reducedMotion}
-          color={step === 1 ? "#f35815" : step === 3 ? "#ff455d" : "#27b648"}
+          color={step === 1 ? "#b43d08" : step === 3 ? "#c12e46" : "#187636"}
         />
       )}
       <Label position={[0, -0.3, 2.5]}>
@@ -549,7 +549,7 @@ function Storage({ step }: Pick<Props, "step">) {
           [-4.35, -0.12, 2.3],
           [4.35, -0.12, 2.3],
         ]}
-        color="#818181"
+        color="#777770"
       />
       {[0, 2, 4, 6, 8, 10].map((hour) => (
         <Line
@@ -558,7 +558,7 @@ function Storage({ step }: Pick<Props, "step">) {
             [timeX(hour), -0.12, 2.2],
             [timeX(hour), -0.12, 2.42],
           ]}
-          color="#818181"
+          color="#777770"
         />
       ))}
       <Label position={[-4.25, -0.15, 2.8]}>0 h</Label>
@@ -587,7 +587,7 @@ function Storage({ step }: Pick<Props, "step">) {
               [timeX(0), 0, 0.05],
               [timeX(0), 0, -1.45],
             ]}
-            color="#ff455d"
+            color="#c12e46"
             dashed
             dashSize={0.1}
             gapSize={0.14}
@@ -598,15 +598,15 @@ function Storage({ step }: Pick<Props, "step">) {
       <Box
         position={[headX, 0.35, -0.7]}
         size={[headWidth, 0.7, 1.5]}
-        color="#1c1c1c"
-        outline="#f35815"
+        color="#ecece8"
+        outline="#b43d08"
       />
       <Line
         points={[
           [headX, 1.05, -0.75],
           [headX, 2.3, -0.75],
         ]}
-        color="#818181"
+        color="#777770"
       />
       <Label position={[headX, 2.6, -0.75]}>
         Head {state.head.startHour}–{state.head.endHour} h
@@ -620,13 +620,13 @@ function Storage({ step }: Pick<Props, "step">) {
             -0.95 + Math.floor(index / 3) * 0.48,
           ]}
           size={[0.22, 0.22, 0.22]}
-          color={state.recovery ? "#f35815" : "#f2b600"}
+          color={state.recovery ? "#b43d08" : "#866100"}
         />
       ))}
       <Box
         position={[headX, 0.03, 1.35]}
         size={[headWidth, 0.12, 0.75]}
-        color="#1c1c1c"
+        color="#ecece8"
       />
       {Array.from({ length: state.walSamples }, (_, index) => (
         <Box
@@ -637,7 +637,7 @@ function Storage({ step }: Pick<Props, "step">) {
             1.2 + Math.floor(index / 3) * 0.3,
           ]}
           size={[0.2, 0.2, 0.2]}
-          color="#f2b600"
+          color="#866100"
         />
       ))}
       <Label position={[headX, 0.3, 2.15]} accent={state.recovery}>
@@ -650,7 +650,7 @@ function Storage({ step }: Pick<Props, "step">) {
           [headX, 0.8, 0.3],
           [headX, 0.8, -0.05],
         ]}
-        color={state.recovery ? "#f35815" : "#818181"}
+        color={state.recovery ? "#b43d08" : "#777770"}
         dashed
         dashSize={0.1}
         gapSize={0.1}

@@ -1,15 +1,15 @@
 /* MySQL-only PlanetScale palette: role colors are shared by SVG and Three.js. */
 .post-content :is(.mysql-primer, .mysql-storage-demo) {
-  --mysql-canvas: oklch(0.178 0 0);
-  --mysql-panel: oklch(0.226 0 0);
-  --mysql-ink: oklch(0.985 0 0);
-  --mysql-muted: oklch(0.767 0 0);
-  --mysql-line: oklch(0.556 0 0);
-  --mysql-orange: oklch(0.661 0.202 39.353);
-  --mysql-blue: oklch(0.667 0.15 241.774);
-  --mysql-green: oklch(0.681 0.191 146.483);
-  --mysql-yellow: oklch(0.809 0.165 84.552);
-  --mysql-red: oklch(0.668 0.22 18.688);
+  --mysql-canvas: #f7f7f5;
+  --mysql-panel: #ffffff;
+  --mysql-ink: #202020;
+  --mysql-muted: #595954;
+  --mysql-line: #777770;
+  --mysql-orange: #b43d08;
+  --mysql-blue: #076fa8;
+  --mysql-green: #187636;
+  --mysql-yellow: #866100;
+  --mysql-red: #c12e46;
   color: var(--mysql-ink);
   background: var(--mysql-canvas);
   border: 1px solid var(--mysql-panel);

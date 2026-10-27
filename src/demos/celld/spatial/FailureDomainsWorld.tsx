@@ -80,14 +80,14 @@ function RetainedLog({ position }: { position: Point }) {
         position={offset(position, [0, LOG_Y + 0.131, LOG_Z])}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={0.24}
-        color={CELLD_COLORS.darkInk}
+        color={CELLD_COLORS.onAccent}
       >
         42
       </SurfaceId>
       <SurfaceId
         position={offset(position, [0, LOG_Y, LOG_Z + 0.416])}
         scale={0.22}
-        color={CELLD_COLORS.darkInk}
+        color={CELLD_COLORS.onAccent}
       >
         42
       </SurfaceId>
@@ -121,7 +121,7 @@ function NodeCopy({ slot }: { slot: FailureSlot }) {
           />
           <SurfaceId
             position={offset(slot.position, [0, 0.45, 0.277])}
-            color={CELLD_COLORS.darkInk}
+            color={CELLD_COLORS.onAccent}
             scale={0.3}
           >
             B
@@ -129,7 +129,7 @@ function NodeCopy({ slot }: { slot: FailureSlot }) {
           <SurfaceId
             position={offset(slot.position, [0, 0.45, -0.737])}
             rotation={[0, Math.PI, 0]}
-            color={CELLD_COLORS.darkInk}
+            color={CELLD_COLORS.onAccent}
             scale={0.3}
           >
             B
@@ -232,7 +232,7 @@ export function FailureDomainsWorld({
       <SurfaceId
         position={offset(FAILURE_POSITIONS.bucket, [0, -0.35, 0.773])}
         scale={0.25}
-        color={CELLD_COLORS.darkInk}
+        color={CELLD_COLORS.onAccent}
       >
         {snapshot.bucketCovered ? "42" : "41"}
       </SurfaceId>
@@ -247,7 +247,7 @@ export function FailureDomainsWorld({
           <SurfaceId
             position={[0, 0, 0.237]}
             scale={0.17}
-            color={CELLD_COLORS.darkInk}
+            color={CELLD_COLORS.onAccent}
           >
             42
           </SurfaceId>

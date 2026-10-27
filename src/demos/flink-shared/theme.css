@@ -1,23 +1,23 @@
 /* PlanetScale standalone foundation, scoped to these twelve Flink lessons. */
 .post-content .flink-visual {
-  --flink-canvas: oklch(0.178 0 0);
-  --flink-panel: oklch(0.226 0 0);
-  --flink-text: oklch(0.985 0 0);
-  --flink-muted: oklch(0.858 0 0);
-  --flink-dim: oklch(0.603 0 0);
-  --flink-blue: oklch(0.667 0.15 241.774);
-  --flink-orange: oklch(0.661 0.202 39.353);
-  --flink-green: oklch(0.681 0.191 146.483);
-  --flink-yellow: oklch(0.809 0.166 84.552);
-  --flink-red: oklch(0.668 0.22 18.688);
-  --flink-border: oklch(1 0 0 / 0.22);
-  --flink-track: oklch(1 0 0 / 0.1);
+  --flink-canvas: #f7f7f5;
+  --flink-panel: #ffffff;
+  --flink-text: #202020;
+  --flink-muted: #595954;
+  --flink-dim: #595954;
+  --flink-blue: #076fa8;
+  --flink-orange: #b43d08;
+  --flink-green: #187636;
+  --flink-yellow: #866100;
+  --flink-red: #c12e46;
+  --flink-border: #777770;
+  --flink-track: #d6d6ce;
   --flink-paper: var(--flink-panel);
   --flink-ink: var(--flink-text);
   --flink-line: var(--flink-border);
   --flink-hairline: var(--flink-track);
   --flink-surface: var(--flink-panel);
-  color-scheme: dark;
+  color-scheme: light;
   color: var(--flink-text);
   background: var(--flink-canvas);
   padding: 20px;

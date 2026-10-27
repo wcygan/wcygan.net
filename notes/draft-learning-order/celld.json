@@ -1,0 +1,24 @@
+{
+  "startingKnowledge": "JavaScript HTTP request handlers and await, basic SQL database operations, and object-store buckets; no prior knowledge of distributed object runtimes.",
+  "prerequisites": {
+    "cells-nodes-and-fleets": [],
+    "cell-boundaries-and-workload-fit": ["cells-nodes-and-fleets"],
+    "javascript-execution-and-sqlite-storage": ["cells-nodes-and-fleets"],
+    "ownership-leases-and-fencing": ["javascript-execution-and-sqlite-storage"],
+    "write-acknowledgment-and-durability-proofs": [
+      "ownership-leases-and-fencing"
+    ],
+    "owner-recovery-and-failure-domains": [
+      "write-acknowledgment-and-durability-proofs"
+    ],
+    "run-the-counter-locally": ["javascript-execution-and-sqlite-storage"],
+    "test-an-s3-compatible-store": [
+      "run-the-counter-locally",
+      "owner-recovery-and-failure-domains"
+    ],
+    "adoption-criteria-and-operating-responsibilities": [
+      "cell-boundaries-and-workload-fit",
+      "owner-recovery-and-failure-domains"
+    ]
+  }
+}

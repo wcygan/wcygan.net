@@ -31,13 +31,13 @@ const ROWS: Point[] = [
   [1.7, -0.9, 1],
 ];
 const PAGE_X = { 1: -1.25, 2: 1.25 };
-// sRGB equivalents of the OKLCH tokens in mysql-primer.css; Three materials need sRGB.
-const MUTED = "#737373";
-const ACTIVE = "#f35815";
-const BLUE = "#1e9de7";
-const GREEN = "#27b648";
-const YELLOW = "#f2b600";
-const RED = "#ff455d";
+// Match the sRGB tokens in mysql-visuals.css.
+const MUTED = "#777770";
+const ACTIVE = "#b43d08";
+const BLUE = "#076fa8";
+const GREEN = "#187636";
+const YELLOW = "#866100";
+const RED = "#c12e46";
 
 interface SceneProps {
   view: ViewCommand;
@@ -164,11 +164,11 @@ function Block({
     <mesh position={position}>
       <boxGeometry args={size} />
       <meshStandardMaterial
-        color={color ?? (active ? ACTIVE : faint ? "#202020" : BLUE)}
+        color={color ?? (active ? ACTIVE : faint ? "#ecece8" : BLUE)}
         roughness={0.85}
       />
       <Edges
-        color={color ?? (active ? "#ffb18d" : faint ? MUTED : "#87cff8")}
+        color={color ?? (active ? "#b43d08" : faint ? MUTED : "#076fa8")}
       />
     </mesh>
   );

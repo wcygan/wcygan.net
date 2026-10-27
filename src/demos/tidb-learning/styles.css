@@ -1,15 +1,15 @@
 /* PlanetScale standalone foundation. Domain geometry stays in the renderers. */
 .post-content .tidb-learn {
-  --tl-canvas: oklch(0.178 0 0);
-  --tl-panel: oklch(0.226 0 0);
-  --tl-text: oklch(0.985 0 0);
-  --tl-muted: oklch(0.87 0 0);
-  --tl-border: oklch(0.603 0 0);
-  --tl-orange: oklch(0.661 0.202 39.353);
-  --tl-blue: oklch(0.667 0.15 241.774);
-  --tl-green: oklch(0.681 0.191 146.483);
-  --tl-yellow: oklch(0.809 0.164 84.552);
-  --tl-red: oklch(0.668 0.22 18.688);
+  --tl-canvas: #f7f7f5;
+  --tl-panel: #ffffff;
+  --tl-text: #202020;
+  --tl-muted: #595954;
+  --tl-border: #777770;
+  --tl-orange: #b43d08;
+  --tl-blue: #076fa8;
+  --tl-green: #187636;
+  --tl-yellow: #866100;
+  --tl-red: #c12e46;
   color: var(--tl-text);
   background: var(--tl-canvas);
   border: 1px solid var(--tl-panel);

@@ -1,0 +1,27 @@
+{
+  "startingKnowledge": "Basic application programming, HTTP requests, and numeric measurements; no Prometheus, time-series database, or query-language knowledge is assumed. The local lab separately requires Docker and a shell.",
+  "prerequisites": {
+    "monitoring-architecture": [],
+    "time-series-identity": ["monitoring-architecture"],
+    "label-cardinality": ["time-series-identity"],
+    "counters-gauges-and-histograms": ["time-series-identity"],
+    "metric-collection-and-scraping": ["counters-gauges-and-histograms"],
+    "local-storage-and-retention": ["metric-collection-and-scraping"],
+    "counter-rates-in-promql": ["metric-collection-and-scraping"],
+    "classic-histograms-and-latency-percentiles": ["counter-rates-in-promql"],
+    "recording-rules": [
+      "counter-rates-in-promql",
+      "local-storage-and-retention"
+    ],
+    "alert-evaluation-and-notifications": ["counter-rates-in-promql"],
+    "run-prometheus-locally": [
+      "classic-histograms-and-latency-percentiles",
+      "recording-rules",
+      "alert-evaluation-and-notifications"
+    ],
+    "explain-prometheus-in-an-interview": [
+      "label-cardinality",
+      "alert-evaluation-and-notifications"
+    ]
+  }
+}

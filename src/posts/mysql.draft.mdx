@@ -6,112 +6,95 @@ tags: [Databases, SQL, Architecture]
 draft: true
 ---
 
-import {
-  MySqlRequestDemo,
-  MySqlRelationsDemo,
-  MySqlQueryDemo,
-  MySqlTransactionDemo,
-  MySqlConstraintsDemo,
-} from "~/components/MySqlPrimerDemos";
-import {
-  MySqlIndexDemo,
-  MySqlBufferPoolDemo,
-  MySqlLockingDemo,
-  MySqlRecoveryDemo,
-  MySqlReplicationDemo,
-} from "~/components/MySqlStorageDemos";
+[MySQL](https://dev.mysql.com/doc/refman/8.4/en/what-is-mysql.html) is a relational database server.
+It stores related records in tables and uses SQL to read and change them. The examples
+use a bookstore database in MySQL 8.4 to explain queries, transactions, storage, and replication.
 
-[MySQL](https://dev.mysql.com/doc/refman/8.4/en/what-is-mysql.html) is a database server.
-It stores related records in tables; SQL reads and changes them.
+## Tables, keys, and joins
 
-The examples use a bookstore database in MySQL 8.4.
+A table stores records as rows. A primary key identifies a row within that table.
+In the bookstore, a
+[foreign key](https://dev.mysql.com/doc/refman/8.4/en/create-table-foreign-keys.html)
+connects each order to a customer. A `JOIN` matches rows from the two tables so a
+query can return an order alongside its customer's information.
 
-## What runs where?
+## Constraints
 
-Your application sends SQL; MySQL plans the work;
-[InnoDB](https://dev.mysql.com/doc/refman/8.4/en/innodb-introduction.html) accesses the stored rows.
+The schema defines the tables and declares rules that MySQL checks when data changes.
+Primary keys reject
+duplicate IDs, foreign keys reject orders that reference missing customers, and
+[CHECK constraints](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html)
+reject negative stock.
 
-<MySqlRequestDemo />
+## Filtering and aggregation
 
-## Tables give data a shape
+A query can use `WHERE` to select Ada's orders and `SUM` to add their amounts.
+Her two orders are 2,900 cents and 4,500 cents, producing a total of 7,400 cents.
 
-A primary key identifies a row. A [foreign key](https://dev.mysql.com/doc/refman/8.4/en/create-table-foreign-keys.html)
-connects each order to its customer; a `JOIN` brings them together.
+## Query processing
 
-<MySqlRelationsDemo />
+The application sends a SQL statement to MySQL to request a read or a change.
+MySQL plans how to carry out the query, and
+[InnoDB](https://dev.mysql.com/doc/refman/8.4/en/innodb-introduction.html), the storage engine,
+accesses the rows the operation needs.
 
-## Rules keep invalid data out
+## Index lookups and covering queries
 
-Primary keys, foreign keys, and [CHECK constraints](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html)
-reject duplicate IDs, missing customers, and negative stock.
+An [index](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html) locates entries
+that match a query. When the index contains every value the query needs, a covering
+query can return the answer without fetching the full rows.
 
-<MySqlConstraintsDemo />
+## Buffer pool
 
-## Ask for an answer with SQL
+InnoDB stores table and index data in blocks called pages. It keeps pages in memory
+in the [buffer pool](https://dev.mysql.com/doc/refman/8.4/en/innodb-buffer-pool.html),
+so a read can reuse a page already loaded instead of reading it from disk again.
 
-`WHERE` selects Ada's orders. `SUM` adds their amounts: 7,400 cents.
+## Transactions
 
-<MySqlQueryDemo />
+A checkout creates an order and reduces the remaining stock. A
+[transaction](https://dev.mysql.com/doc/refman/8.4/en/mysql-acid.html) groups those changes
+so the application can commit both or roll both back. Committing retains the changes;
+rolling back undoes the pending changes.
 
-## Indexes narrow the search
+## Row locks
 
-An [index](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html) locates matching entries.
-A covered query gets its answer there without fetching full rows.
+Consider two shoppers trying to buy the last copy of a book. The first shopper runs a
+[locking read](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html)
+inside a transaction, holding the inventory row while the checkout proceeds.
+The second shopper's locking read waits; after the first sale commits, it sees zero stock.
 
-<MySqlIndexDemo />
+## Redo and crash recovery
 
-## Commit together or undo together
+Durability means that a committed change survives a crash. InnoDB can make a change
+durable before its modified data page reaches disk. After a
+[crash](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html), it uses redo,
+a log of data modifications, to reconstruct the committed change if that page had
+not yet been flushed. This requires the redo to be durable.
 
-A [transaction](https://dev.mysql.com/doc/refman/8.4/en/mysql-acid.html) keeps the order
-and stock change together: commit both, or roll both back.
+## Asynchronous replication
 
-<MySqlTransactionDemo />
+A replica is another server that receives changes from the source server. With
+[asynchronous replication](https://dev.mysql.com/doc/refman/8.4/en/replication.html),
+the replica can temporarily lack an order that has committed on the source. It must
+apply the change before its reads include it; receiving the change alone is not enough.
 
-## Two shoppers, one book
+## Relational workloads
 
-A [locking read](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking-reads.html)
-makes the second shopper wait. After the first sale commits, the second sees zero stock.
-
-<MySqlLockingDemo />
-
-## Memory before disk
-
-The [buffer pool](https://dev.mysql.com/doc/refman/8.4/en/innodb-buffer-pool.html)
-reuses pages already loaded into memory.
-
-<MySqlBufferPoolDemo />
-
-## A commit survives a crash
-
-Durable redo lets InnoDB reconstruct a committed change after a
-[crash](https://dev.mysql.com/doc/refman/8.4/en/innodb-recovery.html), even before its data page was flushed.
-
-<MySqlRecoveryDemo />
-
-## A replica can lag
-
-With [asynchronous replication](https://dev.mysql.com/doc/refman/8.4/en/replication.html),
-a replica can temporarily miss a committed order. Receiving a change is different from applying it.
-
-<MySqlReplicationDemo />
-
-## Where this helps
+Tables, relationships, and transactions support several kinds of application data:
 
 - **Stores:** keep orders and inventory consistent
 - **Accounts:** connect users, organizations, and memberships
 - **Bookings:** coordinate competing reservations
 
-## Try it locally
-
-<details className="mysql-lab">
-<summary>Run the bookstore with Docker and SQL</summary>
-<div className="mysql-lab-content">
+## Run the bookstore locally
 
 **Create the bookstore**
 
-With Docker running, save these two files in a new directory. The
-[official image](https://hub.docker.com/_/mysql) initializes a fresh database;
-the volume keeps its data.
+With Docker running, save the Compose configuration below as `compose.yaml` in a new
+directory, then save the schema beside it. The
+[official image](https://hub.docker.com/_/mysql) initializes a fresh database, and
+the named volume retains its data between runs.
 
 ```yaml
 name: mysql-primer-lab
@@ -146,7 +129,8 @@ volumes:
   mysql-data:
 ```
 
-Save this as `schema.sql`. Prices use integer cents; stock is remaining inventory.
+Save the following SQL as `schema.sql`. Prices use integer cents, and `stock`
+records the remaining inventory.
 
 ```sql
 USE bookstore;
@@ -192,9 +176,10 @@ docker compose up -d --wait --wait-timeout 180
 docker compose exec mysql mysql -upractice -p bookstore
 ```
 
-Password: `practice-local-only`. A desktop SQL client can connect to
-`127.0.0.1:3307` with database `bookstore` and user `practice`.
-These are local exercise credentials; change port `3307` if occupied.
+Enter `practice-local-only` when prompted for the password. A desktop SQL client can
+connect to `127.0.0.1:3307` using database `bookstore` and user `practice`.
+These credentials are for the local exercise. If port `3307` is occupied, change
+the host port in the Compose configuration.
 
 **Read related records**
 
@@ -224,17 +209,18 @@ The first join returns:
 | 102 | Ada  | Reliable Systems | 4500        |
 | 103 | Lin  | SQL Basics       | 2900        |
 
-The aggregate returns Ada with 7,400 cents and Lin with 2,900 cents.
+The aggregate query returns 7,400 cents for Ada and 2,900 cents for Lin.
 
 ```sql
 SHOW INDEX FROM orders;
 EXPLAIN SELECT * FROM orders WHERE customer_id = 1;
 ```
 
-[`EXPLAIN`](https://dev.mysql.com/doc/refman/8.4/en/explain.html) reports plan estimates,
-not timings. With only three rows, MySQL may choose a table scan despite the index.
+[`EXPLAIN`](https://dev.mysql.com/doc/refman/8.4/en/explain.html) reports estimates
+for the query plan rather than execution timings. With only three rows, MySQL may
+choose a table scan even though an index exists.
 
-**Undo a checkout, then keep one**
+**Roll back a checkout, then commit one**
 
 Start a transaction and lock the inventory row. Keep every statement in the same
 connection:
@@ -249,11 +235,12 @@ WHERE id = 1 AND stock > 0;
 SELECT ROW_COUNT() AS reserved;
 ```
 
-On the fresh seed, stock starts at 2 and `reserved` is 1. **Continue only when
-`reserved` is 1.** If it is 0, run `ROLLBACK;` and stop: no copy was reserved.
-An application must make this check and roll back on an error before proceeding.
-A statement error does not always undo the entire transaction automatically.
-See [InnoDB error handling](https://dev.mysql.com/doc/refman/8.4/en/innodb-error-handling.html).
+With the seed data, stock starts at 2 and `reserved` is 1. **Continue only when
+`reserved` is 1.** If it is 0, run `ROLLBACK;` and stop because the update did not
+reserve a copy. An application must check this result and roll back on an error
+before proceeding. A statement error does not always roll back the entire
+transaction automatically; see
+[InnoDB error handling](https://dev.mysql.com/doc/refman/8.4/en/innodb-error-handling.html).
 
 ```sql
 INSERT INTO orders (id, customer_id, book_id, quantity, total_cents)
@@ -267,12 +254,12 @@ SELECT stock FROM inventory WHERE id = 1;
 SELECT COUNT(*) AS order_count FROM orders;
 ```
 
-Before rollback, your transaction sees stock 1 and four orders. After rollback,
-stock returns to 2 and the order count returns to three. Repeat the same checkout,
-including the row-count check, and replace `ROLLBACK` with `COMMIT` to keep it.
-Then stock stays at 1 and the order count stays at four. Order ID 104 is a manual
-exercise ID: trying to insert it again after committing produces a duplicate-key
-error.
+Before rollback, the transaction sees stock 1 and four orders. After rollback,
+stock returns to 2 and the order count returns to three. Repeat the checkout,
+including the row-count check, and replace `ROLLBACK` with `COMMIT` to retain the
+changes. Stock then stays at 1 and the order count stays at four. This exercise
+uses the manual order ID 104; inserting it again after committing produces a
+duplicate-key error.
 
 **Keep or clear the data**
 
@@ -282,9 +269,10 @@ Exit the client with `exit`, then stop the server:
 docker compose down
 ```
 
-Start it again with the earlier `up` command. The committed checkout survives
-because the volume remains. Initialization variables and `schema.sql` apply only
-to a fresh data directory; editing that file doesn't change an existing database.
+Restart the server with the earlier `up` command. The committed checkout remains
+because `docker compose down` retains the volume. Initialization variables and
+`schema.sql` apply only to a fresh data directory; editing the schema file does
+not change an existing database.
 
 To stop the lab and erase its saved data:
 
@@ -292,13 +280,11 @@ To stop the lab and erase its saved data:
 docker compose down -v
 ```
 
-The next start restores the seed. To test contention, run the same `FOR UPDATE`
-in two clients. The second waits until the first commits or rolls back.
+After the volume is erased, the next start initializes the seed data again.
+To observe lock contention, run the same `FOR UPDATE` statement in two clients.
+The second waits until the first commits or rolls back.
 
-</div>
-</details>
-
-## Keep exploring
+## Further reading
 
 [Official tutorial](https://dev.mysql.com/doc/refman/8.4/en/tutorial.html) ·
 [Connection pooling](/connection-pooling) ·

@@ -7,21 +7,21 @@
 
 /* One shared theme for every ClickHouse figure, independent of its renderer. */
 .clickhouse-demo[data-graphic-frame] {
-  --ch-bg: oklch(0.178 0 0);
-  --ch-panel: oklch(0.226 0 0);
-  --ch-text: oklch(0.985 0 0);
-  --ch-muted: oklch(0.851 0 0);
-  --ch-dim: oklch(0.783 0 0);
-  --ch-border: oklch(0.317 0 0);
-  --ch-node-border: oklch(0.39 0 0);
-  --ch-track: oklch(0.281 0 0);
-  --ch-orange: oklch(0.661 0.202 39.353);
-  --ch-blue: oklch(0.667 0.15 241.774);
-  --ch-green: oklch(0.681 0.191 146.483);
-  --ch-yellow: oklch(0.809 0.165 84.552);
-  --ch-red: oklch(0.668 0.22 18.688);
-  --ch-purple: oklch(0.726 0.165 298.651);
-  color-scheme: dark;
+  --ch-bg: #f7f7f5;
+  --ch-panel: #ffffff;
+  --ch-text: #202020;
+  --ch-muted: #595954;
+  --ch-dim: #595954;
+  --ch-border: #777770;
+  --ch-node-border: #777770;
+  --ch-track: #d6d6ce;
+  --ch-orange: #b43d08;
+  --ch-blue: #076fa8;
+  --ch-green: #187636;
+  --ch-yellow: #866100;
+  --ch-red: #c12e46;
+  --ch-purple: #7050a3;
+  color-scheme: light;
   padding: 20px;
   border: 1px solid var(--ch-border);
   border-radius: 4px;
