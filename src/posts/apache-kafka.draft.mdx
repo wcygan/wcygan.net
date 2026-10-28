@@ -10,6 +10,7 @@ import {
   KafkaRecordFigure,
   KafkaTopicFigure,
 } from "~/components/KafkaFoundationFigures";
+import { KafkaReplicationDemo } from "~/components/KafkaReplicationDemo";
 import { KafkaPartitioningDemo } from "~/components/KafkaPartitioningDemo";
 import {
   KafkaHotKeyDemo,
@@ -59,18 +60,14 @@ A record can carry a **key**, such as an order ID, to group related events.
 Records with matching keys share a partition. Each partition has its own
 offsets, and Kafka guarantees order **within a partition**.
 
-By default, when no partition is specified and keys are not ignored, the Java
-producer hashes the serialized key with Murmur2, clears the sign bit, and takes
-the remainder modulo the partition count. The demo uses UTF-8 keys and three
-partitions by default. Keyed routing remains stable while the partition count and routing
-strategy stay fixed. Changing either can map a key to a different partition. See
-[producer routing](https://kafka.apache.org/43/configuration/producer-configs/#producerconfigs_partitioner.class).
+### Hot keys
 
-### Hot keys and uneven load
-
-A busy key concentrates work in one partition. That partition can become a
-bottleneck while others have less work to process. Key selection must balance
-the application's ordering requirements with the need to distribute work.
+A **hot key** appears in many records. With
+[hash-based routing](https://kafka.apache.org/43/configuration/producer-configs/#producerconfigs_partitioner.class),
+those records go to the same partition while the partition count and routing
+strategy stay fixed. That partition can become a bottleneck while others have
+spare capacity, so key selection must balance keeping related events ordered
+with distributing work.
 
 <KafkaHotKeyDemo />
 
@@ -78,16 +75,8 @@ the application's ordering requirements with the need to distribute work.
 
 A **broker** is a Kafka server. Each partition has a **leader** on a broker that
 handles writes to that partition. Placing partition leaders on different brokers
-distributes their work across machines.
-
-In the demo, a producer sends each record to the broker leading its selected
-partition. The Rust producer uses librdkafka's
-[`murmur2_random` partitioner](https://github.com/confluentinc/librdkafka/blob/master/CONFIGURATION.md)
-to match the Java-compatible hashing shown above. The demo assumes a replica of
-P0 is available on each broker. Moving P0's
-leader changes which broker handles its writes; it does not change the partition
-selected for a key. The log shown after a move represents the new leader's
-existing copy.
+distributes their work across machines. Leadership can move to an eligible
+replica on another broker.
 
 <KafkaBrokerPlacementDemo />
 
@@ -100,6 +89,8 @@ Kafka's leader elections also account for
 [eligible leader replicas](https://kafka.apache.org/43/operations/eligible-leader-replicas/).
 Kafka's [KRaft controllers](https://kafka.apache.org/43/operations/kraft/) manage
 cluster metadata and elections. Brokers store the event records.
+
+<KafkaReplicationDemo />
 
 ## Retained records
 

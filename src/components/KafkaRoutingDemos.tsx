@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { murmur2 } from "~/demos/kafka-partitioning/model";
 import "~/demos/kafka-routing/routing.css";
 
@@ -139,50 +139,86 @@ export function KafkaHotKeyDemo() {
   );
 }
 
-const writes = [
-  "order-102",
-  "order-101",
-  "order-105",
-  "order-102",
-  "order-101",
-  "order-105",
-] as const;
-const routeX = [50, 150, 250] as const;
-const routeStartY = 25;
-const routeEndY = 82;
-function routeArrow(endX: number) {
-  const dx = endX - 150;
-  const dy = routeEndY - routeStartY;
-  const length = Math.hypot(dx, dy);
-  const ux = dx / length;
-  const uy = dy / length;
-  const x = endX - ux * 7;
-  const y = routeEndY - uy * 7;
-  return `M ${x - uy * 3} ${y + ux * 3} L ${endX} ${routeEndY} L ${x + uy * 3} ${y - ux * 3}`;
-}
-type PartitionLogs = number[][];
-function appendWrite(logs: PartitionLogs, partition: number): PartitionLogs {
-  const id = logs.reduce((total, log) => total + log.length, 0) + 1;
-  return logs.map((log, index) => (index === partition ? [...log, id] : log));
-}
-const emptyLogs = (): PartitionLogs => [[], [], []];
-const settledLogs = () =>
-  writes.reduce<PartitionLogs>(
-    (logs, key) => appendWrite(logs, partition(key)),
-    emptyLogs(),
+const records = ["order-101", "order-102", "order-105", "order-101"] as const;
+const fills = ["#f7ddce", "#dfecf8", "#e6efe5"] as const;
+const strokes = ["#b84612", "#326d9d", "#507b58"] as const;
+const recordDuration = 3600;
+const recordSpeed = 200;
+const partitionerPause = 350;
+
+function RecordBlock({
+  id,
+  partition: p,
+  x,
+  y,
+}: {
+  id: number;
+  partition: number;
+  x: number;
+  y: number;
+}) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect
+        x="-16.25"
+        y="-9.1"
+        width="32.5"
+        height="18.2"
+        rx="2"
+        fill={fills[p]}
+        stroke={strokes[p]}
+      />
+      <text x="0" y="6" textAnchor="middle" fontSize="15.8">
+        R{id}
+      </text>
+    </g>
   );
+}
+
+function recordPosition(
+  elapsed: number,
+  p: number,
+  offset: number,
+): { position: [number, number]; routed: boolean } {
+  const y = 45 + p * 93;
+  const points = [
+    [98, 135],
+    [98, 180],
+    [178, 214],
+    [290, y + 39],
+    [443 + offset * 39, y + 50],
+  ];
+  let remaining = elapsed;
+  for (let i = 0; i < points.length - 1; i++) {
+    if (i === 2) {
+      if (remaining < partitionerPause)
+        return { position: [points[i][0], points[i][1]], routed: true };
+      remaining -= partitionerPause;
+    }
+    const [x, y] = points[i];
+    const [nextX, nextY] = points[i + 1];
+    const duration = (Math.hypot(nextX - x, nextY - y) / recordSpeed) * 1000;
+    if (remaining < duration) {
+      const fraction = remaining / duration;
+      return {
+        position: [x + (nextX - x) * fraction, y + (nextY - y) * fraction],
+        routed: i >= 2,
+      };
+    }
+    remaining -= duration;
+  }
+  const destination = points[points.length - 1];
+  return { position: [destination[0], destination[1]], routed: true };
+}
 
 export function KafkaBrokerPlacementDemo() {
   const figure = useRef<HTMLElement>(null);
-  const [leader, setLeader] = useState(0);
-  const [completed, setCompleted] = useState(0);
-  const [logs, setLogs] = useState<PartitionLogs>(emptyLogs);
-  const [moving, setMoving] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [visible, setVisible] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(false);
   const [reduced, setReduced] = useState(false);
+  const totalDuration = records.length * recordDuration;
 
   useEffect(() => {
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -190,12 +226,7 @@ export function KafkaBrokerPlacementDemo() {
       setReduced(motion.matches);
       if (motion.matches) {
         setPlaying(false);
-        setCompleted(writes.length);
-        setMoving(false);
-        setProcessing(false);
-        setLogs((current) =>
-          current.some((log) => log.length) ? current : settledLogs(),
-        );
+        setElapsed(totalDuration);
       }
     };
     const updateVisibility = () => setDocumentVisible(!document.hidden);
@@ -213,7 +244,7 @@ export function KafkaBrokerPlacementDemo() {
       motion.removeEventListener("change", updateMotion);
       document.removeEventListener("visibilitychange", updateVisibility);
     };
-  }, []);
+  }, [totalDuration]);
 
   useEffect(() => {
     if (
@@ -221,274 +252,198 @@ export function KafkaBrokerPlacementDemo() {
       !visible ||
       !documentVisible ||
       reduced ||
-      completed === writes.length
+      elapsed >= totalDuration
     )
       return;
-    const start = window.setTimeout(() => setProcessing(true), 150);
-    const dispatch = window.setTimeout(() => {
-      setProcessing(false);
-      setMoving(true);
-    }, 600);
-    const finish = window.setTimeout(() => {
-      setLogs((current) => appendWrite(current, partition(writes[completed])));
-      setCompleted((c) => c + 1);
-      setMoving(false);
-    }, 1600);
-    return () => {
-      window.clearTimeout(start);
-      window.clearTimeout(dispatch);
-      window.clearTimeout(finish);
+    let previous = 0;
+    let frame = 0;
+    const tick = (now: number) => {
+      if (previous)
+        setElapsed((value) =>
+          Math.min(totalDuration, value + (now - previous)),
+        );
+      previous = now;
+      frame = requestAnimationFrame(tick);
     };
-  }, [playing, visible, documentVisible, reduced, completed]);
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [
+    playing,
+    visible,
+    documentVisible,
+    reduced,
+    elapsed >= totalDuration,
+    totalDuration,
+  ]);
 
-  const destination = (p: number) => (p === 0 ? leader : p);
-  const routeEnd = (p: number) =>
-    routeX[destination(p)] + (p === 0 && leader !== 0 ? -6 : 0);
-  const currentKey = writes[completed];
-  const current = currentKey === undefined ? undefined : partition(currentKey);
-  const displayKey = currentKey ?? writes[writes.length - 1];
-  const displayPartition = partition(displayKey);
-  useEffect(() => {
-    figure.current
-      ?.querySelectorAll<HTMLElement>(".kafka-broker-records")
-      .forEach((log) => {
-        log.scrollTop = log.scrollHeight;
-      });
-  }, [logs, leader]);
-  function moveLeader(nextLeader: number) {
-    if (nextLeader === leader) return;
-    setLeader(nextLeader);
-    setMoving(false);
-    setProcessing(false);
-    setCompleted(0);
-    setPlaying(!reduced);
-  }
-  function restart() {
-    setLogs(reduced ? settledLogs() : emptyLogs());
-    setMoving(false);
-    setProcessing(false);
-    setCompleted(reduced ? writes.length : 0);
-    setPlaying(!reduced);
-  }
+  const completed = Math.min(
+    records.length,
+    Math.floor(elapsed / recordDuration),
+  );
+  const key = records[completed];
+  const selected = key === undefined ? undefined : partition(key);
+  const currentOffset = records
+    .slice(0, completed)
+    .filter((item) => partition(item) === selected).length;
+  const motion =
+    selected === undefined
+      ? undefined
+      : recordPosition(elapsed % recordDuration, selected, currentOffset);
 
   return (
     <figure
       ref={figure}
-      className="kafka-routing-demo"
+      className="kafka-routing-demo kafka-placement"
       data-graphic-frame="workbench"
       data-graphic-key="kafka-broker-placement"
-      data-graphic-kind="dom"
+      data-graphic-kind="svg"
       aria-label="Producer sends records to partition leaders on brokers"
     >
       <div className="kafka-routing-stage" data-graphic-stage="padded">
         <div className="kafka-routing-title">Writes to partition leaders</div>
-        <div className="kafka-broker-diagram">
-          <div className="kafka-producer-client">
-            <div className="kafka-producer-client-title">Producer client</div>
-            <div className="kafka-client-record">
-              <span>record · key</span>
-              <span className="kafka-client-key" data-processing={processing}>
-                "{displayKey}"
-              </span>
-            </div>
-            <pre className="kafka-producer-send">
-              <code>
-                producer{"."}
-                <span className="kafka-rust-method">send</span>(record,
-                timeout).<span className="kafka-rust-keyword">await</span>;
-              </code>
-            </pre>
-            <div className="kafka-client-arrow" aria-hidden="true">
-              ↓
-              {processing && current !== undefined && (
-                <span
-                  key={completed}
-                  className={`kafka-client-token kafka-client-token-${current}`}
-                >
-                  R{logs.reduce((total, log) => total + log.length, 0) + 1}
-                </span>
-              )}
-            </div>
-            <div
-              className="kafka-client-partitioner"
-              data-processing={processing}
-            >
-              <span className="kafka-client-partitioner-title">
-                <svg viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M2 8h4m0 0 4-4h4M6 8l4 4h4" />
-                </svg>
-                Partitioner
-                <span className="kafka-client-partition">
-                  P{displayPartition}
-                </span>
-              </span>
-              <span className="kafka-client-config">murmur2_random</span>
-            </div>
-          </div>
-          <svg
-            className="kafka-broker-paths"
-            viewBox="0 0 300 100"
-            aria-hidden="true"
-            data-active={current !== undefined}
+        <svg
+          className="kafka-broker-rows"
+          viewBox="0 0 600 340"
+          role="img"
+          aria-label="Producer routes records through a partitioner to leaders on three brokers"
+        >
+          <rect
+            x="18"
+            y="67"
+            width="160"
+            height="68"
+            rx="3"
+            className="kafka-row-box"
+          />
+          <text x="98" y="92" textAnchor="middle" fontSize="20">
+            Producer
+          </text>
+          <text
+            x="98"
+            y="123"
+            textAnchor="middle"
+            fontSize="15"
+            className="kafka-row-muted"
           >
-            <text
-              className="kafka-broker-lookup-label"
-              x="150"
-              y="13"
-              textAnchor="middle"
-            >
-              Leader lookup
-            </text>
-            {[0, 1, 2].map((p) => (
-              <g
-                key={p}
-                className="kafka-broker-route"
-                data-selected={p === current}
-              >
+            send(record)
+          </text>
+          <path
+            d="M98 135 L98 180"
+            className="kafka-row-route"
+            stroke="#777770"
+          />
+          <rect
+            x="18"
+            y="180"
+            width="160"
+            height="68"
+            rx="3"
+            className="kafka-row-partitioner"
+          />
+          <text x="98" y="204" textAnchor="middle" fontSize="19">
+            Partitioner
+          </text>
+          <text x="98" y="236" textAnchor="middle" fontSize="13.5">
+            {key ? `${key} → P${selected}` : "key → partition"}
+          </text>
+          {[0, 1, 2].map((p) => {
+            const y = 45 + p * 93;
+            return (
+              <g key={p}>
                 <path
-                  className={`kafka-broker-path kafka-broker-path-${p}`}
-                  d={`M 150 ${routeStartY} L ${routeEnd(p)} ${routeEndY}`}
+                  d={`M178 214 L290 ${y + 39}`}
+                  className="kafka-row-route"
+                  stroke={
+                    selected === p && motion?.routed ? strokes[p] : "#c5c4be"
+                  }
                 />
-                <path
-                  d={routeArrow(routeEnd(p))}
-                  className={`kafka-broker-arrow kafka-broker-path-${p}`}
-                />
-              </g>
-            ))}
-            {current !== undefined && (
-              <g
-                key={completed}
-                className="kafka-broker-payload"
-                data-moving={moving}
-                style={
-                  {
-                    "--from-x": "150px",
-                    "--to-x": `${routeEnd(current)}px`,
-                    "--to-y": `${routeEndY}px`,
-                  } as CSSProperties
-                }
-              >
                 <rect
-                  x="-12"
-                  y="-9"
-                  width="24"
-                  height="18"
-                  rx="2"
-                  className={`kafka-broker-record-${current}`}
+                  x="290"
+                  y={y}
+                  width="290"
+                  height="78"
+                  rx="3"
+                  className="kafka-row-box"
                 />
-                <text x="0" y="4" textAnchor="middle">
-                  R{logs.reduce((total, log) => total + log.length, 0) + 1}
+                <text x="302" y={y + 23} fontSize="17.5">
+                  Broker {p}
                 </text>
-              </g>
-            )}
-          </svg>
-          <div className="kafka-routing-brokers">
-            {[0, 1, 2].map((broker) => (
-              <div className="kafka-routing-broker" key={broker}>
-                <div>Broker {broker}</div>
-                <div className="kafka-routing-leaders">
-                  {[0, broker === 0 ? null : broker].map((p) =>
-                    p === null ? (
-                      <div
-                        key="empty"
-                        className="kafka-broker-empty"
-                        aria-hidden="true"
+                <rect
+                  x="420"
+                  y={y + 10}
+                  width="148"
+                  height="57"
+                  rx="3"
+                  fill={fills[p]}
+                  stroke={strokes[p]}
+                />
+                <text x="429" y={y + 29} fontSize="15">
+                  P{p} leader
+                </text>
+                {records
+                  .slice(0, completed)
+                  .map((item, i) =>
+                    partition(item) === p ? (
+                      <RecordBlock
+                        key={i}
+                        id={i + 1}
+                        partition={p}
+                        x={
+                          443 +
+                          records
+                            .slice(0, i)
+                            .filter((prior) => partition(prior) === p).length *
+                            39
+                        }
+                        y={y + 50}
                       />
-                    ) : destination(p) !== broker ? (
-                      <div
-                        key={p}
-                        className="kafka-broker-placeholder"
-                        aria-hidden="true"
-                      >
-                        P{p}
-                      </div>
-                    ) : (
-                      <div
-                        key={p}
-                        className={`kafka-broker-log kafka-broker-leader-${p}`}
-                      >
-                        <div>P{p} leader</div>
-                        <div
-                          className="kafka-broker-records"
-                          aria-label={`Partition ${p} log`}
-                          role="region"
-                          tabIndex={0}
-                        >
-                          {logs[p].map((id, offset) => (
-                            <div key={id} className="kafka-broker-log-record">
-                              <span>R{id}</span>
-                              <span>{offset}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="kafka-broker-offset-label">offset</div>
-                      </div>
-                    ),
+                    ) : null,
                   )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div
-        className="kafka-routing-controls"
-        role="group"
-        aria-label="Move partition 0 leader"
-      >
-        <span>P0 leader</span>
-        {[0, 1, 2].map((broker) => (
-          <button
-            type="button"
-            key={broker}
-            aria-pressed={leader === broker}
-            onClick={() => moveLeader(broker)}
-          >
-            Broker {broker}
-          </button>
-        ))}
+              </g>
+            );
+          })}
+          {motion && selected !== undefined && (
+            <RecordBlock
+              id={completed + 1}
+              partition={selected}
+              x={motion.position[0]}
+              y={motion.position[1]}
+            />
+          )}
+        </svg>
       </div>
       <div className="kafka-routing-controls">
         <button
           type="button"
-          disabled={reduced || completed === writes.length}
-          onClick={() => {
-            setPlaying(!playing);
-            setMoving(false);
-            setProcessing(false);
-          }}
+          disabled={reduced || completed === records.length}
+          onClick={() => setPlaying(!playing)}
         >
-          {playing && completed < writes.length ? "Pause" : "Play"}
+          {playing && completed < records.length ? "Pause" : "Play"}
         </button>
         <button
           type="button"
-          disabled={completed === writes.length}
+          disabled={completed === records.length}
           onClick={() => {
             setPlaying(false);
-            setMoving(false);
-            setProcessing(false);
-            setLogs((current) =>
-              appendWrite(current, partition(writes[completed])),
-            );
-            setCompleted((c) => Math.min(writes.length, c + 1));
+            setElapsed((completed + 1) * recordDuration);
           }}
         >
           Step
         </button>
-        <button type="button" onClick={() => restart()}>
+        <button
+          type="button"
+          onClick={() => {
+            setElapsed(reduced ? totalDuration : 0);
+            setPlaying(!reduced);
+          }}
+        >
           Replay
         </button>
       </div>
       <p className="sr-only" role="status">
-        For {displayKey}, the partitioner selects P{displayPartition}; the
-        producer sends it to broker {destination(displayPartition)}. P0 leader
-        is on broker {leader}.{" "}
-        {logs
-          .map(
-            (log, partition) =>
-              `P${partition}: ${log.length} records, leader on broker ${destination(partition)}.`,
-          )
-          .join(" ")}
+        {completed === records.length
+          ? "Writes complete. P0 has R2, P1 has R1 and R4, and P2 has R3."
+          : `${completed} of ${records.length} records written.`}
       </p>
     </figure>
   );
