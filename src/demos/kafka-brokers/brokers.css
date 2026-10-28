@@ -1,0 +1,274 @@
+.kafka-brokers-demo {
+  margin-block: 32px;
+}
+
+.kafka-brokers-stage {
+  display: grid;
+  gap: 16px;
+  padding: 24px 20px;
+  border-radius: 6px;
+  background: #f7f6f3;
+}
+
+.kafka-brokers-stage svg {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 480px;
+  block-size: auto;
+  margin-inline: auto;
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-feature-settings: normal;
+}
+
+.kafka-brokers-stage text {
+  fill: #21201c;
+  dominant-baseline: central;
+}
+
+.kafka-brokers-node rect {
+  fill: #fdfdfc;
+  stroke: #bcbbb5;
+  stroke-width: 1.5;
+}
+
+.kafka-brokers-node[data-state="leader"] rect {
+  stroke: #21201c;
+  stroke-width: 2;
+}
+
+/* Briefly marks the broker that just received leadership from the controller. */
+.kafka-brokers-node[data-state="promoted"] rect {
+  fill: #fbeaf2;
+  stroke: #903865;
+  stroke-width: 3;
+}
+
+.kafka-brokers-stage .kafka-brokers-role-promoted {
+  fill: #903865;
+  font-weight: 600;
+}
+
+.kafka-brokers-node[data-state="promoted-cache"] rect {
+  fill: #fff4d6;
+  stroke: #21201c;
+  stroke-width: 2;
+}
+
+/* Slightly smaller so "out of sync" fits each column at phone width. */
+.kafka-brokers-stage .kafka-brokers-view text {
+  font-size: 17px;
+}
+
+.kafka-brokers-view rect {
+  fill: #fdfdfc;
+  stroke: #e4e3de;
+  stroke-width: 1.5;
+}
+
+/* The leader just learned this replica's position from its fetch. */
+.kafka-brokers-stage .kafka-brokers-learned {
+  fill: #076fa8;
+  font-weight: 600;
+}
+
+.kafka-brokers-divider {
+  stroke: #e4e3de;
+  stroke-width: 1.5;
+}
+
+.kafka-brokers-stage .kafka-brokers-cache-hit {
+  font-weight: 700;
+}
+
+/* Crashed: red dashed edge and a red × badge; stored data stays visible but dim. */
+.kafka-brokers-node[data-state="offline"] rect {
+  fill: #f8eeef;
+  stroke: #c12e46;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.kafka-brokers-node[data-state="offline"] > text:first-of-type {
+  fill: #63635e;
+}
+
+.kafka-brokers-crash circle {
+  fill: #c12e46;
+}
+
+.kafka-brokers-crash path,
+.kafka-brokers-break path {
+  fill: none;
+  stroke: #fdfdfc;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.kafka-brokers-chip[data-dim] {
+  opacity: 0.45;
+}
+
+/* Waiting: the producer's cached leader is unreachable, so writes pause. */
+.kafka-brokers-node[data-state="waiting"] rect {
+  fill: #fdf6e3;
+  stroke: #866100;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+/* Candidate: an in-sync replica the controller may promote. */
+.kafka-brokers-node[data-state="candidate"] rect {
+  stroke: #903865;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+.kafka-brokers-stage .kafka-brokers-role-candidate {
+  fill: #903865;
+}
+
+.kafka-brokers-stage .kafka-brokers-warning {
+  fill: #866100;
+  font-weight: 600;
+}
+
+.kafka-brokers-route[data-broken]:not([data-active="true"]) {
+  stroke: #c12e46;
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+}
+
+.kafka-brokers-break circle {
+  fill: #c12e46;
+}
+
+.kafka-brokers-stage .kafka-brokers-muted,
+.kafka-brokers-stage .kafka-brokers-role-follower {
+  fill: #63635e;
+}
+
+.kafka-brokers-stage .kafka-brokers-role-leader {
+  font-weight: 600;
+}
+
+.kafka-brokers-stage .kafka-brokers-role-offline,
+.kafka-brokers-stage .kafka-brokers-failure {
+  fill: #c12e46;
+}
+
+.kafka-brokers-stage .kafka-brokers-success {
+  fill: #187636;
+}
+
+.kafka-brokers-route {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+/* Active routes take their payload color from the stroke attribute. */
+.kafka-brokers-route:not([data-active="true"]) {
+  stroke: #d5d4ce;
+}
+
+.kafka-brokers-route[data-control]:not([data-active="true"]) {
+  stroke: #e3cfd8;
+}
+
+.kafka-brokers-route[data-active="true"] {
+  stroke-width: 2.5;
+  stroke-dasharray: none;
+}
+
+.kafka-brokers-chip rect {
+  fill: #fdfdfc;
+  stroke-width: 1.5;
+}
+
+.kafka-brokers-stage .kafka-brokers-chip text {
+  font-size: 16px;
+  text-anchor: middle;
+}
+
+.kafka-brokers-chip[data-fresh] rect {
+  stroke-width: 3;
+  fill: #fff4d6;
+}
+
+.kafka-brokers-stage .kafka-brokers-payload text {
+  fill: #fff;
+  font-size: 17px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.kafka-brokers-chip[data-kind="ack"] text {
+  fill: #187636;
+}
+
+.kafka-brokers-chip[data-kind="reject"] text {
+  fill: #c12e46;
+  font-weight: 600;
+}
+
+.kafka-brokers-chip[data-kind="elect"] text {
+  fill: #903865;
+}
+
+.kafka-brokers-readout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  min-block-size: 3em;
+  margin: 0;
+  color: #21201c;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.kafka-brokers-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-block: 8px;
+}
+
+.kafka-brokers-controls button {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  padding-inline: 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #21201c;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.kafka-brokers-controls button:disabled {
+  color: #8d8c86;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kafka-brokers-controls button:not(:disabled):hover {
+    background: #efeee9;
+  }
+}
+
+@media (max-width: 639px) {
+  .kafka-brokers-stage {
+    padding: 12px 8px;
+  }
+
+  .kafka-brokers-stage > .article-graphic-title,
+  .kafka-brokers-readout {
+    padding-inline: 4px;
+  }
+}

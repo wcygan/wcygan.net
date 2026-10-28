@@ -10,12 +10,12 @@ import {
   KafkaRecordFigure,
   KafkaTopicFigure,
 } from "~/components/KafkaFoundationFigures";
-import { KafkaReplicationDemo } from "~/components/KafkaReplicationDemo";
-import { KafkaPartitioningDemo } from "~/components/KafkaPartitioningDemo";
 import {
-  KafkaHotKeyDemo,
-  KafkaBrokerPlacementDemo,
-} from "~/components/KafkaRoutingDemos";
+  KafkaFailoverDemo,
+  KafkaPlacementDemo,
+} from "~/components/KafkaBrokerDemos";
+import { KafkaPartitioningDemo } from "~/components/KafkaPartitioningDemo";
+import { KafkaHotKeyDemo } from "~/components/KafkaRoutingDemos";
 
 **Kafka stores a shared event history that applications can read independently.**
 Shipping, fraud checks, and analytics can process the same order events at
@@ -75,22 +75,29 @@ with distributing work.
 
 A **broker** is a Kafka server. Each partition has a **leader** on a broker that
 handles writes to that partition. Placing partition leaders on different brokers
-distributes their work across machines. Leadership can move to an eligible
-replica on another broker.
+distributes their work across machines. A producer starts with a short list of
+**bootstrap servers**. It asks one of them for cluster metadata, caches which
+broker leads each partition, and sends each record directly to that leader. Any
+broker can answer, because every broker keeps a copy of the cluster metadata.
+Leadership can move to an eligible replica on another broker. When a broker
+replies that it no longer leads a partition, or the cache ages out, the producer
+refreshes its metadata.
 
-<KafkaBrokerPlacementDemo />
+<KafkaPlacementDemo />
 
 ## Replication and broker failures
 
 A partition's **replicas** are copies of its log stored on brokers. Kafka tracks
 which replicas are **in sync** with the partition leader. With `acks=all` and
 `min.insync.replicas=2`, a successful write requires at least two in-sync copies.
+When fewer replicas remain in sync, the leader rejects the write rather than
+acknowledge it with too few copies.
 Kafka's leader elections also account for
 [eligible leader replicas](https://kafka.apache.org/43/operations/eligible-leader-replicas/).
 Kafka's [KRaft controllers](https://kafka.apache.org/43/operations/kraft/) manage
 cluster metadata and elections. Brokers store the event records.
 
-<KafkaReplicationDemo />
+<KafkaFailoverDemo />
 
 ## Retained records
 
