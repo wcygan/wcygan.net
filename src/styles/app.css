@@ -11446,6 +11446,20 @@ th {
   line-height: 24px;
 }
 
+.rex-workflow-comparison-stage {
+  display: block;
+  max-width: 620px;
+  margin-inline: auto;
+}
+
+.post-content .rex-workflow-comparison-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  outline: 0;
+}
+
 /* Article graphics use an editorial role, not their rendering technology. */
 :where(.post-content) [data-article-graphic],
 :where(.post-content) [data-graphic-frame] {
